@@ -1,0 +1,74 @@
+{% for tr in group.filtered_tests %}
+    <li id="testresult-{{ tr.id }}-group-{{ group.id }}" class="test-row-container state-{{ tr.get_state_display }}" style="display: none;">
+        <div class="test-row link">
+            {# STATUS #}
+            <div class="col left-col bg-{{ tr.get_state_display }} test-status">{{ tr.display_state }}</div>
+            {# TITLE #}
+            <div class="col right-col">
+                <span class="icon fa closed left-{{ left_margin }}"></span>
+                <span class="test-title">{{ tr.test.title }}</span>
+            </div>
+        </div>
+        <div id="testresult-{{ tr.id }}-results" class="test-info-row" style="display: none;">
+            <div class="col left-col"></div>
+            <div class="test-result-container right-col">
+                <div class="test-result-inner-container double-left-{{ left_margin }}">
+                    <h2>Description</h2>
+                    <div class="test-description">
+                        {{ tr.test.description|safe }}
+                    </div>
+                    {% if tr.risks %}
+                    <h2>Risks</h2>
+                        <ul class="risk-list">
+                        {% for risk in tr.risks %}
+                            <li><span class="status-box border-{{risk.level.lower}}">{{ risk.level|upper }}</span>{{ risk.message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if tr.test.fix %}
+                    <h2>Solution Script</h2>
+                    {{ tr.test.fix|linebreaksbr }}
+                    {% endif %}
+
+                    {% if tr.test.fixtext and tr.should_display_solution %}
+                        <h2>Solution</h2>
+                        <div class="solution-text">
+                        {{ tr.test.fixtext|safe }}
+                        </div>
+                    {% endif %}
+                    {% if tr.logs %}
+                    <table cellspacing="0"> {# LOGS #}
+                        <thead>
+                            <tr>
+                                <th>
+                                    Date
+                                </th>
+                                <th>
+                                    Level
+                                </th>
+                                <th>
+                                    Component
+                                </th>
+                                <th>
+                                    Message
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in tr.logs %}
+                            <tr class="log">
+                                <td>{{ log.date }}</td>
+                                <td>{{ log.level }}</td>
+                                <td>{{ log.component }}</td>
+                                <td>{{ log.message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </li>
+{% endfor %}

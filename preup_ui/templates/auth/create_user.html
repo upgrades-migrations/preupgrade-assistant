@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Create User{% endblock %}
+{% block nav_users %}active{% endblock %}
+{% block content %}
+<div class="create-user-container auth-form">
+  <div class="row">
+    <div class="col-sm-11">
+      <div id="login-heading">
+        <h3 class="form-signin-heading">{{ title }}</h3>
+      </div><!--/#brand-->
+    </div><!--/.col-*-->
+    <div class="col-sm-7 col-md-6 col-lg-5 login">
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <span class="pficon-layered">
+          <span class="pficon pficon-error-octagon"></span>
+          <span class="pficon pficon-error-exclamation"></span>
+        </span>
+        {% for key, value in form.errors.items %}
+          {% for error in value %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form class="form-horizontal" role="form" method="post" action="{% if not post_url_name %}{% url 'auth-create' %}{% else %}{{ post_url_name }}{% endif %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="inputUsername" class="col-sm-3 col-md-3 control-label">Username</label>
+          <div class="col-sm-9 col-md-9">
+            <input type="text" class="form-control" id="inputUsername" placeholder="" tabindex="1" name="username" value="{{ form.username.value|default_if_none:"" }}" {% if edit %}readonly="readonly"{% endif %}>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputEmail" class="col-sm-3 col-md-3 control-label">E-mail</label>
+          <div class="col-sm-9 col-md-9">
+            <input type="text" class="form-control" id="inputEmail" placeholder="" tabindex="2" value="{{ form.email.value|default_if_none:"" }}" name="email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputPassword" class="col-sm-3 col-md-3 control-label">Password</label>
+          <div class="col-sm-9 col-md-9">
+            <input type="password" class="form-control" id="inputPassword" placeholder="" tabindex="3" name="password">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputRetypePassword" class="col-sm-3 col-md-3 control-label">Retype Password</label>
+          <div class="col-sm-9 col-md-9">
+            <input type="password" class="form-control" id="inputRetypePassword" placeholder="" tabindex="4" name="password_retyped">
+          </div>
+        </div>
+        <div class="form-group">
+          {#<div class="col-xs-4 col-sm-4 col-md-4 submit">#}
+          <div class="col-sm-12 col-md-12 submit">
+            <button type="submit" class="btn btn-primary btn-lg" tabindex="5">Submit</button>
+          </div>
+        </div>
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+      </form>
+    </div><!--/.col-*-->
+  </div><!--/.row-->
+</div><!--/.container-->
+{% endblock %}

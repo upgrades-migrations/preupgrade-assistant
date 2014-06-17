@@ -1,0 +1,83 @@
+<td colspan="7" class="group-row-td">
+    <div class="result-container">
+        <div class="result-toolbar">
+            <div class="run-summary">
+                <div class="test-summary-label">Tests Summary:</div>
+                <div class="state-form">
+                    <span class="state">
+                        <input type="checkbox" class="all-states-checkbox" {% if state_filter_form.all_checked %}checked="checked"{% endif %}/>
+                        <label for="id_pass5">All ({{ result.test_count }})</label>
+                    </span>
+                    <form class="filter-by-state-form" action="{{ url }}" method="GET">
+                        {% for field in state_filter_form %}
+                        <span class="state">
+                            {{ field }} {{ field.label_tag }}
+                        </span>
+                        {% endfor %}
+                        <button type="button" name="filter-single" class="btn btn-default btn-xs apply-state-filters-btn">Apply</button>
+                        <button type="button" name="filter-all" class="btn btn-default btn-xs filter-by-all">Apply to All Runs</button>
+                    </form>
+                </div>
+            </div>
+            <div class="result-report-link">
+                <input type="submit" value="Expand All" class="btn btn-default btn-xs expand-all-btn" />
+                <input type="submit" value="Collapse All" class="btn btn-default btn-xs collapse-all-btn" />
+                <a href="{% url 'show-report' result.id %}" target="_blank">Show full report</a>
+                <a href="{% url 'result-detail' result.id %}" class="left-margin-1em">Permalink</a>
+            </div>
+        </div>
+        <div class="container-listing">
+            <ul class="entry-list root-groups">
+                <li>
+                    <div class="col left-col header">Status</div>
+                    <div class="col right-col header">Test Groups</div>
+                </li>
+                {# rendering recursive tree structure of groups and tests #}
+                {% for item in flat_tree %}
+                    {% if item.0 == 'TAG' %}
+                        {{ item.1|safe }}
+                    {% else %}
+                        {% if item.0 == "TESTS" %}
+                            {% include "report/test.html" with group=item.1 left_margin=item.1.child_left_margin %}
+                        {% else %}
+                            {% if item.0 == "GROUP" or item.0 == "GROUP_WITH_TESTS" %}
+                                {% with item.1 as resultgroup %}
+                <li id="group-item-{{ resultgroup.id }}"
+                    {% if not resultgroup.group.is_root %}style="display: none;"{% endif %}>
+                    <div class="{% if resultgroup.displayed_count > 0 %}group-item-row link{% else %}disabled-row{% endif %}">
+                        {# STATUS #}
+                        <div class="col left-col"> </div>
+                        {# TITLE #}
+                        <div class="col right-col row-title">
+                            {% if resultgroup.displayed_count > 0 %}<span class="icon fa closed left-{{ resultgroup.left_margin }}"></span>{% endif %}
+                            <span class="group-title">{{ resultgroup.group.title }}</span>
+                            {% if resultgroup.displayed_count != resultgroup.test_count %}
+                            <span class="group-tests-count">({{ resultgroup.displayed_count }} of {{ resultgroup.test_count }})</span>
+                            {% else %}
+                            <span class="group-tests-count">({{ resultgroup.displayed_count }})</span>
+                            {% endif %}
+                            {% if resultgroup.failed_test_count and resultgroup.displayed_count > 0 %}
+                            <span class="group-failed-tests-count">{{ resultgroup.failed_test_count }} failed</span>
+                            {% endif %}
+                            {% if resultgroup.na_test_count and resultgroup.displayed_count > 0 %}
+                            <span class="group-na-tests-count">{{ resultgroup.na_test_count }} needs action</span>
+                            {% endif %}
+                            {% if resultgroup.ni_test_count and resultgroup.displayed_count > 0 %}
+                            <span class="group-ni-tests-count">{{ resultgroup.ni_test_count }} needs inspection</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                                    {% if item.0 == "GROUP_WITH_TESTS" %}
+                            <ul class="entry-list">
+                                    {% include "report/test.html" with group=resultgroup left_margin=resultgroup.child_left_margin %}
+                            </ul>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</td>

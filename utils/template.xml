@@ -1,0 +1,37 @@
+<Benchmark xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xf="http://preupgrade-assistant.org/wiki/XCCDF-fragment" xmlns="http://checklists.nist.gov/xccdf/1.2" id="xccdf_preupg-content_benchmark_all" xml:lang="en">
+  <status date="${CURRENT_DATE}">draft</status>
+  <title>Preupgrade Assistant migration tool</title>
+  <description>
+    <html:p>
+      This is a checklist of configuration settings intended to be used as RedHat Enterprise Linux migration tool.
+    </html:p>
+    <html:p>
+      The checklist can be processed by varius tools which enable users to:
+      <html:ul>
+        <html:li>define profiles with customized security policies,</html:li>
+        <html:li>audit systems to determine compliance with targeted security policy and</html:li>
+        <html:li>adjust system configuration.</html:li>
+      </html:ul>
+    </html:p>
+  </description>
+  <notice id="disclaimer">This XCCDF has been automatically generated, it should only serve as a baseline!</notice>
+
+  <front-matter></front-matter>
+
+  <reference href="http://iase.disa.mil/stigs/index.html">Defense Information Systems Agency - Security Technical Implementation Guides (DISA STIG)</reference>
+  <reference href="https://www.pcisecuritystandards.org">Payment Card Industry - Data Security Standard (PCI DSS)</reference>
+
+  <platform idref="cpe:/o:redhat:enterprise_linux:6" />
+  <version>1.0</version>
+  <model system="urn:xccdf:scoring:flat" />
+
+  <Profile id="xccdf_preupg_profile_default">
+    <title>Preupgrade assistant default</title>
+
+    <description>
+      <html:p>
+        This profile is designed for the Preupgrade Assistant tool.
+      </html:p>
+    </description>
+  </Profile>
+</Benchmark>

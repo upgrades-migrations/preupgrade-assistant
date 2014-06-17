@@ -1,0 +1,17 @@
+{% extends "core.html" %}
+{% block body %}
+    <div class="navbar" role="navigation">
+        <ul class="nav nav-tabs">
+            <li class="{% block nav_results %}{% endblock %}"><a href="{% url 'results-list' %}">Results List</a></li>
+            {#<li class="{% block nav_new-run %}{% endblock %}"><a href="{% url 'new-run' %}">Schedule New Run</a></li>#}
+            {#<li class="{% block nav_settings %}{% endblock %}"><a href="{% url 'settings' %}">Settings</a></li>#}
+            <li class="{% block nav_users %}{% endblock %}"><a href="{% url 'auth-list' %}">User Management</a></li>
+            <li class="{% block nav_compare %}{% endblock %}"><a href="{% url 'compare' %}">Compare Runs</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+    {% block content %}
+    {% endblock %}
+    </div>
+{% endblock %}

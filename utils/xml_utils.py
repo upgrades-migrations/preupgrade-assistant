@@ -1,0 +1,284 @@
+from preup.xml_manager import html_escape_string
+from preup.utils import get_assessment_version
+import xml_tags
+import script_utils
+import re
+import os
+
+
+def get_full_xml_tag(dirname):
+    """
+    We need just from RHEL directory
+    """
+    found = 0
+    # Get index of scenarion and cut directory till scenarion (included)
+    for index, dir_name in enumerate(dirname.split(os.path.sep)):
+        if re.match(r'\D+(\d)_(\D*)(\d)-results', dir_name, re.I):
+            found = index
+    main_dir = dirname.split(os.path.sep)[found+1:]
+    return main_dir
+
+
+def print_error_msg(title="", msg="", level=' ERROR '):
+    """
+    Function prints a ERROR or WARNING messages
+    """
+    number = 30
+    print '*'*number+level+'*'*number
+    print title, msg
+    print '*'*number+level+'*'*number
+
+
+class XmlUtils(object):
+    """
+    Class generate a XML from xml_tags and loaded INI file
+    """
+    def __init__(self, dir_name, ini_files):
+        self.keys = {}
+        self.select_rules = []
+        self.rule = []
+        self.dirname = dir_name
+        self.ini_files = ini_files
+
+    def update_values_list(self, section, search_exp, replace_exp):
+        """
+        The function replaces tags taken from INI files.
+        Tags are mentioned in xml_tags.py
+        """
+
+        if search_exp == "{content_description}":
+            replace_exp = replace_exp.rstrip()
+        if search_exp == "{config_file}":
+            new_text = ""
+            for lines in replace_exp.split(','):
+                new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
+            replace_exp = new_text.rstrip()
+        elif search_exp == "{solution}":
+            new_text = list()
+            with open(os.path.join(self.dirname, replace_exp), "r") as f_handle:
+                new_text = f_handle.readlines()
+            # we does not need interpreter for fix script
+            # in XML therefore skip first line
+            replace_exp = ''.join(new_text[1:])
+        elif search_exp == "{solution_text}":
+            new_text = "_"+'_'.join(get_full_xml_tag(self.dirname))\
+                       +"_SOLUTION_MSG_"+replace_exp.upper()
+            replace_exp = new_text
+        for cnt, line in enumerate(section):
+            if search_exp in line:
+                section[cnt] = line.replace(search_exp, replace_exp)
+
+    def check_recommended_fields(self, keys={}, script_name=""):
+        """
+        The function checks whether all fields in INI file are fullfiled
+        If solution_type is mentioned than HTML page can be used.
+        HTML solution type can contain standard HTML tags
+
+        field are needed by YAML file
+        """
+        fields = ['content_title', 'check_script', 'solution', 'applies_to']
+        optional = ['solution_type']
+        unused = [x for x in fields if not keys.get(x)]
+        if unused:
+            title = 'Following tags are missing in YAML file %s\n' % script_name
+            if 'applies_to' in unused:
+                print_error_msg(title=title, msg=unused, level=' WARNING ')
+            else:
+                print_error_msg(title=title, msg=unused)
+        if 'solution_type' in keys:
+            if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
+                pass
+            else:
+                print_error_msg(
+                    title="Wrong solution_type. Allowed are 'html' or 'text' %s" % script_name
+                )
+                os.sys.exit(0)
+
+    def add_value_tag(self):
+        """
+        The function adds VALUE tag in group.xml file
+        """
+        value_tag = []
+        check_export_tag = list()
+        check_export_tag.append(xml_tags.RULE_SECTION_VALUE_IMPORT)
+        for key, val in xml_tags.DIC_VALUES.items():
+            value_tag.append(xml_tags.VALUE)
+            if key == 'current_directory':
+                val = '/'.join(get_full_xml_tag(self.dirname))
+                val = 'SCENARIO/' + val
+            self.update_values_list(value_tag, "{value_name}", val)
+            self.update_values_list(value_tag, "{val}", key.lower())
+            check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
+            self.update_values_list(check_export_tag, "{value_name_upper}", key.upper())
+            self.update_values_list(check_export_tag, "{val}", key.lower())
+        return value_tag, check_export_tag
+
+    def solution_modification(self, key):
+        """
+        Function handles a solution text or scripts
+        """
+        fix_tag = []
+        for k in key['solution'].split(','):
+            k = k.strip()
+            script_utils.check_scripts('solution', self.dirname, script_name=k)
+            script_type = script_utils.get_script_type(self.dirname, script_name=k)
+            if script_type == "txt":
+                fix_tag.append(xml_tags.FIX_TEXT)
+            else:
+                fix_tag.append(xml_tags.FIX)
+
+            #Update values
+            self.update_values_list(fix_tag, "{solution_text}",
+                                    key['solution_type'] if 'solution_type' in key else "text")
+            self.update_values_list(fix_tag, "{solution}", k)
+            self.update_values_list(fix_tag, "{script_type}", script_type)
+            version = get_assessment_version(self.dirname)
+            if version:
+                self.update_values_list(fix_tag, "{platform_id}", version[1])
+            else:
+                self.update_values_list(fix_tag, "{platform_id}", "6")
+        self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
+
+    def check_script_modification(self, key, k):
+        """
+        Function checks a check script
+        """
+        script_utils.check_scripts(k, self.dirname, script_name=key[k])
+        check_func = {'log_': ['log_none_risk', 'log_slight_risk',
+                               'log_medium_risk', 'log_high_risk',
+                               'log_extreme_risk', 'log_info',
+                               'log_error', 'log_warning'],
+                      'exit_': ['exit_error', 'exit_fail',
+                                'exit_fixed', 'exit_not_applicable',
+                                'exit_pass', 'exit_unknown',
+                                'exit_informational']}
+        for check in check_func:
+            script_utils.check_inplace_risk(self.dirname,
+                                            prefix=check,
+                                            script_name=key[k],
+                                            check_func=check_func[check])
+        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[:-1][0])
+        requirements = {'applies_to': 'check_applies',
+                        'binary_req': 'check_bin',
+                        'requires': 'check_rpm'
+                        }
+        updates = dict()
+        for req in requirements:
+            if req in key:
+                updates[requirements[req]] = key[req]
+        script_utils.update_check_script(self.dirname,
+                                         updates,
+                                         script_name=key[k],
+                                         author=key['author'] if 'author' in key else "")
+        self.update_values_list(self.rule, "{"+k+"}", key[k])
+
+    def prepare_sections(self):
+        """
+        The function prepares all tags needed for generation group.xml file
+        """
+        group_ini = False
+        for main, self.keys in self.ini_files.items():
+            if main.endswith("group.ini"):
+                self.rule.append(xml_tags.GROUP_INI)
+                for k in self.keys:
+                    self.update_values_list(self.rule, '{group_title}', k['group_title'])
+                    self.update_values_list(self.rule, '{group_value}', "")
+            else:
+                self.rule.append(xml_tags.CONTENT_INI)
+                self.create_xml_from_ini(main)
+                self.update_values_list(self.rule,
+                                        "{select_rules}",
+                                        ' '.join(self.select_rules))
+            xml_tag = "{main_dir}"
+            self.update_values_list(self.rule,
+                                    xml_tag,
+                                    '_'.join(get_full_xml_tag(self.dirname)))
+        return self.rule
+
+    def fnc_config_file(self, key, name):
+        """
+        Function updates a config file
+        """
+        if name in key and key[name] is not None:
+            self.update_values_list(self.rule, "{config_section}",
+                                    xml_tags.CONFIG_SECTION)
+            self.update_values_list(self.rule, "{config_file}",
+                                    key['config_file'])
+        else:
+            self.update_values_list(self.rule, "{config_section}", "")
+
+    def fnc_check_script(self, key, name):
+        """
+        Function updates a check_script
+        """
+        if name in key:
+            self.check_script_modification(key, name)
+            self.update_values_list(self.select_rules, "{scap_name}",
+                                    key[name].split('.')[:-1][0])
+
+    def fnc_solution_text(self, key, name):
+        """
+        Function updates a solution text
+        """
+        if name in key:
+            self.solution_modification(key)
+        else:
+            self.update_values_list(self.rule, "{fix}", xml_tags.FIX_TEXT)
+            self.update_values_list(self.rule, "{solution_text}", "text")
+            self.update_values_list(self.rule, "{platform_id}",
+                                    get_assessment_version(self.dirname)[1])
+
+    def dummy_fnc(self, key, name):
+        """
+        Function is only dummy
+        """
+        pass
+
+    def update_text(self, key, name):
+        """
+        Function updates a text
+        """
+        if key[name] is not None:
+            # escape values so they can be loaded as XMLs
+            escaped_text = html_escape_string(key[name])
+            self.update_values_list(self.rule, "{"+name+"}", escaped_text)
+
+    def create_xml_from_ini(self, main):
+        """
+        The function creates group.xml file from INI file.
+        All tag are replaced by function update_value_list
+
+        Function also checks whether check script full fills all criteria
+        """
+        self.select_rules.append(xml_tags.SELECT_TAG)
+        update_fnc = {
+            'config_file': self.fnc_config_file,
+            'check_script': self.fnc_check_script,
+            'solution': self.fnc_solution_text,
+            'applies_to': self.dummy_fnc,
+            'binary_req': self.dummy_fnc,
+            'content_title': self.update_text,
+            'content_description': self.update_text,
+        }
+        for key in self.keys:
+            self.check_recommended_fields(key, script_name=main)
+            # Add solution text into value
+            if 'solution' in key:
+                xml_tags.DIC_VALUES['solution_file'] = key['solution']
+            else:
+                xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
+
+            self.update_values_list(self.rule, "{rule_tag}",
+                                    ''.join(xml_tags.RULE_SECTION))
+            value_tag, check_export_tag = self.add_value_tag()
+            self.update_values_list(self.rule, "{check_export}",
+                                    ''.join(check_export_tag))
+            self.update_values_list(self.rule, "{group_value}",
+                                    ''.join(value_tag))
+
+            for k, function in update_fnc.iteritems():
+                function(key, k)
+
+            self.update_values_list(self.rule,
+                                    '{group_title}',
+                                    html_escape_string(key['content_title']))

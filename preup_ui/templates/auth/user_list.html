@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block nav_users %}active{% endblock %}
+{% block content %}
+  <div id="toolbar">
+    <a class="btn btn-default" href="{% url "auth-create" %}">Create User</a>
+    {% if auth_enabled %}
+    <a class="btn btn-default" href="{% url "auth-disable" %}?next={% url "auth-list" %}">Disable Authentication</a>
+    {% else %}
+    <a class="btn btn-default" href="{% url "auth-enable" %}?next={% url "auth-list" %}">Enable Authentication</a>
+    {% endif %}
+    {% if local_auth_enabled %}
+    <a class="btn btn-default" href="{% url "local-auth-disable" %}?next={% url "auth-list" %}">Disable Local Authentication</a>
+    {% else %}
+    <a class="btn btn-default" href="{% url "local-auth-enable" %}?next={% url "auth-list" %}">Enable Local Authentication</a>
+    {% endif %}
+  </div>
+  {% if user_list %}
+  <table class="user-list">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>E-mail address</th>
+        <th>Edit</th>
+      </tr>
+    </thead>
+    {% for user in user_list %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          <a href="{% url "auth-edit" user.username %}" class="btn btn-default">Edit</a>
+          <a href="{% url "auth-delete" user.username %}" class="btn btn-danger">Delete</a>
+        </td>
+      </tr>
+    {% endfor %}
+  {% else %}
+  <h3 class="center">There were no users created.</h3>
+  {% endif %}
+  </table>
+{% endblock %}
