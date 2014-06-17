@@ -1,0 +1,39 @@
+<xf:xccdf-fragment xmlns="http://checklists.nist.gov/xccdf/1.2" xmlns:xf="http://preupgrade-assistant.org/wiki/XCCDF-fragment" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <Profile id="xccdf_preupg_profile_default">
+        <select idref="xccdf_preupg_rule_dummy_preupg_dummy_preupg" selected="true" />
+    </Profile>
+    <Group id="xccdf_preupg_group_dummy_preupg" selected="true">
+    <title>dummy_preupg</title>
+    
+    <Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_tmp_preupgrade" operator="equals" type="string">
+        <value>SCENARIO</value>
+    </Value>
+
+    <Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" operator="equals" type="string">
+        <value>SCENARIO/dummy_preupg</value>
+    </Value>
+
+    <Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_solution_file" operator="equals" type="string">
+        <value>solution.txt</value>
+    </Value>
+
+    
+    <Rule id="xccdf_preupg_rule_dummy_preupg_dummy_preupg" selected="true">
+      <title>dummy_preupg</title>
+      <description>
+        &apos;Dummy pass content&apos;
+        
+      </description>
+      <fixtext>_dummy_preupg_SOLUTION_MSG_TEXT</fixtext>
+      <check system="http://open-scap.org/page/SCE">
+        <check-import import-name="stdout" />
+        		<check-import import-name="stderr"/>		<check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_tmp_preupgrade" />
+		<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" />
+		<check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_solution_file" />
+
+        <check-content-ref href="dummy_preupg.sh" />
+      </check>
+    </Rule>
+
+    </Group>
+</xf:xccdf-fragment>

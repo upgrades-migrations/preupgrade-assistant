@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block nav_compare %}active{% endblock %}
+{% block js %}
+<script src="{{ STATIC_URL }}js/main.js"></script>
+{% endblock %}{% block content %}
+  <table id="compare-table">
+    <thead>
+      <tr>
+        <form id="compare-form" action="{% url 'two-compare' %}" method="GET">
+          <th>{{ form.left_result }}</th>
+          <th>{{ form.right_result }}</th>
+        </form>
+      </tr>
+    </thead>
+    <tbody>
+      {% if diff %}
+        <tr>
+          <td class="result-detail-link">
+              <a href="{% url 'result-detail' left.id %}">Show whole run</div>
+          </td>
+          <td class="result-detail-link">
+              <a href="{% url 'result-detail' right.id %}">Show whole run</div>
+          </td>
+        </tr>
+        {% for d in diff %}
+        <tr>
+          <td>
+            {% if d.left %}
+              <div class="bg-{{ d.left.get_state_display }} left-status">{{ d.left.display_state }}</div>
+              <div class="test-title left-test-title {% if d.left.should_display_solution or d.left.risks %}link{% endif %}">{{ d.left.test.title }}</div>
+              {% include "compare/two-expand.html" with tr=d.left %}
+            {% endif %}
+          </td>
+          <td>
+            {% if d.right %}
+              <div class="bg-{{ d.right.get_state_display }} right-status">{{ d.right.display_state }}</div>
+              <div class="test-title right-test-title {% if d.right.should_display_solution or d.right.risks %}link{% endif %}">{{ d.right.test.title }}</div>
+              {% include "compare/two-expand.html" with tr=d.right %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="2">
+        {% if diff|length == 0 %}
+          <div class="left-test-title">Results match.</div>
+        {% else %}
+          <div class="left-test-title">Please, select two runs and those will be compared.</div>
+        {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock %}

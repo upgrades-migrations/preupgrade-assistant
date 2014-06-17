@@ -1,0 +1,223 @@
+[
+{
+    "pk": 1, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 0
+    }
+},
+{
+    "pk": 2, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 1
+    }
+},
+{
+    "pk": 3, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 2
+    }
+},
+{
+    "pk": 4, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 3
+    }
+},
+{
+    "pk": 5, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 4
+    }
+},
+{
+    "pk": 6, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 5
+    }
+},
+{
+    "pk": 7, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 6
+    }
+},
+{
+    "pk": 8, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 7
+    }
+},
+{
+    "pk": 9, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 8
+    }
+},
+{
+    "pk": 10, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 9
+    }
+},
+{
+    "pk": 11, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 10
+    }
+},
+{
+    "pk": 12, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 11
+    }
+},
+{
+    "pk": 13, 
+    "model": "report.os", 
+    "fields": {
+        "major": 5, 
+        "minor": 12
+    }
+},
+{
+    "pk": 14, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 0
+    }
+},
+{
+    "pk": 15, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 1
+    }
+},
+{
+    "pk": 16, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 2
+    }
+},
+{
+    "pk": 17, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 3
+    }
+},
+{
+    "pk": 18, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 4
+    }
+},
+{
+    "pk": 19, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 5
+    }
+},
+{
+    "pk": 20, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 6
+    }
+},
+{
+    "pk": 21, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 7
+    }
+},
+{
+    "pk": 22, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 8
+    }
+},
+{
+    "pk": 23, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 9
+    }
+},
+{
+    "pk": 24, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 10
+    }
+},
+{
+    "pk": 25, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 11
+    }
+},
+{
+    "pk": 26, 
+    "model": "report.os", 
+    "fields": {
+        "major": 6, 
+        "minor": 12
+    }
+},
+{
+    "pk": 1, 
+    "model": "report.host", 
+    "fields": {
+        "sudo_password": null, 
+        "os": null, 
+        "su_login": null, 
+        "hostname": "localhost", 
+        "ssh_name": null, 
+        "ssh_password": null, 
+        "local": true
+    }
+}
+]

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block nav_new-run %}active{% endblock %}
+{% block content %}
+{% comment %} {# FIXME: improve this #}
+<div id="new-host-container">
+    <form class="new-host-form" method="post" action="{% url "new-host" %}">
+        {% csrf_token %}
+    {% for field in new_host_form %}
+        <div class="fieldWrapper">
+            {{ field.errors }}
+        {{ field.label_tag }}: {{ field }}
+        </div>
+        {% endfor %}
+        <input class="btn" type="submit" value="Create" name="submit" />
+    </form>
+</div>
+<div id="new-run-container">
+    <form class="new-run-form" method="post" action="{% url "new-run" %}">
+        {% csrf_token %}
+    {% for field in new_run_form %}
+        <div class="fieldWrapper">
+            {{ field.errors }}
+        {{ field.label_tag }}: {{ field }}
+        </div>
+        {% endfor %}
+        <input class="btn" type="submit" value="Run!" name="submit" />
+    </form>
+</div>
+{% endcomment %}
+<div class="new-run-container">
+    <h1 class="center">Run locally</h1>
+    <div class="helper-text">
+        This will initiate a new run locally. It may take a few minutes to complete the scan.
+    </div>
+    <div class="center">
+        <a href="{% url "new-local-run" %}" class="btn btn-default">Run locally</a>
+    </div>
+</div>
+{% endblock %}

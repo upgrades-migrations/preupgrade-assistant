@@ -1,0 +1,1 @@
+cd /etc; for i in `cat $VALUE_CONFIGCHANGED | cut -d'/' -f2-`; do [ -f $VALUE_TMP_PREUPGRADE/$i ] || cp --parents -a "/$i" $VALUE_TMP_PREUPGRADE/dirtyetc ;done; cd -

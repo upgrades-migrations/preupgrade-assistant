@@ -1,0 +1,7 @@
+<xf:xccdf-fragment xmlns="http://checklists.nist.gov/xccdf/1.2" xmlns:xf="http://preupgrade-assistant.org/wiki/XCCDF-fragment">
+  <xf:sort-prefix>1</xf:sort-prefix>
+
+  <Group id="xccdf_preupg_group_dummy" selected="true">
+    <title>Dummy</title>
+  </Group>
+</xf:xccdf-fragment>

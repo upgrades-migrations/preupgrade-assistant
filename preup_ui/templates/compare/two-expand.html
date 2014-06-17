@@ -1,0 +1,35 @@
+{% if tr.should_display_solution or tr.risks %}
+  <div class="test-details" style="display: none;">
+    {% if tr.risks %}
+    <h2>Risks</h2>
+      <ul class="risk-list">
+      {% for risk in tr.risks %}
+        <li><span class="status-box border-{{risk.level.lower}}">{{ risk.level|upper }}</span>{{ risk.message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    <div class="center"><button class="toggle-solution-btn btn btn-default">Show additional information</button></div>
+    <div class="solution-text-container" style="display: none;">
+    {% if tr.test.fixtext and tr.should_display_solution %}
+      <h2>Solution</h2>
+      <div class="solution-text">
+      {{ tr.test.fixtext|safe }}
+      </div>
+    {% endif %}
+    {% if tr.logs %}
+      <div class="logs-container">
+        <h2>Logs</h2>
+        <table class="logs-table">
+          <tbody>
+      {% for log in tr.logs %}
+            <tr>
+              <td class="log-status">{{ log.level }}</td><td>{{ log.message }}</td>
+            </tr>
+      {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+    </div>
+  </div>
+{% endif %}

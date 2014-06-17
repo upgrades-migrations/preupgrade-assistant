@@ -1,0 +1,111 @@
+Preupgrade assistant purpose
+----------------------------
+Preupgrade assistant performs assessment of the system from
+the "upgradeability" point of view. Such analysis includes check for removed
+packages, packages replaced by partially incompatible packages, changes in
+libraries, users and groups and various services. Report of this analysis
+can help the admin with the inplace upgrade - by identification of potential
+troubles and by mitigating some of the incompatibilities. Data gathered
+by preupgrade assistant can be used for the "cloning" of the system - new,
+clean installation of the system, as close as possible to the old RHEL setup.
+In addition, it provides some postupgrade scripts which are supposed to finish
+migration after the installation of RHEL-7 system.
+
+As the preupgrade assistant doesn't directly modify the assessed system
+(except storing information/logs), it is safe to use it on any configuration.
+As the contents are not yet complete, successful preupgrade assistant analysis
+doesn't necessarily mean that inplace upgrade via rhelup will succeed.
+
+Preupgrade assistant usage
+--------------------------
+At the moment, only CLI interface and limited functionality is available.
+
+Usage is simple, follow these steps:
+1) Run "preupg -l" command - it lists all available contents for
+        preupgrade-assistant (as the system is based on plugin, there may be
+        modules from different sources in future). If nothing is shown,
+        install preupgrade-assistant-contents package.
+2) If you have RHEL6_7 content available, run "preupg -s RHEL6_7"
+3) Wait until analysis finishes (it can take several minutes)
+4) Review the report stored as /root/preupgrade/result.html (and possibly
+        files stored at /root/preupgrade) . Especially check for inplace
+        upgrade risks (described further in this document)
+
+/root/preupgrade file&directory structure
+------------------------------------
+
+This directory contains the data from the last preupgrade assistant run.
+Files:
+result.html - File with final migration assessment report in human readable
+         form (we are sorry for "listing" functionality only)
+result.xml - File with final migration assessment report in machine
+         readable form
+README - this file
+results.tar.gz - Tar ball with all files in directory /root/preupgrade
+
+Directories:
+cleanconf - directory with all user-modified configuration files, which were
+          checked for the compatibility by preupgrade-assistant. These files
+          can be safely used on RHEL-7 system (some of these files may need
+          postupgrade.d scripts execution)
+dirtyconf - directory with all user-modified configuration files, which were not
+          checked for the compatibility by preupgrade-assistant. These may
+          require admin review after the RHEL-7 installation/upgrade.
+kickstart - directory which contains various files useful for generating
+          kickstart for cloning this system. Some of the files in this
+          directory may give administrator the guidance what was not handled
+          by rhelup (and will need some additional actions). See README file
+          in the kickstart directory for the file descriptions.
+postupgrade.d - contains various scripts which are supposed to be executed
+          AFTER the upgrade to RHEL-7. These scripts should NEVER be used
+          on RHEL-6 system.
+RHEL6_7 - just "debugging" directory - will be removed later. Ignore, unless you'll see some "Error" plugin exit status.
+
+Possible check exit codes explanation
+-------------------------------------
+Every single plugin has its own exit code. Administrator needs to check
+at least those with FAIL result before using inplace upgrade. Results FIXED
+should be checked after the inplace upgrade - to finish the RHEL-7 migration
+properly.
+
+The possible exit codes are:
+ * PASS = everything is fine, no incompatibility/issue detected by this checker
+ * FAIL = some incompatibility/issue that needs to be review by admin was detected.
+          FAIL doesn't necessarily mean that inplace upgrade will fail, but may
+          result in not 100% functional system
+ * FIXED = some incompatibility was detected, but preupgrade-assistant was able
+          to find automated solution. Some of the fixes may require running
+          postupgrade.d scripts after the upgrade. Fixed configs are available
+          in /root/preupgrade/cleanconf directory. preupgrade-assistant doesn't
+          handle the fixes automatically at the moment!
+ * INFORMATIONAL = nice to have information for admins (e.g. removed options
+          in some common tools which may cause malfunctions of their scripts)
+ * NOT_APPLICABLE = package which should be tested by the check is not
+          installed on the system (test therefore doesn't make sense)
+ * ERROR = shouldn't occur, does usually mean error in the preupgrade-assistant
+          framework. All such errors should be reported to Red Hat
+          preupgrade-assistant team.
+
+In place upgrade risk explanations
+-----------------------------------
+There are several levels of inplace upgrade risks. Any level higher than
+"slight" means you will get not 100% functional upgraded system, although
+inplace upgrade tool "rhelup" may pass.
+
+The available risk assessment levels are:
+ * None - Default. It can be used as an indicator for some checks. It is not
+          necessary to enter these values.
+ * Slight - We assessed this field and have not found any issues. However,
+          there is still some risk that not all variants have been covered.
+ * Medium - It is likely that the area causes a problem in case of the inplace
+          upgrade. It needs to be checked by the administrator after
+          the inplace upgrade and after the system has been monitored for
+          some time.
+ * High - The inplace upgrade can't be used safely without the administrator's
+          assistance. This typically involves some known broken scenario,
+          existing 3rd party packages. After the administrator manually fixes
+          the issue, it may be possible to perform the inplace upgrade, but it
+          is not recommended.
+ * Extreme - We found an incompatibility which makes the inplace upgrade
+          impossible. It is recommended to install a new system with the help
+          of preupgrade-assistant remediations.

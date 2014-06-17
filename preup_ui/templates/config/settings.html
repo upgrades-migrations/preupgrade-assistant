@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block nav_settings %}active{% endblock %}
+
+{% block js %}
+<script src="{{ STATIC_URL }}js/settings.js"></script>
+{% endblock %}
+
+{% block content %}
+Global states filter
+<form id="state-filter-form" method="POST" action="{% url "update-state-filter" %}" name="filterform">
+{{ state_form.state }}
+<input type="submit" value="Submit" id="clear-btn" />
+</form>
+{% endblock %}

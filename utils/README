@@ -1,0 +1,10 @@
+This repository is used for contents delivered by developers
+Content will be checked by Preupgrade Assistant team
+
+More information here:
+https://engineering.redhat.com/trac/PreupgradeAssistant/wiki/WikiStart
+
+Repository contains folders:
+- contents ... where are stored content files
+     - RHEL5_6 ... content files used by upgrade RHEL-5 to RHEL-6
+     - RHEL6_7 ... content files used by upgrade RHEL-6 to RHEL-7
