@@ -15,6 +15,7 @@ except ImportError:
 XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
 
+
 class GenerateXml(object):
     """
     Class for generation XML document from INI files

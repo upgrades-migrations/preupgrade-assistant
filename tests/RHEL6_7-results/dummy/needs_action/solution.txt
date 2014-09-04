@@ -1,3 +1,0 @@
-This is solution text for Dummy Failed
-
-INPLACERISK: HIGH: High inplace risk

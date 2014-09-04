@@ -36,6 +36,7 @@ RULE_SECTION = """
       <title>{content_title}</title>
       <description>
         {content_description}
+        {check_description}
         {config_section}
       </description>
       {fix}

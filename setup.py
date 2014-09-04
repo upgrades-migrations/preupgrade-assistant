@@ -9,20 +9,20 @@ from scripts.include import *
 from setuptools import setup
 
 project_name            = "preupgrade-assistant"
-project_dirs            = ["preup", "preup_ui", "common"]
+project_dirs            = ["preup", "preup_ui", "common", "preuputils"]
 project_url             = "https://github.com/phracek/preupgrade-assistant/"
 project_author          = "Red Hat, Inc."
 project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "0.9.1"
+package_version         = "0.11.1"
 
-script_files = ['preupg', 'premigrate']
+script_files = ['preupg', 'premigrate', 'xccdf_compose', 'create_group_xml', 'preup_ui_manage']
 
 data_files = {
-    'preup_ui/': ['preup_ui/manage.py', 'preup_ui/fix_auth'],
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
+    'preuputils/': ['preuputils/template.xml'],
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/xsl': ['preup.xsl'],
@@ -41,7 +41,7 @@ for path in paths:
         data_files[root] = [os.path.join(root, f) for f in files]
 
 # override default tarball format with bzip2
-distutils.command.sdist.sdist.default_format = {'posix':'bztar',}
+distutils.command.sdist.sdist.default_format = {'posix': 'bztar'}
 
 if os.path.isdir(".git"):
     # we're building from a git repo -> store version tuple to __init__.py
@@ -62,7 +62,7 @@ for scheme in INSTALL_SCHEMES.values():
 
 setup (
         name            = package_name,
-        version         = package_version.replace(" ", "_").replace("-","_"),
+        version         = package_version.replace(" ", "_").replace("-", "_"),
         url             = project_url,
         author          = project_author,
         author_email    = project_author_email,

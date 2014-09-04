@@ -4,9 +4,9 @@ import sys
 import optparse
 import re
 from distutils import dir_util
-from utils.generate_xml import GenerateXml
-from utils.oscap_group_xml import OscapGroupXml
-from utils import variables
+from preuputils.generate_xml import GenerateXml
+from preuputils.oscap_group_xml import OscapGroupXml
+from preuputils import variables
 from preup import settings, utils
 
 try:

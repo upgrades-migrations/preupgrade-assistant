@@ -40,15 +40,47 @@ class XmlUtils(object):
         self.dirname = dir_name
         self.ini_files = ini_files
 
+    def _update_check_description(self, filename):
+        new_text = []
+        with open(os.path.join(self.dirname, filename), 'r') as f_handle:
+            lines = f_handle.readlines()
+
+        bold = '<xhtml:b>{0}</xhtml:b>'
+        br = '<xhtml:br/>'
+        table_begin = '<xhtml:table>'
+        table_end = '</xhtml:table>'
+        table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>Description</xhtml:th></xhtml:tr>'
+        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}</xhtml:td></xhtml:tr>'
+        new_text.append(br + br + '\n' + bold.format('Details:') + br)
+        results = False
+        for index, line in enumerate(lines):
+            if '=' in line:
+                if not results:
+                    new_text.append(bold.format('Expected results:') + br)
+                    new_text.append(table_begin + '\n' + table_header)
+                    results = True
+                try:
+                    exp_results = line.strip().split('=')
+                    new_text.append(table_row.format(exp_results[0], exp_results[1]) + '\n')
+                except IndexError:
+                    pass
+            else:
+                new_text.append(line.rstrip() + br)
+        if results:
+            new_text.append(table_end + '\n')
+
+        return '\n'.join(new_text)
+
     def update_values_list(self, section, search_exp, replace_exp):
         """
         The function replaces tags taken from INI files.
         Tags are mentioned in xml_tags.py
         """
-
         if search_exp == "{content_description}":
             replace_exp = replace_exp.rstrip()
-        if search_exp == "{config_file}":
+        elif search_exp == "{check_description}":
+            replace_exp = '\n' + replace_exp + '\n'
+        elif search_exp == "{config_file}":
             new_text = ""
             for lines in replace_exp.split(','):
                 new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
@@ -216,6 +248,16 @@ class XmlUtils(object):
             self.update_values_list(self.select_rules, "{scap_name}",
                                     key[name].split('.')[:-1][0])
 
+    def fnc_check_description(self, key, name):
+        """
+        Function updates a check_description
+        """
+        if name in key and key[name] is not None:
+            escaped_text = self._update_check_description(key[name])
+            self.update_values_list(self.rule, "{check_description}", escaped_text)
+        else:
+            self.update_values_list(self.rule, "{check_description}", "")
+
     def fnc_solution_text(self, key, name):
         """
         Function updates a solution text
@@ -254,6 +296,7 @@ class XmlUtils(object):
         update_fnc = {
             'config_file': self.fnc_config_file,
             'check_script': self.fnc_check_script,
+            'check_description': self.fnc_check_description,
             'solution': self.fnc_solution_text,
             'applies_to': self.dummy_fnc,
             'binary_req': self.dummy_fnc,

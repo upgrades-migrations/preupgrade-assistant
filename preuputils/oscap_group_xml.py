@@ -6,7 +6,7 @@ So no change is needed from maintainer point of view
 import os
 import sys
 import ConfigParser
-from utils.xml_utils import print_error_msg, XmlUtils
+from preuputils.xml_utils import print_error_msg, XmlUtils
 from preup.utils import get_file_content, write_to_file
 from xml.etree import ElementTree
 

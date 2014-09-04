@@ -1,49 +1,17 @@
-#!/usr/bin/env python2
-
 import os
 import sys
-import subprocess
 import re
 import datetime
-import optparse
-import shutil
-from distutils import dir_util
 
-from utils.oscap_group_xml import OscapGroupXml
-from utils.generate_xml import GenerateXml
-from utils import variables
+from preuputils.oscap_group_xml import OscapGroupXml
+from preuputils.generate_xml import GenerateXml
 from xml.etree import ElementTree
-from preup.utils import get_valid_scenario
-
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-
-def run_command(cmd):
-    stdin_pipe = None
-    stdout_pipe = subprocess.PIPE
-    stderr_pipe = subprocess.STDOUT
-    proc = subprocess.Popen(cmd,
-                            stdin=stdin_pipe,
-                            stdout=stdout_pipe,
-                            stderr=stderr_pipe,
-                            shell=True)
-    stdout = []
-    while proc.poll() == None:
-        #out = sp.stdout.readline().strip() # .decode('utf8')
-        # http://docs.python.org/2/library/subprocess.html
-        # Use communicate() rather than .std*.* to avoid deadlocks...
-        out = proc.communicate()
-        if out[0]:
-            out = out[0].strip()
-            stdout.append(out + '\n')
-    stdout = '\n'.join(stdout)
-    # there may be some remains not read after exiting the previous loop
-    print stdout
-
-    return proc.returncode
+XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 
 
 def collect_group_xmls(source_dir, level=0):
@@ -81,31 +49,38 @@ def perform_autoqa(path_prefix, group_tree):
 
         group_xml_path = os.path.join(f, "group.xml")
 
-        groups = tree.findall("{http://checklists.nist.gov/xccdf/1.2}Group")
+        groups = tree.findall(XMLNS + "Group")
         if len(groups) != 1:
-            print("'%s' doesn't have exactly one Group element. Each group.xml file is allowed to have just one group in it, if you want to split a group into two, move the other half to a different folder!" % (group_xml_path))
+            print("'%s' doesn't have exactly one Group element."
+                  " Each group.xml file is allowed to have just one group in it, "
+                  "if you want to split a group into two, "
+                  "move the other half to a different folder!" % (group_xml_path))
             continue
 
-        for element in tree.findall(".//{http://checklists.nist.gov/xccdf/1.2}Rule"):
-            checks = element.findall("{http://checklists.nist.gov/xccdf/1.2}check")
+        for element in tree.findall(".//" + XMLNS + "Rule"):
+            checks = element.findall(XMLNS + "check")
             if len(checks) != 1:
-                print("Rule of id '%s' from '%s' doesn't have exactly one check element!" % (element.get("id", ""), group_xml_path))
+                print("Rule of id '%s' from '%s' doesn't have "
+                      "exactly one check element!" % (element.get("id", ""), group_xml_path))
                 continue
 
             check = checks[0]
-            
-            if check.get("system") != "http://open-scap.org/page/SCE":
-                print("Rule of id '%s' from '%s' has system name different from the SCE system name ('http://open-scap.org/page/SCE')!" % (element.get("id", ""), group_xml_path))
 
-            crefs = check.findall("{http://checklists.nist.gov/xccdf/1.2}check-content-ref")
+            if check.get("system") != "http://open-scap.org/page/SCE":
+                print("Rule of id '%s' from '%s' has system name different "
+                      "from the SCE system name "
+                      "('http://open-scap.org/page/SCE')!" % (element.get("id", ""), group_xml_path))
+
+            crefs = check.findall(XMLNS + "check-content-ref")
             if len(crefs) != 1:
-                print("Rule of id '%s' from '%s' doesn't have exactly one check-content-ref inside its check element!" % (element.get("id", ""), group_xml_path))
+                print("Rule of id '%s' from '%s' doesn't have exactly one "
+                      "check-content-ref inside its check element!" % (element.get("id", ""), group_xml_path))
                 continue
-        
+
             cref = crefs[0]
 
             # Check if the description contains a list of affected files
-            description = element.find("{http://checklists.nist.gov/xccdf/1.2}description")
+            description = element.find(XMLNS + "description")
             if description is None:
                 print("Rule %r missing a description" % element.get("id", ""))
                 continue
@@ -113,15 +88,14 @@ def perform_autoqa(path_prefix, group_tree):
         perform_autoqa(os.path.join(path_prefix, f), subgroups)
 
 
-
 def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
     for f, t in group_tree.iteritems():
         tree, subgroups = t
 
         old_base_dir = os.path.join(source_dir, f)
-        
+
         path_prefix = os.path.relpath(old_base_dir, new_base_dir)
-        for element in tree.findall(".//{http://checklists.nist.gov/xccdf/1.2}check-content-ref"):
+        for element in tree.findall(".//" + XMLNS + "check-content-ref"):
             old_href = element.get("href")
             assert(old_href is not None)
             element.set("href", os.path.join(path_prefix, old_href))
@@ -144,39 +118,41 @@ def merge_trees(target_tree, target_element, group_tree):
         t = group_tree[f]
         tree, subgroups = t
 
-        groups = tree.findall("{http://checklists.nist.gov/xccdf/1.2}Group")
+        groups = tree.findall(XMLNS + "Group")
         if len(groups) != 1:
             print("There are %i groups in '%s/group.xml' file. Exactly 1 group is expected! Skipping..." % (len(groups), f))
             continue
         target_element.append(groups[0])
-        for child in tree.findall("{http://checklists.nist.gov/xccdf/1.2}Profile"):
+        for child in tree.findall(XMLNS + "Profile"):
             assert(child.get("id") is not None)
             merged = False
 
             # look through profiles in the template XCCDF
-            for profile in target_tree.findall("{http://checklists.nist.gov/xccdf/1.2}Profile"):
+            for profile in target_tree.findall(XMLNS + "Profile"):
                 if profile.get("id") == child.get("id"):
                     for profile_child in child.findall("*"):
                         profile.append(profile_child)
 
                     merged = True
                     break
-            
+
             if not merged:
                 print("Found profile of id '%s' that doesn't match any profiles in template, skipped!" % (child.get("id")), sys.stderr)
 
         merge_trees(target_tree, groups[0], subgroups)
 
+
 def resolve_selects(target_tree):
     default_selected_rules = set([])
     all_rules = set([])
 
-    for profile in target_tree.findall("{http://checklists.nist.gov/xccdf/1.2}Profile"):
+    for profile in target_tree.findall(XMLNS + "Profile"):
         selected_rules = set(default_selected_rules)
 
         to_remove = [] # to avoid invalidating iterators
         for select in profile.findall("*"):
-            if select.tag == "{http://checklists.nist.gov/xccdf/1.2}select":
+
+            if select.tag == XMLNS + "select":
                 if select.get("selected", "false") == "true":
                     selected_rules.add(select.get("idref", ""))
                 else:
@@ -200,21 +176,21 @@ def resolve_selects(target_tree):
 
         for rule in selected_rules:
             if rule not in default_selected_rules: # if it's selected by default, we don't care
-                elem = ElementTree.Element("{http://checklists.nist.gov/xccdf/1.2}select")
+                elem = ElementTree.Element(XMLNS + "select")
                 elem.set("idref", rule)
                 elem.set("selected", "true")
                 profile.append(elem)
 
         for rule in default_selected_rules:
             if rule not in selected_rules:
-                elem = ElementTree.Element("{http://checklists.nist.gov/xccdf/1.2}select")
+                elem = ElementTree.Element(XMLNS + "select")
                 elem.set("idref", rule)
                 elem.set("selected", "false")
                 profile.append(elem)
 
 
 def refresh_status(target_tree):
-    for status in target_tree.findall("{http://checklists.nist.gov/xccdf/1.2}status"):
+    for status in target_tree.findall(XMLNS + "status"):
         if status.get("date", "") == "${CURRENT_DATE}":
             status.set("date", datetime.date.today().strftime("%Y-%m-%d"))
 
@@ -236,8 +212,12 @@ def indent(elem, level=0):
             elem.tail = i
 
 
+def get_template_file():
+    return os.path.join(os.path.dirname(__file__), "template.xml")
+
+
 def run_compose(target_tree, dir_name):
-    group_xmls = collect_group_xmls(dir_name, level = 0)
+    group_xmls = collect_group_xmls(dir_name, level=0)
     perform_autoqa(dir_name, group_xmls)
     new_base_dir = dir_name
     repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
@@ -248,46 +228,4 @@ def run_compose(target_tree, dir_name):
     indent(target_tree)
 
     return target_tree
-
-
-def main():
-    parser = optparse.OptionParser(usage="%prog dirname", description = "Create XML files for OpenSCAP")
-    opts, args = parser.parse_args()
-    if len(args) > 1:
-        print 'Specify just one directory'
-        parser.print_help()
-        sys.exit(0)
-
-    dir_name = args[0]+variables.result_prefix
-    if args[0].endswith("/"):
-        dir_name = args[0][:-1]+variables.result_prefix
-
-    if get_valid_scenario(dir_name) is None:
-        print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
-        sys.exit(1)
-
-    if os.path.exists(dir_name):
-        shutil.rmtree(dir_name)
-    dir_util.copy_tree(args[0], dir_name)
-    result_dirname = dir_name
-    filename = "all-xccdf.xml"
-    template_file = os.path.join(os.path.dirname(__file__), "utils", "template.xml")
-    groups = {}
-    try:
-        file = open(template_file, "r")
-        target_tree = ElementTree.fromstring(file.read())
-    except IOError, e:
-        print 'Problem with reading template.xml file'
-
-    run_compose(target_tree, dir_name)
-
-    try:
-        file = open(os.path.join(result_dirname, filename), "w")
-        file.write(ElementTree.tostring(target_tree, "utf-8"))
-        print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(result_dirname, filename))
-    except IOError, e:
-        print "Problem with writing file {}".format(filename)
-
-if __name__ == "__main__":
-    main()
 

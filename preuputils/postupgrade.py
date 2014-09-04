@@ -4,17 +4,18 @@ import re
 import sys
 import os
 
+
 # test whether given file list contains .ini file = is leaf
 def contains_ini_file(files):
-	return filter(lambda x: len(x) > 5 and x.endswith('.ini'), files)
+    return filter(lambda x: len(x) > 5 and x.endswith('.ini'), files)
 
 # set tested directory 
 if (len(sys.argv) == 1):
-	# either use input directory
-	directory = "./"
+    # either use input directory
+    directory = "./"
 else:
-	# or use ./ if there is no input directory
-	directory = sys.argv[1]
+    # or use ./ if there is no input directory
+    directory = sys.argv[1]
     print "check ", sys.argv[1], " directory"
 
 

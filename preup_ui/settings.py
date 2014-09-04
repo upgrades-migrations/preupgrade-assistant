@@ -1,4 +1,4 @@
-# Django settings for webui project.
+# Django settings for preup_ui project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -11,8 +11,7 @@ MANAGERS = ADMINS
 
 import os
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(__file__))
-DATA_DIR = PROJECT_DIR
+DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
 DATABASES = {
     'default': {
@@ -62,7 +61,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(DATA_DIR, 'static')
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -70,7 +69,6 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_DIR, 'static'),
 )
 
 # List of finder classes that know how to find static files in
@@ -82,7 +80,12 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'ttw*yd&#$n1)=!2_w+q*)#h1!i0srh=z1%51&ezf)-kny@7%w3'
+try:
+    SECRET_KEY = open(os.path.join(DATA_DIR, 'secret_key')).read()
+except:
+    from django.utils.crypto import get_random_string
+    SECRET_KEY = get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(-_=+)')
+    open(os.path.join(DATA_DIR, 'secret_key'), 'w').write(SECRET_KEY)
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -96,7 +99,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'auth.auth_middleware.CustomAuthMiddleware',
+    'preup_ui.auth.auth_middleware.CustomAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -105,16 +108,13 @@ MIDDLEWARE_CLASSES = (
 LOGIN_URL = 'auth-login'
 LOGIN_EXEMPT_URLS = ['^xmlrpc/', '^submit/', '^login/', '^admin/', '^first/']
 
-ROOT_URLCONF = 'webui.urls'
+ROOT_URLCONF = 'preup_ui.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'webui.wsgi.application'
+WSGI_APPLICATION = 'preup_ui.wsgi.application'
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_DIR, 'templates')
 )
-
-#INTERNAL_IPS = ('127.0.0.1', '127.0.0.1:8000',)
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -124,9 +124,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'report',
-    'config',
-    'xmlrpc_backend',
+    'preup_ui.report',
+    'preup_ui.config',
+    'preup_ui.xmlrpc_backend',
+    'preup_ui',
     'south',
 ]
 
@@ -142,15 +143,9 @@ if DEBUG:
 
 XMLRPC_METHODS = {
     'submission': (
-        ('xmlrpc.submission', 'submit'),
+        ('preup_ui.xmlrpc.submission', 'submit'),
     ),
 }
-
-def get_log_file():
-    if DEBUG:
-        return '/var/tmp/preupgrade-ui.log'
-    else:
-        return '/var/log/preupgrade/ui.log'
 
 LOGGING_CONFIG = None
 # A sample logging configuration. The only tangible logging
@@ -165,40 +160,18 @@ LOGGING = {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
     },
     'handlers': {
-        # dont mail admins where there is an error
-        # 'mail_admins': {
-        #     'level': 'ERROR',
-        #     'filters': ['require_debug_false'],
-        #     'class': 'django.utils.log.AdminEmailHandler'
-        # },
-        'file': {
+        'console': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-            'filename': '/var/log/preupgrade/ui.log',
-            'maxBytes': 10 * (1024 ** 2),  # 10 MB
-            'backupCount': 7,
         },
     },
     'loggers': {
-        #'django.request': {
-        #    'handlers': ['mail_admins'],
-        #    'level': 'ERROR',
-        #    'propagate': True,
-        #},
-        'preup_ui': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
+        '': {
+            'handlers': ['console'],
+            'level': DEBUG and 'DEBUG' or 'INFO',
             'propagate': True,
         }
     }
