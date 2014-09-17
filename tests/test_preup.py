@@ -102,12 +102,13 @@ class TestCLI(unittest.TestCase):
             "list": True,
             "apply": True,
             "verbose": 0,
-            "text": True
+            "text": True,
+            "cleanup": True
         }
         dc = DummyConf(**conf)
         cli = CLI(["--scan", "RHEL6_7", "--skip-common", "--list", "--upload",
                    "123", "--apply", "--verbose", "--text",
-                   "--contents", "content/RHEL6_7"])
+                   "--contents", "content/RHEL6_7", "--cleanup"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
@@ -115,6 +116,7 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(a.conf.list)
         self.assertTrue(a.conf.apply)
         self.assertTrue(a.conf.text)
+        self.assertTrue(a.conf.cleanup)
         self.assertEqual(int(a.conf.upload), 123)
         self.assertEqual(int(a.conf.verbose), 0)
         self.assertEqual(a.conf.temp_dir, "d")

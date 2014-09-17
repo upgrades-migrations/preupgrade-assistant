@@ -4,12 +4,12 @@ import os
 import shutil
 import tempfile
 
-from utils import variables
+from preuputils import variables
 from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
-from utils.oscap_group_xml import OscapGroupXml
-from utils.generate_xml import GenerateXml
+from preuputils.oscap_group_xml import OscapGroupXml
+from preuputils.generate_xml import GenerateXml
 from preup import settings, utils, xml_manager
 from preup.report_parser import ReportParser
 from xml.etree import ElementTree

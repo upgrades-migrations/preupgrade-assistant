@@ -1,16 +1,19 @@
+import os
 import unittest
 import shutil
-from xccdf_compose import *
-from preup import xccdf
-from preup import settings
-import utils
+from xml.etree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-from utils.xml_utils import XmlUtils
-from utils.script_utils import get_file_content
+
+from preuputils import compose
+from preup import xccdf
+from preup import settings
+from preuputils import variables
+from preuputils.xml_utils import XmlUtils
+from preuputils.script_utils import get_file_content
 from preup.utils import write_to_file
 from preup.xml_manager import html_escape, html_escape_string
 
@@ -24,12 +27,12 @@ class TestXMLCompose(unittest.TestCase):
         shutil.copytree(dir_name, result_dir)
         content = get_file_content(os.path.join(os.path.dirname(__file__),
                                                 "..",
-                                                "utils",
+                                                "preuputils",
                                                 "template.xml"), "r")
         target_tree = ElementTree.fromstring(content)
 
         settings.autocomplete = False
-        target_tree = run_compose(target_tree, result_dir)
+        target_tree = compose.run_compose(target_tree, result_dir)
         self.assertTrue(target_tree)
 
         expected_groups = ['dummy', 'dummy_failed',
@@ -87,7 +90,6 @@ A solution text for test suite"
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
-
 
     def test_group_xml(self):
         """
