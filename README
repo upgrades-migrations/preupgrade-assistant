@@ -1,9 +1,5 @@
-Preupgrade Assistant
-====================
-
 Preupgrade assistant purpose
 ----------------------------
-
 Preupgrade assistant performs assessment of the system from
 the "upgradeability" point of view. Such analysis includes check for removed
 packages, packages replaced by partially incompatible packages, changes in
@@ -22,7 +18,6 @@ doesn't necessarily mean that inplace upgrade via rhelup will succeed.
 
 Preupgrade assistant usage
 --------------------------
-
 At the moment, only CLI interface and limited functionality is available.
 
 Usage is simple, follow these steps:
@@ -68,7 +63,6 @@ RHEL6_7 - just "debugging" directory - will be removed later. Ignore, unless you
 
 Possible check exit codes explanation
 -------------------------------------
-
 Every single plugin has its own exit code. Administrator needs to check
 at least those with FAIL result before using inplace upgrade. Results FIXED
 should be checked after the inplace upgrade - to finish the RHEL-7 migration
@@ -94,7 +88,6 @@ The possible exit codes are:
 
 In place upgrade risk explanations
 -----------------------------------
-
 There are several levels of inplace upgrade risks. Any level higher than
 "slight" means you will get not 100% functional upgraded system, although
 inplace upgrade tool "rhelup" may pass.

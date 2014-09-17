@@ -114,6 +114,12 @@ will used -- http://127.0.0.1:8099/submit/)"
             default=0,
             help="Verbose mode"
         )
+        self.parser.add_option(
+            "--cleanup",
+            action="store_true",
+            default=False,
+            help="Clean data created by preupgrade-assistant"
+        )
 
 if __name__ == '__main__':
     x = CLI()

@@ -204,8 +204,7 @@ class XmlManager(object):
         """Function updates a text in XML file"""
         updated_text = []
         if solution_text + "_TEXT" in line.strip():
-            text = html_escape(text)
-            text = tag_formating(text, extension)
+            text = tag_formating(html_escape(text), extension)
             if extension == "html":
                 new_line = "<br/>\n"
             else:
@@ -282,7 +281,6 @@ class XmlManager(object):
                                                    extension)
             write_to_file(orig_file, "w", lines)
 
-
     def find_solution_files(self, xml_solution_files):
         """
         Function finds all text files in conten
@@ -297,3 +295,22 @@ class XmlManager(object):
         self.update_html(solution_files)
         self.update_html(solution_files, extension="xml")
         clean_html(os.path.join(self.dirname, self.result_base + ".html"))
+
+    def remove_html_information(self):
+        report_path = os.path.join(self.dirname, self.result_base + ".html")
+        file_content = get_file_content(report_path, 'r', method=True)
+        detail_start = '<br /><br /><strong class="bold">Details:</strong><br />'
+        detail_end = '[\t ]*<div class="xccdf-fixtext">'
+
+        new_content = []
+        found_section = False
+        for line in file_content:
+            if detail_start in line:
+                found_section = True
+                continue
+            if detail_end in line:
+                found_section = False
+            if not found_section:
+                new_content.append(line)
+
+        write_to_file(report_path, 'w', new_content)

@@ -2,7 +2,7 @@
 import datetime
 import re
 import subprocess
-from distutils import dir_util
+import fnmatch
 from preup.logger import *
 import shutil
 
@@ -314,3 +314,29 @@ def get_addon_variant():
         if pem in mapping_dict.keys():
             variant.append(mapping_dict[pem])
     return variant
+
+
+def clean_directory(dir_name, pattern):
+    """
+    Function deleted specific files in dir_name
+    :param dir_name: Dirname where the files are deleted
+    :param pattern: What files with specific pattern are deleted
+    :return:
+    """
+    for root, dirs, files in os.walk(dir_name):
+        for f in files:
+            if fnmatch.fnmatch(f, pattern):
+                os.unlink(os.path.join(root, f))
+
+
+def remove_home_issues():
+    """
+    Function removes /home rows from specific files
+    :return:
+    """
+    files = [os.path.join(settings.cache_dir, settings.common_name, 'allmyfiles.log'),
+             os.path.join(settings.result_dir, 'kickstart', 'untrackeduser')]
+    for f in files:
+        lines = get_file_content(f, 'r', method=True)
+        lines = [l for l in lines if not l.startswith('/home')]
+        write_to_file(f, 'w', lines)

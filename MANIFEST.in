@@ -10,15 +10,13 @@ recursive-include preup *.py
 recursive-include scripts *.py
 recursive-include common *
 recursive-include tests *
-recursive-include utils *
+recursive-include preuputils *
 recursive-include postupgrade.d *
 recursive-include man *
 
-include preup_ui/manage.py
 include preup_ui/report/fixtures/initial_data.json
 include ui-conf/99-preup-httpd.conf
 include ui-conf/99-preup-httpd.conf.public
-include preup_ui/fix_auth
 recursive-include preup_ui/static *
 recursive-include preup_ui/templates *
 recursive-include preup_ui/lib *

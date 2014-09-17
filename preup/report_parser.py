@@ -125,12 +125,15 @@ class ReportParser(object):
                 number_checks += 1
         return number_checks
 
+    def _get_all_rules(self):
+        return self.get_nodes(self.target_tree, "Rule", prefix=".//")
+
     def get_name_of_checks(self):
         """
         Function returns a names of rules
         """
         list_names = {}
-        rule_nodes = self.get_nodes(self.target_tree, "Rule", prefix=".//")
+        rule_nodes = self._get_all_rules()
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
             if select.get('selected', '') == 'true':
                 id_ref = select.get('idref', '')
@@ -300,3 +303,28 @@ class ReportParser(object):
         else:
             content = re.sub(namespace_1, namespace_2, content)
         write_to_file(self.path, 'w', content)
+
+    def update_check_description(self):
+        for rule in self._get_all_rules():
+            for description in self.filter_children(rule, 'description'):
+                lines = description.text.split('\n')
+                details = 'Details:'
+                expected_results = 'Expected results:'
+                attr = ' xml:lang="en"'
+                tag_exp_results = expected_results[:-1].lower().replace(' ', '-')
+                tag_details = details[:-1].lower()
+                found = 0
+                for index, line in enumerate(lines):
+                    if line.strip().startswith(details):
+                        found = 1
+                        lines[index] = line.replace(details, '<ns0:' + tag_details + attr + '>')
+                        continue
+                    if line.strip().startswith(expected_results):
+                        found = 1
+                        lines[index] = line.replace(expected_results,
+                                                    '</ns0:' + tag_details + '>\n<ns0:' + tag_exp_results + attr + '>')
+                        continue
+                if found == 1:
+                    lines.append('</ns0:' + tag_exp_results + '>')
+                    description.text = '\n'.join(lines)
+        self.write_xml()

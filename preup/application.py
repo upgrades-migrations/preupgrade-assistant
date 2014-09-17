@@ -18,6 +18,7 @@ from preup import utils
 
 from xmlrpclib import Fault
 
+
 def get_xsl_stylesheet():
     """
     Return full XSL stylesheet path
@@ -71,7 +72,7 @@ class Application(object):
     """
     Class for oscap binary and reporting results to UI
     """
-    binary = "/usr/bin/preupgrade_oscap"
+    binary = "/usr/bin/oscap"
     command_eval = ['xccdf', 'eval']
     command_remediate = ['xccdf', 'remediate']
     command_generate = ['xccdf', 'generate', 'custom']
@@ -182,13 +183,12 @@ class Application(object):
             url = self.conf.upload
         try:
             proxy = xmlrpclib.ServerProxy(url)
-        except Exception:
-            raise Exception("Can't connect to preupgrade assistant WEB-UI at %s" % url)
-
-        try:
             proxy.submit.ping()
         except Exception:
-            raise Exception("%s doesn't seem to be an XML-RPC server" % url)
+            raise Exception('Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n'
+                'Please ensure that package preupgrade-assistant-ui '
+                'has been installed on target system and firewall is set up '
+                'to allow connections on port 8099.' % url)
 
         tarball_results = self.conf.results or tarball_path
         file_content = get_file_content(tarball_results, 'rb')
@@ -213,8 +213,14 @@ class Application(object):
                 else:
                     print 'Report submitted successfully. You can inspect it at %s' % url
             else:
-                print 'Report not submitted. There was an error. See logs.'
-                log_message("Report submit: %s" % status, level=logging.ERROR)
+                try:
+                    message = response['message']
+                    print 'Report not submitted. Server returned message: %s' % message
+                    log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
+                except KeyError:
+                    print 'Report not submitted. Server returned status: %s' % status
+                    log_message("Report submit: %s" % status, level=logging.ERROR)
+                
 
     def apply_scan(self):
         """ Extract tar ball for remediation """
@@ -267,7 +273,8 @@ class Application(object):
                                               os.path.basename(self.content),
                                               self.conf.result_name)
 
-        self.report_parser.modify_result_path(self.conf.result_dir, self.get_scenario())
+        self.report_parser.modify_result_path(self.conf.result_dir,
+                                              self.get_proper_scenario(self.get_scenario()))
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
         self.scanning_progress.set_names(self.report_parser.get_name_of_checks())
@@ -330,6 +337,21 @@ class Application(object):
             scenario = None
         return scenario
 
+    def clean_preupgrade_environment(self):
+        """
+        Function cleans files created by preupgrade-assistant
+        :return:
+        """
+        clean_directories = [os.path.join(settings.cache_dir, settings.common_name),
+                             settings.log_dir]
+        delete_directories = [self.conf.result_dir,
+                              settings.tarball_result_dir]
+        for dir_name in clean_directories:
+            utils.clean_directory(dir_name, '*.log')
+        for dir_name in delete_directories:
+            if os.path.isdir(dir_name):
+                shutil.rmtree(dir_name)
+
     def clean_scan(self):
         """
         The function remove symlink /root/preupgrade from older versions
@@ -361,7 +383,12 @@ class Application(object):
         self.report_parser.replace_inplace_risk(scanning_results=self.scanning_progress)
         if not self.conf.debug:
             self.report_parser.remove_debug_info()
+        self.report_parser.reload_xml(self.get_default_xml_result_path())
+        self.report_parser.update_check_description()
         self.prepare_for_generation()
+
+        if not self.conf.verbose:
+            self.xml_mgr.remove_html_information()
         # This function finalize XML operations
         self.finalize_xml_files()
         if self.conf.text:
@@ -414,13 +441,13 @@ class Application(object):
     def get_proper_scenario(self, scenario):
         if not self.conf.contents:
             return scenario
-        scenario = scenario.replace('-results','')
+        scenario = scenario.replace('-results', '')
         return scenario
 
     def prepare_scan_system(self):
         """
         Function cleans previous scan
-        and creates relevat directories
+        and creates relevant directories
         """
         # First of all we need to delete the older one assessment
         self.clean_scan()
@@ -440,6 +467,12 @@ class Application(object):
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         return assessment_dir
+
+    def copy_preupgrade_scripts(self, assessment_dir):
+        # Copy preupgrade-scripts directory from scenarvirtuio
+        preupg_scripts = os.path.join(assessment_dir, settings.preupgrade_name)
+        if os.path.exists(preupg_scripts):
+            dir_util.copy_tree(preupg_scripts, settings.preupgrade_scripts)
 
     def scan_system(self):
         """
@@ -471,6 +504,9 @@ class Application(object):
         third_party_dir_name = self.get_third_party_dir(assessment_dir)
         if os.path.exists(third_party_dir_name):
             self.run_third_party_modules(third_party_dir_name)
+
+        self.copy_preupgrade_scripts(assessment_dir)
+
         #It prints out result in table format
         format_rules_to_table(main_report, "main contents")
         for target, report in self.report_data.iteritems():
@@ -548,7 +584,7 @@ class Application(object):
             self.upload_results()
             return 0
 
-        if not self.conf.riskcheck and not self.conf.apply:
+        if not self.conf.riskcheck and not self.conf.apply and not self.conf.cleanup:
             # If force option is not mentioned and user select NO then exits
             if not self.conf.force and not show_message(settings.warning_text):
                 # We do not want to continue
@@ -570,6 +606,10 @@ class Application(object):
             sys.stdout.write("Need to be root.\n")
             if not self.conf.debug:
                 return 2
+
+        if self.conf.cleanup:
+            self.clean_preupgrade_environment()
+            sys.exit(0)
 
         if self.conf.riskcheck:
             return_val = xccdf.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
@@ -633,6 +673,7 @@ If you would like to use this tool, you have to install some." % settings.source
             tarball_path = self.scan_system()
             self.summary_report()
             self.common.copy_common_files()
+            utils.remove_home_issues()
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)

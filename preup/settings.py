@@ -43,6 +43,10 @@ log_dir = "/var/log/preupgrade"
 # dir where the postupgrade scripts are placed
 postupgrade_dir = "postupgrade.d"
 
+# dir with preupgrade-scripts which are executed before reboot and upgrade.
+preupgrade_name = "preupgrade-scripts"
+preupgrade_scripts = os.path.join(result_dir, preupgrade_name)
+
 # dirtyconfig directory used by preupgrade assistant
 dirty_conf_dir = 'dirtyconf'
 

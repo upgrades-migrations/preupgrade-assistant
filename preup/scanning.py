@@ -76,7 +76,9 @@ class ScanProgress(object):
         """
          Function shows a progress of assessment
         """
-        self.output_data.append(stdout_data.strip())
+        xccdf_rule, result = stdout_data.strip().split(':')
+        self.output_data.append('{0}:{1}'.format(self.names[xccdf_rule],
+                                                 stdout_data.strip()))
         self.current_count += 1
         prev_msg = self.get_full_name(self.current_count - 1)
         cur_msg = self.get_full_name(self.current_count)

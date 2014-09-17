@@ -30,7 +30,7 @@ class Common(object):
         self.lines = get_file_content(self.conf.common_script,
                                       "r",
                                       method=True)
-        self.common_result_dir=""
+        self.common_result_dir = ""
 
     def common_logfiles(self, filename):
         """ build path for provided filename """
@@ -158,7 +158,7 @@ class Common(object):
         if self.conf.contents:
             usr_common_name = os.path.join(settings.source_dir, scenario, settings.common_name)
             if os.path.exists(usr_common_name):
-                dir_util.copy_tree(usr_common_name, self.result_common_name)
+                dir_util.copy_tree(usr_common_name, os.path.join(assessment_dir, settings.common_name))
         add_ons = get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
@@ -175,5 +175,3 @@ class Common(object):
                     if not files.startswith(get_add_on_name(server_variant, add_on)+"_"):
                         continue
                     self.create_common_symlink(files, server_variant)
-
-
