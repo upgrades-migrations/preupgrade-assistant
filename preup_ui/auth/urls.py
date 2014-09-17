@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from auth.views import *
+from .views import *
 
 from django.conf.urls import patterns, url
 

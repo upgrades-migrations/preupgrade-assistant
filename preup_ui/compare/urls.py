@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf.urls import patterns, url
-from views import TwoCompareView
+from .views import TwoCompareView
 
 urlpatterns = patterns(
     '',

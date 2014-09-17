@@ -6,8 +6,8 @@ import datetime
 import tarfile
 import shutil
 
-from report.models import Test, TestResult, HostRun, Result, Address, TestLog, TestGroup, TestGroupResult
-from report.models import Risk
+from .models import Test, TestResult, HostRun, Result, Address, TestLog, TestGroup, TestGroupResult
+from .models import Risk
 
 from processing import parse_report
 

@@ -15,28 +15,16 @@ Listen 8099
 #   http://httpd.apache.org/docs/2.2/vhosts/name-based.html
 NameVirtualHost *:8099
 
-WSGISocketPrefix /var/run/httpd/preupg
+# Use run/wsgi as it is allowed by selinux policy
+WSGISocketPrefix run/wsgi
 
 <VirtualHost *:8099>
-    WSGIDaemonProcess preupgrade python-path=LIBS_PATH:APP_PATH display-name=%{GROUP}
+    WSGIDaemonProcess preupgrade display-name=%{GROUP}
     WSGIProcessGroup preupgrade
 
     WSGIScriptAlias / WSGI_PATH process-group=preupgrade
 
-    Alias /static/admin/ "LIBS_PATHdjango/contrib/admin/static/admin/"
-    <Directory "LIBS_PATHdjango/contrib/admin/static/admin/">
-        <IfModule !mod_authz_core.c>
-            # Apache 2.2
-            Order allow,deny
-            Allow from all
-        </IfModule>
-        <IfModule mod_authz_core.c>
-            # Apache 2.4
-            Require all granted
-        </IfModule>
-    </Directory>
-
-    Alias /static/ "STATIC_PATH"
+    Alias /static/ "STATIC_PATH/"
     <Directory "STATIC_PATH">
         <IfModule !mod_authz_core.c>
             # Apache 2.2
@@ -49,17 +37,5 @@ WSGISocketPrefix /var/run/httpd/preupg
         </IfModule>
     </Directory>
 
-    <Directory "APP_PATHwebui/">
-        <Files "wsgi.py">
-            <IfModule !mod_authz_core.c>
-                # Apache 2.2
-                Order allow,deny
-                Allow from all
-            </IfModule>
-            <IfModule mod_authz_core.c>
-                # Apache 2.4
-                Require all granted
-            </IfModule>
-        </Files>
-    </Directory>
+    ErrorLog logs/preup_ui_error_log
 </VirtualHost>

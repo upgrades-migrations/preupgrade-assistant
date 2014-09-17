@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf.urls import patterns, url
-from report.views import RunsView, ReportView, NewRunView, NewHostView, \
+from .views import RunsView, ReportView, NewRunView, NewHostView, \
     NewLocalRunView, ReportFilesView, RunView, ResultViewAjax
 
 urlpatterns = patterns(

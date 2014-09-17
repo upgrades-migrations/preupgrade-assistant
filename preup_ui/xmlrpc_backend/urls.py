@@ -3,5 +3,5 @@
 from django.conf.urls import *
 
 urlpatterns = patterns("",
-    url(r"^submit/$", "xmlrpc_backend.views.submission_handler"),
+    url(r"^submit/$", "preup_ui.xmlrpc_backend.views.submission_handler"),
 )

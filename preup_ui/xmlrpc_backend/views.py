@@ -38,7 +38,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.template import Template, RequestContext, loader
 
-from dispatcher import DjangoXMLRPCDispatcher
+from .dispatcher import DjangoXMLRPCDispatcher
 
 
 # this has to be list, since new handlers are appended when the module is loaded

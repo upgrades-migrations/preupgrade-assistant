@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django import forms
-from report.models import TestResult
+from preup_ui.report.models import TestResult
 from django.http import QueryDict
 
 class GenericStateFilterForm(forms.Form):

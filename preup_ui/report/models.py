@@ -9,8 +9,8 @@ import datetime
 
 from django.db import models
 from django.conf import settings
-from config.models import AppSettings
-from utils.enum import Enum
+from preup_ui.config.models import AppSettings
+from preup_ui.utils.enum import Enum
 
 
 class OS(models.Model):

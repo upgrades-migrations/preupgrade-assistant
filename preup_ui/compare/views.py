@@ -3,9 +3,9 @@
 from django.views.generic import FormView, TemplateView, View
 from django.views.generic.list import ListView
 
-from forms import ResultForm
+from .forms import ResultForm
 
-from difference import TwoComparator
+from .difference import TwoComparator
 
 
 class TwoCompareView(FormView, TemplateView):

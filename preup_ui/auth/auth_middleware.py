@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.shortcuts import redirect
 from re import compile
-from config.models import AppSettings
+from preup_ui.config.models import AppSettings
 
 EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
 if hasattr(settings, 'LOGIN_EXEMPT_URLS'):

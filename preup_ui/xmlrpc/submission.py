@@ -3,8 +3,8 @@ import uuid
 from django.core.urlresolvers import reverse
 import os
 
-from report.models import Run, Host
-from report.service import import_report
+from preup_ui.report.models import Run, Host
+from preup_ui.report.service import import_report
 
 from django.conf import settings
 
@@ -48,9 +48,12 @@ def submit_new(request, opts):
     tmp_dir = os.path.join(settings.MEDIA_ROOT, uuid.uuid4().hex)
     try:
         os.makedirs(tmp_dir, mode=0744)
-    except OSError:
+    except OSError as e:
         # TODO: log
-        return {'status': 'ERROR'}
+        return {
+            'status': 'ERROR',
+            'message': 'Failed to create temporary directory: %s' % e,
+        }
     report_path = os.path.join(tmp_dir, 'result.tar.gz')
     with open(report_path, 'wb+') as destination:
         destination.write(opts['data'].data)

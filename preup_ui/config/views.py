@@ -1,7 +1,7 @@
 # Create your views here.
 
-from config.forms import GenericStateFilterForm
-from config.models import AppSettings
+from .forms import GenericStateFilterForm
+from .models import AppSettings
 from django.views.generic import FormView, TemplateView, RedirectView
 
 

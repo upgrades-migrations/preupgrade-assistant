@@ -4,15 +4,15 @@ from django.http.response import HttpResponseRedirect, Http404
 
 from django.views.generic.list import ListView
 
-from auth.forms import UserCreationForm
-from config.models import AppSettings
+from .forms import UserCreationForm
+from preup_ui.config.models import AppSettings
+from preup_ui.utils.views import return_error
 
 from django.views.generic import TemplateView, FormView, View
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, get_object_or_404
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.util import ErrorList
-from utils.views import return_error
 
 
 class AuthListView(ListView):

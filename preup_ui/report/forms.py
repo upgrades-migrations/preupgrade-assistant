@@ -3,8 +3,7 @@ from django.db.models import Q
 
 from django import forms
 
-from models import Host, HostRun
-from report.models import TestResult
+from .models import Host, HostRun, TestResult
 
 
 class NewHostForm(forms.ModelForm):
