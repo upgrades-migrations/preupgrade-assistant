@@ -164,11 +164,13 @@ class Common(object):
                                 platform.machine())
         if not os.path.exists(dir_name):
             return
-        server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant)]
+        server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant) or files.startswith("Common")]
         for files in server_variant_files:
             # First create a default links to "ServerVariant_"
             if files.startswith(server_variant+"_"):
                 self.create_common_symlink(files, server_variant)
+            elif files.startswith("Common"):
+                self.create_common_symlink(files, "Common")
             else:
                 # Now create a symlink for ServerVariant-AddOn_
                 for add_on in add_ons:
