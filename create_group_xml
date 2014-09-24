@@ -2,11 +2,10 @@
 import os
 import sys
 import optparse
-import re
+from xml.etree import ElementTree
+
 from distutils import dir_util
-from preuputils.generate_xml import GenerateXml
-from preuputils.oscap_group_xml import OscapGroupXml
-from preuputils import variables
+from preuputils import variables, compose
 from preup import settings, utils
 
 try:
@@ -55,14 +54,29 @@ def main():
     result_dirname = dir_name + variables.result_prefix
     dir_util.copy_tree(dir_name, result_dirname)
     dir_name = args[0].replace(dir_name, result_dirname)
-
+    filename = "all-xccdf.xml"
     settings.autocomplete = False
-    oscap_group = OscapGroupXml(dir_name)
-    oscap_group.write_xml()
-    ret = oscap_group.collect_group_xmls()
-    generate_xml = GenerateXml(dir_name, opts.group, ret)
-    target_tree = generate_xml.make_xml()
-    oscap_group.write_profile_xml(target_tree)
+    template_file = compose.get_template_file()
+    print template_file
+    try:
+        file = open(template_file, "r")
+    except IOError, e:
+        print 'Problem with reading template.xml file'
+        sys.exit(1)
+    target_tree = ElementTree.fromstring(file.read())
+    target_tree = compose.run_compose(target_tree,
+                                      os.path.dirname(dir_name),
+                                      content=os.path.basename(dir_name))
+
+    try:
+        file = open(os.path.join(dir_name, filename), "w")
+        file.write(ElementTree.tostring(target_tree, "utf-8"))
+        print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(dir_name, filename))
+    except IOError, e:
+        print "Problem with writing file {}".format(filename)
+
+
+    #oscap_group.write_profile_xml(target_tree)
 
 if __name__ == "__main__":
     main()

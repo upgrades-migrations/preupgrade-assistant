@@ -12,31 +12,37 @@ except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
+XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
+SCE = "http://open-scap.org/page/SCE"
 
 
-def collect_group_xmls(source_dir, level=0):
+def collect_group_xmls(source_dir, content=None, level=0):
     ret = {}
 
     for dirname in os.listdir(source_dir):
+        if content is not None:
+            if dirname != content:
+                continue
         if dirname and dirname[0] == '.':
             continue
-        if not os.path.isdir(os.path.join(source_dir, dirname)):
+        new_dir = os.path.join(source_dir, dirname)
+        if not os.path.isdir(new_dir):
             continue
-        ini_files = filter(lambda x: x.endswith(".ini"), os.listdir(os.path.join(source_dir, dirname)))
+        ini_files = filter(lambda x: x.endswith(".ini"), os.listdir(new_dir))
         if ini_files:
-            oscap_group = OscapGroupXml(source_dir+"/"+dirname)
+            oscap_group = OscapGroupXml(new_dir)
             oscap_group.write_xml()
             return_list = oscap_group.collect_group_xmls()
-            generate_xml = GenerateXml(source_dir+"/"+dirname, True, return_list)
+            generate_xml = GenerateXml(new_dir, True, return_list)
             generate_xml.make_xml()
-        group_file_path = os.path.join(source_dir, dirname, "group.xml")
+        group_file_path = os.path.join(new_dir, "group.xml")
         if not os.path.isfile(group_file_path):
-            #print("Directory '%s' is missing a group.xml file!" % (os.path.join(source_dir, dirname)))
+            #print("Directory '%s' is missing a group.xml file!" % (new_dir))
             continue
         with open(group_file_path, "r") as file:
             try:
                 ret[dirname] = (ElementTree.fromstring(file.read()),
-                                collect_group_xmls(os.path.join(source_dir, dirname),
+                                collect_group_xmls(new_dir,
                                 level=level + 1))
             except ParseError as e:
                 print("Encountered a parse error in file '%s', details: %s" % (group_file_path, e))
@@ -66,10 +72,10 @@ def perform_autoqa(path_prefix, group_tree):
 
             check = checks[0]
 
-            if check.get("system") != "http://open-scap.org/page/SCE":
+            if check.get("system") != SCE:
                 print("Rule of id '%s' from '%s' has system name different "
                       "from the SCE system name "
-                      "('http://open-scap.org/page/SCE')!" % (element.get("id", ""), group_xml_path))
+                      "('%s')!" % (element.get("id", ""), group_xml_path, SCE))
 
             crefs = check.findall(XMLNS + "check-content-ref")
             if len(crefs) != 1:
@@ -108,13 +114,13 @@ def merge_trees(target_tree, target_element, group_tree):
         prefix = 100
         tree, subgroups = group_tree[tree_key]
         try:
-            prefix = int(tree.findall("{http://preupgrade-assistant.org/wiki/XCCDF-fragment}sort-prefix")[-1].text)
+            prefix = int(tree.findall(XCCDF_Fragment + "sort-prefix")[-1].text)
         except:
             pass
 
         return prefix, tree_key
 
-    for f in sorted(group_tree.iterkeys(), key = lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
+    for f in sorted(group_tree.iterkeys(), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
         t = group_tree[f]
         tree, subgroups = t
 
@@ -160,7 +166,7 @@ def resolve_selects(target_tree):
 
                 to_remove.append(select)
 
-            elif select.tag == "{http://preupgrade-assistant.org/wiki/XCCDF-fragment}meta-select":
+            elif select.tag == XCCDF_Fragment + "meta-select":
                 needle = select.get("idref")
                 for rule_id in all_rules:
                     if re.match(needle, rule_id):
@@ -216,8 +222,8 @@ def get_template_file():
     return os.path.join(os.path.dirname(__file__), "template.xml")
 
 
-def run_compose(target_tree, dir_name):
-    group_xmls = collect_group_xmls(dir_name, level=0)
+def run_compose(target_tree, dir_name, content=None):
+    group_xmls = collect_group_xmls(dir_name, content=content, level=0)
     perform_autoqa(dir_name, group_xmls)
     new_base_dir = dir_name
     repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
