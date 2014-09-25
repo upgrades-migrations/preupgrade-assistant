@@ -62,7 +62,7 @@ class OscapGroupXml():
 
     def collect_group_xmls(self):
         """
-        The functions is used for collecting all YAML files into the one.
+        The functions is used for collecting all INI files into the one.
         """
         content = get_file_content(os.path.join(self.dirname, "group.xml"), "r")
         try:

@@ -112,7 +112,7 @@ class XmlUtils(object):
         optional = ['solution_type']
         unused = [x for x in fields if not keys.get(x)]
         if unused:
-            title = 'Following tags are missing in YAML file %s\n' % script_name
+            title = 'Following tags are missing in INI file %s\n' % script_name
             if 'applies_to' in unused:
                 print_error_msg(title=title, msg=unused, level=' WARNING ')
             else:

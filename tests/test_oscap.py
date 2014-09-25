@@ -8,27 +8,37 @@ from preuputils import variables
 from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
-from preuputils.oscap_group_xml import OscapGroupXml
-from preuputils.generate_xml import GenerateXml
-from preup import settings, utils, xml_manager
+from preup import settings, utils
 from preup.report_parser import ReportParser
 from xml.etree import ElementTree
+from preuputils import compose
 
 
-def generate_test_xml(path_name):
-    prepare_xml(path_name)
-    update_xml(path_name)
+def generate_test_xml(path_name, test):
+    dir_name = os.path.join(os.getcwd(), path_name)
+    prepare_xml(dir_name)
+    update_xml(dir_name, test)
 
 
 def prepare_xml(path_name):
-    ret = {}
     settings.autocomplete = False
-    oscap_group = OscapGroupXml(path_name)
-    oscap_group.write_xml()
-    ret = oscap_group.collect_group_xmls()
-    generate_xml = GenerateXml(path_name, False, ret)
-    target_tree = generate_xml.make_xml()
-    oscap_group.write_profile_xml(target_tree)
+    template_file = compose.get_template_file()
+    tree = None
+    try:
+        f = open(template_file, "r")
+        tree = ElementTree.fromstring(f.read())
+        f.close()
+    except IOError:
+        assert False
+    tree = compose.run_compose(tree,
+                               os.path.dirname(path_name),
+                               content=os.path.basename(path_name))
+    try:
+        file = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
+        file.write(ElementTree.tostring(tree, "utf-8"))
+        file.close()
+    except IOError, e:
+        print "Problem with writing file {0}".format(path_name)
 
 
 def prepare_cli(temp_dir, path_name):
@@ -52,15 +62,23 @@ def prepare_cli(temp_dir, path_name):
     return a
 
 
-def update_xml(path_name):
-    try:
-        f = open(os.path.join(path_name, "all-xccdf.xml"), mode='r')
-        lines = f.readlines()
-    finally:
-        f.close()
+def update_xml(path_name, test):
+    dir_name = os.path.join(os.getcwd(), path_name)
+    f = open(os.path.join(dir_name, "all-xccdf.xml"), mode='r')
+    lines = f.readlines()
+    f.close()
     lines = filter(lambda x: '<ns0:platform idref="cpe:/o:redhat:enterprise_linux' not in x, lines)
+    for index, line in enumerate(lines):
+        if 'tmp_preupgrade' in line:
+            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/RHEL6_7-results'))
+        if 'current_directory' in line:
+            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/RHEL6_7-results'))
+        if 'check-content-ref href="'+test in line:
+            lines[index] = line.replace('content-ref href="{0}/'.format(test),
+                                        'content-ref href="')
+
     try:
-        f = open(os.path.join(path_name, "all-xccdf.xml"), mode='w')
+        f = open(os.path.join(dir_name, "all-xccdf.xml"), mode='w')
         f.writelines(lines)
     finally:
         f.close()
@@ -71,6 +89,8 @@ def delete_tmp_xml(path_name):
         os.unlink(os.path.join(path_name, "all-xccdf.xml"))
     if os.path.exists(os.path.join(path_name, "group.xml")):
         os.unlink(os.path.join(path_name, "group.xml"))
+    if os.path.isdir(path_name):
+        shutil.rmtree(path_name)
 
 
 def get_result_tag(temp_dir):
@@ -78,7 +98,7 @@ def get_result_tag(temp_dir):
     if not content:
         return []
     target_tree = ElementTree.fromstring(content)
-    xmlns="{http://checklists.nist.gov/xccdf/1.2}"
+    xmlns = "{http://checklists.nist.gov/xccdf/1.2}"
 
     text = ""
     for test_result in target_tree.findall(".//"+xmlns+"rule-result"):
@@ -90,28 +110,29 @@ def get_result_tag(temp_dir):
 class TestOSCAPPass(unittest.TestCase):
 
     def setUp(self):
+        self.name = 'pass'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/pass"
-        self.result_name = "tests/RHEL6_7" + variables.result_prefix + "/dummy/pass"
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7" + variables.result_prefix + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
+        #delete_tmp_xml(self.result_name)
 
     def test_pass(self):
         """
         Basic test for PASS SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         # Delete platform tags
         test_log = 'test_log'
         a = prepare_cli(self.temp_dir, self.result_name)
         return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
         self.assertEqual(return_string, 0)
         lines = utils.get_file_content(test_log, perms='r')
-        self.assertEqual(lines.strip(), 'dummy_pass:xccdf_preupg_rule_dummy_pass_dummy_pass:pass')
+        print lines
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
@@ -120,10 +141,11 @@ class TestOSCAPPass(unittest.TestCase):
 
 class TestOSCAPFail(unittest.TestCase):
     def setUp(self):
+        self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/failed"
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/failed"
-        delete_tmp_xml(self.path_name)
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
@@ -134,7 +156,7 @@ class TestOSCAPFail(unittest.TestCase):
         """
         Basic test for FAIL SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         a = prepare_cli(self.temp_dir, self.result_name)
         self.assertEqual(a.run_scan(), 2)
         value = get_result_tag(self.temp_dir)
@@ -144,9 +166,10 @@ class TestOSCAPFail(unittest.TestCase):
 
 class TestOSCAPNeedsInspection(unittest.TestCase):
     def setUp(self):
+        self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/needs_inspection"
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/needs_inspection"
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -158,7 +181,7 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
         """
         Basic test for FAIL SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         a = prepare_cli(self.temp_dir, self.result_name)
         self.assertEqual(a.run_scan(), 2)
         report_parser = ReportParser(os.path.join(self.temp_dir, settings.xml_result_name))
@@ -170,9 +193,10 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
 
 class TestOSCAPNeedsAction(unittest.TestCase):
     def setUp(self):
+        self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/needs_action"
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/needs_action"
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -184,7 +208,7 @@ class TestOSCAPNeedsAction(unittest.TestCase):
         """
         Basic test for FAIL SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         a = prepare_cli(self.temp_dir, self.result_name)
         self.assertEqual(a.run_scan(), 2)
         report_parser = ReportParser(os.path.join(self.temp_dir, settings.xml_result_name))
@@ -196,9 +220,10 @@ class TestOSCAPNeedsAction(unittest.TestCase):
 
 class TestOSCAPNotApplicable(unittest.TestCase):
     def setUp(self):
+        self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/not_applicable"
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/not_applicable"
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -210,7 +235,7 @@ class TestOSCAPNotApplicable(unittest.TestCase):
         """
         Basic test for NOT_APPLICABLE SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         a = prepare_cli(self.temp_dir, self.result_name)
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
@@ -220,9 +245,10 @@ class TestOSCAPNotApplicable(unittest.TestCase):
 
 class TestOSCAPFixed(unittest.TestCase):
     def setUp(self):
+        self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/fixed"
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/fixed"
+        self.path_name = "tests/RHEL6_7/dummy/" + self.name
+        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -234,7 +260,7 @@ class TestOSCAPFixed(unittest.TestCase):
         """
         Basic test for FIXED SCE
         """
-        generate_test_xml(self.result_name)
+        generate_test_xml(self.result_name, self.name)
         a = prepare_cli(self.temp_dir, self.result_name)
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)

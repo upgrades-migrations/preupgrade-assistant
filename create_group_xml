@@ -57,13 +57,15 @@ def main():
     filename = "all-xccdf.xml"
     settings.autocomplete = False
     template_file = compose.get_template_file()
-    print template_file
+    target_tree = None
     try:
         file = open(template_file, "r")
+        target_tree = ElementTree.fromstring(file.read())
     except IOError, e:
         print 'Problem with reading template.xml file'
         sys.exit(1)
-    target_tree = ElementTree.fromstring(file.read())
+    finally:
+        file.close()
     target_tree = compose.run_compose(target_tree,
                                       os.path.dirname(dir_name),
                                       content=os.path.basename(dir_name))
@@ -71,6 +73,7 @@ def main():
     try:
         file = open(os.path.join(dir_name, filename), "w")
         file.write(ElementTree.tostring(target_tree, "utf-8"))
+        file.close()
         print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(dir_name, filename))
     except IOError, e:
         print "Problem with writing file {}".format(filename)

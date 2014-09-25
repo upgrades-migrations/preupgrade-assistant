@@ -37,7 +37,6 @@ def main():
     result_dirname = dir_name
     filename = "all-xccdf.xml"
     template_file = compose.get_template_file()
-    print template_file
     groups = {}
     try:
         file = open(template_file, "r")

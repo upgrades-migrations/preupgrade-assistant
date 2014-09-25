@@ -4,16 +4,15 @@ import re
 import datetime
 
 from preuputils.oscap_group_xml import OscapGroupXml
-from preuputils.generate_xml import GenerateXml
 from xml.etree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
+XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 
 
 def collect_group_xmls(source_dir, content=None, level=0):
@@ -33,8 +32,9 @@ def collect_group_xmls(source_dir, content=None, level=0):
             oscap_group = OscapGroupXml(new_dir)
             oscap_group.write_xml()
             return_list = oscap_group.collect_group_xmls()
-            generate_xml = GenerateXml(new_dir, True, return_list)
-            generate_xml.make_xml()
+            perform_autoqa(new_dir, return_list)
+            #generate_xml = GenerateXml(new_dir, True, return_list)
+            #generate_xml.make_xml()
         group_file_path = os.path.join(new_dir, "group.xml")
         if not os.path.isfile(group_file_path):
             #print("Directory '%s' is missing a group.xml file!" % (new_dir))
@@ -51,7 +51,12 @@ def collect_group_xmls(source_dir, content=None, level=0):
 
 def perform_autoqa(path_prefix, group_tree):
     for f, t in group_tree.iteritems():
-        tree, subgroups = t
+        b_subgroups = True
+        try:
+            tree, subgroups = t
+        except ValueError:
+            tree = t
+            b_subgroups = False
 
         group_xml_path = os.path.join(f, "group.xml")
 
@@ -91,7 +96,8 @@ def perform_autoqa(path_prefix, group_tree):
                 print("Rule %r missing a description" % element.get("id", ""))
                 continue
 
-        perform_autoqa(os.path.join(path_prefix, f), subgroups)
+        if b_subgroups:
+            perform_autoqa(os.path.join(path_prefix, f), subgroups)
 
 
 def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
@@ -230,7 +236,6 @@ def run_compose(target_tree, dir_name, content=None):
     merge_trees(target_tree, target_tree, group_xmls)
     resolve_selects(target_tree)
     refresh_status(target_tree)
-
     indent(target_tree)
 
     return target_tree
