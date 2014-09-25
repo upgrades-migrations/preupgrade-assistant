@@ -8,14 +8,13 @@ from preuputils import variables
 from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
-from preup import settings, utils
+from preup import settings, utils, xccdf
 from preup.report_parser import ReportParser
 from xml.etree import ElementTree
-from preuputils import compose
+from preuputils.compose import ComposeXML
 
 RHEL6_dummy = "tests/RHEL6_7/dummy/"
 RHEL6_results = "tests/RHEL6_7"+variables.result_prefix
-XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 
 
 def generate_test_xml(path_name, test):
@@ -26,7 +25,7 @@ def generate_test_xml(path_name, test):
 
 def prepare_xml(path_name):
     settings.autocomplete = False
-    template_file = compose.get_template_file()
+    template_file = ComposeXML.get_template_file()
     tree = None
     try:
         f = open(template_file, "r")
@@ -34,9 +33,9 @@ def prepare_xml(path_name):
         f.close()
     except IOError:
         assert False
-    tree = compose.run_compose(tree,
-                               os.path.dirname(path_name),
-                               content=os.path.basename(path_name))
+    tree = ComposeXML.run_compose(tree,
+                                  os.path.dirname(path_name),
+                                  content=os.path.basename(path_name))
     try:
         file = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
         file.write(ElementTree.tostring(tree, "utf-8"))
@@ -104,8 +103,8 @@ def get_result_tag(temp_dir):
     target_tree = ElementTree.fromstring(content)
 
     text = ""
-    for test_result in target_tree.findall(".//"+XMLNS+"rule-result"):
-        for result in test_result.findall(XMLNS+"result"):
+    for test_result in target_tree.findall(".//"+xccdf.XMLNS+"rule-result"):
+        for result in test_result.findall(xccdf.XMLNS+"result"):
             text = result.text
     return text
 
@@ -136,6 +135,7 @@ class TestOSCAPPass(unittest.TestCase):
         return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
         self.assertEqual(return_string, 0)
         lines = utils.get_file_content(test_log, perms='r')
+        os.unlink(test_log)
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)

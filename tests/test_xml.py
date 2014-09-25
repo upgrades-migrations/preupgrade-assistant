@@ -8,7 +8,7 @@ except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
 
-from preuputils import compose
+from preuputils.compose import ComposeXML
 from preup import xccdf
 from preup import settings
 from preuputils import variables
@@ -20,29 +20,33 @@ from preup.xml_manager import html_escape, html_escape_string
 
 class TestXMLCompose(unittest.TestCase):
     def test_compose(self):
-        dir_name = "tests/RHEL6_7"
-        result_dir = dir_name+variables.result_prefix
+        dir_name = os.path.join(os.getcwd(), 'tests', 'RHEL6_7')
+        result_dir = os.path.join(dir_name+variables.result_prefix)
+        dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(result_dir):
             shutil.rmtree(result_dir)
         shutil.copytree(dir_name, result_dir)
-        content = get_file_content(os.path.join(os.path.dirname(__file__),
-                                                "..",
-                                                "preuputils",
-                                                "template.xml"), "r")
-        target_tree = ElementTree.fromstring(content)
+        template_file = ComposeXML.get_template_file()
+        tree = None
+        try:
+            f = open(template_file, "r")
+            tree = ElementTree.fromstring(f.read())
+            f.close()
+        except IOError:
+            assert False
 
         settings.autocomplete = False
-        target_tree = compose.run_compose(target_tree, result_dir)
+        target_tree = ComposeXML.run_compose(tree, result_dir)
         self.assertTrue(target_tree)
 
-        expected_groups = ['dummy', 'dummy_failed',
-                           'dummy_fixed', 'dummy_needs_action', 'dummy_needs_inspection', 'dummy_not_applicable',
-                           'dummy_pass', 'dummy_preupg']
+        expected_groups = ['failed', 'fixed', 'needs_action',
+                           'needs_inspection', 'not_applicable', 'pass']
+
         generated_group = []
-        for group in target_tree.findall(".//" + xccdf.XMLNS + "Group"):
+        for group in target_tree.findall(xccdf.XMLNS + "Group"):
             generated_group.append(group.get('id'))
         self.assertEqual(['xccdf_preupg_group_'+x for x in expected_groups], generated_group)
-        shutil.rmtree(result_dir)
+        #shutil.rmtree(result_dir)
 
 
 class TestXML(unittest.TestCase):
