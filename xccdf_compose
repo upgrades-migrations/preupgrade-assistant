@@ -8,7 +8,8 @@ from distutils import dir_util
 
 from xml.etree import ElementTree
 from preup.utils import get_valid_scenario
-from preuputils import compose, variables
+from preuputils import variables
+from preuputils.compose import ComposeXML
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
@@ -36,7 +37,7 @@ def main():
     dir_util.copy_tree(args[0], dir_name)
     result_dirname = dir_name
     filename = "all-xccdf.xml"
-    template_file = compose.get_template_file()
+    template_file = ComposeXML.get_template_file()
     groups = {}
     try:
         file = open(template_file, "r")
@@ -44,7 +45,7 @@ def main():
         print 'Problem with reading template.xml file'
         sys.exit(1)
     target_tree = ElementTree.fromstring(file.read())
-    target_tree = compose.run_compose(target_tree, dir_name)
+    target_tree = ComposeXML.run_compose(target_tree, dir_name)
 
     try:
         file = open(os.path.join(result_dirname, filename), "w")

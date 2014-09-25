@@ -5,7 +5,8 @@ import optparse
 from xml.etree import ElementTree
 
 from distutils import dir_util
-from preuputils import variables, compose
+from preuputils import variables
+from preuputils.compose import ComposeXML
 from preup import settings, utils
 
 try:
@@ -56,7 +57,7 @@ def main():
     dir_name = args[0].replace(dir_name, result_dirname)
     filename = "all-xccdf.xml"
     settings.autocomplete = False
-    template_file = compose.get_template_file()
+    template_file = ComposeXML.get_template_file()
     target_tree = None
     try:
         file = open(template_file, "r")
@@ -66,9 +67,7 @@ def main():
         sys.exit(1)
     finally:
         file.close()
-    target_tree = compose.run_compose(target_tree,
-                                      os.path.dirname(dir_name),
-                                      content=os.path.basename(dir_name))
+    target_tree = ComposeXML.run_compose(target_tree, os.path.dirname(dir_name), content=os.path.basename(dir_name))
 
     try:
         file = open(os.path.join(dir_name, filename), "w")
