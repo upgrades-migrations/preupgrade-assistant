@@ -13,6 +13,10 @@ from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils import compose
 
+RHEL6_dummy = "tests/RHEL6_7/dummy/"
+RHEL6_results = "tests/RHEL6_7"+variables.result_prefix
+XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
+
 
 def generate_test_xml(path_name, test):
     dir_name = os.path.join(os.getcwd(), path_name)
@@ -98,11 +102,10 @@ def get_result_tag(temp_dir):
     if not content:
         return []
     target_tree = ElementTree.fromstring(content)
-    xmlns = "{http://checklists.nist.gov/xccdf/1.2}"
 
     text = ""
-    for test_result in target_tree.findall(".//"+xmlns+"rule-result"):
-        for result in test_result.findall(xmlns+"result"):
+    for test_result in target_tree.findall(".//"+XMLNS+"rule-result"):
+        for result in test_result.findall(XMLNS+"result"):
             text = result.text
     return text
 
@@ -112,14 +115,15 @@ class TestOSCAPPass(unittest.TestCase):
     def setUp(self):
         self.name = 'pass'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7" + variables.result_prefix + "/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        #delete_tmp_xml(self.result_name)
+        delete_tmp_xml(self.result_name)
+        shutil.rmtree(RHEL6_results)
 
     def test_pass(self):
         """
@@ -132,7 +136,6 @@ class TestOSCAPPass(unittest.TestCase):
         return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
         self.assertEqual(return_string, 0)
         lines = utils.get_file_content(test_log, perms='r')
-        print lines
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
@@ -143,14 +146,15 @@ class TestOSCAPFail(unittest.TestCase):
     def setUp(self):
         self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
         delete_tmp_xml(self.result_name)
+        shutil.rmtree(RHEL6_results)
 
     def test_fail(self):
         """
@@ -168,8 +172,8 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -195,8 +199,8 @@ class TestOSCAPNeedsAction(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -222,8 +226,8 @@ class TestOSCAPNotApplicable(unittest.TestCase):
     def setUp(self):
         self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -247,8 +251,8 @@ class TestOSCAPFixed(unittest.TestCase):
     def setUp(self):
         self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = "tests/RHEL6_7/dummy/" + self.name
-        self.result_name = "tests/RHEL6_7"+variables.result_prefix+"/dummy/" + self.name
+        self.path_name = RHEL6_dummy + self.name
+        self.result_name = RHEL6_results + "/dummy/" + self.name
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
