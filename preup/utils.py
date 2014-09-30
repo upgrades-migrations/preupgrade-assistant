@@ -337,6 +337,9 @@ def remove_home_issues():
     files = [os.path.join(settings.cache_dir, settings.common_name, 'allmyfiles.log'),
              os.path.join(settings.result_dir, 'kickstart', 'untrackeduser')]
     for f in files:
-        lines = get_file_content(f, 'r', method=True)
-        lines = [l for l in lines if not l.startswith('/home')]
-        write_to_file(f, 'w', lines)
+        try:
+            lines = get_file_content(f, 'r', method=True)
+            lines = [l for l in lines if not l.startswith('/home')]
+            write_to_file(f, 'w', lines)
+        except IOError:
+            pass
