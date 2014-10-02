@@ -37,7 +37,7 @@ def get_and_print_inplace_risk(verbose, inplace_risk):
         matched = [x for x in inplace_risk if key in x]
         if matched:
             # if matched and return_value the remember her
-            if return_value == -1:
+            if return_value < val:
                 return_value = val
             # If verbose mode is used and value is bigger then 0 then prints out
             if int(verbose) > 1:
