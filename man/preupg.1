@@ -41,7 +41,9 @@ executes selected assessment taken from list option
 executes on target system
 .TP
 .B --riskcheck
-shows all inplace risks generated during assessment. If verbose mode is not mentioned then only shows EXTREME, HIGH and MEDIUM inplace risks.
+returns value which depends on INPLACE RISK results.
+If verbose mode is mentioned then shows all inplace risks generated during assessment.
+Return values are 0 for NONE, SLIGHT risks or 1 for MEDIUM, HIGH risks or 2 for EXTREME risk.
 .TP
 .B \-v, --verbose
 shows more information during assessment. Verbose can be repeated more times

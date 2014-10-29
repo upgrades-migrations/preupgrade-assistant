@@ -93,7 +93,11 @@ will used -- http://127.0.0.1:8099/submit/)"
             "--riskcheck",
             action="store_true",
             default=False,
-            help="Checks preupgrade assessment for INPLACE RISKS"
+            help="Checks preupgrade assessment for INPLACE RISKS." + "\n"*15 +
+                 "Return values:" + "\n"*45 +
+                 "0 ... NONE, SLIGHT risks were detected." + "\n" * 20 +
+                 "1 ... MEDIUM, HIGH risks were detected." + "\n" * 20 +
+                 "2 ... EXTREME risk was detected."
         )
         self.parser.add_option(
             "--force",
