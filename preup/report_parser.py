@@ -179,6 +179,8 @@ class ReportParser(object):
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
         data = ElementTree.tostring(self.target_tree, "utf-8")
         write_to_file(self.path, 'w', data)
+        content = get_file_content(self.path, 'r')
+        self.target_tree = ElementTree.fromstring(content)
 
     def modify_result_path(self, result_dir, scenario):
         """
@@ -257,7 +259,6 @@ class ReportParser(object):
             scanning_results.update_data(changed_fields)
 
         self.write_xml()
-        return
 
     def remove_empty_check_import(self):
         """
@@ -327,4 +328,22 @@ class ReportParser(object):
                 if found == 1:
                     lines.append('</ns0:' + tag_exp_results + '>')
                     description.text = '\n'.join(lines)
+        self.write_xml()
+
+    def select_rules(self, mode):
+        """
+        Function marks choice a specific rules based on the content generation
+        :return:
+        """
+        full_path = os.path.join(os.path.dirname(self.path), mode)
+        try:
+            lines = get_file_content(full_path, 'r', method=True)
+        except IOError:
+            return
+        for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
+            idref = select.get('idref', None)
+            if idref in lines:
+                select.set('selected', 'true')
+            else:
+                select.set('selected', 'false')
         self.write_xml()
