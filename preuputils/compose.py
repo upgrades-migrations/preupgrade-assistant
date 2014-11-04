@@ -4,6 +4,7 @@ import re
 import datetime
 
 from preuputils.oscap_group_xml import OscapGroupXml
+from preup import settings
 from preup import xccdf
 from xml.etree import ElementTree
 try:
@@ -16,6 +17,8 @@ SCE = "http://open-scap.org/page/SCE"
 
 
 class ComposeXML(object):
+
+    upgrade_path = ""
 
     @classmethod
     def collect_group_xmls(cls, source_dir, content=None, level=0):
@@ -247,6 +250,7 @@ class ComposeXML(object):
 
     @classmethod
     def run_compose(cls, target_tree, dir_name, content=None):
+        settings.UPGRADE_PATH = dir_name
         group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0)
         cls.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name

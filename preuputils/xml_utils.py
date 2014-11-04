@@ -1,9 +1,11 @@
-from preup.xml_manager import html_escape_string
-from preup.utils import get_assessment_version
 import xml_tags
 import script_utils
 import re
 import os
+
+from preup.xml_manager import html_escape_string
+from preup.utils import get_assessment_version, get_file_content, write_to_file
+from preup import settings
 
 
 def get_full_xml_tag(dirname):
@@ -11,7 +13,7 @@ def get_full_xml_tag(dirname):
     We need just from RHEL directory
     """
     found = 0
-    # Get index of scenarion and cut directory till scenarion (included)
+    # Get index of scenario and cut directory till scenario (included)
     for index, dir_name in enumerate(dirname.split(os.path.sep)):
         if re.match(r'\D+(\d)_(\D*)(\d)-results', dir_name, re.I):
             found = index
@@ -39,6 +41,23 @@ class XmlUtils(object):
         self.rule = []
         self.dirname = dir_name
         self.ini_files = ini_files
+
+    def update_files(self, file_name, content):
+        """
+        Function updates file_name <migrate or update>
+        according to INI file.
+        :param file_name: specified in INI file like mode: upgrade, migrate
+        :param content: name of the content like xccdf_rule_...
+        :return: Nothing
+        """
+        path_name = os.path.join(settings.UPGRADE_PATH, file_name)
+        lines = []
+        if os.path.exists(path_name):
+            print path_name
+            lines = get_file_content(path_name, 'r', method=True)
+        if content not in lines:
+            lines.append(content)
+            write_to_file(path_name, 'w', lines)
 
     def _update_check_description(self, filename):
         new_text = []
@@ -93,14 +112,14 @@ class XmlUtils(object):
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
         elif search_exp == "{solution_text}":
-            new_text = "_"+'_'.join(get_full_xml_tag(self.dirname))\
-                       +"_SOLUTION_MSG_"+replace_exp.upper()
+            new_text = "_" + '_'.join(get_full_xml_tag(self.dirname))\
+                       + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
         for cnt, line in enumerate(section):
             if search_exp in line:
                 section[cnt] = line.replace(search_exp, replace_exp)
 
-    def check_recommended_fields(self, keys={}, script_name=""):
+    def check_recommended_fields(self, keys=None, script_name=""):
         """
         The function checks whether all fields in INI file are fullfiled
         If solution_type is mentioned than HTML page can be used.
@@ -270,6 +289,23 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{platform_id}",
                                     get_assessment_version(self.dirname)[1])
 
+    def fnc_update_mode(self, key, name):
+        """
+        Function update <upgrade_path>/<migrate.conf|update.conf> files
+        migrate_xccdf_path
+        :param key:
+        :param name:
+        :return:
+        """
+        content = "{rule}{main_dir}_{name}\n".format(rule=xml_tags.TAG_RULE,
+                                                     main_dir='_'.join(get_full_xml_tag(self.dirname)),
+                                                     name=key.split('.')[0])
+        if not name:
+            self.update_files('migrate', content)
+            self.update_files('upgrade', content)
+        for x in name.split(','):
+            self.update_files(x.strip(), content)
+
     def dummy_fnc(self, key, name):
         """
         Function is only dummy
@@ -325,3 +361,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule,
                                     '{group_title}',
                                     html_escape_string(key['content_title']))
+            if 'mode' not in key:
+                self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
+            else:
+                self.fnc_update_mode(key['check_script'], key['mode'])

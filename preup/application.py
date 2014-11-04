@@ -495,7 +495,8 @@ class Application(object):
                             level=logging.ERROR)
                 sys.exit(1)
             self.report_parser.modify_platform_tag(version[0])
-
+        if self.conf.mode:
+            self.report_parser.select_rules(self.conf.mode)
         self.run_scan_process()
         main_report = self.scanning_progress.get_output_data()
         # This function prepare XML and generate HTML

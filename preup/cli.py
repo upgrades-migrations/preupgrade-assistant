@@ -124,6 +124,13 @@ will used -- http://127.0.0.1:8099/submit/)"
             default=False,
             help="Clean data created by preupgrade-assistant"
         )
+        self.parser.add_option(
+            "-m",
+            "--mode",
+            metavar="MODE",
+            choices=['migrate', 'upgrade'],
+            help="Select mode which can be used for migration or upgrade"
+        )
 
 if __name__ == '__main__':
     x = CLI()
