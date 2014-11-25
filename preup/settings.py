@@ -118,9 +118,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
-warning_text = "Preupg tool doesn't do the actual upgrade.\n" \
-               "Please ensure you have backed up your system and/or data in the event of a failed upgrade\n" \
-               " that would require a full re-install of the system from installation media."
+warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
+               "and does not perform the actual upgrade.\n" \
+               "Make sure you back up your system and all of your data now,\n" \
+               "before using the Upgrade Tool to avoid potential data loss."
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for {0}:"
 message = "We found some potential in-place upgrade risks.\n" \
@@ -134,3 +135,8 @@ text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
 
 ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r {0}/preupg_results-*.tar.gz"
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
+
+UPGRADE_PATH = ""
+KS_DIR = os.path.join(source_dir, 'kickstart')
+KS_TEMPLATE = os.path.join(KS_DIR, 'default.ks')
+KS_TEMPLATE_POSTSCRIPT = os.path.join(KS_DIR, 'finish.sh')
