@@ -53,7 +53,6 @@ class XmlUtils(object):
         path_name = os.path.join(settings.UPGRADE_PATH, file_name)
         lines = []
         if os.path.exists(path_name):
-            print path_name
             lines = get_file_content(path_name, 'r', method=True)
         if content not in lines:
             lines.append(content)
