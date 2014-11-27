@@ -305,14 +305,15 @@ def get_addon_variant():
     }
     variant = ['optional']
     pki_dir = "/etc/pki/product"
-    pem_files = [x for x in os.listdir(pki_dir) if x.endswith(".pem")]
-    for pem in pem_files:
-        # Curently we don't use the openssl command for getting certificate
-        # PEM numbers are not changed between versions.
-        #cmd = settings.openssl_command.format(os.path.join(pki_dir, pem))
-        #lines = run_subprocess(cmd, print_output=True, shell=True)
-        if pem in mapping_dict.keys():
-            variant.append(mapping_dict[pem])
+    if os.path.isdir(pki_dir):
+        pem_files = [x for x in os.listdir(pki_dir) if x.endswith(".pem")]
+        for pem in pem_files:
+            # Curently we don't use the openssl command for getting certificate
+            # PEM numbers are not changed between versions.
+            #cmd = settings.openssl_command.format(os.path.join(pki_dir, pem))
+            #lines = run_subprocess(cmd, print_output=True, shell=True)
+            if pem in mapping_dict.keys():
+                variant.append(mapping_dict[pem])
     return variant
 
 
