@@ -137,6 +137,9 @@ ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r {0}/preupg_results-*.ta
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
-KS_DIR = os.path.join(source_dir, 'kickstart')
+KS_DIR = os.path.join(result_dir, 'kickstart')
 KS_TEMPLATE = os.path.join(KS_DIR, 'default.ks')
 KS_TEMPLATE_POSTSCRIPT = os.path.join(KS_DIR, 'finish.sh')
+KS_FILES = ['default_grouplist-el6', 'default_grouplist-el7',
+            'default-optional_grouplist-el6', 'default-optional_grouplist-el7']
+PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
