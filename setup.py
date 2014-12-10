@@ -16,7 +16,7 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "0.11.3"
+package_version         = "0.11.4dev"
 
 script_files = ['preupg', 'premigrate', 'xccdf_compose', 'create_group_xml', 'preup_ui_manage']
 
@@ -25,10 +25,12 @@ data_files = {
     'preuputils/': ['preuputils/template.xml'],
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
+    '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
     '/usr/share/preupgrade/xsl': ['preup.xsl'],
     '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
     '/usr/share/premigrate/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/premigrate/common': ['common/scripts.txt', 'common/post_scripts.txt'],
+    '/usr/share/premigrate/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
     '/usr/share/premigrate/xsl': ['preup.xsl'],
     '/usr/share/premigrate/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
     '/usr/share/doc/preupgrade': ['LICENSE'],

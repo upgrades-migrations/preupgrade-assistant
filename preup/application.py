@@ -15,6 +15,7 @@ from utils import tarball_result_dir
 from preup.logger import *
 from preup.report_parser import ReportParser
 from preup import utils
+from preup.kickstart import KickstartGenerator
 
 from xmlrpclib import Fault
 
@@ -128,6 +129,9 @@ class Application(object):
     def get_binary(self):
         return [self.binary]
 
+    def get_preupgrade_kickstart(self):
+        return settings.PREUPGRADE_KS
+
     def get_third_party_dir(self, assessment):
         """
         Function returns a 3rdparty dir for upgrade path
@@ -220,7 +224,6 @@ class Application(object):
                 except KeyError:
                     print 'Report not submitted. Server returned status: %s' % status
                     log_message("Report submit: %s" % status, level=logging.ERROR)
-                
 
     def apply_scan(self):
         """ Extract tar ball for remediation """
@@ -618,6 +621,12 @@ class Application(object):
 
         if self.conf.apply:
             self.apply_scan()
+            return 0
+
+        if self.conf.kickstart:
+            kg = KickstartGenerator(self.get_preupgrade_kickstart())
+            ks = kg.generate()
+            log_message('Kickstart for migration is {0}'.format(self.get_preupgrade_kickstart()))
             return 0
 
         if not self.conf.scan and not self.conf.contents:

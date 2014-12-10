@@ -13,6 +13,7 @@ recursive-include tests *
 recursive-include preuputils *
 recursive-include postupgrade.d *
 recursive-include man *
+recursive-include kickstart *
 
 include preup_ui/report/fixtures/initial_data.json
 include ui-conf/99-preup-httpd.conf

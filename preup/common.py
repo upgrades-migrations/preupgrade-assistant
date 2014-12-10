@@ -143,6 +143,21 @@ class Common(object):
                                 filename),
                    os.path.join(self.common_result_dir, sym_link_name))
 
+    def copy_kickstart_files(self, dir_name, variant):
+        """
+        Function copies files which are needed by kickstart
+        :param source dir_name:
+        :return:
+        """
+        for file_name in settings.KS_FILES:
+            target_file = os.path.join(settings.KS_DIR, file_name)
+            orig_name = file_name.replace('default', variant)
+            if not os.path.exists(target_file):
+                log_message('orig_name %s' % os.path.join(dir_name, platform.machine(), orig_name))
+                log_message('new_name %s' % target_file)
+                shutil.copyfile(os.path.join(dir_name, platform.machine(), orig_name),
+                                target_file)
+
     def prep_symlinks(self, assessment_dir, scenario=""):
         """
         This will prepare a symlinks for relevant architecture
@@ -165,6 +180,7 @@ class Common(object):
         if not os.path.exists(dir_name):
             return
         server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant) or files.startswith("Common")]
+        self.copy_kickstart_files(self.common_result_dir, server_variant)
         for files in server_variant_files:
             # First create a default links to "ServerVariant_"
             if files.startswith(server_variant+"_"):
