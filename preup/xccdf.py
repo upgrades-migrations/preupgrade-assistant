@@ -2,7 +2,10 @@
 
 import re
 from operator import itemgetter
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 
 from utils import get_file_content
 from preup.logger import log_message

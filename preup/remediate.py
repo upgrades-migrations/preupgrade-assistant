@@ -79,14 +79,14 @@ def copy_modified_config_files(result_dir):
     etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
     try:
         lines = get_file_content(etc_va_log, "r", method=True)
-    except IOError as ie_rr:
+    except IOError:
         return
     dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
     clean_conf = os.path.join(result_dir, settings.clean_conf_dir)
     for line in lines:
         try:
             (opts, flags, filename) = line.strip().split()
-        except ValueError as val_err:
+        except ValueError:
             return
         new_filename = filename[1:]
         # Check whether config file exists in cleanconf directory
@@ -99,7 +99,7 @@ def copy_modified_config_files(result_dir):
         # Copy filename to dirtyconf directory
         try:
             shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))
-        except IOError as io_err:
+        except IOError:
             continue
 
 

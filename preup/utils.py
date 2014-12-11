@@ -79,7 +79,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
                           shell=shell,
                           bufsize=1)
     stdout = ''
-    for stdout_data in iter(sp.stdout.readline, b''):
+    for stdout_data in iter(sp.stdout.readline, ''):
         # communicate() method buffers everything in memory, we will read stdout directly
         stdout += stdout_data
         if function is None:
@@ -151,7 +151,10 @@ def get_file_content(path, perms, method=False):
     try:
         f = open(path, perms)
         try:
-            data = f.read() if not method else f.readlines()
+            if not method:
+                data = f.read()
+            else:
+                data = f.readlines()
         finally:
             f.close()
             return data
@@ -180,7 +183,7 @@ def write_to_file(path, perms, data):
 
 
 def get_tarball_name(result_file, time):
-    return result_file.format(time)
+    return result_file % time
 
 
 def get_tarball_result_path(root_dir, filename):
@@ -226,7 +229,7 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
         try:
             shutil.copy(tarball, os.path.join(settings.tarball_result_dir+"/"))
         except IOError:
-            log_message("Problem with copying tarball {0} to /root/preupgrade-results".format(tarball))
+            log_message("Problem with copying tarball %s to /root/preupgrade-results" % tarball)
     os.chdir(current_dir)
 
     return os.path.join(settings.tarball_result_dir, get_tarball_name(result_file, current_time))
@@ -288,7 +291,7 @@ def get_server_variant():
     try:
         rel = redhat_release.split()
         return rel[4]
-    except IndexError as ierr:
+    except IndexError:
         return None
 
 

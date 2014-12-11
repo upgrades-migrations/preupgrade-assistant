@@ -4,7 +4,10 @@ import collections
 
 from preup.utils import get_file_content, write_to_file
 from preup import xccdf, utils
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 
 
 def get_node(tree, tag, name_space='', prefix=''):
@@ -61,7 +64,7 @@ class ReportParser(object):
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
         try:
             content = get_file_content(report_path, 'r')
-        except IOError as ioerr:
+        except IOError:
             raise
         if not content:
             return None

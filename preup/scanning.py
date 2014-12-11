@@ -36,7 +36,7 @@ def format_rules_to_table(output_data, content):
         return
     max_title_length = max(x for x in [len(l.split(':')[0]) for l in output_data]) + 5
     max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
-    log_message(settings.result_text.format(content))
+    log_message(settings.result_text % content)
     message = '-' * (max_title_length + max_result_length + 4)
     log_message("%s" % message)
     for data in sorted(output_data, key=compare_data, reverse=True):
@@ -70,7 +70,7 @@ class ScanProgress(object):
         """
         try:
             key = self.list_names[count]
-        except IndexError as index_error:
+        except IndexError:
             return ''
         return self.names[key]
 
@@ -93,7 +93,7 @@ class ScanProgress(object):
         """
         self.width_size = int(ScanProgress.get_terminal_width()[1])
         xccdf_rule, result = stdout_data.strip().split(':')
-        self.output_data.append('{0}:{1}'.format(self.names[xccdf_rule],
+        self.output_data.append('%s:%s' % (self.names[xccdf_rule],
                                                  stdout_data.strip()))
         self.current_count += 1
         old_width = self.width_size

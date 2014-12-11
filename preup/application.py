@@ -336,7 +336,7 @@ class Application(object):
             else:
                 check_name = self.conf.scan
             scenario = [x for x in sep_content if check_name in x][0]
-        except IndexError as in_err:
+        except IndexError:
             scenario = None
         return scenario
 
@@ -527,18 +527,19 @@ class Application(object):
         log_message("Running postscripts: ...",
                     new_line=False)
         try:
-            f_name = open(self.conf.post_script, "r")
-            for line in f_name.readlines():
-                if not line.strip().startswith("#"):
-                    cmd = line.strip()
-                    log_message("running command: %s" % cmd,
-                                print_output=self.conf.verbose)
-                    run_subprocess(cmd, shell=True)
-                    log_message("command execution has finished",
-                                print_output=self.conf.verbose)
-        except IOError:
-            log_message('Problem with openning file %s' % self.conf.post_scripts,
-                        level=logging.ERROR)
+            try:
+                f_name = open(self.conf.post_script, "r")
+                for line in f_name.readlines():
+                    if not line.strip().startswith("#"):
+                        cmd = line.strip()
+                        log_message("running command: %s" % cmd,
+                                    print_output=self.conf.verbose)
+                        run_subprocess(cmd, shell=True)
+                        log_message("command execution has finished",
+                                    print_output=self.conf.verbose)
+            except IOError:
+                log_message('Problem with openning file %s' % self.conf.post_scripts,
+                            level=logging.ERROR)
         finally:
             log_message("done")
             f_name.close()
@@ -547,18 +548,17 @@ class Application(object):
         """
          Function prints a summary report
         """
-        command = settings.ui_command.format(settings.tarball_result_dir)
+        command = settings.ui_command % settings.tarball_result_dir
         if self.conf.text:
             path = self.get_default_txt_result_path()
         else:
             path = self.get_default_html_result_path()
 
         report_dict = {
-            0: settings.message.format(path),
-            1: settings.message.format(path),
+            0: settings.message % path,
+            1: settings.message % path,
             2: 'We found some critical issues. In-place upgrade is not advised.\n' +
-            "Read the file {0} for more details.".
-            format(path)
+            "Read the file %s for more details." % path
         }
         return_value = xccdf.check_inplace_risk(self.get_default_xml_result_path(), 0)
         try:
@@ -572,16 +572,16 @@ class Application(object):
             log_message('Summary 3rd party providers:')
             for target, report in self.report_data.iteritems():
                 self.third_party = target
-                log_message("Read the 3rd party content {0} {1} for more details.".
-                            format(target, path))
-        log_message("Upload results to UI by command:\ne.g. {0} .".format(command))
+                log_message("Read the 3rd party content %s %s for more details."
+                            % (target, path))
+        log_message("Upload results to UI by command:\ne.g. %s ." % command)
 
     def run(self):
         """ run analysis """
 
         if self.conf.list_contents_set:
             for dir_name, content in list_contents(self.conf.source_dir).iteritems():
-                log_message("{0}".format(dir_name))
+                log_message("%s" % dir_name)
             return 0
 
         if self.conf.upload and self.conf.results:

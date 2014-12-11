@@ -19,7 +19,7 @@ tarball_result_dir = result_dir+"-results"
 result_name = "result"
 
 tarball_base = result_name + 's'
-tarball_name = "preupg_" + tarball_base + "-{0}.tar.gz"
+tarball_name = "preupg_" + tarball_base + "-%s.tar.gz"
 
 xml_result_name = result_name + '.xml'
 html_result_name = result_name + '.html'
@@ -123,18 +123,18 @@ warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
                "Make sure you back up your system and all of your data now,\n" \
                "before using the Upgrade Tool to avoid potential data loss."
 assessment_text = "Assessment of the system, running checks / SCE scripts"
-result_text = "Result table with checks and their results for {0}:"
+result_text = "Result table with checks and their results for %s:"
 message = "We found some potential in-place upgrade risks.\n" \
-          "Read the file {0} for more details."
-converter_message = "At least one of these converters ({0}) needs to be installed."
+          "Read the file %s for more details."
+converter_message = "At least one of these converters (%s) needs to be installed."
 
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
                    'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
                    }
 
-ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r {0}/preupg_results-*.tar.gz"
-openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
+ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r %s/preupg_results-*.tar.gz"
+openssl_command = "openssl x509 -text -in %s | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
 KS_DIR = os.path.join(result_dir, 'kickstart')

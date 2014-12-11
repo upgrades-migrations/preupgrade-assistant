@@ -6,7 +6,7 @@ Class creates a kickstart for migration scenario
 
 import os
 from pykickstart.parser import *
-from pykickstart.version import makeVersion
+#from pykickstart.version import makeVersion
 from pykickstart.constants import *
 from preup.logger import *
 from preup import settings
@@ -136,7 +136,8 @@ class KickstartGenerator(object):
     @staticmethod
     def load_or_default(system_ks_path):
         """ load system ks or default ks """
-        ksparser = KickstartParser(makeVersion())
+        #ksparser = KickstartParser(makeVersion())
+        ksparser = KickstartParser()
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):

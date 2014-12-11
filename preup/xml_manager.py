@@ -47,18 +47,17 @@ def link_update(value, extension, inplace):
         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
     possible_links = ['http', 'https', 'ftp']
     if [x for x in possible_links if x in value]:
-        return '<{1}a{2}href="{0}">{0}</{1}a>'.format(value.strip(),
-                                                      prefix,
-                                                      postfix)
+        return '<%sa%shref="%s">%s</%sa>' % (prefix, postfix, value.strip(),
+                                             value.strip(), prefix)
     else:
         if inplace:
             return os.path.join('/root', settings.prefix, value.strip())
         if value.strip().startswith("/"):
             return ""
         else:
-            return '<{1}a{2}href="./{0}">{0}</{1}a>'.format(value.strip(),
-                                                            prefix,
-                                                            postfix)
+            return '<%sa%shref="./%s">%s</%sa>' % (prefix, postfix,
+                                                   value.strip(), value.strip(),
+                                                   prefix)
 
 
 def bold_update(value, extension, inplace):
@@ -70,9 +69,8 @@ def bold_update(value, extension, inplace):
     if extension != "html":
         prefix = "html:"
         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
-    return '<{1}b{2}>{0}</{1}b>'.format(value,
-                                        prefix,
-                                        postfix)
+    return '<%sb%s>%s</%sb>' % (prefix, postfix,
+                                    value, prefix)
 
 
 def tag_formating(text, extension):
@@ -119,10 +117,18 @@ def remove_lines(string, regex_t, post_regex_t):
 
     s_search = re.search(s_re, string)
     e_search = re.search(e_re, string)
+    s_pos = 0
+    e_pos = 0
     if not s_search or not e_search:
         return string
-    s_pos = s_search.start() if remove_start else s_search.end()
-    e_pos = e_search.start() if remove_end else e_search.end()
+    if remove_start:
+        s_pos = s_search.start()
+    else:
+        s_search.end()
+    if remove_end:
+        e_pos = e_search.start()
+    else:
+        e_search.end()
 
     return string[:s_pos] + string[e_pos:]
 
