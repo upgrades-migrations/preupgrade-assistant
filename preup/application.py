@@ -626,7 +626,7 @@ class Application(object):
         if self.conf.kickstart:
             kg = KickstartGenerator(self.get_preupgrade_kickstart())
             ks = kg.generate()
-            log_message('Kickstart for migration is {0}'.format(self.get_preupgrade_kickstart()))
+            log_message('Kickstart for migration is %s.' % self.get_preupgrade_kickstart())
             return 0
 
         if not self.conf.scan and not self.conf.contents:

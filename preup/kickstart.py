@@ -6,8 +6,8 @@ Class creates a kickstart for migration scenario
 
 import os
 from pykickstart.parser import *
-#from pykickstart.version import makeVersion
-from pykickstart.constants import *
+from pykickstart.data import *
+from pykickstart.writer import KickstartWriter
 from preup.logger import *
 from preup import settings
 from preup.utils import write_to_file
@@ -128,6 +128,7 @@ class KickstartGenerator(object):
     def __init__(self, kick_start_name):
         self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path())
         self.kick_start_name = kick_start_name
+        self.ksparser = None
 
     @staticmethod
     def get_kickstart_path():
@@ -136,18 +137,19 @@ class KickstartGenerator(object):
     @staticmethod
     def load_or_default(system_ks_path):
         """ load system ks or default ks """
-        #ksparser = KickstartParser(makeVersion())
-        ksparser = KickstartParser()
+        ksdata = KickstartData()
+        kshandlers = KickstartHandlers(ksdata)
+        ksparser = KickstartParser(ksdata, kshandlers)
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
-            log_message("Can't read system kickstart at {0}".format(system_ks_path))
+            log_message("Can't read system kickstart at %s" % system_ks_path)
             try:
                 ksparser.readKickstart(settings.KS_TEMPLATE)
             except AttributeError:
                 log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
             except IOError:
-                log_message("Can't read kickstart template {0}".format(settings.KS_TEMPLATE))
+                log_message("Can't read kickstart template %s" % settings.KS_TEMPLATE)
         return ksparser
 
     @staticmethod
@@ -158,11 +160,12 @@ class KickstartGenerator(object):
         of packages which should be installed.
         """
 
+        lines = []
         path = os.path.join(settings.KS_DIR, filename)
         try:
             fp = open(path, 'r')
         except IOError:
-            log_message.error("Can't open file with list of packages to be installed: {0}".format(path))
+            log_message("Can't open file with list of packages to be installed: %s" % path)
         else:
             # Remove newline character from list
             lines = [line.strip() for line in fp.readlines()]
@@ -195,7 +198,7 @@ class KickstartGenerator(object):
             script_str = ''.join(script_fd.readlines())
             script_fd.close()
         if not script_str:
-            log_message("Can't open script template: {0}".format(script_path))
+            log_message("Can't open script template: %s" % script_path)
             return
 
         #tb_url = self.result.get_tarball_download_url(self.request)
@@ -205,14 +208,21 @@ class KickstartGenerator(object):
         #self.ks.handler.scripts.append(script)
 
     def save_kickstart(self):
-        write_to_file(self.kick_start_name, 'w', self.ks.handler.__str__())
+        try:
+            kswriter = KickstartWriter(self.ks.ksdata)
+            outfile = open(self.kick_start_name, 'w')
+            outfile.write(kswriter.write())
+            outfile.close()
+        except IOError, es:
+            log_message("Could not save a kickstart %s. " % self.kick_start_name)
 
     def generate(self):
         packages = self.output_packages()
-        self.ks.handler.packages.add(packages)
+        for pkg in packages:
+            self.ks.addPackages(pkg)
         self.save_kickstart()
         #self.embed_script()
-        return self.ks.handler.__str__()
+        #return self.ks.handler.__str__()
 
 
 def main():
