@@ -134,7 +134,7 @@ def get_assessment_version(dir_name):
 
 
 def get_valid_scenario(dir_name):
-    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d)_(\D*)(\d+)(-results)?$', x, re.I)]
+    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d*)(-results)?$', x, re.I)]
     if matched:
         return matched[0]
     else:
