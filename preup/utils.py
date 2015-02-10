@@ -156,7 +156,6 @@ def get_file_content(path, perms, method=False):
             f.close()
             return data
     except IOError:
-        log_message('Unable to open file %s' % path, level=logging.ERROR)
         raise
 
 
@@ -175,7 +174,6 @@ def write_to_file(path, perms, data):
         finally:
             f.close()
     except IOError:
-        log_message('Unable to access file %s' % path, level=logging.ERROR)
         raise
 
 
