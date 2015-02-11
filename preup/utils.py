@@ -114,19 +114,19 @@ def get_prefix():
 
 def get_assessment_version(dir_name):
     if get_prefix() == "preupgrade":
-        matched = re.search(r'\D+(\d*)_(\d*)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     elif get_prefix() == "premigrate":
-        matched = re.search(r'\D+(\d*)_\D+(\d*)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_\D+(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     else:
-        matched = re.search(r'\D+(\d*)_(\D*)(\d*)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(3)]
         else:
@@ -134,7 +134,7 @@ def get_assessment_version(dir_name):
 
 
 def get_valid_scenario(dir_name):
-    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d*)(-results)?$', x, re.I)]
+    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
     if matched:
         return matched[0]
     else:

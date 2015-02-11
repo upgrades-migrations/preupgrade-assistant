@@ -25,10 +25,10 @@ def print_error_msg(title="", msg="", level=' ERROR '):
     """
     Function prints a ERROR or WARNING messages
     """
-    number = 30
+    number = 10
+    print '\n'
     print '*'*number+level+'*'*number
-    print title, msg
-    print '*'*number+level+'*'*number
+    print title, ''.join(msg)
 
 
 class XmlUtils(object):
@@ -131,12 +131,9 @@ class XmlUtils(object):
         unused = [x for x in fields if not keys.get(x)]
         if unused:
             title = 'Following tags are missing in INI file %s\n' % script_name
-            if 'applies_to' in unused:
-                # TODO skip currently
-                #print_error_msg(title=title, msg=unused, level=' WARNING ')
-                pass
-            else:
+            if 'applies_to' not in unused:
                 print_error_msg(title=title, msg=unused)
+                os.sys.exit(1)
         if 'solution_type' in keys:
             if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
                 pass
@@ -362,7 +359,10 @@ class XmlUtils(object):
             self.update_values_list(self.rule,
                                     '{group_title}',
                                     html_escape_string(key['content_title']))
-            if 'mode' not in key:
-                self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
-            else:
-                self.fnc_update_mode(key['check_script'], key['mode'])
+            try:
+                if 'mode' not in key:
+                    self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
+                else:
+                    self.fnc_update_mode(key['check_script'], key['mode'])
+            except KeyError:
+                pass
