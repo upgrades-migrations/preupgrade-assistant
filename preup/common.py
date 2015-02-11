@@ -154,8 +154,6 @@ class Common(object):
             target_file = os.path.join(settings.KS_DIR, file_name)
             orig_name = file_name.replace('default', variant)
             if not os.path.exists(target_file):
-                log_message('orig_name %s' % os.path.join(dir_name, platform.machine(), orig_name), level=logging.DEBUG)
-                log_message('new_name %s' % target_file, level=logging.DEBUG)
                 if os.path.exists(os.path.join(dir_name, platform.machine(), orig_name)):
                     shutil.copyfile(os.path.join(dir_name, platform.machine(), orig_name),
                                     target_file)

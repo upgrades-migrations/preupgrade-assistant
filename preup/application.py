@@ -4,20 +4,19 @@ The application module serves for running oscap binary and reporting results to 
 """
 import shutil
 import datetime
+from xmlrpclib import Fault
 from distutils import dir_util
-from preup import xccdf, xml_manager, remediate
+
+from preup import xccdf, xml_manager, remediate, utils
 from preup.common import Common
-from preup.scanning import ScanProgress
-from preup.scanning import format_rules_to_table
+from preup.scanning import ScanProgress, format_rules_to_table
 from utils import check_xml, get_file_content, check_or_create_temp_dir
 from utils import run_subprocess, get_assessment_version, get_message
 from utils import tarball_result_dir
 from preup.logger import *
 from preup.report_parser import ReportParser
-from preup import utils
 from preup.kickstart import KickstartGenerator
-
-from xmlrpclib import Fault
+from preuputils.compose import XCCDFCompose
 
 
 def get_xsl_stylesheet():
@@ -76,7 +75,6 @@ class Application(object):
     binary = "/usr/bin/oscap"
     command_eval = ['xccdf', 'eval']
     command_remediate = ['xccdf', 'remediate']
-    command_generate = ['xccdf', 'generate', 'custom']
 
     def __init__(self, conf):
         """
@@ -93,6 +91,13 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+
+    def get_command_generate(self):
+        if not self.get_system():
+            command_generate = ['xccdf', 'generate', 'custom']
+        else:
+            command_generate = ['xccdf', 'generate', 'report']
+        return command_generate
 
     def get_third_party_name(self):
         """
@@ -122,6 +127,14 @@ class Application(object):
         """
         return os.path.join(self.conf.result_dir, self.conf.tarball_name)
 
+    def get_system(self):
+        """
+        Check if system is Fedora or RHEL
+        :return: Fedora or None
+        """
+        lines = get_file_content('/etc/redhat-release', 'r')
+        return [line for line in lines if line.startswith('Fedora')]
+
     def get_default_txt_result_path(self):
         return os.path.join(self.conf.result_dir,
                             self.get_third_party_name() + self.conf.result_name + ".txt")
@@ -150,8 +163,9 @@ class Application(object):
         Function builds a command for generating results
         """
         command = self.get_binary()
-        command.extend(self.command_generate)
-        command.extend(("--stylesheet", get_xsl_stylesheet()))
+        command.extend(self.get_command_generate())
+        if not self.get_system():
+            command.extend(("--stylesheet", get_xsl_stylesheet()))
         command.extend(("--output", self.get_default_html_result_path()))
         command.append(check_xml(self.get_default_xml_result_path()))
         return command
@@ -467,6 +481,17 @@ class Application(object):
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
+        """
+        Copy directory try with contents to /root/preupgrade
+        Call xccdf_compose API for generating all-xccdf.xml
+
+        """
+        xccdf_compose = XCCDFCompose(assessment_dir)
+        generated_dir = xccdf_compose.generate_xml()
+        if os.path.isdir(assessment_dir):
+            shutil.rmtree(assessment_dir)
+        shutil.move(generated_dir, assessment_dir)
+
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         return assessment_dir
@@ -484,6 +509,7 @@ class Application(object):
         assessment_dir = self.prepare_scan_system()
         # Update source XML file in temporary directory
 
+        self.content = os.path.join(assessment_dir, settings.content_file)
         try:
             self.report_parser = ReportParser(self.content)
         except IOError:
@@ -578,7 +604,6 @@ class Application(object):
 
     def run(self):
         """ run analysis """
-
         if self.conf.list_contents_set:
             for dir_name, content in list_contents(self.conf.source_dir).iteritems():
                 log_message("{0}".format(dir_name))
@@ -634,15 +659,24 @@ class Application(object):
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
             for dir_name in filter(is_dir, dirs):
-                if os.path.exists(os.path.join(settings.source_dir,
+                if not self.get_system():
+                    if os.path.exists(os.path.join(settings.source_dir,
                                                dir_name,
                                                settings.content_file)):
-                    cnt += 1
-                    self.conf.scan = dir_name
+                        cnt += 1
+                        self.conf.scan = dir_name
+                else:
+                    if utils.get_assessment_version(dir_name):
+                        self.conf.scan = dir_name
+                        cnt += 1
 
             if int(cnt) != 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
+                return 1
+            if int(cnt) > 1:
+                log_message("There only 1 set of contents is allowed directory %s. \
+If you would like to use this tool, you have to have only one." % settings.source_dir)
                 return 1
 
         if self.conf.scan:

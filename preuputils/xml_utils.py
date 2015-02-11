@@ -132,7 +132,9 @@ class XmlUtils(object):
         if unused:
             title = 'Following tags are missing in INI file %s\n' % script_name
             if 'applies_to' in unused:
-                print_error_msg(title=title, msg=unused, level=' WARNING ')
+                # TODO skip currently
+                #print_error_msg(title=title, msg=unused, level=' WARNING ')
+                pass
             else:
                 print_error_msg(title=title, msg=unused)
         if 'solution_type' in keys:

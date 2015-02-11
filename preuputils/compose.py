@@ -3,6 +3,12 @@ import sys
 import re
 import datetime
 
+import shutil
+from distutils import dir_util
+
+from xml.etree import ElementTree
+from preup.utils import get_valid_scenario
+from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
@@ -14,6 +20,44 @@ except ImportError:
 
 XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
+
+
+class XCCDFCompose(object):
+    dir_name = ""
+    result_dir = ""
+
+    def __init__(self, argument):
+        self.result_dir = argument
+        self.dir_name = self.result_dir + variables.result_prefix
+        if self.result_dir.endswith("/"):
+            dir_name = self.result_dir[:-1] + variables.result_prefix
+
+        if get_valid_scenario(self.dir_name) is None:
+            print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
+            sys.exit(1)
+
+    def generate_xml(self):
+        dir_util.copy_tree(self.result_dir, self.dir_name)
+        result_dirname = self.dir_name
+        template_file = ComposeXML.get_template_file()
+        try:
+            f = open(template_file, "r")
+        except IOError, e:
+            print 'Problem with reading template.xml file'
+            sys.exit(1)
+        target_tree = ElementTree.fromstring(f.read())
+        target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
+
+        report_filename = os.path.join(result_dirname, settings.content_file)
+        try:
+            f = open(report_filename, "w")
+            f.write(ElementTree.tostring(target_tree, "utf-8"))
+            print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(result_dirname,
+                                                                                            report_filename))
+        except IOError, e:
+            print "Problem with writing file %s".format(f)
+            raise
+        return self.dir_name
 
 
 class ComposeXML(object):
@@ -38,8 +82,7 @@ class ComposeXML(object):
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
                 cls.perform_autoqa(new_dir, return_list)
-                #generate_xml = GenerateXml(new_dir, True, return_list)
-                #generate_xml.make_xml()
+
             group_file_path = os.path.join(new_dir, "group.xml")
             if not os.path.isfile(group_file_path):
                 #print("Directory '%s' is missing a group.xml file!" % (new_dir))

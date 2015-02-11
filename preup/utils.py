@@ -59,9 +59,9 @@ def get_interpreter(file, verbose=False):
     # Checks extension of script and first line of script
     script_types = {'/bin/bash': '.sh',
                    '/usr/bin/python': '.py',
-                   '/usr/bin/perl': '.pl'
-    }
-    inter = list((k) for k, v in script_types.iteritems() if file.endswith(v))
+                   '/usr/bin/perl': '.pl'}
+
+    inter = list(k for k, v in script_types.iteritems() if file.endswith(v))
     content = get_file_content(file, 'r')
     if inter and content.startswith('#!'+inter[0]):
         return inter
@@ -114,19 +114,19 @@ def get_prefix():
 
 def get_assessment_version(dir_name):
     if get_prefix() == "preupgrade":
-        matched = re.search(r'\D+(\d)_(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\d*)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     elif get_prefix() == "premigrate":
-        matched = re.search(r'\D+(\d)_\D+(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_\D+(\d*)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     else:
-        matched = re.search(r'\D+(\d)_(\D*)(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\D*)(\d*)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(3)]
         else:
