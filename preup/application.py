@@ -132,7 +132,7 @@ class Application(object):
         Check if system is Fedora or RHEL
         :return: Fedora or None
         """
-        lines = get_file_content('/etc/redhat-release', 'r')
+        lines = get_file_content('/etc/redhat-release', 'r', method=True)
         return [line for line in lines if line.startswith('Fedora')]
 
     def get_default_txt_result_path(self):
