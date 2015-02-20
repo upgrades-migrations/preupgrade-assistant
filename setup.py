@@ -26,13 +26,7 @@ data_files = {
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
-    '/usr/share/preupgrade/xsl': ['preup.xsl'],
     '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
-    '/usr/share/premigrate/': ['common.sh', 'README', 'README.kickstart'],
-    '/usr/share/premigrate/common': ['common/scripts.txt', 'common/post_scripts.txt'],
-    '/usr/share/premigrate/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
-    '/usr/share/premigrate/xsl': ['preup.xsl'],
-    '/usr/share/premigrate/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
     '/usr/share/doc/preupgrade': ['LICENSE'],
 }
 
