@@ -187,8 +187,7 @@ class ReportParser(object):
         Function modifies result path in XML file
         """
         update_tags = {'_tmp_preupgrade': update_result_path,
-                       '_current_dir': update_current_dir,
-                       }
+                       '_current_dir': update_current_dir}
         for key, val in update_tags.items():
             for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
                 if key not in values.get('id'):

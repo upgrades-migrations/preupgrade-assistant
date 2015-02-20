@@ -4,8 +4,8 @@ So no change is needed from maintainer point of view
 """
 
 import os
-import sys
 import ConfigParser
+
 from preuputils.xml_utils import print_error_msg, XmlUtils
 from preup.utils import get_file_content, write_to_file
 from xml.etree import ElementTree
@@ -14,11 +14,9 @@ try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
-section_preupgrade = 'preupgrade'
-section_premigrate = 'premigrate'
 
 
-class OscapGroupXml():
+class OscapGroupXml(object):
     """
     Class creates a XML file for OpenSCAP
     """
@@ -48,10 +46,10 @@ class OscapGroupXml():
                     config = ConfigParser.ConfigParser()
                     config.readfp(open(file_name))
                     fields = {}
-                    if config.has_section(section_premigrate):
-                        section = section_premigrate
+                    if config.has_section('premigrate'):
+                        section = 'premigrate'
                     else:
-                        section = section_preupgrade
+                        section = 'preupgrade'
                     for option in config.options(section):
                         fields[option] = config.get(section, option)
                     self.loaded[file_name] = [fields]

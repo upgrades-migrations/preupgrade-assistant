@@ -1,11 +1,11 @@
-import xml_tags
-import script_utils
 import re
 import os
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
 from preup import settings
+from preuputils import xml_tags
+from preuputils import script_utils
 
 
 def get_full_xml_tag(dirname):
@@ -209,8 +209,7 @@ class XmlUtils(object):
         self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[:-1][0])
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
-                        'requires': 'check_rpm'
-                        }
+                        'requires': 'check_rpm'}
         updates = dict()
         for req in requirements:
             if req in key:

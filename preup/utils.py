@@ -45,7 +45,7 @@ def check_or_create_temp_dir(temp_dir, mode=""):
     """ check if provided temp dir is valid """
     if os.path.isdir(temp_dir):
         if not os.access(temp_dir, os.W_OK):
-            log_message("Directory %s is not writable.%" % temp_dir, level=logging.ERROR)
+            log_message("Directory %s is not writable." % temp_dir, level=logging.ERROR)
             raise IOError("Directory %s is not writable." % temp_dir)
     else:
         os.makedirs(temp_dir)
@@ -58,8 +58,8 @@ def get_interpreter(file, verbose=False):
     # The function returns interpreter
     # Checks extension of script and first line of script
     script_types = {'/bin/bash': '.sh',
-                   '/usr/bin/python': '.py',
-                   '/usr/bin/perl': '.pl'}
+                    '/usr/bin/python': '.py',
+                    '/usr/bin/perl': '.pl'}
 
     inter = list(k for k, v in script_types.iteritems() if file.endswith(v))
     content = get_file_content(file, 'r')
@@ -209,12 +209,10 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
     os.chdir(dirname)
     if direction:
         tarball = get_tarball_result_path(dirname, get_tarball_name(result_file, current_time))
-        #log(quiet, 'writing tarball to %s', dirname)
         cmd.append(cmd_pack)
         cmd.append(tarball)
         cmd.append(".")
     else:
-        #log(quiet, 'Extracting tarball to %s', dirname)
         cmd.append(cmd_extract)
         cmd.append(result_file)
 
@@ -247,6 +245,12 @@ def get_upgrade_dir_path(dirname):
 
 
 def get_message(title="", message="Do you want to continue?"):
+    """
+    Function asks for input from user
+    :param title: Title of the message
+    :param message: Message text
+    :return: y or n
+    """
     yes = ['yes', 'y']
     yesno = yes + ['no', 'n']
     prompt = ' y/n'

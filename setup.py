@@ -62,7 +62,7 @@ if root_dir != "":
 for scheme in INSTALL_SCHEMES.values():
     scheme["data"] = scheme["purelib"]
 
-setup (
+setup(
         name            = package_name,
         version         = package_version.replace(" ", "_").replace("-", "_"),
         url             = project_url,

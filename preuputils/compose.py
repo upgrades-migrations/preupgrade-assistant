@@ -6,7 +6,6 @@ import datetime
 import shutil
 from distutils import dir_util
 
-from xml.etree import ElementTree
 from preup.utils import get_valid_scenario
 from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
@@ -18,7 +17,7 @@ try:
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
+XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
 
 
@@ -27,10 +26,15 @@ class XCCDFCompose(object):
     result_dir = ""
 
     def __init__(self, argument):
+        """
+        Specify dirname with the on content
+        :param argument: dirname where content is
+        :return:
+        """
         self.result_dir = argument
         self.dir_name = self.result_dir + variables.result_prefix
         if self.result_dir.endswith("/"):
-            dir_name = self.result_dir[:-1] + variables.result_prefix
+            self.dir_name = self.result_dir[:-1] + variables.result_prefix
 
         if get_valid_scenario(self.dir_name) is None:
             print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
@@ -52,8 +56,7 @@ class XCCDFCompose(object):
         try:
             f = open(report_filename, "w")
             f.write(ElementTree.tostring(target_tree, "utf-8"))
-            print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(result_dirname,
-                                                                                            report_filename))
+            print 'Generate report file for preupgrade-assistant is:', ''.join(report_filename)
         except IOError, e:
             print "Problem with writing file %s".format(f)
             raise
@@ -90,10 +93,9 @@ class ComposeXML(object):
             with open(group_file_path, "r") as file:
                 try:
                     ret[dirname] = (ElementTree.fromstring(file.read()),
-                                    cls.collect_group_xmls(new_dir,
-                                    level=level + 1))
+                                    cls.collect_group_xmls(new_dir, level=level + 1))
                 except ParseError as e:
-                    print("Encountered a parse error in file '%s', details: %s" % (group_file_path, e))
+                    print "Encountered a parse error in file '%s', details: %s" % (group_file_path, e)
         return ret
 
     @classmethod
@@ -120,16 +122,16 @@ class ComposeXML(object):
             for element in tree.findall(".//" + xccdf.XMLNS + "Rule"):
                 checks = element.findall(xccdf.XMLNS + "check")
                 if len(checks) != 1:
-                    print("Rule of id '%s' from '%s' doesn't have "
-                          "exactly one check element!" % (element.get("id", ""), group_xml_path))
+                    print "Rule of id '%s' from '%s' doesn't have " \
+                          "exactly one check element!" % (element.get("id", ""), group_xml_path)
                     continue
 
                 check = checks[0]
 
                 if check.get("system") != SCE:
-                    print("Rule of id '%s' from '%s' has system name different "
-                          "from the SCE system name "
-                          "('%s')!" % (element.get("id", ""), group_xml_path, SCE))
+                    print "Rule of id '%s' from '%s' has system name different " \
+                          "from the SCE system name " \
+                          "('%s')!" % (element.get("id", ""), group_xml_path, SCE)
 
                 crefs = check.findall(xccdf.XMLNS + "check-content-ref")
                 if len(crefs) != 1:
@@ -142,7 +144,7 @@ class ComposeXML(object):
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
-                    print("Rule %r missing a description" % element.get("id", ""))
+                    print "Rule %r missing a description" % element.get("id", "")
                     continue
 
             if b_subgroups:
@@ -169,7 +171,7 @@ class ComposeXML(object):
             prefix = 100
             tree, subgroups = group_tree[tree_key]
             try:
-                prefix = int(tree.findall(XCCDF_Fragment + "sort-prefix")[-1].text)
+                prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")[-1].text)
             except:
                 pass
 
@@ -222,7 +224,7 @@ class ComposeXML(object):
 
                     to_remove.append(select)
 
-                elif select.tag == XCCDF_Fragment + "meta-select":
+                elif select.tag == XCCDF_FRAGMENT + "meta-select":
                     needle = select.get("idref")
                     for rule_id in all_rules:
                         if re.match(needle, rule_id):

@@ -10,9 +10,9 @@ from distutils import dir_util
 from preup import xccdf, xml_manager, remediate, utils
 from preup.common import Common
 from preup.scanning import ScanProgress, format_rules_to_table
-from utils import check_xml, get_file_content, check_or_create_temp_dir
-from utils import run_subprocess, get_assessment_version, get_message
-from utils import tarball_result_dir
+from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
+from preup.utils import run_subprocess, get_assessment_version, get_message
+from preup.utils import tarball_result_dir
 from preup.logger import *
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
@@ -136,10 +136,18 @@ class Application(object):
         return [line for line in lines if line.startswith('Fedora')]
 
     def get_default_txt_result_path(self):
+        """
+        Function returns default txt result path based on result_dir
+        :return: default txt result path
+        """
         return os.path.join(self.conf.result_dir,
                             self.get_third_party_name() + self.conf.result_name + ".txt")
 
     def get_binary(self):
+        """
+        Returns oscap binary
+        :return: list with path to oscap binary
+        """
         return [self.binary]
 
     def get_preupgrade_kickstart(self):

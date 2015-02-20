@@ -13,8 +13,8 @@ from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
 
-RHEL6_dummy = "tests/RHEL6_7/dummy/"
-RHEL6_results = "tests/RHEL6_7"+variables.result_prefix
+FOOBAR6_dummy = "tests/FOOBAR6_7/dummy/"
+FOOBAR6_results = "tests/FOOBAR6_7"+variables.result_prefix
 
 
 def generate_test_xml(path_name, test):
@@ -73,9 +73,9 @@ def update_xml(path_name, test):
     lines = filter(lambda x: '<ns0:platform idref="cpe:/o:redhat:enterprise_linux' not in x, lines)
     for index, line in enumerate(lines):
         if 'tmp_preupgrade' in line:
-            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/RHEL6_7-results'))
+            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/FOOBAR6_7-results'))
         if 'current_directory' in line:
-            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/RHEL6_7-results'))
+            lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/FOOBAR6_7-results'))
         if 'check-content-ref href="'+test in line:
             lines[index] = line.replace('content-ref href="{0}/'.format(test),
                                         'content-ref href="')
@@ -114,15 +114,15 @@ class TestOSCAPPass(unittest.TestCase):
     def setUp(self):
         self.name = 'pass'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
         delete_tmp_xml(self.result_name)
-        shutil.rmtree(RHEL6_results)
+        shutil.rmtree(FOOBAR6_results)
 
     def test_pass(self):
         """
@@ -146,15 +146,15 @@ class TestOSCAPFail(unittest.TestCase):
     def setUp(self):
         self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
         delete_tmp_xml(self.result_name)
-        shutil.rmtree(RHEL6_results)
+        shutil.rmtree(FOOBAR6_results)
 
     def test_fail(self):
         """
@@ -172,8 +172,8 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -199,8 +199,8 @@ class TestOSCAPNeedsAction(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -226,8 +226,8 @@ class TestOSCAPNotApplicable(unittest.TestCase):
     def setUp(self):
         self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
@@ -251,8 +251,8 @@ class TestOSCAPFixed(unittest.TestCase):
     def setUp(self):
         self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = RHEL6_dummy + self.name
-        self.result_name = RHEL6_results + "/dummy/" + self.name
+        self.path_name = FOOBAR6_dummy + self.name
+        self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 

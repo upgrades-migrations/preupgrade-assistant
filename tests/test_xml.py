@@ -20,7 +20,7 @@ from preup.xml_manager import html_escape, html_escape_string
 
 class TestXMLCompose(unittest.TestCase):
     def test_compose(self):
-        dir_name = os.path.join(os.getcwd(), 'tests', 'RHEL6_7')
+        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
         result_dir = os.path.join(dir_name+variables.result_prefix)
         dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(result_dir):
@@ -51,7 +51,7 @@ class TestXMLCompose(unittest.TestCase):
 
 class TestXML(unittest.TestCase):
     def setUp(self):
-        self.dirname = "tests/RHEL6_7-results/test"
+        self.dirname = "tests/FOOBAR6_7-results/test"
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -189,7 +189,7 @@ A solution text for test suite"
 
 class TestMissingTag(unittest.TestCase):
     def setUp(self):
-        self.dir_name = "tests/RHEL6_7/missing_tag"
+        self.dir_name = "tests/FOOBAR6_7/missing_tag"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
@@ -234,7 +234,7 @@ A solution text for test suite"
 
 class TestGroupXML(unittest.TestCase):
     def setUp(self):
-        self.dir_name = "tests/RHEL6_7-results/test_group"
+        self.dir_name = "tests/FOOBAR6_7-results/test_group"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'group.ini')
         self.rule = []
@@ -286,6 +286,11 @@ class HTMLEscapeTest(unittest.TestCase):
         expected_output = ['asd&lt;&gt;&amp;']
         self.assertEqual(output, expected_output)
 
+
+class ComposeTest(unittest.TestCase):
+
+    def setUp(self):
+        pass
 
 def suite():
     loader = unittest.TestLoader()
