@@ -12,7 +12,7 @@ from preup.common import Common
 from preup.scanning import ScanProgress, format_rules_to_table
 from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
 from preup.utils import run_subprocess, get_assessment_version, get_message
-from preup.utils import tarball_result_dir
+from preup.utils import tarball_result_dir, get_system
 from preup.logger import *
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
@@ -93,7 +93,7 @@ class Application(object):
         self.common = None
 
     def get_command_generate(self):
-        if not self.get_system():
+        if not get_system():
             command_generate = ['xccdf', 'generate', 'custom']
         else:
             command_generate = ['xccdf', 'generate', 'report']
@@ -126,14 +126,6 @@ class Application(object):
         Returns full tarball path
         """
         return os.path.join(self.conf.result_dir, self.conf.tarball_name)
-
-    def get_system(self):
-        """
-        Check if system is Fedora or RHEL
-        :return: Fedora or None
-        """
-        lines = get_file_content('/etc/redhat-release', 'r', method=True)
-        return [line for line in lines if line.startswith('Fedora')]
 
     def get_default_txt_result_path(self):
         """

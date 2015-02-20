@@ -3,6 +3,7 @@ import os
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
+from preup.utils import get_system
 from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
@@ -186,6 +187,11 @@ class XmlUtils(object):
                 self.update_values_list(fix_tag, "{platform_id}", version[1])
             else:
                 self.update_values_list(fix_tag, "{platform_id}", "6")
+            system = get_system()
+            if not system:
+                self.update_values_list(fix_tag, "{platform_name}", settings.CPE_RHEL)
+            else:
+                self.update_values_list(fix_tag, "{platfor_name}", settings.CPE_FEDORA)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):

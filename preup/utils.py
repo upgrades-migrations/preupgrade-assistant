@@ -112,6 +112,15 @@ def get_prefix():
     return settings.prefix
 
 
+def get_system(self):
+    """
+    Check if system is Fedora or RHEL
+    :return: Fedora or None
+    """
+    lines = get_file_content('/etc/redhat-release', 'r', method=True)
+    return [line for line in lines if line.startswith('Fedora')]
+
+
 def get_assessment_version(dir_name):
     if get_prefix() == "preupgrade":
         matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
