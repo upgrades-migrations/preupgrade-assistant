@@ -47,9 +47,7 @@ RULE_SECTION = """
       </check>
     </Rule>
 """
-PLATFORM = """platform=\"cpe:/o:{platform_name}:{platform_id}\""""
-CPE_RHEL = "redhat:enterprise_linux"
-CPE_FEDORA = "fedoraproject:fedora"
+PLATFORM = """platform=\"cpe:/o:PLATFORM_NAME:PLATFORM_ID\""""
 FIX = """<fix """+PLATFORM+""" system="urn:xccdf:fix:script:{script_type}">
 {solution}
          </fix>"""

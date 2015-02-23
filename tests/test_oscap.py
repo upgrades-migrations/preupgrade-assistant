@@ -67,10 +67,11 @@ def prepare_cli(temp_dir, path_name):
 
 def update_xml(path_name, test):
     dir_name = os.path.join(os.getcwd(), path_name)
-    f = open(os.path.join(dir_name, "all-xccdf.xml"), mode='r')
+    full_path = os.path.join(dir_name, settings.content_file)
+    f = open(full_path, mode='r')
     lines = f.readlines()
     f.close()
-    lines = filter(lambda x: '<ns0:platform idref="cpe:/o:redhat:enterprise_linux' not in x, lines)
+    lines = filter(lambda x: '<ns0:platform idref="cpe:/o:' not in x, lines)
     for index, line in enumerate(lines):
         if 'tmp_preupgrade' in line:
             lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/FOOBAR6_7-results'))
@@ -81,10 +82,11 @@ def update_xml(path_name, test):
                                         'content-ref href="')
 
     try:
-        f = open(os.path.join(dir_name, "all-xccdf.xml"), mode='w')
+        f = open(full_path, mode='w')
         f.writelines(lines)
     finally:
         f.close()
+    utils.update_platform(full_path)
 
 
 def delete_tmp_xml(path_name):

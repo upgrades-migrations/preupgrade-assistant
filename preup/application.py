@@ -494,6 +494,7 @@ class Application(object):
 
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
+        utils.update_platform(os.path.join(assessment_dir, settings.content_file))
         return assessment_dir
 
     def copy_preupgrade_scripts(self, assessment_dir):

@@ -177,21 +177,10 @@ class XmlUtils(object):
             else:
                 fix_tag.append(xml_tags.FIX)
 
-            #Update values
             self.update_values_list(fix_tag, "{solution_text}",
                                     key['solution_type'] if 'solution_type' in key else "text")
             self.update_values_list(fix_tag, "{solution}", k)
             self.update_values_list(fix_tag, "{script_type}", script_type)
-            version = get_assessment_version(self.dirname)
-            if version:
-                self.update_values_list(fix_tag, "{platform_id}", version[1])
-            else:
-                self.update_values_list(fix_tag, "{platform_id}", "6")
-            system = get_system()
-            if not system:
-                self.update_values_list(fix_tag, "{platform_name}", settings.CPE_RHEL)
-            else:
-                self.update_values_list(fix_tag, "{platfor_name}", settings.CPE_FEDORA)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):

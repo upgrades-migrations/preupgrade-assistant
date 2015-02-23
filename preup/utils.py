@@ -355,3 +355,21 @@ def remove_home_issues():
             write_to_file(f, 'w', lines)
         except IOError:
             pass
+
+
+def update_platform(full_path):
+    file_lines = get_file_content(full_path, 'r', method=True)
+    platform = ''
+    platform_id = ''
+    if not get_system():
+        platform = settings.CPE_RHEL
+    else:
+        platform = settings.CPE_FEDORA
+    platform_id = get_assessment_version(full_path)
+    for index, line in enumerate(file_lines):
+        if 'PLATFORM_NAME' in line:
+            line = line.replace('PLATFORM_NAME', platform)
+        if 'PLATFORM_ID' in line:
+            line = line.replace('PLATFORM_ID', platform_id[0])
+        file_lines[index] = line
+    write_to_file(full_path, 'w', file_lines)
