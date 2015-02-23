@@ -164,7 +164,7 @@ class Application(object):
         """
         command = self.get_binary()
         command.extend(self.get_command_generate())
-        if not self.get_system():
+        if not get_system():
             command.extend(("--stylesheet", get_xsl_stylesheet()))
         command.extend(("--output", self.get_default_html_result_path()))
         command.append(check_xml(self.get_default_xml_result_path()))
@@ -659,7 +659,7 @@ class Application(object):
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
             for dir_name in filter(is_dir, dirs):
-                if not self.get_system():
+                if not get_system():
                     if os.path.exists(os.path.join(settings.source_dir,
                                                dir_name,
                                                settings.content_file)):

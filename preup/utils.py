@@ -112,7 +112,7 @@ def get_prefix():
     return settings.prefix
 
 
-def get_system(self):
+def get_system():
     """
     Check if system is Fedora or RHEL
     :return: Fedora or None
