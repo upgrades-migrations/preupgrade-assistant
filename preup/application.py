@@ -198,7 +198,9 @@ class Application(object):
             # lets try default configuration
             url = "http://127.0.0.1:8099/submit/"
         else:
-            url = self.conf.upload
+            url = self.conf.upload \
+                if self.conf.upload[-1] == '/' \
+                else self.conf.upload + '/'
         try:
             proxy = xmlrpclib.ServerProxy(url)
             proxy.submit.ping()
