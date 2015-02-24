@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import datetime
 import re
 import subprocess
@@ -41,7 +42,7 @@ def check_xml(xml_file):
         raise RuntimeError("Provided file is not a valid XML file")
 
 
-def check_or_create_temp_dir(temp_dir, mode=""):
+def check_or_create_temp_dir(temp_dir, mode=None):
     """ check if provided temp dir is valid """
     if os.path.isdir(temp_dir):
         if not os.access(temp_dir, os.W_OK):
@@ -84,7 +85,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
         stdout += stdout_data
         if function is None:
             if print_output:
-                print stdout_data,
+                print (stdout_data, end="", flush=True)
         else:
             function(stdout_data)
     sp.communicate()
@@ -263,15 +264,15 @@ def get_message(title="", message="Do you want to continue?"):
     yes = ['yes', 'y']
     yesno = yes + ['no', 'n']
     prompt = ' y/n'
-    print title
-    print message + prompt
+    print (title)
+    print (message + prompt)
     while True:
         try:
             choice = raw_input().lower()
         except KeyboardInterrupt:
             return "n"
         if choice not in yesno:
-            print 'You have to choose one of y/n.'
+            print ('You have to choose one of y/n.')
         else:
             return choice
 

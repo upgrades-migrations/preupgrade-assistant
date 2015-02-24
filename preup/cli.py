@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 #import argparse
 import optparse
 from optparse import OptionValueError
@@ -140,4 +141,4 @@ will used -- http://127.0.0.1:8099/submit/)"
 
 if __name__ == '__main__':
     x = CLI()
-    print x.args.id
+    print (x.args.id)

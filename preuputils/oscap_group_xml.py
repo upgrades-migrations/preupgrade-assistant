@@ -1,8 +1,9 @@
+from __future__ import print_function
+
 """
 This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
-
 import os
 import ConfigParser
 
@@ -66,7 +67,7 @@ class OscapGroupXml(object):
         try:
             self.ret[self.dirname] = (ElementTree.fromstring(content))
         except ParseError as par_err:
-            print "Encountered a parse error in file '%s', details: %s" % (self.dirname, par_err)
+            print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
         return self.ret
 
     def write_xml(self):
@@ -80,15 +81,15 @@ class OscapGroupXml(object):
         try:
             write_to_file(file_name, "w", ["%s" % item for item in self.rule])
         except IOError as ior:
-            print 'Problem with rite data to file %s' % file_name
+            print ('Problem with rite data to file ', file_name)
 
     def write_profile_xml(self, target_tree):
         """
         The function stores all-xccdf.xml file into content directory
         """
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
-        print 'File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name)
+        print ('File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name))
         try:
             write_to_file(file_name, "w", ElementTree.tostring(target_tree, "utf-8"))
         except IOError as ioe:
-            print 'Problem with writing to file {0}'.format(file_name), ioe.message
+            print ('Problem with writing to file ', file_name, ioe.message)

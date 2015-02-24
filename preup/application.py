@@ -30,7 +30,7 @@ def fault_repr(self):
     """
     monkey patching Fault's repr method so newlines are actually interpreted
     """
-    print self.faultString
+    log_message(self.faultString)
     return "<Fault %s: %s>" % (self.faultCode, self.faultString)
 
 Fault.__repr__ = fault_repr
@@ -222,23 +222,23 @@ class Application(object):
         try:
             status = response['status']
         except KeyError:
-            print 'Invalid response from server.'
+            log_message('Invalid response from server.')
             log_message("Invalid response from server: %s" % response, level=logging.ERROR)
         else:
             if status == 'OK':
                 try:
                     url = response['url']
                 except KeyError:
-                    print 'Report submitted successfully.'
+                    log_message('Report submitted successfully.')
                 else:
-                    print 'Report submitted successfully. You can inspect it at %s' % url
+                    log_message('Report submitted successfully. You can inspect it at ', url)
             else:
                 try:
                     message = response['message']
-                    print 'Report not submitted. Server returned message: %s' % message
+                    log_message('Report not submitted. Server returned message: ', message)
                     log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
                 except KeyError:
-                    print 'Report not submitted. Server returned status: %s' % status
+                    log_message('Report not submitted. Server returned status: ', status)
                     log_message("Report submit: %s" % status, level=logging.ERROR)
 
     def apply_scan(self):
@@ -258,9 +258,9 @@ class Application(object):
         self.basename = os.path.basename(self.content)
         #today = datetime.datetime.today()
         if not self.conf.temp_dir:
-            check_or_create_temp_dir(self.conf.result_dir, mode=0770)
+            check_or_create_temp_dir(self.conf.result_dir)
         check_or_create_temp_dir(self.conf.result_dir)
-        check_or_create_temp_dir(settings.tarball_result_dir, mode=0770)
+        check_or_create_temp_dir(settings.tarball_result_dir)
         for dir_name in settings.preupgrade_dirs:
             check_or_create_temp_dir(os.path.join(self.conf.result_dir, dir_name))
 
@@ -275,7 +275,7 @@ class Application(object):
         during remedation
         """
 
-        check_or_create_temp_dir(self.conf.result_dir, mode=0770)
+        check_or_create_temp_dir(self.conf.result_dir)
 
     def get_total_check(self):
         """

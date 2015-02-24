@@ -46,7 +46,7 @@ class Common(object):
         """
         com_dir = self.get_common_dir()
         if not os.path.exists(com_dir):
-            utils.check_or_create_temp_dir(com_dir, mode=0750)
+            utils.check_or_create_temp_dir(com_dir)
         self.cwd = os.getcwd()
         os.chdir(self.get_common_dir())
 
@@ -79,10 +79,10 @@ class Common(object):
                 end_time = datetime.datetime.now()
                 diff = end_time - start_time
                 log_message(" %sfinished (time %.2d:%.2ds)" % ('\b' * 8,
-                                                               diff.seconds/60,
-                                                               diff.seconds%60),
+                                                               diff.seconds / 60,
+                                                               diff.seconds % 60),
                             log=False)
-                os.chmod(common_file_path, 0640)
+                # os.chmod(common_file_path, 0640)
             self.switch_back_dir()
         except IOError:
             return 0

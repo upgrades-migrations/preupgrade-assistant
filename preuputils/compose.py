@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import re
@@ -37,7 +38,7 @@ class XCCDFCompose(object):
             self.dir_name = self.result_dir[:-1] + variables.result_prefix
 
         if get_valid_scenario(self.dir_name) is None:
-            print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
+            print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
             sys.exit(1)
 
     def generate_xml(self):
@@ -46,8 +47,8 @@ class XCCDFCompose(object):
         template_file = ComposeXML.get_template_file()
         try:
             f = open(template_file, "r")
-        except IOError, e:
-            print 'Problem with reading template.xml file'
+        except IOError as e:
+            print ('Problem with reading template.xml file')
             sys.exit(1)
         target_tree = ElementTree.fromstring(f.read())
         target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
@@ -56,9 +57,9 @@ class XCCDFCompose(object):
         try:
             f = open(report_filename, "w")
             f.write(ElementTree.tostring(target_tree, "utf-8"))
-            print 'Generate report file for preupgrade-assistant is:', ''.join(report_filename)
-        except IOError, e:
-            print "Problem with writing file %s".format(f)
+            print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
+        except IOError as e:
+            print ("Problem with writing file ", f)
             raise
         return self.dir_name
 
@@ -95,7 +96,7 @@ class ComposeXML(object):
                     ret[dirname] = (ElementTree.fromstring(file.read()),
                                     cls.collect_group_xmls(new_dir, level=level + 1))
                 except ParseError as e:
-                    print "Encountered a parse error in file '%s', details: %s" % (group_file_path, e)
+                    print ("Encountered a parse error in file ", group_file_path, " details: ", e)
         return ret
 
     @classmethod
@@ -122,21 +123,23 @@ class ComposeXML(object):
             for element in tree.findall(".//" + xccdf.XMLNS + "Rule"):
                 checks = element.findall(xccdf.XMLNS + "check")
                 if len(checks) != 1:
-                    print "Rule of id '%s' from '%s' doesn't have " \
-                          "exactly one check element!" % (element.get("id", ""), group_xml_path)
+                    print ("Rule of id ", element.get("id", ""),
+                           " from ", group_xml_path,
+                           " doesn't have exactly one check element!")
                     continue
 
                 check = checks[0]
 
                 if check.get("system") != SCE:
-                    print "Rule of id '%s' from '%s' has system name different " \
-                          "from the SCE system name " \
-                          "('%s')!" % (element.get("id", ""), group_xml_path, SCE)
+                    print ("Rule of id '", element.get("id", ""),
+                           "' from ", group_xml_path, " has system name different from the SCE system name ",
+                           "('", SCE, "')!")
 
                 crefs = check.findall(xccdf.XMLNS + "check-content-ref")
                 if len(crefs) != 1:
-                    print("Rule of id '%s' from '%s' doesn't have exactly one "
-                          "check-content-ref inside its check element!" % (element.get("id", ""), group_xml_path))
+                    print("Rule of id '", element.get("id", ""),
+                          "' from '", group_xml_path,
+                          "' doesn't have exactly one check-content-ref inside its check element!")
                     continue
 
                 cref = crefs[0]
@@ -144,7 +147,7 @@ class ComposeXML(object):
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
-                    print "Rule %r missing a description" % element.get("id", "")
+                    print ("Rule ", element.get("id", ""), " missing a description")
                     continue
 
             if b_subgroups:

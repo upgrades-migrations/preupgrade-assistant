@@ -95,7 +95,7 @@ def copy_modified_config_files(result_dir):
         dirty_path = os.path.join(dirty_conf, os.path.dirname(new_filename))
         # Check whether dirtyconf directory with dirname(filename) exists
         if not os.path.exists(dirty_path):
-            os.makedirs(dirty_path, 0755)
+            os.makedirs(dirty_path)
         # Copy filename to dirtyconf directory
         try:
             shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))

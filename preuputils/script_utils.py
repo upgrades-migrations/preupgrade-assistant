@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 import os
 import re
@@ -21,10 +23,10 @@ def check_scripts(type_name, dir_name, script_name=None):
     If check_script exists then the script checks whether it is executable
     """
     if not os.path.exists(get_full_path(dir_name, script_name)):
-        print "ERROR: ", dir_name, script_name, "Script name does not exists"
-        print "List of directory (", (dir_name), ") is:"
+        print ("ERROR: ", dir_name, script_name, "Script name does not exists")
+        print ("List of directory (", dir_name, ") is:")
         for file_name in os.listdir(dir_name):
-            print file_name
+            print (file_name)
         sys.exit(1)
     if type_name != 'solution':
         check_executable(dir_name, script_name)

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import re
 import os
 
@@ -27,9 +29,9 @@ def print_error_msg(title="", msg="", level=' ERROR '):
     Function prints a ERROR or WARNING messages
     """
     number = 10
-    print '\n'
-    print '*'*number+level+'*'*number
-    print title, ''.join(msg)
+    print ('\n')
+    print ('*'*number+level+'*'*number)
+    print (title, ''.join(msg))
 
 
 class XmlUtils(object):
