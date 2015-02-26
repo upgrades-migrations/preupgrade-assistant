@@ -4,7 +4,6 @@ include common.sh
 include README*
 include LICENSE
 include preupg premigrate
-include preup.xsl
 
 recursive-include preup *.py
 recursive-include scripts *.py
