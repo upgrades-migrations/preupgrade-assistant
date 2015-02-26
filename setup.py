@@ -18,7 +18,7 @@ package_name            = "%s" % project_name
 package_module_name     = project_name
 package_version         = "0.11.6"
 
-script_files = ['preupg', 'premigrate', 'xccdf_compose', 'create_group_xml', 'preup_ui_manage']
+script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml', 'preup_ui_manage']
 
 data_files = {
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
