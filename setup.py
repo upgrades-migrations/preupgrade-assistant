@@ -27,7 +27,6 @@ data_files = {
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
     '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
-    '/usr/share/doc/preupgrade': ['LICENSE'],
 }
 
 # recursively add templates and static
