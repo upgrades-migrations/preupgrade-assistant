@@ -140,5 +140,8 @@ UPGRADE_PATH = ""
 KS_DIR = os.path.join(result_dir, 'kickstart')
 KS_TEMPLATE = os.path.join(KS_DIR, 'default.ks')
 KS_TEMPLATE_POSTSCRIPT = os.path.join(KS_DIR, 'finish.sh')
-KS_FILES = ['default_grouplist-el6', 'default-optional_grouplist-3']
 PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
+KS_FILES = ['default_grouplist-el5', 'default_grouplist-el7',
+            'default-optional_grouplist-el5', 'default-optional_grouplist-el7']
+CPE_RHEL = 'redhat:enterprise_linux'
+CPE_FEDORA = 'fedoraproject:fedora'

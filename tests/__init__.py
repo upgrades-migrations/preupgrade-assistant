@@ -2,6 +2,7 @@ import test_preup
 import test_xml
 import unittest
 import test_oscap
+import test_generation
 
 
 def suite():
@@ -9,6 +10,7 @@ def suite():
     suite.addTests(test_preup.suite())
     suite.addTests(test_xml.suite())
     suite.addTests(test_oscap.suite())
+    suite.addTests(test_generation.suite())
     return suite
 
 if __name__ == '__main__':

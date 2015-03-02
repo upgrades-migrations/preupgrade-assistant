@@ -1,8 +1,14 @@
+from __future__ import print_function
 import os
 import sys
 import re
 import datetime
 
+import shutil
+from distutils import dir_util
+
+from preup.utils import get_valid_scenario
+from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
@@ -12,8 +18,50 @@ try:
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-XCCDF_Fragment = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
+XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
+
+
+class XCCDFCompose(object):
+    dir_name = ""
+    result_dir = ""
+
+    def __init__(self, argument):
+        """
+        Specify dirname with the on content
+        :param argument: dirname where content is
+        :return:
+        """
+        self.result_dir = argument
+        self.dir_name = self.result_dir + variables.result_prefix
+        if self.result_dir.endswith("/"):
+            self.dir_name = self.result_dir[:-1] + variables.result_prefix
+
+        if get_valid_scenario(self.dir_name) is None:
+            print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
+            sys.exit(1)
+
+    def generate_xml(self):
+        dir_util.copy_tree(self.result_dir, self.dir_name)
+        result_dirname = self.dir_name
+        template_file = ComposeXML.get_template_file()
+        try:
+            f = open(template_file, "r")
+        except IOError as e:
+            print ('Problem with reading template.xml file')
+            sys.exit(1)
+        target_tree = ElementTree.fromstring(f.read())
+        target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
+
+        report_filename = os.path.join(result_dirname, settings.content_file)
+        try:
+            f = open(report_filename, "w")
+            f.write(ElementTree.tostring(target_tree, "utf-8"))
+            print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
+        except IOError as e:
+            print ("Problem with writing file ", f)
+            raise
+        return self.dir_name
 
 
 class ComposeXML(object):
@@ -38,8 +86,7 @@ class ComposeXML(object):
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
                 cls.perform_autoqa(new_dir, return_list)
-                #generate_xml = GenerateXml(new_dir, True, return_list)
-                #generate_xml.make_xml()
+
             group_file_path = os.path.join(new_dir, "group.xml")
             if not os.path.isfile(group_file_path):
                 #print("Directory '%s' is missing a group.xml file!" % (new_dir))
@@ -47,10 +94,9 @@ class ComposeXML(object):
             with open(group_file_path, "r") as file:
                 try:
                     ret[dirname] = (ElementTree.fromstring(file.read()),
-                                    cls.collect_group_xmls(new_dir,
-                                    level=level + 1))
+                                    cls.collect_group_xmls(new_dir, level=level + 1))
                 except ParseError as e:
-                    print("Encountered a parse error in file '%s', details: %s" % (group_file_path, e))
+                    print ("Encountered a parse error in file ", group_file_path, " details: ", e)
         return ret
 
     @classmethod
@@ -77,21 +123,23 @@ class ComposeXML(object):
             for element in tree.findall(".//" + xccdf.XMLNS + "Rule"):
                 checks = element.findall(xccdf.XMLNS + "check")
                 if len(checks) != 1:
-                    print("Rule of id '%s' from '%s' doesn't have "
-                          "exactly one check element!" % (element.get("id", ""), group_xml_path))
+                    print ("Rule of id ", element.get("id", ""),
+                           " from ", group_xml_path,
+                           " doesn't have exactly one check element!")
                     continue
 
                 check = checks[0]
 
                 if check.get("system") != SCE:
-                    print("Rule of id '%s' from '%s' has system name different "
-                          "from the SCE system name "
-                          "('%s')!" % (element.get("id", ""), group_xml_path, SCE))
+                    print ("Rule of id '", element.get("id", ""),
+                           "' from ", group_xml_path, " has system name different from the SCE system name ",
+                           "('", SCE, "')!")
 
                 crefs = check.findall(xccdf.XMLNS + "check-content-ref")
                 if len(crefs) != 1:
-                    print("Rule of id '%s' from '%s' doesn't have exactly one "
-                          "check-content-ref inside its check element!" % (element.get("id", ""), group_xml_path))
+                    print("Rule of id '", element.get("id", ""),
+                          "' from '", group_xml_path,
+                          "' doesn't have exactly one check-content-ref inside its check element!")
                     continue
 
                 cref = crefs[0]
@@ -99,7 +147,7 @@ class ComposeXML(object):
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
-                    print("Rule %r missing a description" % element.get("id", ""))
+                    print ("Rule ", element.get("id", ""), " missing a description")
                     continue
 
             if b_subgroups:
@@ -126,7 +174,7 @@ class ComposeXML(object):
             prefix = 100
             tree, subgroups = group_tree[tree_key]
             try:
-                prefix = int(tree.findall(XCCDF_Fragment + "sort-prefix")[-1].text)
+                prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")[-1].text)
             except:
                 pass
 
@@ -179,7 +227,7 @@ class ComposeXML(object):
 
                     to_remove.append(select)
 
-                elif select.tag == XCCDF_Fragment + "meta-select":
+                elif select.tag == XCCDF_FRAGMENT + "meta-select":
                     needle = select.get("idref")
                     for rule_id in all_rules:
                         if re.match(needle, rule_id):

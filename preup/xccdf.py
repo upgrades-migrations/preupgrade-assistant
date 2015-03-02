@@ -7,7 +7,7 @@ try:
 except ImportError:
     from elementtree import ElementTree
 
-from utils import get_file_content
+from preup import utils
 from preup.logger import log_message
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
@@ -75,7 +75,7 @@ def check_inplace_risk(xccdf_file, verbose):
     return value is get from function get_and_print_inplace_risk
     """
     try:
-        content = get_file_content(xccdf_file, 'r')
+        content = utils.get_file_content(xccdf_file, 'r')
         if not content:
             # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
             return -1

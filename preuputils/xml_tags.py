@@ -47,7 +47,7 @@ RULE_SECTION = """
       </check>
     </Rule>
 """
-PLATFORM = """platform=\"cpe:/o:redhat:enterprise_linux:{platform_id}\""""
+PLATFORM = """platform=\"cpe:/o:PLATFORM_NAME:PLATFORM_ID\""""
 FIX = """<fix """+PLATFORM+""" system="urn:xccdf:fix:script:{script_type}">
 {solution}
          </fix>"""

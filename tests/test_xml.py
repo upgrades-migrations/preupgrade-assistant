@@ -20,7 +20,7 @@ from preup.xml_manager import html_escape, html_escape_string
 
 class TestXMLCompose(unittest.TestCase):
     def test_compose(self):
-        dir_name = os.path.join(os.getcwd(), 'tests', 'RHEL6_7')
+        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
         result_dir = os.path.join(dir_name+variables.result_prefix)
         dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(result_dir):
@@ -51,7 +51,7 @@ class TestXMLCompose(unittest.TestCase):
 
 class TestXML(unittest.TestCase):
     def setUp(self):
-        self.dirname = "tests/RHEL6_7-results/test"
+        self.dirname = "tests/FOOBAR6_7-results/test"
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -189,22 +189,21 @@ A solution text for test suite"
 
 class TestMissingTag(unittest.TestCase):
     def setUp(self):
-        self.dir_name = "tests/RHEL6_7/missing_tag"
+        self.dir_name = "tests/FOOBAR6_7/missing_tag"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
         self.test_solution = "test_solution.sh"
         self.check_script = "check_script.sh"
         self.loaded_ini = {}
-        test_ini = {'content_title':'Testing content title',
-                     'content_description': 'Some content description',
-                 'author':'test <test@redhat.com>',
-                 'config_file': '/etc/named.conf',
-                 'solution': self.test_solution,
-                 'applies_to':'test',
-            }
+        test_ini = {'content_title': 'Testing content title',
+                    'content_description': 'Some content description',
+                    'author': 'test <test@redhat.com>',
+                    'config_file': '/etc/named.conf',
+                    'solution': self.test_solution,
+                    'applies_to': 'test'}
         self.assertTrue(test_ini)
-        self.loaded_ini[self.filename]=[]
+        self.loaded_ini[self.filename] = []
         self.loaded_ini[self.filename].append(test_ini)
 
     def tearDown(self):
@@ -219,10 +218,10 @@ A solution text for test suite"
 """
         write_to_file(os.path.join(self.dir_name, self.test_solution), "w", solution_text)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.rule = self.xml_utils.prepare_sections()
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_solution_script(self):
-        check_sh="""#!/bin/bash
+        check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
 
@@ -235,13 +234,12 @@ A solution text for test suite"
 
 class TestGroupXML(unittest.TestCase):
     def setUp(self):
-        self.dir_name = "tests/RHEL6_7-results/test_group"
+        self.dir_name = "tests/FOOBAR6_7-results/test_group"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'group.ini')
         self.rule = []
         self.loaded_ini = {}
-        test_ini = {'group_title': 'Testing content title',
-            }
+        test_ini = {'group_title': 'Testing content title'}
         self.assertTrue(test_ini)
         self.loaded_ini[self.filename] = []
         self.loaded_ini[self.filename].append(test_ini)
@@ -288,6 +286,11 @@ class HTMLEscapeTest(unittest.TestCase):
         expected_output = ['asd&lt;&gt;&amp;']
         self.assertEqual(output, expected_output)
 
+
+class ComposeTest(unittest.TestCase):
+
+    def setUp(self):
+        pass
 
 def suite():
     loader = unittest.TestLoader()

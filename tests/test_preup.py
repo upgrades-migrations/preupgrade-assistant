@@ -22,7 +22,7 @@ class TestPreupg(unittest.TestCase):
         Basic test for whole program
         """
         conf = {
-            "contents": "tests/RHEL6_7/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -32,7 +32,7 @@ class TestPreupg(unittest.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/RHEL6_7/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
@@ -43,7 +43,7 @@ class TestPreupg(unittest.TestCase):
 
 class TestXMLUpdates(unittest.TestCase):
     def setUp(self):
-        self.content = "tests/RHEL6_7/dummy_preupg/all-xccdf.xml"
+        self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"
         self.test_content = self.content+".test"
         shutil.copyfile(self.content, self.test_content)
 
@@ -63,7 +63,7 @@ class TestXMLUpdates(unittest.TestCase):
     def test_result_dirs_tmp_preupgrade(self):
         rp = ReportParser(self.test_content)
         result_path = "/abc/def"
-        rp.modify_result_path(result_path, "RHEL6_7")
+        rp.modify_result_path(result_path, "FOOBAR6_7")
         found_tmp = 0
 
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
@@ -77,7 +77,7 @@ class TestXMLUpdates(unittest.TestCase):
     def test_result_dirs_current_dir(self):
         rp = ReportParser(self.test_content)
         result_path = "/abc/efg"
-        scenario = 'RHEL6_7'
+        scenario = 'FOOBAR6_7'
         rp.modify_result_path(result_path, scenario)
         found_current = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
@@ -94,10 +94,10 @@ class TestCLI(unittest.TestCase):
     def test_opts(self):
         """ basic test of several options """
         conf = {
-            "scan": "RHEL6_7",
+            "scan": "FOOBAR6_7",
             "temp_dir": 'd',
             "skip_common": False,
-            "contents": "content/RHEL6_7",
+            "contents": "content/FOOBAR6_7",
             "id": 1,
             "list": True,
             "apply": True,
@@ -106,13 +106,13 @@ class TestCLI(unittest.TestCase):
             "cleanup": True
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "RHEL6_7", "--skip-common", "--list", "--upload",
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list", "--upload",
                    "123", "--apply", "--verbose", "--text",
-                   "--contents", "content/RHEL6_7", "--cleanup"])
+                   "--contents", "content/FOOBAR6_7", "--cleanup"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
-        self.assertEqual(a.conf.contents, "content/RHEL6_7")
+        self.assertEqual(a.conf.contents, "content/FOOBAR6_7")
         self.assertTrue(a.conf.list)
         self.assertTrue(a.conf.apply)
         self.assertTrue(a.conf.text)
@@ -120,7 +120,7 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(int(a.conf.upload), 123)
         self.assertEqual(int(a.conf.verbose), 0)
         self.assertEqual(a.conf.temp_dir, "d")
-        self.assertEqual(a.conf.scan, "RHEL6_7")
+        self.assertEqual(a.conf.scan, "FOOBAR6_7")
 
 
 class TestHashes(unittest.TestCase):
@@ -195,7 +195,7 @@ class TestScenario(unittest.TestCase):
         Basic test for whole program
         """
         conf = {
-            "contents": "tests/RHEL6_77/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_77/dummy_preupg/all-xccdf.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -205,20 +205,20 @@ class TestScenario(unittest.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/RHEL6_77/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/FOOBAR6_77/dummy_preupg/all-xccdf.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
         a.content = a.conf.contents
         a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), "RHEL6_77")
+        self.assertEqual(a.get_scenario(), "FOOBAR6_77")
 
     def test_migration_content_scenario(self):
         """
         Basic test for whole program
         """
         conf = {
-            "contents": "tests/RHEL6_CENTOS6/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_CENTOS6/dummy_preupg/all-xccdf.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -228,20 +228,20 @@ class TestScenario(unittest.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/RHEL6_CENTOS6/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/FOOBAR6_CENTOS6/dummy_preupg/all-xccdf.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
         a.content = a.conf.contents
         a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), "RHEL6_CENTOS6")
+        self.assertEqual(a.get_scenario(), "FOOBAR6_CENTOS6")
 
     def test_wrong_content_scenario(self):
         """
         Basic test for whole program
         """
         conf = {
-            "contents": "tests/RHEL6_7A/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_7A/dummy_preupg/all-xccdf.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -251,7 +251,7 @@ class TestScenario(unittest.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/RHEL6_7A/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/FOOBAR6_7A/dummy_preupg/all-xccdf.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
@@ -265,11 +265,11 @@ class TestPreupgradePrefix(unittest.TestCase):
         settings.prefix = 'preupgrade'
 
     def test_correct_prefix(self):
-        version = utils.get_assessment_version('RHEL6_7')
+        version = utils.get_assessment_version('FOOBAR6_7')
         self.assertEqual(version, ['6', '7'])
 
     def test_wrong_prefix(self):
-        version = utils.get_assessment_version('RHEL6_CENTOS6')
+        version = utils.get_assessment_version('FOOBAR6_CENTOS6')
         self.assertEqual(version, None)
 
 
@@ -278,12 +278,13 @@ class TestPremigratePrefix(unittest.TestCase):
         settings.prefix = 'premigrate'
 
     def test_correct_prefix(self):
-        version = utils.get_assessment_version('RHEL6_CENTOS6')
+        version = utils.get_assessment_version('FOOBAR6_CENTOS6')
         self.assertEqual(version, ['6', '6'])
 
     def test_wrong_prefix(self):
-        version = utils.get_assessment_version('RHEL6_7')
+        version = utils.get_assessment_version('FOOBAR6_7')
         self.assertEqual(version, None)
+
 
 def suite():
     loader = unittest.TestLoader()

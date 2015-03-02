@@ -21,7 +21,7 @@
   <reference href="http://iase.disa.mil/stigs/index.html">Defense Information Systems Agency - Security Technical Implementation Guides (DISA STIG)</reference>
   <reference href="https://www.pcisecuritystandards.org">Payment Card Industry - Data Security Standard (PCI DSS)</reference>
 
-  <platform idref="cpe:/o:redhat:enterprise_linux:6" />
+  <platform idref="cpe:/o:PLATFORM_NAME:PLATFORM_ID" />
   <version>1.0</version>
   <model system="urn:xccdf:scoring:flat" />
 

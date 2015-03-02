@@ -5,14 +5,14 @@ to assessment
 """
 
 import os
+import platform
 import datetime
 import shutil
-import platform
 from distutils import dir_util
+from preup import utils
+from preup.utils import run_subprocess
+from preup.logger import log_message
 from preup import settings
-from preup.utils import get_server_variant, get_addon_variant
-from utils import check_or_create_temp_dir, log_message, get_file_content
-from utils import run_subprocess
 
 
 def get_add_on_name(filename, add_on):
@@ -27,9 +27,7 @@ class Common(object):
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
-        self.lines = get_file_content(self.conf.common_script,
-                                      "r",
-                                      method=True)
+        self.lines = utils.get_file_content(self.conf.common_script, "r", method=True)
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
@@ -48,8 +46,7 @@ class Common(object):
         """
         com_dir = self.get_common_dir()
         if not os.path.exists(com_dir):
-            check_or_create_temp_dir(com_dir,
-                                     mode=0750)
+            utils.check_or_create_temp_dir(com_dir)
         self.cwd = os.getcwd()
         os.chdir(self.get_common_dir())
 
@@ -64,8 +61,7 @@ class Common(object):
         log_message("Gathering logs used by preupgrade assistant:")
         self.switch_dir()
         try:
-            max_length = max(max(list([len(x.split("=", 4)[3]) for x in self.lines]),
-                             len(settings.assessment_text)))
+            max_length = max(max(list([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text)))
             # Log files which will not be updated
             # when RPM database is not changed
             for counter, line in enumerate(self.lines):
@@ -83,10 +79,10 @@ class Common(object):
                 end_time = datetime.datetime.now()
                 diff = end_time - start_time
                 log_message(" %sfinished (time %.2d:%.2ds)" % ('\b' * 8,
-                                                               diff.seconds/60,
-                                                               diff.seconds%60),
+                                                               diff.seconds / 60,
+                                                               diff.seconds % 60),
                             log=False)
-                os.chmod(common_file_path, 0640)
+                # os.chmod(common_file_path, 0640)
             self.switch_back_dir()
         except IOError:
             return 0
@@ -153,17 +149,16 @@ class Common(object):
             target_file = os.path.join(settings.KS_DIR, file_name)
             orig_name = file_name.replace('default', variant)
             if not os.path.exists(target_file):
-                log_message('orig_name %s' % os.path.join(dir_name, platform.machine(), orig_name))
-                log_message('new_name %s' % target_file)
-                shutil.copyfile(os.path.join(dir_name, platform.machine(), orig_name),
-                                target_file)
+                if os.path.exists(os.path.join(dir_name, platform.machine(), orig_name)):
+                    shutil.copyfile(os.path.join(dir_name, platform.machine(), orig_name),
+                                    target_file)
 
     def prep_symlinks(self, assessment_dir, scenario=""):
         """
         This will prepare a symlinks for relevant architecture
         and Server Variant
         """
-        server_variant = get_server_variant()
+        server_variant = utils.get_server_variant()
         if server_variant is None:
             return
         self.common_result_dir = os.path.join(assessment_dir, settings.common_name)
@@ -174,7 +169,7 @@ class Common(object):
             usr_common_name = os.path.join(settings.source_dir, scenario, settings.common_name)
             if os.path.exists(usr_common_name):
                 dir_util.copy_tree(usr_common_name, os.path.join(assessment_dir, settings.common_name))
-        add_ons = get_addon_variant()
+        add_ons = utils.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
         if not os.path.exists(dir_name):

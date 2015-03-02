@@ -14,7 +14,7 @@ VERSION="$(   python setup.py --version)"
 TIMESTAMP="$( git log -n 1 --format='%ct')"
 
 # use standard setup.py sdist to generate tar archive
-python >&2 setup.py sdist --formats=tar
+python2 >&2 setup.py sdist --formats=tar
 
 # fix stamps to make the tarball reproducible and save compressed
 tar-fixup-stamp-comment.pl $TIMESTAMP < dist/${NAME}-${VERSION}.tar \

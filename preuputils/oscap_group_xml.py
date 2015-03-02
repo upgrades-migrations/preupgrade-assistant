@@ -1,11 +1,15 @@
+from __future__ import print_function
+
 """
 This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
-
 import os
-import sys
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 from preuputils.xml_utils import print_error_msg, XmlUtils
 from preup.utils import get_file_content, write_to_file
 from xml.etree import ElementTree
@@ -14,11 +18,9 @@ try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
-section_preupgrade = 'preupgrade'
-section_premigrate = 'premigrate'
 
 
-class OscapGroupXml():
+class OscapGroupXml(object):
     """
     Class creates a XML file for OpenSCAP
     """
@@ -45,19 +47,19 @@ class OscapGroupXml():
         for file_name in self.lists:
             with open(file_name, 'r') as stream:
                 try:
-                    config = ConfigParser.ConfigParser()
+                    config = configparser.ConfigParser()
                     config.readfp(open(file_name))
                     fields = {}
-                    if config.has_section(section_premigrate):
-                        section = section_premigrate
+                    if config.has_section('premigrate'):
+                        section = 'premigrate'
                     else:
-                        section = section_preupgrade
+                        section = 'preupgrade'
                     for option in config.options(section):
                         fields[option] = config.get(section, option)
                     self.loaded[file_name] = [fields]
-                except ConfigParser.MissingSectionHeaderError as mshe:
+                except configparser.MissingSectionHeaderError as mshe:
                     print_error_msg(title="Missing section header")
-                except ConfigParser.NoSectionError as nse:
+                except configparser.NoSectionError as nse:
                     print_error_msg(title="Missing section header")
 
     def collect_group_xmls(self):
@@ -68,7 +70,7 @@ class OscapGroupXml():
         try:
             self.ret[self.dirname] = (ElementTree.fromstring(content))
         except ParseError as par_err:
-            print "Encountered a parse error in file '%s', details: %s" % (self.dirname, par_err)
+            print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
         return self.ret
 
     def write_xml(self):
@@ -82,15 +84,15 @@ class OscapGroupXml():
         try:
             write_to_file(file_name, "w", ["%s" % item for item in self.rule])
         except IOError as ior:
-            print 'Problem with rite data to file %s' % file_name
+            print ('Problem with rite data to file ', file_name)
 
     def write_profile_xml(self, target_tree):
         """
         The function stores all-xccdf.xml file into content directory
         """
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
-        print 'File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name)
+        print ('File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name))
         try:
             write_to_file(file_name, "w", ElementTree.tostring(target_tree, "utf-8"))
         except IOError as ioe:
-            print 'Problem with writing to file {0}'.format(file_name), ioe.message
+            print ('Problem with writing to file ', file_name, ioe.message)

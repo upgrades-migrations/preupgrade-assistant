@@ -1,0 +1,25 @@
+#!/usr/bin/python2
+
+import sys
+import optparse
+from preuputils.compose import XCCDFCompose
+try:
+    from xml.etree.ElementTree import ParseError
+except ImportError:
+    from xml.parsers.expat import ExpatError as ParseError
+
+
+def main():
+    parser = optparse.OptionParser(usage="%prog dirname", description="Create XML files for OpenSCAP")
+    opts, args = parser.parse_args()
+    if len(args) > 1:
+        print 'Specify just one directory'
+        parser.print_help()
+        sys.exit(0)
+
+    xccdf_compose = XCCDFCompose(args[0])
+    xccdf_compose.generate_xml()
+
+if __name__ == "__main__":
+    main()
+

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import datetime
 import re
 import subprocess
@@ -41,11 +42,11 @@ def check_xml(xml_file):
         raise RuntimeError("Provided file is not a valid XML file")
 
 
-def check_or_create_temp_dir(temp_dir, mode=""):
+def check_or_create_temp_dir(temp_dir, mode=None):
     """ check if provided temp dir is valid """
     if os.path.isdir(temp_dir):
         if not os.access(temp_dir, os.W_OK):
-            log_message("Directory %s is not writable.%" % temp_dir, level=logging.ERROR)
+            log_message("Directory %s is not writable." % temp_dir, level=logging.ERROR)
             raise IOError("Directory %s is not writable." % temp_dir)
     else:
         os.makedirs(temp_dir)
@@ -58,10 +59,10 @@ def get_interpreter(file, verbose=False):
     # The function returns interpreter
     # Checks extension of script and first line of script
     script_types = {'/bin/bash': '.sh',
-                   '/usr/bin/python': '.py',
-                   '/usr/bin/perl': '.pl'
-    }
-    inter = list((k) for k, v in script_types.iteritems() if file.endswith(v))
+                    '/usr/bin/python': '.py',
+                    '/usr/bin/perl': '.pl'}
+
+    inter = list(k for k, v in script_types.iteritems() if file.endswith(v))
     content = get_file_content(file, 'r')
     if inter and content.startswith('#!'+inter[0]):
         return inter
@@ -84,7 +85,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
         stdout += stdout_data
         if function is None:
             if print_output:
-                print stdout_data,
+                print (stdout_data, end="", flush=True)
         else:
             function(stdout_data)
     sp.communicate()
@@ -112,21 +113,30 @@ def get_prefix():
     return settings.prefix
 
 
+def get_system():
+    """
+    Check if system is Fedora or RHEL
+    :return: Fedora or None
+    """
+    lines = get_file_content('/etc/redhat-release', 'r', method=True)
+    return [line for line in lines if line.startswith('Fedora')]
+
+
 def get_assessment_version(dir_name):
     if get_prefix() == "preupgrade":
-        matched = re.search(r'\D+(\d)_(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     elif get_prefix() == "premigrate":
-        matched = re.search(r'\D+(\d)_\D+(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_\D+(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(2)]
         else:
             return None
     else:
-        matched = re.search(r'\D+(\d)_(\D*)(\d+)', dir_name, re.I)
+        matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
         if matched:
             return [matched.group(1), matched.group(3)]
         else:
@@ -134,7 +144,7 @@ def get_assessment_version(dir_name):
 
 
 def get_valid_scenario(dir_name):
-    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d)_(\D*)(\d+)(-results)?$', x, re.I)]
+    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
     if matched:
         return matched[0]
     else:
@@ -159,7 +169,6 @@ def get_file_content(path, perms, method=False):
             f.close()
             return data
     except IOError:
-        log_message('Unable to open file %s' % path, level=logging.ERROR)
         raise
 
 
@@ -178,7 +187,6 @@ def write_to_file(path, perms, data):
         finally:
             f.close()
     except IOError:
-        log_message('Unable to access file %s' % path, level=logging.ERROR)
         raise
 
 
@@ -214,12 +222,10 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
     os.chdir(dirname)
     if direction:
         tarball = get_tarball_result_path(dirname, get_tarball_name(result_file, current_time))
-        #log(quiet, 'writing tarball to %s', dirname)
         cmd.append(cmd_pack)
         cmd.append(tarball)
         cmd.append(".")
     else:
-        #log(quiet, 'Extracting tarball to %s', dirname)
         cmd.append(cmd_extract)
         cmd.append(result_file)
 
@@ -252,18 +258,24 @@ def get_upgrade_dir_path(dirname):
 
 
 def get_message(title="", message="Do you want to continue?"):
+    """
+    Function asks for input from user
+    :param title: Title of the message
+    :param message: Message text
+    :return: y or n
+    """
     yes = ['yes', 'y']
     yesno = yes + ['no', 'n']
     prompt = ' y/n'
-    print title
-    print message + prompt
+    print (title)
+    print (message + prompt)
     while True:
         try:
             choice = raw_input().lower()
         except KeyboardInterrupt:
             return "n"
         if choice not in yesno:
-            print 'You have to choose one of y/n.'
+            print ('You have to choose one of y/n.')
         else:
             return choice
 
@@ -347,3 +359,21 @@ def remove_home_issues():
             write_to_file(f, 'w', lines)
         except IOError:
             pass
+
+
+def update_platform(full_path):
+    file_lines = get_file_content(full_path, 'r', method=True)
+    platform = ''
+    platform_id = ''
+    if not get_system():
+        platform = settings.CPE_RHEL
+    else:
+        platform = settings.CPE_FEDORA
+    platform_id = get_assessment_version(full_path)
+    for index, line in enumerate(file_lines):
+        if 'PLATFORM_NAME' in line:
+            line = line.replace('PLATFORM_NAME', platform)
+        if 'PLATFORM_ID' in line:
+            line = line.replace('PLATFORM_ID', platform_id[0])
+        file_lines[index] = line
+    write_to_file(full_path, 'w', file_lines)

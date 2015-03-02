@@ -95,7 +95,7 @@ def copy_modified_config_files(result_dir):
         dirty_path = os.path.join(dirty_conf, os.path.dirname(new_filename))
         # Check whether dirtyconf directory with dirname(filename) exists
         if not os.path.exists(dirty_path):
-            os.makedirs(dirty_path, 0755)
+            os.makedirs(dirty_path)
         # Copy filename to dirtyconf directory
         try:
             shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))
@@ -112,10 +112,8 @@ def hash_postupgrade_file(verbose, dirname, check=False):
     print what scripts were changed
     """
     if not os.path.exists(dirname):
-        log_message('Directory {0} does not exist for'
-                    ' creating checksum file'.format(
-                    settings.postupgrade_dir),
-                    level=logging.ERROR)
+        message = 'Directory {0} does not exist for creating checksum file'
+        log_message(message.format(settings.postupgrade_dir), level=logging.ERROR)
         return
 
     postupg_scripts = get_all_postupgrade_files(verbose, dirname)
@@ -135,18 +133,16 @@ def hash_postupgrade_file(verbose, dirname, check=False):
     if check:
         hashed_file = get_hashes(os.path.join(dirname, settings.base_hashed_file))
         if hashed_file is None:
-            log_message('Hashed_file is missing.'
-                        'Postupgrade scripts will not be executed',
-                        level=logging.WARNING)
+            message = 'Hashed_file is missing. Postupgrade scripts will not be executed'
+            log_message(message, level=logging.WARNING)
             return False
         hashed_file_new = get_hashes(full_path_name)
         different_hashes = list(set(hashed_file).difference(set(hashed_file_new)))
         for file_name in [settings.base_hashed_file, filename]:
             os.remove(os.path.join(dirname, file_name))
         if different_hashes or len(different_hashes) > 0:
-            log_message('Checksums are different'
-                        'in these postupgrade scripts: %s' % different_hashes,
-                        level=logging.WARNING)
+            message = 'Checksums are different in these postupgrade scripts: %s'
+            log_message(message % different_hashes, level=logging.WARNING)
             return False
     return True
 
@@ -162,8 +158,7 @@ def special_postupgrade_scripts(result_dir):
     with the corresponding names
     mentioned in postupgrade.d directory.
     """
-    postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
-                        }
+    postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh"}
 
     for key, val in postupgrade_dict.iteritems():
         shutil.copy(os.path.join(settings.source_dir,

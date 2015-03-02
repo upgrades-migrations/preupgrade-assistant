@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 
@@ -16,9 +16,9 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "0.11.4dev"
+package_version         = "0.11.7"
 
-script_files = ['preupg', 'premigrate', 'xccdf_compose', 'create_group_xml', 'preup_ui_manage']
+script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml', 'preup_ui_manage']
 
 data_files = {
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
@@ -28,11 +28,6 @@ data_files = {
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
     '/usr/share/preupgrade/xsl': ['preup.xsl'],
     '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
-    '/usr/share/premigrate/': ['common.sh', 'README', 'README.kickstart'],
-    '/usr/share/premigrate/common': ['common/scripts.txt', 'common/post_scripts.txt'],
-    '/usr/share/premigrate/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
-    '/usr/share/premigrate/xsl': ['preup.xsl'],
-    '/usr/share/premigrate/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
     '/usr/share/doc/preupgrade': ['LICENSE'],
 }
 
@@ -62,7 +57,7 @@ if root_dir != "":
 for scheme in INSTALL_SCHEMES.values():
     scheme["data"] = scheme["purelib"]
 
-setup (
+setup(
         name            = package_name,
         version         = package_version.replace(" ", "_").replace("-", "_"),
         url             = project_url,

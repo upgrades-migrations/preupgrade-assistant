@@ -1,11 +1,14 @@
-import xml_tags
-import script_utils
+from __future__ import print_function
+
 import re
 import os
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
+from preup.utils import get_system
 from preup import settings
+from preuputils import xml_tags
+from preuputils import script_utils
 
 
 def get_full_xml_tag(dirname):
@@ -25,10 +28,10 @@ def print_error_msg(title="", msg="", level=' ERROR '):
     """
     Function prints a ERROR or WARNING messages
     """
-    number = 30
-    print '*'*number+level+'*'*number
-    print title, msg
-    print '*'*number+level+'*'*number
+    number = 10
+    print ('\n')
+    print ('*'*number+level+'*'*number)
+    print (title, ''.join(msg))
 
 
 class XmlUtils(object):
@@ -131,10 +134,9 @@ class XmlUtils(object):
         unused = [x for x in fields if not keys.get(x)]
         if unused:
             title = 'Following tags are missing in INI file %s\n' % script_name
-            if 'applies_to' in unused:
-                print_error_msg(title=title, msg=unused, level=' WARNING ')
-            else:
+            if 'applies_to' not in unused:
                 print_error_msg(title=title, msg=unused)
+                os.sys.exit(1)
         if 'solution_type' in keys:
             if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
                 pass
@@ -177,16 +179,10 @@ class XmlUtils(object):
             else:
                 fix_tag.append(xml_tags.FIX)
 
-            #Update values
             self.update_values_list(fix_tag, "{solution_text}",
                                     key['solution_type'] if 'solution_type' in key else "text")
             self.update_values_list(fix_tag, "{solution}", k)
             self.update_values_list(fix_tag, "{script_type}", script_type)
-            version = get_assessment_version(self.dirname)
-            if version:
-                self.update_values_list(fix_tag, "{platform_id}", version[1])
-            else:
-                self.update_values_list(fix_tag, "{platform_id}", "6")
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):
@@ -210,8 +206,7 @@ class XmlUtils(object):
         self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[:-1][0])
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
-                        'requires': 'check_rpm'
-                        }
+                        'requires': 'check_rpm'}
         updates = dict()
         for req in requirements:
             if req in key:
@@ -360,7 +355,10 @@ class XmlUtils(object):
             self.update_values_list(self.rule,
                                     '{group_title}',
                                     html_escape_string(key['content_title']))
-            if 'mode' not in key:
-                self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
-            else:
-                self.fnc_update_mode(key['check_script'], key['mode'])
+            try:
+                if 'mode' not in key:
+                    self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
+                else:
+                    self.fnc_update_mode(key['check_script'], key['mode'])
+            except KeyError:
+                pass

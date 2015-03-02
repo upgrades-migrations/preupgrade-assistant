@@ -4,20 +4,23 @@ The application module serves for running oscap binary and reporting results to 
 """
 import shutil
 import datetime
+from xmlrpclib import Fault
 from distutils import dir_util
-from preup import xccdf, xml_manager, remediate
+
+from preup import xccdf, xml_manager, remediate, utils
 from preup.common import Common
-from preup.scanning import ScanProgress
-from preup.scanning import format_rules_to_table
-from utils import check_xml, get_file_content, check_or_create_temp_dir
-from utils import run_subprocess, get_assessment_version, get_message
-from utils import tarball_result_dir
+from preup.scanning import ScanProgress, format_rules_to_table
+from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
+from preup.utils import run_subprocess, get_assessment_version, get_message
+from preup.utils import tarball_result_dir, get_system
 from preup.logger import *
 from preup.report_parser import ReportParser
 from preup import utils
 from preup.kickstart import KickstartGenerator
 
 from xmlrpclib import Fault
+from preup.kickstart import KickstartGenerator
+from preuputils.compose import XCCDFCompose
 
 
 def get_xsl_stylesheet():
@@ -31,7 +34,7 @@ def fault_repr(self):
     """
     monkey patching Fault's repr method so newlines are actually interpreted
     """
-    print self.faultString
+    log_message(self.faultString)
     return "<Fault %s: %s>" % (self.faultCode, self.faultString)
 
 Fault.__repr__ = fault_repr
@@ -76,7 +79,6 @@ class Application(object):
     binary = "/usr/bin/oscap"
     command_eval = ['xccdf', 'eval']
     command_remediate = ['xccdf', 'remediate']
-    command_generate = ['xccdf', 'generate', 'custom']
 
     def __init__(self, conf):
         """
@@ -93,6 +95,13 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+
+    def get_command_generate(self):
+        if not get_system():
+            command_generate = ['xccdf', 'generate', 'custom']
+        else:
+            command_generate = ['xccdf', 'generate', 'report']
+        return command_generate
 
     def get_third_party_name(self):
         """
@@ -123,10 +132,18 @@ class Application(object):
         return os.path.join(self.conf.result_dir, self.conf.tarball_name)
 
     def get_default_txt_result_path(self):
+        """
+        Function returns default txt result path based on result_dir
+        :return: default txt result path
+        """
         return os.path.join(self.conf.result_dir,
                             self.get_third_party_name() + self.conf.result_name + ".txt")
 
     def get_binary(self):
+        """
+        Returns oscap binary
+        :return: list with path to oscap binary
+        """
         return [self.binary]
 
     def get_preupgrade_kickstart(self):
@@ -150,8 +167,9 @@ class Application(object):
         Function builds a command for generating results
         """
         command = self.get_binary()
-        command.extend(self.command_generate)
-        command.extend(("--stylesheet", get_xsl_stylesheet()))
+        command.extend(self.get_command_generate())
+        if not get_system():
+            command.extend(("--stylesheet", get_xsl_stylesheet()))
         command.extend(("--output", self.get_default_html_result_path()))
         command.append(check_xml(self.get_default_xml_result_path()))
         return command
@@ -184,7 +202,9 @@ class Application(object):
             # lets try default configuration
             url = "http://127.0.0.1:8099/submit/"
         else:
-            url = self.conf.upload
+            url = self.conf.upload \
+                if self.conf.upload[-1] == '/' \
+                else self.conf.upload + '/'
         try:
             proxy = xmlrpclib.ServerProxy(url)
             proxy.submit.ping()
@@ -206,23 +226,23 @@ class Application(object):
         try:
             status = response['status']
         except KeyError:
-            print 'Invalid response from server.'
+            log_message('Invalid response from server.')
             log_message("Invalid response from server: %s" % response, level=logging.ERROR)
         else:
             if status == 'OK':
                 try:
                     url = response['url']
                 except KeyError:
-                    print 'Report submitted successfully.'
+                    log_message('Report submitted successfully.')
                 else:
-                    print 'Report submitted successfully. You can inspect it at %s' % url
+                    log_message('Report submitted successfully. You can inspect it at ', url)
             else:
                 try:
                     message = response['message']
-                    print 'Report not submitted. Server returned message: %s' % message
+                    log_message('Report not submitted. Server returned message: ', message)
                     log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
                 except KeyError:
-                    print 'Report not submitted. Server returned status: %s' % status
+                    log_message('Report not submitted. Server returned status: ', status)
                     log_message("Report submit: %s" % status, level=logging.ERROR)
 
     def apply_scan(self):
@@ -242,9 +262,9 @@ class Application(object):
         self.basename = os.path.basename(self.content)
         #today = datetime.datetime.today()
         if not self.conf.temp_dir:
-            check_or_create_temp_dir(self.conf.result_dir, mode=0770)
+            check_or_create_temp_dir(self.conf.result_dir)
         check_or_create_temp_dir(self.conf.result_dir)
-        check_or_create_temp_dir(settings.tarball_result_dir, mode=0770)
+        check_or_create_temp_dir(settings.tarball_result_dir)
         for dir_name in settings.preupgrade_dirs:
             check_or_create_temp_dir(os.path.join(self.conf.result_dir, dir_name))
 
@@ -259,7 +279,7 @@ class Application(object):
         during remedation
         """
 
-        check_or_create_temp_dir(self.conf.result_dir, mode=0770)
+        check_or_create_temp_dir(self.conf.result_dir)
 
     def get_total_check(self):
         """
@@ -467,8 +487,20 @@ class Application(object):
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
+        """
+        Copy directory try with contents to /root/preupgrade
+        Call xccdf_compose API for generating all-xccdf.xml
+
+        """
+        xccdf_compose = XCCDFCompose(assessment_dir)
+        generated_dir = xccdf_compose.generate_xml()
+        if os.path.isdir(assessment_dir):
+            shutil.rmtree(assessment_dir)
+        shutil.move(generated_dir, assessment_dir)
+
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
+        utils.update_platform(os.path.join(assessment_dir, settings.content_file))
         return assessment_dir
 
     def copy_preupgrade_scripts(self, assessment_dir):
@@ -484,6 +516,7 @@ class Application(object):
         assessment_dir = self.prepare_scan_system()
         # Update source XML file in temporary directory
 
+        self.content = os.path.join(assessment_dir, settings.content_file)
         try:
             self.report_parser = ReportParser(self.content)
         except IOError:
@@ -578,7 +611,6 @@ class Application(object):
 
     def run(self):
         """ run analysis """
-
         if self.conf.list_contents_set:
             for dir_name, content in list_contents(self.conf.source_dir).iteritems():
                 log_message("%s" % dir_name)
@@ -634,15 +666,17 @@ class Application(object):
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
             for dir_name in filter(is_dir, dirs):
-                if os.path.exists(os.path.join(settings.source_dir,
-                                               dir_name,
-                                               settings.content_file)):
-                    cnt += 1
+                if utils.get_assessment_version(dir_name):
                     self.conf.scan = dir_name
+                    cnt += 1
 
             if int(cnt) != 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
+                return 1
+            if int(cnt) > 1:
+                log_message("There only 1 set of contents is allowed directory %s. \
+If you would like to use this tool, you have to have only one." % settings.source_dir)
                 return 1
 
         if self.conf.scan:
