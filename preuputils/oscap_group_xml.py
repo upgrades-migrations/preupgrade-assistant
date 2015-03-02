@@ -5,7 +5,10 @@ This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
 import os
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 from preuputils.xml_utils import print_error_msg, XmlUtils
 from preup.utils import get_file_content, write_to_file
@@ -44,7 +47,7 @@ class OscapGroupXml(object):
         for file_name in self.lists:
             with open(file_name, 'r') as stream:
                 try:
-                    config = ConfigParser.ConfigParser()
+                    config = configparser.ConfigParser()
                     config.readfp(open(file_name))
                     fields = {}
                     if config.has_section('premigrate'):
@@ -54,9 +57,9 @@ class OscapGroupXml(object):
                     for option in config.options(section):
                         fields[option] = config.get(section, option)
                     self.loaded[file_name] = [fields]
-                except ConfigParser.MissingSectionHeaderError as mshe:
+                except configparser.MissingSectionHeaderError as mshe:
                     print_error_msg(title="Missing section header")
-                except ConfigParser.NoSectionError as nse:
+                except configparser.NoSectionError as nse:
                     print_error_msg(title="Missing section header")
 
     def collect_group_xmls(self):

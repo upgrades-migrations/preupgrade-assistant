@@ -662,16 +662,9 @@ class Application(object):
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
             for dir_name in filter(is_dir, dirs):
-                if not get_system():
-                    if os.path.exists(os.path.join(settings.source_dir,
-                                               dir_name,
-                                               settings.content_file)):
-                        cnt += 1
-                        self.conf.scan = dir_name
-                else:
-                    if utils.get_assessment_version(dir_name):
-                        self.conf.scan = dir_name
-                        cnt += 1
+                if utils.get_assessment_version(dir_name):
+                    self.conf.scan = dir_name
+                    cnt += 1
 
             if int(cnt) != 1:
                 log_message("There were no contents found in directory %s. \
