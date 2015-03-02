@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 import datetime
 import re
 import subprocess
@@ -85,7 +84,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
         stdout += stdout_data
         if function is None:
             if print_output:
-                print (stdout_data, end="", flush=True)
+                print stdout_data,
         else:
             function(stdout_data)
     sp.communicate()
@@ -267,15 +266,15 @@ def get_message(title="", message="Do you want to continue?"):
     yes = ['yes', 'y']
     yesno = yes + ['no', 'n']
     prompt = ' y/n'
-    print (title)
-    print (message + prompt)
+    print title
+    print message + prompt
     while True:
         try:
             choice = raw_input().lower()
         except KeyboardInterrupt:
             return "n"
         if choice not in yesno:
-            print ('You have to choose one of y/n.')
+            print 'You have to choose one of y/n.'
         else:
             return choice
 

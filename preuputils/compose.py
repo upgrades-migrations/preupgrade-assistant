@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import sys
 import re
@@ -12,7 +11,7 @@ from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
-from xml.etree import ElementTree
+from lxml.etree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
@@ -38,7 +37,7 @@ class XCCDFCompose(object):
             self.dir_name = self.result_dir[:-1] + variables.result_prefix
 
         if get_valid_scenario(self.dir_name) is None:
-            print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
+            print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
             sys.exit(1)
 
     def generate_xml(self):
@@ -47,8 +46,8 @@ class XCCDFCompose(object):
         template_file = ComposeXML.get_template_file()
         try:
             f = open(template_file, "r")
-        except IOError as e:
-            print ('Problem with reading template.xml file')
+        except IOError:
+            print 'Problem with reading template.xml file'
             sys.exit(1)
         target_tree = ElementTree.fromstring(f.read())
         target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
@@ -57,9 +56,9 @@ class XCCDFCompose(object):
         try:
             f = open(report_filename, "w")
             f.write(ElementTree.tostring(target_tree, "utf-8"))
-            print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
-        except IOError as e:
-            print ("Problem with writing file ", f)
+            print 'Generate report file for preupgrade-assistant is:', ''.join(report_filename)
+        except IOError:
+            print "Problem with writing file ", f
             raise
         return self.dir_name
 
@@ -91,12 +90,15 @@ class ComposeXML(object):
             if not os.path.isfile(group_file_path):
                 #print("Directory '%s' is missing a group.xml file!" % (new_dir))
                 continue
-            with open(group_file_path, "r") as file:
+            try:
+                f = open(group_file_path, "r")
                 try:
-                    ret[dirname] = (ElementTree.fromstring(file.read()),
+                    ret[dirname] = (ElementTree.fromstring(f.read()),
                                     cls.collect_group_xmls(new_dir, level=level + 1))
-                except ParseError as e:
-                    print ("Encountered a parse error in file ", group_file_path, " details: ", e)
+                except ParseError:
+                    print "Encountered a parse error in file ", group_file_path, " details: ", e
+            except IOError:
+                print 'Problem with reading file %s' % group_file_path
         return ret
 
     @classmethod
@@ -123,23 +125,20 @@ class ComposeXML(object):
             for element in tree.findall(".//" + xccdf.XMLNS + "Rule"):
                 checks = element.findall(xccdf.XMLNS + "check")
                 if len(checks) != 1:
-                    print ("Rule of id ", element.get("id", ""),
-                           " from ", group_xml_path,
-                           " doesn't have exactly one check element!")
+                    print "Rule of id %s from %s doesn't have exactly one check element!"\
+                          % (element.get("id", ""), group_xml_path)
                     continue
 
                 check = checks[0]
 
                 if check.get("system") != SCE:
-                    print ("Rule of id '", element.get("id", ""),
-                           "' from ", group_xml_path, " has system name different from the SCE system name ",
-                           "('", SCE, "')!")
+                    print ("Rule of id '%s' from %s has system name different from "
+                           "the SCE system name ('%s')!" % (element.get("id", ""), group_xml_path, SCE))
 
                 crefs = check.findall(xccdf.XMLNS + "check-content-ref")
                 if len(crefs) != 1:
-                    print("Rule of id '", element.get("id", ""),
-                          "' from '", group_xml_path,
-                          "' doesn't have exactly one check-content-ref inside its check element!")
+                    print "Rule of id '%s' from %s doesn't have exactly one check-content-ref inside its check element!"\
+                          % (element.get("id", ""), group_xml_path)
                     continue
 
                 cref = crefs[0]
@@ -147,7 +146,7 @@ class ComposeXML(object):
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
-                    print ("Rule ", element.get("id", ""), " missing a description")
+                    print "Rule %s missing a description" % element.get("id", "")
                     continue
 
             if b_subgroups:
@@ -186,7 +185,8 @@ class ComposeXML(object):
 
             groups = tree.findall(xccdf.XMLNS + "Group")
             if len(groups) != 1:
-                print("There are %i groups in '%s/group.xml' file. Exactly 1 group is expected! Skipping..." % (len(groups), f))
+                print "There are %i groups in '%s/group.xml' file. Exactly 1 group is expected! Skipping..."\
+                      % (len(groups), f)
                 continue
             target_element.append(groups[0])
             for child in tree.findall(xccdf.XMLNS + "Profile"):
@@ -203,7 +203,8 @@ class ComposeXML(object):
                         break
 
                 if not merged:
-                    print("Found profile of id '%s' that doesn't match any profiles in template, skipped!" % (child.get("id")), sys.stderr)
+                    print "Found profile of id '%s' that doesn't match any profiles in template, skipped!"\
+                           % (child.get("id")), sys.stderr
 
             cls.merge_trees(target_tree, groups[0], subgroups)
 

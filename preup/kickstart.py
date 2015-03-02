@@ -7,10 +7,7 @@ Class creates a kickstart for migration scenario
 import os
 from pykickstart.parser import *
 from pykickstart.data import *
-from pykickstart.constants import *
 from preup.logger import log_message
-from pykickstart.version import makeVersion
-from pykickstart.constants import *
 from preup import settings
 from preup.utils import write_to_file, get_file_content
 
@@ -139,7 +136,6 @@ class KickstartGenerator(object):
     def get_kickstart_path():
         return os.path.join(settings.KS_DIR, 'anaconda-ks.cfg')
 
-    """
     @staticmethod
     def load_or_default(system_ks_path):
         """ load system ks or default ks """
@@ -156,7 +152,7 @@ class KickstartGenerator(object):
                 log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
             except IOError:
                 log_message("Can't read kickstart template %s" % settings.KS_TEMPLATE)
-        return ksparser"""
+        return ksparser
 
     @staticmethod
     def get_package_list(filename):

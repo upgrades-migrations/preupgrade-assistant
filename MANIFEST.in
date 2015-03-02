@@ -14,9 +14,3 @@ recursive-include postupgrade.d *
 recursive-include man *
 recursive-include kickstart *
 
-include preup_ui/report/fixtures/initial_data.json
-include ui-conf/99-preup-httpd.conf
-include ui-conf/99-preup-httpd.conf.public
-recursive-include preup_ui/static *
-recursive-include preup_ui/templates *
-recursive-include preup_ui/lib *

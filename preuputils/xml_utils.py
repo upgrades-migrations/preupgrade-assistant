@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 import re
 import os
@@ -29,9 +28,9 @@ def print_error_msg(title="", msg="", level=' ERROR '):
     Function prints a ERROR or WARNING messages
     """
     number = 10
-    print ('\n')
-    print ('*'*number+level+'*'*number)
-    print (title, ''.join(msg))
+    print '\n'
+    print '*'*number+level+'*'*number
+    print title, ''.join(msg)
 
 
 class XmlUtils(object):
@@ -63,8 +62,11 @@ class XmlUtils(object):
 
     def _update_check_description(self, filename):
         new_text = []
-        with open(os.path.join(self.dirname, filename), 'r') as f_handle:
+        try:
+            f_handle = open(os.path.join(self.dirname, filename), 'r')
             lines = f_handle.readlines()
+        except IOError:
+            raise
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'
@@ -108,8 +110,11 @@ class XmlUtils(object):
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
             new_text = list()
-            with open(os.path.join(self.dirname, replace_exp), "r") as f_handle:
+            try:
+                f_handle = open(os.path.join(self.dirname, replace_exp), "r")
                 new_text = f_handle.readlines()
+            except IOError:
+                raise
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
@@ -179,8 +184,11 @@ class XmlUtils(object):
             else:
                 fix_tag.append(xml_tags.FIX)
 
-            self.update_values_list(fix_tag, "{solution_text}",
-                                    key['solution_type'] if 'solution_type' in key else "text")
+            if 'solution_type' in key:
+                text = key['solution_type']
+            else:
+                text = 'text'
+            self.update_values_list(fix_tag, "{solution_text}", text)
             self.update_values_list(fix_tag, "{solution}", k)
             self.update_values_list(fix_tag, "{script_type}", script_type)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
@@ -211,10 +219,14 @@ class XmlUtils(object):
         for req in requirements:
             if req in key:
                 updates[requirements[req]] = key[req]
+        if 'author' in key:
+            author = key['author']
+        else:
+            author = ''
         script_utils.update_check_script(self.dirname,
                                          updates,
                                          script_name=key[k],
-                                         author=key['author'] if 'author' in key else "")
+                                         author=author)
         self.update_values_list(self.rule, "{"+k+"}", key[k])
 
     def prepare_sections(self):

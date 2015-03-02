@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 import sys
 import os
@@ -7,7 +6,6 @@ import xml_utils
 import mimetypes
 from preup.utils import get_file_content
 from preup import settings
-from contextlib import closing
 
 
 def get_full_path(dir_name, script_name):
@@ -23,10 +21,10 @@ def check_scripts(type_name, dir_name, script_name=None):
     If check_script exists then the script checks whether it is executable
     """
     if not os.path.exists(get_full_path(dir_name, script_name)):
-        print ("ERROR: ", dir_name, script_name, "Script name does not exists")
-        print ("List of directory (", dir_name, ") is:")
+        print "ERROR: ", dir_name, script_name, "Script name does not exists"
+        print "List of directory (", dir_name, ") is:"
         for file_name in os.listdir(dir_name):
-            print (file_name)
+            print file_name
         sys.exit(1)
     if type_name != 'solution':
         check_executable(dir_name, script_name)
@@ -125,7 +123,8 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                                   format(full_path_script))
     for func in functions:
         lines = [x for x in lines if func not in x.strip()]
-    with closing(open(full_path_script, mode="w")) as f_handle:
+    try:
+        f_handle = open(full_path_script, mode="w")
         for line in lines:
             if '#END GENERATED SECTION' in line:
                 new_line = '\n'.join(generated_section)
@@ -140,6 +139,8 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                 else:
                     f_handle.write('set_component("'+component+'")\n')
             f_handle.write(line)
+    except IOError:
+        raise
 
 
 def check_executable(dir_name, script_name=""):

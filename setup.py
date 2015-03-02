@@ -9,7 +9,7 @@ from scripts.include import *
 from setuptools import setup
 
 project_name            = "preupgrade-assistant"
-project_dirs            = ["preup", "preup_ui", "common", "preuputils"]
+project_dirs            = ["preup", "common", "preuputils"]
 project_url             = "https://github.com/phracek/preupgrade-assistant/"
 project_author          = "Red Hat, Inc."
 project_author_email    = "phracek@redhat.com"
@@ -18,24 +18,16 @@ package_name            = "%s" % project_name
 package_module_name     = project_name
 package_version         = "0.11.7"
 
-script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml', 'preup_ui_manage']
+script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml']
 
 data_files = {
-    'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
     'preuputils/': ['preuputils/template.xml'],
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
-    '/usr/share/preupgrade/xsl': ['preup.xsl'],
     '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
     '/usr/share/doc/preupgrade': ['LICENSE'],
 }
-
-# recursively add templates and static
-paths = ['preup_ui/templates/', 'preup_ui/static/', 'preup_ui/lib/']
-for path in paths:
-    for root, dirs, files in os.walk(path):
-        data_files[root] = [os.path.join(root, f) for f in files]
 
 # override default tarball format with bzip2
 distutils.command.sdist.sdist.default_format = {'posix': 'bztar'}
