@@ -488,17 +488,6 @@ class Application(object):
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
-        """
-        Copy directory try with contents to /root/preupgrade
-        Call xccdf_compose API for generating all-xccdf.xml
-
-        """
-        xccdf_compose = XCCDFCompose(assessment_dir)
-        generated_dir = xccdf_compose.generate_xml()
-        if os.path.isdir(assessment_dir):
-            shutil.rmtree(assessment_dir)
-        shutil.move(generated_dir, assessment_dir)
-
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         utils.update_platform(os.path.join(assessment_dir, settings.content_file))
