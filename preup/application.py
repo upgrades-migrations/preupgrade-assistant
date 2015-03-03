@@ -236,14 +236,14 @@ class Application(object):
                 except KeyError:
                     log_message('Report submitted successfully.')
                 else:
-                    log_message('Report submitted successfully. You can inspect it at ', url)
+                    log_message('Report submitted successfully. You can inspect it at %s' % url)
             else:
                 try:
                     message = response['message']
-                    log_message('Report not submitted. Server returned message: ', message)
+                    log_message('Report not submitted. Server returned message: %s' % message)
                     log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
                 except KeyError:
-                    log_message('Report not submitted. Server returned status: ', status)
+                    log_message('Report not submitted. Server returned status: %s' % status)
                     log_message("Report submit: %s" % status, level=logging.ERROR)
 
     def apply_scan(self):
@@ -441,7 +441,7 @@ class Application(object):
         """
         for self.third_party, content in list_contents(dir_name).iteritems():
             third_party_name = self.third_party
-            log_message("Execution {0} assessments:".format(self.third_party))
+            log_message("Execution %s assessments:" % self.third_party)
             self.report_parser.reload_xml(content)
             self.content = content
             self.run_scan_process()
@@ -510,7 +510,7 @@ class Application(object):
         try:
             self.report_parser = ReportParser(self.content)
         except IOError:
-            log_message("Content {0} does not exist".format(self.content))
+            log_message("Content %s does not exist," % self.content)
             sys.exit(1)
         if not self.conf.contents:
             version = get_assessment_version(self.conf.scan)
@@ -561,7 +561,7 @@ class Application(object):
                         log_message("command execution has finished",
                                     print_output=self.conf.verbose)
             except IOError:
-                log_message('Problem with openning file %s' % self.conf.post_scripts,
+                log_message('Problem with openning file %s.' % self.conf.post_scripts,
                             level=logging.ERROR)
         finally:
             log_message("done")
