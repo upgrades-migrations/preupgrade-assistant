@@ -38,10 +38,10 @@ def prepare_xml(path_name):
                                   content=os.path.basename(path_name))
     try:
         file = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
-        file.write(ElementTree.tostring(tree, "utf-8"))
+        file.write(ElementTree.tostring(tree, encoding="utf-8").decode('utf-8'))
         file.close()
-    except IOError, e:
-        print "Problem with writing file {0}".format(path_name)
+    except IOError as e:
+        raise
 
 
 def prepare_cli(temp_dir, path_name):
@@ -71,7 +71,8 @@ def update_xml(path_name, test):
     f = open(full_path, mode='r')
     lines = f.readlines()
     f.close()
-    lines = filter(lambda x: '<ns0:platform idref="cpe:/o:' not in x, lines)
+    lines = [x for x in lines if '<ns0:platform idref="cpe:/o:' not in x]
+
     for index, line in enumerate(lines):
         if 'tmp_preupgrade' in line:
             lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/FOOBAR6_7-results'))

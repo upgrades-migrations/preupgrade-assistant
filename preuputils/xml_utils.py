@@ -2,10 +2,11 @@ from __future__ import print_function
 
 import re
 import os
+import six
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
-from preup.utils import get_system
+from preup.utils import print_error_msg
 from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
@@ -22,16 +23,6 @@ def get_full_xml_tag(dirname):
             found = index
     main_dir = dirname.split(os.path.sep)[found+1:]
     return main_dir
-
-
-def print_error_msg(title="", msg="", level=' ERROR '):
-    """
-    Function prints a ERROR or WARNING messages
-    """
-    number = 10
-    print ('\n')
-    print ('*'*number+level+'*'*number)
-    print (title, ''.join(msg))
 
 
 class XmlUtils(object):
@@ -349,7 +340,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{group_value}",
                                     ''.join(value_tag))
 
-            for k, function in update_fnc.iteritems():
+            for k, function in six.iteritems(update_fnc):
                 function(key, k)
 
             self.update_values_list(self.rule,

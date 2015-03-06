@@ -4,7 +4,7 @@ import sys
 import re
 import datetime
 
-import shutil
+import six
 from distutils import dir_util
 
 from preup.utils import get_valid_scenario
@@ -56,7 +56,7 @@ class XCCDFCompose(object):
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
             f = open(report_filename, "w")
-            f.write(ElementTree.tostring(target_tree, "utf-8"))
+            f.write(ElementTree.tostring(target_tree, "utf-8").decode('utf-8'))
             print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
         except IOError as e:
             print ("Problem with writing file ", f)
@@ -101,7 +101,7 @@ class ComposeXML(object):
 
     @classmethod
     def perform_autoqa(cls, path_prefix, group_tree):
-        for f, t in group_tree.iteritems():
+        for f, t in six.iteritems(group_tree):
             b_subgroups = True
             try:
                 tree, subgroups = t
@@ -155,7 +155,7 @@ class ComposeXML(object):
 
     @classmethod
     def repath_group_xml_tree(cls, source_dir, new_base_dir, group_tree):
-        for f, t in group_tree.iteritems():
+        for f, t in six.iteritems(group_tree):
             tree, subgroups = t
 
             old_base_dir = os.path.join(source_dir, f)
@@ -180,7 +180,7 @@ class ComposeXML(object):
 
             return prefix, tree_key
 
-        for f in sorted(group_tree.iterkeys(), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
+        for f in sorted(six.iterkeys(group_tree), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
             t = group_tree[f]
             tree, subgroups = t
 

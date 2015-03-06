@@ -1,6 +1,7 @@
 import os
 import unittest
 import shutil
+import stat
 from xml.etree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
@@ -81,14 +82,14 @@ class TestXML(unittest.TestCase):
  """
         check_name = os.path.join(self.dirname, self.check_script)
         write_to_file(check_name, "w", check_sh)
-        os.chmod(check_name, 0777)
+        os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         solution_text = """
 A solution text for test suite"
 """
         test_solution_name = os.path.join(self.dirname, self.test_solution)
         write_to_file(test_solution_name, "w", solution_text)
-        os.chmod(test_solution_name, 0777)
+        os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import six
 from operator import itemgetter
 from xml.etree import ElementTree
 
@@ -33,7 +34,7 @@ def get_and_print_inplace_risk(verbose, inplace_risk):
     }
 
     return_value = -1
-    for key, val in sorted(risks.iteritems(), key=itemgetter(1), reverse=False):
+    for key, val in sorted(six.iteritems(risks), key=itemgetter(1), reverse=False):
         matched = [x for x in inplace_risk if key in x]
         if matched:
             # if matched and return_value the remember her

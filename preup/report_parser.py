@@ -1,6 +1,7 @@
 import re
 import os
 import collections
+import six
 
 from preup.utils import get_file_content, write_to_file
 from preup import xccdf, utils
@@ -178,7 +179,7 @@ class ReportParser(object):
         """
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
         data = ElementTree.tostring(self.target_tree, "utf-8")
-        write_to_file(self.path, 'w', data)
+        write_to_file(self.path, 'wb', data)
         content = get_file_content(self.path, 'r')
         self.target_tree = ElementTree.fromstring(content)
 

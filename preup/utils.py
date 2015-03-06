@@ -72,6 +72,16 @@ def get_interpreter(file, verbose=False):
         return None
 
 
+def print_error_msg(title="", msg="", level=' ERROR '):
+    """
+    Function prints a ERROR or WARNING messages
+    """
+    number = 10
+    print ('\n')
+    print ('*'*number+level+'*'*number)
+    print (title, ''.join(msg))
+
+
 def run_subprocess(cmd, output=None, print_output=False, shell=False, function=None):
     """ wrapper for Popen """
     sp = subprocess.Popen(cmd,
@@ -82,7 +92,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
     stdout = ''
     for stdout_data in iter(sp.stdout.readline, b''):
         # communicate() method buffers everything in memory, we will read stdout directly
-        stdout += stdout_data
+        stdout += stdout_data.decode()
         if function is None:
             if print_output:
                 print (stdout_data, end="", flush=True)
@@ -91,9 +101,8 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
     sp.communicate()
 
     if output is not None:
-        #stdout = '\n'.join(stdout)
         log = open(output, "wb")
-        log.write(stdout)
+        log.write(stdout.encode('utf-8'))
         log.close()
     return sp.returncode
 

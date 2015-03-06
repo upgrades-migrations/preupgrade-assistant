@@ -119,9 +119,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
-               "and does not perform the actual upgrade.\n" \
-               "Make sure you back up your system and all of your data now,\n" \
-               "before using the Upgrade Tool to avoid potential data loss."
+               "and does not perform the actual upgrade.\n"
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for {0}:"
 message = "We found some potential in-place upgrade risks.\n" \

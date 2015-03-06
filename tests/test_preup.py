@@ -106,8 +106,8 @@ class TestCLI(unittest.TestCase):
             "cleanup": True
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list", "--upload",
-                   "123", "--apply", "--verbose", "--text",
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list",
+                   "--apply", "--verbose", "--text",
                    "--contents", "content/FOOBAR6_7", "--cleanup"])
         a = Application(Conf(cli.opts, dc, cli))
 
@@ -117,7 +117,7 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(a.conf.apply)
         self.assertTrue(a.conf.text)
         self.assertTrue(a.conf.cleanup)
-        self.assertEqual(int(a.conf.upload), 123)
+        #self.assertEqual(int(a.conf.upload), 123)
         self.assertEqual(int(a.conf.verbose), 0)
         self.assertEqual(a.conf.temp_dir, "d")
         self.assertEqual(a.conf.scan, "FOOBAR6_7")
