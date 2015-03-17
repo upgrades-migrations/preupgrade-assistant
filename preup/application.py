@@ -345,7 +345,7 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
-                dir_name = utils.get_valid_scenario(self.conf.contents)
+                dir_name = utils.get_valid_scenario(self.content)
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -480,23 +480,33 @@ class Application(object):
             log_message('Invalid scenario: %s' % scenario,
                         level=logging.ERROR)
             sys.exit(3)
+
+    def generate_report(self):
+        """Function generates report"""
+
+        scenario = self.get_scenario()
+        scenario_path = os.path.join(self.conf.source_dir, scenario)
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
         """
         Copy directory try with contents to /root/preupgrade
         Call xccdf_compose API for generating all-xccdf.xml
-
         """
-        xccdf_compose = XCCDFCompose(assessment_dir)
-        generated_dir = xccdf_compose.generate_xml()
-        if os.path.isdir(assessment_dir):
-            shutil.rmtree(assessment_dir)
-        shutil.move(generated_dir, assessment_dir)
+        if not self.conf.contents:
+            xccdf_compose = XCCDFCompose(assessment_dir)
+            generated_dir = xccdf_compose.generate_xml()
+            if os.path.isdir(assessment_dir):
+                shutil.rmtree(assessment_dir)
+            shutil.move(generated_dir, assessment_dir)
 
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
-        utils.update_platform(os.path.join(assessment_dir, settings.content_file))
+        if not self.conf.contents:
+            utils.update_platform(os.path.join(assessment_dir, settings.content_file))
+        else:
+            utils.update_platform(self.content)
+            assessment_dir = os.path.dirname(self.content)
         return assessment_dir
 
     def copy_preupgrade_scripts(self, assessment_dir):
@@ -509,9 +519,9 @@ class Application(object):
         """
         The function is used for scanning system with all steps.
         """
-        assessment_dir = self.prepare_scan_system()
+        self.prepare_scan_system()
+        assessment_dir = self.generate_report()
         # Update source XML file in temporary directory
-
         self.content = os.path.join(assessment_dir, settings.content_file)
         try:
             self.report_parser = ReportParser(self.content)

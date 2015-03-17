@@ -77,24 +77,28 @@ __all__ = (
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
     'KICKSTART_README',
+    'MIGRATE',
+    'UPGRADE',
 )
 
-CACHE="/var/cache/preupgrade"
-PREUPGRADE_CACHE=os.path.join(CACHE, "common")
-VALUE_RPM_QA=os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
-VALUE_ALLCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
-VALUE_CONFIGCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
-VALUE_PASSWD=os.path.join(PREUPGRADE_CACHE, "passwd.log")
-VALUE_CHKCONFIG=os.path.join(PREUPGRADE_CACHE, "chkconfig.log")
-VALUE_GROUP=os.path.join(PREUPGRADE_CACHE, "group.log")
-VALUE_RPMTRACKEDFILES=os.path.join(PREUPGRADE_CACHE, "rpmtrackedfiles.log")
-VALUE_ALLMYFILES=os.path.join(PREUPGRADE_CACHE, "allmyfiles.log")
-VALUE_EXECUTABLES=os.path.join(PREUPGRADE_CACHE, "executable.log")
-VALUE_RPM_RHSIGNED=os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
-VALUE_TMP_PREUPGRADE=os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
-SOLUTION_FILE=os.environ['XCCDF_VALUE_SOLUTION_FILE']
-POSTUPGRADE_DIR=os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
-KICKSTART_README=os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
+CACHE = "/var/cache/preupgrade"
+PREUPGRADE_CACHE = os.path.join(CACHE, "common")
+VALUE_RPM_QA = os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
+VALUE_ALLCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
+VALUE_CONFIGCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
+VALUE_PASSWD = os.path.join(PREUPGRADE_CACHE, "passwd.log")
+VALUE_CHKCONFIG = os.path.join(PREUPGRADE_CACHE, "chkconfig.log")
+VALUE_GROUP = os.path.join(PREUPGRADE_CACHE, "group.log")
+VALUE_RPMTRACKEDFILES = os.path.join(PREUPGRADE_CACHE, "rpmtrackedfiles.log")
+VALUE_ALLMYFILES = os.path.join(PREUPGRADE_CACHE, "allmyfiles.log")
+VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
+VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
+VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
+UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
+POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+KICKSTART_README = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 
 
 component = "unknown"

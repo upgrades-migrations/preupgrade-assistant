@@ -153,6 +153,16 @@ A solution text for test suite"
         cur_directory = filter(lambda x: '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x, self.rule)
         self.assertTrue(cur_directory)
 
+    def test_xml_migrate(self):
+        self.rule = self.xml_utils.prepare_sections()
+        cur_directory = filter(lambda x: '<check-export export-name="MIGRATE" value-id="xccdf_preupg_value_test_check_script_state_migrate" />' in x, self.rule)
+        self.assertTrue(cur_directory)
+
+    def test_xml_upgrade(self):
+        self.rule = self.xml_utils.prepare_sections()
+        cur_directory = filter(lambda x: '<check-export export-name="UPGRADE" value-id="xccdf_preupg_value_test_check_script_state_upgrade" />' in x, self.rule)
+        self.assertTrue(cur_directory)
+
     def test_xml_check_script_reference(self):
         self.rule = self.xml_utils.prepare_sections()
         check_script_reference = filter(lambda x: '<check-content-ref href="check_script.sh" />' in x, self.rule)
@@ -168,6 +178,14 @@ A solution text for test suite"
         self.assertTrue(value_current_dir)
         value_current_dir_set = filter(lambda x: '<value>SCENARIO/test</value>' in x, self.rule)
         self.assertTrue(value_current_dir_set)
+        value_migrate = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_migrate"' in x, self.rule)
+        self.assertTrue(value_migrate)
+        value_migrate_set = filter(lambda x: '<value>1</value>' in x, self.rule)
+        self.assertTrue(value_migrate_set)
+        value_upgrade = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_upgrade"' in x, self.rule)
+        self.assertTrue(value_upgrade)
+        value_upgrade_set = filter(lambda x: '<value>1</value>' in x, self.rule)
+        self.assertTrue(value_upgrade_set)
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
