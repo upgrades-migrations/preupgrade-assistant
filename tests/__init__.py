@@ -10,7 +10,7 @@ def suite():
     suite.addTests(test_preup.suite())
     suite.addTests(test_xml.suite())
     suite.addTests(test_oscap.suite())
-    suite.addTests(test_generation.suite())
+    #suite.addTests(test_generation.suite())
     return suite
 
 if __name__ == '__main__':

@@ -47,7 +47,7 @@ class TestXMLCompose(unittest.TestCase):
         for group in target_tree.findall(xccdf.XMLNS + "Group"):
             generated_group.append(group.get('id'))
         self.assertEqual(['xccdf_preupg_group_'+x for x in expected_groups], generated_group)
-        #shutil.rmtree(result_dir)
+        shutil.rmtree(result_dir)
 
 
 class TestXML(unittest.TestCase):
@@ -95,6 +95,10 @@ A solution text for test suite"
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
+        if os.path.exists(os.path.join(os.getcwd(), 'migrate')):
+            os.unlink(os.path.join(os.getcwd(), 'migrate'))
+        if os.path.exists(os.path.join(os.getcwd(), 'upgrade')):
+            os.unlink(os.path.join(os.getcwd(), 'upgrade'))
 
     def test_group_xml(self):
         """
@@ -310,6 +314,7 @@ class ComposeTest(unittest.TestCase):
 
     def setUp(self):
         pass
+
 
 def suite():
     loader = unittest.TestLoader()

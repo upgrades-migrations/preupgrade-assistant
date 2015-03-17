@@ -13,8 +13,8 @@ from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
 
-FOOBAR6_dummy = "tests/FOOBAR6_7/dummy/"
-FOOBAR6_results = "tests/FOOBAR6_7"+variables.result_prefix
+FOOBAR6_dummy = os.path.join('tests', 'FOOBAR6_7', 'dummy')
+FOOBAR6_results = os.path.join('tests', 'FOOBAR6_7' + variables.result_prefix)
 
 
 def generate_test_xml(path_name, test):
@@ -117,15 +117,14 @@ class TestOSCAPPass(unittest.TestCase):
     def setUp(self):
         self.name = 'pass'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
-        shutil.rmtree(FOOBAR6_results)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_pass(self):
         """
@@ -149,15 +148,14 @@ class TestOSCAPFail(unittest.TestCase):
     def setUp(self):
         self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
-        shutil.rmtree(FOOBAR6_results)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_fail(self):
         """
@@ -175,14 +173,14 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_needs_inspection(self):
         """
@@ -202,14 +200,14 @@ class TestOSCAPNeedsAction(unittest.TestCase):
     def setUp(self):
         self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_needs_action(self):
         """
@@ -229,14 +227,14 @@ class TestOSCAPNotApplicable(unittest.TestCase):
     def setUp(self):
         self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_not_applicable(self):
         """
@@ -254,14 +252,14 @@ class TestOSCAPFixed(unittest.TestCase):
     def setUp(self):
         self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()
-        self.path_name = FOOBAR6_dummy + self.name
+        self.path_name = os.path.join(FOOBAR6_dummy, self.name)
         self.result_name = os.path.join(FOOBAR6_results, 'dummy', self.name)
         delete_tmp_xml(self.result_name)
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(self.result_name)
+        delete_tmp_xml(FOOBAR6_results)
 
     def test_fixed(self):
         """
