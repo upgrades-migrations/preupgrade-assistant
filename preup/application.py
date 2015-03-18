@@ -293,7 +293,8 @@ class Application(object):
                                               self.conf.result_name)
 
         self.report_parser.modify_result_path(self.conf.result_dir,
-                                              self.get_proper_scenario(self.get_scenario()))
+                                              self.get_proper_scenario(self.get_scenario()),
+                                              self.conf.mode)
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
         self.scanning_progress.set_names(self.report_parser.get_name_of_checks())

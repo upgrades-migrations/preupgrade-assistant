@@ -137,7 +137,7 @@ class XmlUtils(object):
                 )
                 os.sys.exit(0)
 
-    def add_value_tag(self, migrate, upgrade):
+    def add_value_tag(self):
         """
         The function adds VALUE tag in group.xml file
         """
@@ -149,10 +149,6 @@ class XmlUtils(object):
             if key == 'current_directory':
                 val = '/'.join(get_full_xml_tag(self.dirname))
                 val = 'SCENARIO/' + val
-            if key == 'migrate':
-                val = migrate
-            if key == 'upgrade':
-                val = upgrade
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
@@ -338,18 +334,7 @@ class XmlUtils(object):
 
             self.update_values_list(self.rule, "{rule_tag}",
                                     ''.join(xml_tags.RULE_SECTION))
-            migrate = "1"
-            upgrade = "1"
-            try:
-                if 'mode' in key:
-                    if 'migrate' not in key['mode']:
-                        migrate = "0"
-                    if 'upgrade' not in key['mode']:
-                        upgrade = "0"
-            except KeyError:
-                # Values are already set up
-                pass
-            value_tag, check_export_tag = self.add_value_tag(migrate, upgrade)
+            value_tag, check_export_tag = self.add_value_tag()
             self.update_values_list(self.rule, "{check_export}",
                                     ''.join(check_export_tag))
             self.update_values_list(self.rule, "{group_value}",

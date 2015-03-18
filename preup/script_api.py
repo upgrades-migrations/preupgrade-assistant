@@ -95,8 +95,12 @@ VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
-MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
-UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
+try:
+    MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
+    UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
+except KeyError:
+    MIGRATE = 1
+    UPGRADE = 1
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 
