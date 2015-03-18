@@ -337,7 +337,7 @@ class ReportParser(object):
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
         try:
-            lines = get_file_content(full_path, 'r', method=True)
+            lines = [ i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
         except IOError:
             return
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
