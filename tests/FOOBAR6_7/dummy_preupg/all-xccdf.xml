@@ -37,6 +37,12 @@
     <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" operator="equals" type="string">
       <ns0:value>SCENARIO/dummy_preupg</ns0:value>
     </ns0:Value>
+    <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_upgrade" operator="equals" type="string">
+      <ns0:value>0</ns0:value>
+    </ns0:Value>
+    <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_migrate" operator="equals" type="string">
+      <ns0:value>0</ns0:value>
+    </ns0:Value>
     <ns0:Rule id="xccdf_preupg_rule_dummy_preupg_dummy_preupg" selected="true">
       <ns0:title>dumm_pass</ns0:title>
       <ns0:description>
@@ -49,6 +55,8 @@
         <ns0:check-import import-name="stderr" />
         <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_tmp_preupgrade" />
         <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" />
+        <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_migrate" />
+        <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_upgrade" />
         <ns0:check-content-ref href="dummy_preupg.sh" />
       </ns0:check>
     </ns0:Rule>
