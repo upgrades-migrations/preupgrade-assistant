@@ -63,7 +63,7 @@ class TestXMLUpdates(unittest.TestCase):
     def test_result_dirs_tmp_preupgrade(self):
         rp = ReportParser(self.test_content)
         result_path = "/abc/def"
-        rp.modify_result_path(result_path, "FOOBAR6_7")
+        rp.modify_result_path(result_path, "FOOBAR6_7", 'migrate')
         found_tmp = 0
 
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
@@ -78,7 +78,7 @@ class TestXMLUpdates(unittest.TestCase):
         rp = ReportParser(self.test_content)
         result_path = "/abc/efg"
         scenario = 'FOOBAR6_7'
-        rp.modify_result_path(result_path, scenario)
+        rp.modify_result_path(result_path, scenario, 'migrate')
         found_current = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
             if values.get("id").endswith("_preupg_state_current_directory"):
