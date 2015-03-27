@@ -56,6 +56,9 @@
             <th>
                 Host Name
             </th>
+            <th>
+                Actions
+            </th>
         </tr>
      </thead>
     <tbody>
@@ -90,6 +93,9 @@
             </td>
             <td>
                 {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}{% endif %}
+            </td>
+            <td>
+              <a href="{% url "result-delete" hostrun.id %}" class="btn btn-danger btn-sm">Delete</a>
             </td>
         </tr>
         {% if hostrun.result %}

@@ -11,6 +11,7 @@ from django.db import models
 from django.conf import settings
 from preup_ui.config.models import AppSettings
 from preup_ui.utils.enum import Enum
+from shutil import rmtree
 
 
 class OS(models.Model):
@@ -365,6 +366,11 @@ class HostRun(models.Model):
         self.risk = risk
         self.save(update_fields=["risk"])
 
+    def delete(self):
+        if self.result:
+            self.result.delete()
+        super(HostRun, self).delete()
+
 
 class Result(models.Model):
     """ report with results """
@@ -381,6 +387,11 @@ class Result(models.Model):
     failed_test_count = models.SmallIntegerField(blank=True, null=True)
     ni_test_count = models.SmallIntegerField(blank=True, null=True)
     na_test_count = models.SmallIntegerField(blank=True, null=True)
+
+    def delete(self):
+        result_dir = self.get_result_dir()
+        super(Result, self).delete()
+        rmtree(result_dir)
 
     def __unicode__(self):
         return u"%s (%s)" % (self.hostname, self.dt_finished)

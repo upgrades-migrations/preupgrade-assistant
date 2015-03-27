@@ -10,11 +10,11 @@ from preup_ui.config.models import AppSettings
 from .models import Run, Result
 from .forms import *
 
-from django.views.generic import FormView, TemplateView, View
+from django.views.generic import TemplateView, DeleteView, FormView, View
 from django.views.generic.list import ListView
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from preup_ui.utils.tree import render_result
 from preup_ui.utils.views import is_state_filter, return_error, get_states_to_filter
 from django.http.response import Http404
@@ -71,6 +71,12 @@ class RunView(RunsView):
         context['is_paginated'] = False
         context['url'] = reverse('result-detail', kwargs={'result_id': self.kwargs['result_id']})
         return context
+
+
+class DeleteRunView(DeleteView):
+    model = HostRun
+    success_url = reverse_lazy('results-list')
+    pk_url_kwarg = 'result_id'
 
 
 class ResultViewAjax(View):

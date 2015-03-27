@@ -2,7 +2,7 @@
 
 from django.conf.urls import patterns, url
 from .views import RunsView, ReportView, NewRunView, NewHostView, \
-    NewLocalRunView, ReportFilesView, RunView, ResultViewAjax
+    NewLocalRunView, ReportFilesView, RunView, DeleteRunView, ResultViewAjax
 
 urlpatterns = patterns(
     '',
@@ -18,6 +18,6 @@ urlpatterns = patterns(
         name='show-report'),
     url(r'^(?P<result_id>\d+)/file/$', ReportFilesView.as_view(),
         name='show-file'),
-
     url(r'^(?P<result_id>\d+)/ajax/$', ResultViewAjax.as_view(), name='show-result-ajax'),
+    url(r'^(?P<result_id>\d+)/delete/$', DeleteRunView.as_view(), name='result-delete'),
 )

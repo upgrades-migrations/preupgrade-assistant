@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Delete result{% endblock %}
+{% block nav_results %}active{% endblock %}
+{% block content %}
+<div class="delete-result-container result-form">
+  <div class="row">
+    <div class="col-sm-11">
+      <div id="login-heading">
+        <h3 class="form-signin-heading">{{ title }}</h3>
+      </div><!--/#brand-->
+    </div><!--/.col-*-->
+    <div class="col-sm-7 col-md-6 col-lg-5 login">
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <span class="pficon-layered">
+          <span class="pficon pficon-error-octagon"></span>
+          <span class="pficon pficon-error-exclamation"></span>
+        </span>
+        {% for key, value in form.errors.items %}
+          {% for error in value %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form class="form-horizontal" role="form" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <div class="col-sm-12 col-md-12">
+            Are you sure you want to delete result "<b>{{ object }}</b>"?
+          </div>
+          <div class="col-sm-12 col-md-12 submit">
+            <a class="btn btn-default btn-lg" href="{% url 'results-list' %}">Back</a>
+            <button type="submit" class="btn btn-primary btn-lg" tabindex="2">Confirm</button>
+          </div>
+        </div>
+      </form>
+    </div><!--/.col-*-->
+  </div><!--/.row-->
+</div><!--/.container-->
+{% endblock %}

@@ -150,7 +150,7 @@ function load_result(result_tr, result_id, url_suffix) {
   // this thing is really tricky:
   //  * if it runs on quick network/machine, this causes unwanted ugly flashes
   //  * without *running* icon on slow network, user may think that app just froze
-  result_tr.html('<td colspan="7"><div class="center"><span class="pficon pficon-running fa-spin run-state-icon"></span></div></td>')
+  result_tr.html('<td colspan="8"><div class="center"><span class="pficon pficon-running fa-spin run-state-icon"></span></div></td>')
   $.get('/' + result_id + '/ajax/?' + url_suffix, {}, function(data){
     if (data['status'] == 'OK') {
       result_tr.html(data['content']);
@@ -159,10 +159,10 @@ function load_result(result_tr, result_id, url_suffix) {
       }
       set_test_result_max_height();
     } else {
-      result_tr.html('<td colspan="7">' + data['content'] + '</td>');
+      result_tr.html('<td colspan="8">' + data['content'] + '</td>');
     }
   }).fail(function() {
-    result_tr.html('<td colspan="7">There was an error during request processing.</td>');
+    result_tr.html('<td colspan="8">There was an error during request processing.</td>');
   });
 }
 
