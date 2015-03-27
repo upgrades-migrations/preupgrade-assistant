@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponseRedirect, Http404
 
 from django.views.generic.list import ListView
@@ -8,7 +8,7 @@ from .forms import UserCreationForm
 from preup_ui.config.models import AppSettings
 from preup_ui.utils.views import return_error
 
-from django.views.generic import TemplateView, FormView, View
+from django.views.generic import TemplateView, DeleteView, FormView, View
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, get_object_or_404
 from django.forms.forms import NON_FIELD_ERRORS
@@ -158,7 +158,9 @@ you won't be able to log in. Please, create some user account first.")
         return super(EnableLocalAuthView, self).get(request, *args, **kwargs)
 
 
-class DeleteAuthView(View):
-    def get(self, request, username, *args, **kwargs):
-        User.objects.filter(username=username).delete()
-        return redirect('auth-list')
+class DeleteAuthView(DeleteView):
+    model = User
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+    success_url = reverse_lazy('auth-list')
+
