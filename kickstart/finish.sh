@@ -1,38 +1,37 @@
-#!/bin/bash
-
-die() {
-    echo ${1}
-    exit 1
-}
-
-mkdir -p /root/preupgrade/
-
-PWD=${pwd}
-
-TARBALL_PATH="/root/preupgrade/result.tar.gz"
-
-curl -o ${TARBALL_PATH} "__INSERT_TARBALL_URL__" || die "Cannot download tarball!"
-
 TEMP_DIR=$(mktemp -d)
-
-cd $TEMP_DIR
-tar -xf $TARBALL_PATH || die "Cannot unpack tarball!"
-
+cd ${TEMP_DIR}
+PREUPGRADE_LOG=/var/log/preupgrade.log
+touch ${PREUPGRADE_LOG}
+TAR_BALL=preupgrade.tar.gz
+echo "{tar_ball}" > data
+base64 --decode data > ${TAR_BALL}
+tar -xzvf ${TAR_BALL}
+ls -laR >> ${PREUPGRADE_LOG}
+PWD=${pwd}
 cd cleanconf
-
-for file in $(find . -type f) ; do
+for file in $(find . -type f)
+do
     ABS_PATH=${file:1}
     SAVE_PATH="${ABS_PATH}.rpmsave"
     DIFF_FILENAME="$(basename ${file}).diff"
+    echo "Comparing file ${file} against ${SAVE_PATH}" >> ${PREUPGRADE_LOG}
+    echo "Diff output is stored in ${TEMP_DIR}/${DIFF_FILENAME}" >> ${PREUPGRADE_LOG}
     [[ -f ${ABS_PATH} ]] && \
         cp -a ${ABS_PATH} ${SAVE_PATH}
     cp -a ${file} ${ABS_PATH}
     restorecon ${ABS_PATH}
-    if [[ -f ${SAVE_PATH} ]] && [[ -f ${ABS_PATH} ]] ; then
-        diff -u ${ABS_PATH} ${SAVE_PATH} || diff -u ${ABS_PATH} ${SAVE_PATH} >/root/preupgrade/${DIFF_FILENAME}
+    if [[ -f ${SAVE_PATH} ]] && [[ -f ${ABS_PATH} ]]
+    then
+        diff -u ${ABS_PATH} ${SAVE_PATH} || diff -u ${ABS_PATH} ${SAVE_PATH} > ${TEMP_DIR}/${DIFF_FILENAME}
     fi
 done
-
 cd ${PWD}
-
-rm -rf $TEMP_DIR
+KS_SCRIPTS="kickstart/scripts"
+cd KS_SCRIPTS
+for file in $(find . -type f -executable)
+do
+    echo "Running script ${file} ..." >> ${PREUPGRADE_LOG}
+    ${file}
+    echo "Running script ${file} done" >> ${PREUPGRADE_LOG}
+done
+cd ${PWD}

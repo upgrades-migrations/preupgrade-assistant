@@ -357,7 +357,7 @@ def remove_home_issues():
     :return:
     """
     files = [os.path.join(settings.cache_dir, settings.common_name, 'allmyfiles.log'),
-             os.path.join(settings.result_dir, 'kickstart', 'untrackeduser')]
+             os.path.join(settings.KS_DIR, 'untrackeduser')]
     for f in files:
         try:
             lines = get_file_content(f, 'r', method=True)

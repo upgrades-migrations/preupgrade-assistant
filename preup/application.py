@@ -664,6 +664,7 @@ class Application(object):
 
         if self.conf.kickstart:
             kg = KickstartGenerator(self.get_preupgrade_kickstart())
+            kg.copy_kickstart_files(self.conf.result_dir)
             ks = kg.generate()
             log_message('Kickstart for migration is {0}'.format(self.get_preupgrade_kickstart()))
             return 0
