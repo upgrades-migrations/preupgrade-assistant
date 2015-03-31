@@ -19,7 +19,8 @@ tarball_result_dir = result_dir+"-results"
 result_name = "result"
 
 tarball_base = result_name + 's'
-tarball_name = "preupg_" + tarball_base + "-%s.tar.gz"
+tarball_prefix = "preupg_"
+tarball_name = tarball_prefix + tarball_base + "-%s.tar.gz"
 
 xml_result_name = result_name + '.xml'
 html_result_name = result_name + '.html'
@@ -138,8 +139,9 @@ openssl_command = "openssl x509 -text -in %s | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
 KS_DIR = os.path.join(result_dir, 'kickstart')
-KS_TEMPLATE = os.path.join(KS_DIR, 'default.ks')
-KS_TEMPLATE_POSTSCRIPT = os.path.join(KS_DIR, 'finish.sh')
+KS_TEMPLATE = 'default.ks'
+KS_TEMPLATE_POSTSCRIPT = 'finish.sh'
+KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
 PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
 KS_FILES = ['default_grouplist-el5', 'default_grouplist-el7',
             'default-optional_grouplist-el5', 'default-optional_grouplist-el7']

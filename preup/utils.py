@@ -143,7 +143,7 @@ def get_assessment_version(dir_name):
 
 
 def get_valid_scenario(dir_name):
-    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
+    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d*)(-results)?$', x, re.I)]
     if matched:
         return matched[0]
     else:
@@ -168,6 +168,7 @@ def get_file_content(path, perms, method=False):
             f.close()
             return data
     except IOError:
+        log_message('Unable to open file %s' %path, level=logging.ERROR)
         raise
 
 
@@ -186,6 +187,7 @@ def write_to_file(path, perms, data):
         finally:
             f.close()
     except IOError:
+        log_message('Unable to access file %s' % path, level=logging.ERROR)
         raise
 
 
@@ -350,7 +352,7 @@ def remove_home_issues():
     :return:
     """
     files = [os.path.join(settings.cache_dir, settings.common_name, 'allmyfiles.log'),
-             os.path.join(settings.result_dir, 'kickstart', 'untrackeduser')]
+             os.path.join(settings.KS_DIR, 'untrackeduser')]
     for f in files:
         try:
             lines = get_file_content(f, 'r', method=True)

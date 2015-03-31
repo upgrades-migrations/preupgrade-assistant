@@ -56,8 +56,9 @@ class XmlUtils(object):
         lines = []
         if os.path.exists(path_name):
             lines = get_file_content(path_name, 'r', method=True)
-        if content not in lines:
-            lines.append(content)
+        test_content = [x.strip() for x in lines if content in x.strip()]
+        if not test_content:
+            lines.append(content + '\n')
             write_to_file(path_name, 'w', lines)
 
     def _update_check_description(self, filename):
@@ -303,7 +304,7 @@ class XmlUtils(object):
         :param name:
         :return:
         """
-        content = "{rule}{main_dir}_{name}\n".format(rule=xml_tags.TAG_RULE,
+        content = "{rule}{main_dir}_{name}".format(rule=xml_tags.TAG_RULE,
                                                      main_dir='_'.join(get_full_xml_tag(self.dirname)),
                                                      name=key.split('.')[0])
         if not name:

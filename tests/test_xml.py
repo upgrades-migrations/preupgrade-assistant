@@ -1,6 +1,7 @@
 import os
 import unittest
 import shutil
+import tempfile
 from xml.etree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
@@ -51,7 +52,7 @@ class TestXMLCompose(unittest.TestCase):
 
 class TestXML(unittest.TestCase):
     def setUp(self):
-        self.dirname = "tests/FOOBAR6_7-results/test"
+        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -68,32 +69,35 @@ class TestXML(unittest.TestCase):
                     'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
-                    'binary_req': 'sed'
-            }
+                    'binary_req': 'sed'}
         self.assertTrue(test_ini)
         self.loaded_ini[self.filename] = []
         self.loaded_ini[self.filename].append(test_ini)
-        check_sh = """#!/bin/bash
+        self.check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
 
 #This is testing check script
  """
         check_name = os.path.join(self.dirname, self.check_script)
-        write_to_file(check_name, "w", check_sh)
+        write_to_file(check_name, "w", self.check_sh)
         os.chmod(check_name, 0777)
 
-        solution_text = """
+        self.solution_text = """
 A solution text for test suite"
 """
         test_solution_name = os.path.join(self.dirname, self.test_solution)
-        write_to_file(test_solution_name, "w", solution_text)
+        write_to_file(test_solution_name, "w", self.solution_text)
         os.chmod(test_solution_name, 0777)
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
+        if os.path.exists(os.path.join(os.getcwd(), 'migrate')):
+            os.unlink(os.path.join(os.getcwd(), 'migrate'))
+        if os.path.exists(os.path.join(os.getcwd(), 'upgrade')):
+            os.unlink(os.path.join(os.getcwd(), 'upgrade'))
 
     def test_group_xml(self):
         """
@@ -151,6 +155,134 @@ A solution text for test suite"
         self.rule = self.xml_utils.prepare_sections()
         cur_directory = filter(lambda x: '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x, self.rule)
         self.assertTrue(cur_directory)
+
+    def _create_temporary_dir(self):
+        settings.UPGRADE_PATH = tempfile.mkdtemp()
+        if os.path.exists(settings.UPGRADE_PATH):
+            shutil.rmtree(settings.UPGRADE_PATH)
+        os.makedirs(settings.UPGRADE_PATH)
+        migrate = os.path.join(settings.UPGRADE_PATH, 'migrate')
+        upgrade = os.path.join(settings.UPGRADE_PATH, 'upgrade')
+        return migrate, upgrade
+
+    def _delete_temporary_dir(self, migrate, upgrade):
+        if os.path.exists(migrate):
+            os.unlink(migrate)
+        if os.path.exists(upgrade):
+            os.unlink(upgrade)
+        if os.path.exists(settings.UPGRADE_PATH):
+            shutil.rmtree(settings.UPGRADE_PATH)
+
+    def test_xml_migrate_not_upgrade(self):
+        test_ini = {'content_title': 'Testing only migrate title',
+            'content_description': ' some content description',
+            'author': 'test <test@redhat.com>',
+            'config_file': '/etc/named.conf',
+            'check_script': self.check_script,
+            'solution': self.test_solution,
+            'applies_to': 'test',
+            'requires': 'bash',
+            'binary_req': 'sed',
+            'mode': 'migrate'}
+        ini = {}
+        old_settings = settings.UPGRADE_PATH
+        migrate, upgrade = self._create_temporary_dir()
+        ini[self.filename] = []
+        ini[self.filename].append(test_ini)
+        xml_utils = XmlUtils(self.dirname, ini)
+        rule = xml_utils.prepare_sections()
+        migrate_file = get_file_content(migrate, 'r', method=True)
+        tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        try:
+            upgrade_file = get_file_content(upgrade, 'r', method=True)
+        except IOError:
+            upgrade_file = None
+        self.assertIsNone(upgrade_file)
+        self._delete_temporary_dir(migrate, upgrade)
+        settings.UPGRADE_PATH = old_settings
+
+    def test_xml_upgrade_not_migrate(self):
+        test_ini = {'content_title': 'Testing only migrate title',
+            'content_description': ' some content description',
+            'author': 'test <test@redhat.com>',
+            'config_file': '/etc/named.conf',
+            'check_script': self.check_script,
+            'solution': self.test_solution,
+            'applies_to': 'test',
+            'requires': 'bash',
+            'binary_req': 'sed',
+            'mode': 'upgrade'}
+        ini = {}
+        old_settings = settings.UPGRADE_PATH
+        migrate, upgrade = self._create_temporary_dir()
+        ini[self.filename] = []
+        ini[self.filename].append(test_ini)
+        xml_utils = XmlUtils(self.dirname, ini)
+        rule = xml_utils.prepare_sections()
+        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        try:
+            migrate_file = get_file_content(migrate, 'r', method=True)
+        except IOError:
+            migrate_file = None
+        self.assertIsNone(migrate_file)
+        self._delete_temporary_dir(migrate, upgrade)
+        settings.UPGRADE_PATH = old_settings
+
+    def test_xml_migrate_and_upgrade(self):
+        test_ini = {'content_title': 'Testing only migrate title',
+            'content_description': ' some content description',
+            'author': 'test <test@redhat.com>',
+            'config_file': '/etc/named.conf',
+            'check_script': self.check_script,
+            'solution': self.test_solution,
+            'applies_to': 'test',
+            'requires': 'bash',
+            'binary_req': 'sed',
+            'mode': 'migrate, upgrade'}
+        ini = {}
+        old_settings = settings.UPGRADE_PATH
+        migrate, upgrade = self._create_temporary_dir()
+        ini[self.filename] = []
+        ini[self.filename].append(test_ini)
+        xml_utils = XmlUtils(self.dirname, ini)
+        rule = xml_utils.prepare_sections()
+        migrate_file = get_file_content(migrate, 'r', method=True)
+        tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        self._delete_temporary_dir(migrate, upgrade)
+        settings.UPGRADE_PATH = old_settings
+
+    def test_xml_not_migrate_not_upgrade(self):
+        test_ini = {'content_title': 'Testing only migrate title',
+            'content_description': ' some content description',
+            'author': 'test <test@redhat.com>',
+            'config_file': '/etc/named.conf',
+            'check_script': self.check_script,
+            'solution': self.test_solution,
+            'applies_to': 'test',
+            'requires': 'bash',
+            'binary_req': 'sed'}
+        ini = {}
+        old_settings = settings.UPGRADE_PATH
+        migrate, upgrade = self._create_temporary_dir()
+        ini[self.filename] = []
+        ini[self.filename].append(test_ini)
+        xml_utils = XmlUtils(self.dirname, ini)
+        rule = xml_utils.prepare_sections()
+        migrate_file = get_file_content(migrate, 'r', method=True)
+        tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
+        self.assertIsNotNone(tag)
+        self._delete_temporary_dir(migrate, upgrade)
+        settings.UPGRADE_PATH = old_settings
 
     def test_xml_check_script_reference(self):
         self.rule = self.xml_utils.prepare_sections()
@@ -291,6 +423,7 @@ class ComposeTest(unittest.TestCase):
 
     def setUp(self):
         pass
+
 
 def suite():
     loader = unittest.TestLoader()

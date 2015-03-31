@@ -18,18 +18,42 @@ def remove_node(tree, tag):
     return tree.remove(tag)
 
 
-def update_current_dir(result_dir, scenario, value):
+def update_current_dir(result_dir, scenario, value, mode):
     """
     Replaces a current dir with the new value
     """
     return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
 
 
-def update_result_path(result_dir, scenario, value):
+def update_result_path(result_dir, scenario, value, mode):
     """
     Replaces a result path with the new value
     """
     return value.text.replace("SCENARIO", result_dir)
+
+
+def update_migrate_value(result_dir, scenario, value, mode):
+    """
+    Replaces a migrate value with mode given by preupgrade-assistant command line
+    """
+    if not mode:
+        return "1"
+    if 'migrate' in mode:
+        return "1"
+    else:
+        return "0"
+
+
+def update_upgrade_value(result_dir, scenario, value, mode):
+    """
+    Replaces a upgrade value with mode given by preupgrade-assistant command line
+    """
+    if not mode:
+        return "1"
+    if 'upgrade' in mode:
+        return "1"
+    else:
+        return "0"
 
 
 def upd_inspection(rule):
@@ -185,18 +209,20 @@ class ReportParser(object):
         content = get_file_content(self.path, 'r')
         self.target_tree = ElementTree.fromstring(content)
 
-    def modify_result_path(self, result_dir, scenario):
+    def modify_result_path(self, result_dir, scenario, mode):
         """
         Function modifies result path in XML file
         """
         update_tags = {'_tmp_preupgrade': update_result_path,
-                       '_current_dir': update_current_dir}
+                       '_current_dir': update_current_dir,
+                       '_migrate': update_migrate_value,
+                       '_upgrade': update_upgrade_value}
         for key, val in update_tags.items():
             for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
                 if key not in values.get('id'):
                     continue
                 for value in self.get_nodes(values, "value"):
-                    value.text = update_tags[key](result_dir, scenario, value)
+                    value.text = update_tags[key](result_dir, scenario, value, mode)
 
         self.write_xml()
 
@@ -339,7 +365,7 @@ class ReportParser(object):
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
         try:
-            lines = get_file_content(full_path, 'r', method=True)
+            lines = [i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
         except IOError:
             return
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
