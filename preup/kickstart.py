@@ -7,10 +7,10 @@ Class creates a kickstart for migration scenario
 import os
 import base64
 import shutil
-import pykickstart.commands as commands
-from pykickstart.parser import *
-from pykickstart.version import *
-from pykickstart.constants import *
+import preup_pykickstart.commands as commands
+from preup_pykickstart.parser import *
+from preup_pykickstart.version import *
+from preup_pykickstart.constants import *
 from preup.logger import log_message
 from preup import settings
 from preup.utils import write_to_file, get_file_content

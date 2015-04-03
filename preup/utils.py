@@ -168,7 +168,6 @@ def get_file_content(path, perms, method=False):
             f.close()
             return data
     except IOError:
-        log_message('Unable to open file %s' %path, level=logging.ERROR)
         raise
 
 

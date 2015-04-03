@@ -4,6 +4,7 @@ import re
 import datetime
 
 import shutil
+import posixpath
 from distutils import dir_util
 
 from preup.utils import get_valid_scenario
@@ -11,7 +12,8 @@ from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
-from lxml.etree import ElementTree
+from lxml import etree as ElementTree
+from posixpath import curdir, sep, pardir, join
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
@@ -19,6 +21,20 @@ except ImportError:
 
 XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
+
+
+def relpath(path, start=curdir):
+    """Return a relative version of a path"""
+    if not path:
+        raise ValueError("no path specified")
+    start_list = posixpath.abspath(start).split(sep)
+    path_list = posixpath.abspath(path).split(sep)
+    # Work out how much of the filepath is shared by start and path.
+    i = len(posixpath.commonprefix([start_list, path_list]))
+    rel_list = [pardir] * (len(start_list)-i) + path_list[i:]
+    if not rel_list:
+        return curdir
+    return join(*rel_list)
 
 
 class XCCDFCompose(object):
@@ -55,7 +71,7 @@ class XCCDFCompose(object):
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
             f = open(report_filename, "w")
-            f.write(ElementTree.tostring(target_tree, "utf-8"))
+            f.write(ElementTree.tostring(target_tree))
             print 'Generate report file for preupgrade-assistant is:', ''.join(report_filename)
         except IOError:
             print "Problem with writing file ", f
@@ -159,7 +175,7 @@ class ComposeXML(object):
 
             old_base_dir = os.path.join(source_dir, f)
 
-            path_prefix = os.path.relpath(old_base_dir, new_base_dir)
+            path_prefix = relpath(old_base_dir, start=new_base_dir)
             for element in tree.findall(".//" + xccdf.XMLNS + "check-content-ref"):
                 old_href = element.get("href")
                 assert(old_href is not None)
