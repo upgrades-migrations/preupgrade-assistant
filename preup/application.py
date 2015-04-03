@@ -231,7 +231,7 @@ class Application(object):
                 except KeyError:
                     log_message('Report submitted successfully.')
                 else:
-                    log_message('Report submitted successfully. You can inspect it at ', url)
+                    log_message('Report submitted successfully. You can inspect it at %s' % url)
             else:
                 try:
                     message = response['message']
