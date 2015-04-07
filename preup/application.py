@@ -678,7 +678,7 @@ class Application(object):
                     self.conf.scan = dir_name
                     cnt += 1
 
-            if int(cnt) != 1:
+            if int(cnt) < 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
                 return 1
