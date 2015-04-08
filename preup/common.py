@@ -169,6 +169,13 @@ class Common(object):
             usr_common_name = os.path.join(settings.source_dir, scenario, settings.common_name)
             if os.path.exists(usr_common_name):
                 dir_util.copy_tree(usr_common_name, os.path.join(assessment_dir, settings.common_name))
+        # We have repositories for i386 architecture but packages are built
+        # sometimes as i686 architecture. That's problematic in some cases
+        # so we solve this for now by this little hack ugly.
+        if (not os.path.exists(os.path.join(self.common_result_dir,'i686'))
+           and os.path.exists(os.path.join(self.common_result_dir,'i386'))):
+            os.symlink(os.path.join(self.common_result_dir, 'i386'),
+                       os.path.join(self.common_result_dir, 'i686'))
         add_ons = utils.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
