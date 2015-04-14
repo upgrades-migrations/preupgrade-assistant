@@ -87,7 +87,7 @@ class ComposeXML(object):
 
             group_file_path = os.path.join(new_dir, "group.xml")
             if not os.path.isfile(group_file_path):
-                #print("Directory '%s' is missing a group.xml file!" % (new_dir))
+                # print("Directory '%s' is missing a group.xml file!" % (new_dir))
                 continue
             data = get_file_content(group_file_path, "r")
             try:

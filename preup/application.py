@@ -537,7 +537,9 @@ class Application(object):
                 log_message("Examples format is like RHEL6_7",
                             level=logging.ERROR)
                 sys.exit(1)
+            # TODO comment for modify platform tag
             self.report_parser.modify_platform_tag(version[0])
+        # TODO mode can be migrate and upgrade
         if self.conf.mode:
             self.report_parser.select_rules(self.conf.mode)
         self.run_scan_process()
@@ -551,7 +553,7 @@ class Application(object):
 
         self.copy_preupgrade_scripts(assessment_dir)
 
-        #It prints out result in table format
+        # It prints out result in table format
         format_rules_to_table(main_report, "main contents")
         for target, report in self.report_data.iteritems():
             format_rules_to_table(report, "3rdparty content " + target)
@@ -728,7 +730,6 @@ If you would like to use this tool, you have to have only one." % settings.sourc
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)
-            #self.post_scan()
             return 0
 
         log_message('Nothing to do. Give me a task, please.')
