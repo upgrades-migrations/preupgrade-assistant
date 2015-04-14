@@ -29,7 +29,7 @@ def get_hash_file(filename, hasher):
     Function gets a hash from file
     """
     content = get_file_content(filename, "r")
-    hasher.update(('preupgrade-assistant' + content).encode('utf-8'))
+    hasher.update(('preupgrade-assistant' + content).encode(settings.defenc))
     return hasher.hexdigest()
 
 

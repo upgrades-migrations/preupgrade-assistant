@@ -11,7 +11,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import print_error_msg, XmlUtils
-from preup.utils import get_file_content, write_to_file
+from preup.utils import get_file_content, write_to_file, check_file
 from xml.etree import ElementTree
 
 try:
@@ -45,22 +45,23 @@ class OscapGroupXml(object):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
         for file_name in self.lists:
-            with open(file_name, 'r') as stream:
-                try:
-                    config = configparser.ConfigParser()
-                    config.readfp(open(file_name))
-                    fields = {}
-                    if config.has_section('premigrate'):
-                        section = 'premigrate'
-                    else:
-                        section = 'preupgrade'
-                    for option in config.options(section):
-                        fields[option] = config.get(section, option)
-                    self.loaded[file_name] = [fields]
-                except configparser.MissingSectionHeaderError as mshe:
-                    print_error_msg(title="Missing section header")
-                except configparser.NoSectionError as nse:
-                    print_error_msg(title="Missing section header")
+            if(check_file(filename, "r") == False):
+                continue
+            try:
+                config = configparser.ConfigParser()
+                config.readfp(open(file_name))
+                fields = {}
+                if config.has_section('premigrate'):
+                    section = 'premigrate'
+                else:
+                    section = 'preupgrade'
+                for option in config.options(section):
+                    fields[option] = config.get(section, option)
+                self.loaded[file_name] = [fields]
+            except configparser.MissingSectionHeaderError as mshe:
+                print_error_msg(title="Missing section header")
+            except configparser.NoSectionError as nse:
+                print_error_msg(title="Missing section header")
 
     def collect_group_xmls(self):
         """

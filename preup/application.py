@@ -567,8 +567,8 @@ class Application(object):
         log_message("Running postscripts: ...",
                     new_line=False)
         try:
-            f_name = open(self.conf.post_script, "r")
-            for line in f_name.readlines():
+            lines = get_file_content(self.conf.post_script, "r", True)
+            for line in lines:
                 if not line.strip().startswith("#"):
                     cmd = line.strip()
                     log_message("running command: %s" % cmd,
@@ -581,7 +581,6 @@ class Application(object):
                         level=logging.ERROR)
         finally:
             log_message("done")
-            f_name.close()
 
     def summary_report(self):
         """
