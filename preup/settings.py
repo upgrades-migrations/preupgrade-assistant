@@ -104,7 +104,7 @@ needs_inspection = "needs_inspection"
 needs_action = "needs_action"
 
 # The full license text
-license = """Preupgrade assistant performs system upgradability assessment
+license = u"""Preupgrade assistant performs system upgradability assessment
 and gathers information required for successful operating system upgrade.
 Copyright (C) 2013 Red Hat Inc.
 {0}

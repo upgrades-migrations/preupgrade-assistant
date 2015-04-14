@@ -13,6 +13,7 @@ except ImportError:
 from preuputils.xml_utils import print_error_msg, XmlUtils
 from preup.utils import get_file_content, write_to_file, check_file
 from xml.etree import ElementTree
+from preup import settings
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -56,7 +57,7 @@ class OscapGroupXml(object):
                 else:
                     section = 'preupgrade'
                 for option in config.options(section):
-                    fields[option] = config.get(section, option)
+                    fields[option] = config.get(section, option).decode(settings.defenc)
                 self.loaded[file_name] = [fields]
             except configparser.MissingSectionHeaderError as mshe:
                 print_error_msg(title="Missing section header")
