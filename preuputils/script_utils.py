@@ -6,7 +6,7 @@ import re
 import mimetypes
 
 from contextlib import closing
-from preup.utils import get_file_content, print_error_msg
+from preup.utils import get_file_content, write_to_file, print_error_msg
 from preup import settings
 
 
@@ -140,7 +140,7 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
             else:
                 output_text +='set_component("'+component+'")\n'
         output_text +=line
-    write_to_file(full_path_script, "w")
+    write_to_file(full_path_script, "w", output_text)
 
 
 def check_executable(dir_name, script_name=""):

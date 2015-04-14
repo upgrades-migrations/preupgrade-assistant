@@ -45,7 +45,7 @@ class OscapGroupXml(object):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
         for file_name in self.lists:
-            if(check_file(filename, "r") == False):
+            if(check_file(file_name, "r") == False):
                 continue
             try:
                 config = configparser.ConfigParser()
