@@ -54,7 +54,7 @@ class XCCDFCompose(object):
 
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
-            write_to_file(report_filename, "w", ElementTree.tostring(target_tree)
+            write_to_file(report_filename, "w", ElementTree.tostring(target_tree))
             print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
         except IOError as e:
             print ("Problem with writing file ", report_filename)
