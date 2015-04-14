@@ -362,10 +362,10 @@ def service_is_enabled(service_name):
     """
     return_value = False
     lines = get_file_content(VALUE_CHKCONFIG, "r", True)
-        for line in lines:
-            if re.match('^%s.*:on' % service_name, line):
-                return_value = True
-                break
+    for line in lines:
+        if re.match('^%s.*:on' % service_name, line):
+            return_value = True
+            break
     return return_value
 
 def config_file_changed(config_file_name):
