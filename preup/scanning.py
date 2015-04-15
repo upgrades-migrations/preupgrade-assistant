@@ -32,7 +32,7 @@ def format_rules_to_table(output_data, content):
     Function format output_data to table
     """
     if not output_data:
-        # If output_data does not contain anything then do not print nothing
+        #If output_data does not contain anything then do not print nothing
         return
     max_title_length = max(x for x in [len(l.split(':')[0]) for l in output_data]) + 5
     max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2

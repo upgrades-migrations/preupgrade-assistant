@@ -172,8 +172,8 @@ class Common(object):
         # We have repositories for i386 architecture but packages are built
         # sometimes as i686 architecture. That's problematic in some cases
         # so we solve this for now by this little hack ugly.
-        if (not os.path.exists(os.path.join(self.common_result_dir, 'i686'))
-           and os.path.exists(os.path.join(self.common_result_dir, 'i386'))):
+        if (not os.path.exists(os.path.join(self.common_result_dir,'i686'))
+           and os.path.exists(os.path.join(self.common_result_dir,'i386'))):
             os.symlink(os.path.join(self.common_result_dir, 'i386'),
                        os.path.join(self.common_result_dir, 'i686'))
         add_ons = utils.get_addon_variant()

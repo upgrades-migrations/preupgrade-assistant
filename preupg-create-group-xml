@@ -71,7 +71,7 @@ def main():
         write_to_file(os.path.join(dir_name, filename), "w", ElementTree.tostring(target_tree))
         print 'Generate report file for preupgrade-assistant is:', ''.join(os.path.join(dir_name, filename))
     except IOError, e:
-        print "Problem with writing file ", filename
+        print "Problem with writing file {}".format(filename)
 
 
     #oscap_group.write_profile_xml(target_tree)
