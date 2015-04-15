@@ -125,22 +125,21 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                                   format(full_path_script))
     for func in functions:
         lines = [x for x in lines if func not in x.strip()]
-    output_text=""
-    for line in lines:
-        if '#END GENERATED SECTION' in line:
-            new_line = '\n'.join(generated_section)
-            new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
-            output_text +=new_line+'\n'
-            if 'check_applies' in updates:
-                component = updates['check_applies']
-            else:
-                component = "distribution"
-            if script_type == "sh":
-                output_text +='COMPONENT="'+component+'"\n'
-            else:
-                output_text +='set_component("'+component+'")\n'
-        output_text +=line
-    write_to_file(full_path_script, "w")
+    with closing(open(full_path_script, mode="w")) as f_handle:
+        for line in lines:
+            if '#END GENERATED SECTION' in line:
+                new_line = '\n'.join(generated_section)
+                new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
+                f_handle.write(new_line+'\n')
+                if 'check_applies' in updates:
+                    component = updates['check_applies']
+                else:
+                    component = "distribution"
+                if script_type == "sh":
+                    f_handle.write('COMPONENT="'+component+'"\n')
+                else:
+                    f_handle.write('set_component("'+component+'")\n')
+            f_handle.write(line)
 
 
 def check_executable(dir_name, script_name=""):

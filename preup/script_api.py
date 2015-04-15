@@ -31,8 +31,7 @@ import sys
 import datetime
 import re
 import shutil
-from preup import utils, settings
-from preup.utils import get_file_content, write_to_file
+from preup import utils
 
 __all__ = (
     'log_debug',
@@ -117,7 +116,7 @@ def log_risk(severity, message):
     """
     log risk level to stderr
     """
-    sys.stderr.write("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)))
+    sys.stderr.write("INPLACERISK: %s: %s\n" % (severity, message))
 
 
 def log_extreme_risk(message):
@@ -169,7 +168,7 @@ def log(severity, message, component_arg=None):
     comp_show = component_arg or component
     #if not comp_show:
     #    raise Exception('Component name wasn\'t set up. Please do so with function set_component().')
-    sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)))
+    sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message))
 
 
 def log_error(message, component_arg=None):
@@ -322,7 +321,12 @@ def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
-        lines =  get_file_content(VALUE_RPM_QA, "r", True)
+        lines = []
+        try:
+            file = open(VALUE_RPM_QA, "r")
+            lines = file.readlines()
+        finally:
+            file.close()
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -336,7 +340,12 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
     if check_rpm != "":
         rpms = check_rpm.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "r", True)
+        lines = []
+        try:
+            file = open(VALUE_RPM_QA, "r")
+            lines = file.readlines()
+        finally:
+            file.close()
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -354,18 +363,26 @@ def check_rpm_to(check_rpm="", check_bin=""):
         exit_fail()
 
 def solution_file(message):
-    write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+", message)
+    try:
+        f = open(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+")
+        f.write(message)
+    finally:
+        f.close()
 
 def service_is_enabled(service_name):
     """
     Returns true if given service is enabled on any runlevel
     """
     return_value = False
-    lines = get_file_content(VALUE_CHKCONFIG, "r", True)
-        for line in lines:
+    f = open(VALUE_CHKCONFIG, "r")
+    try:
+        for line in f:
             if re.match('^%s.*:on' % service_name, line):
                 return_value = True
                 break
+    finally:
+        f.close()
+        
     return return_value
 
 def config_file_changed(config_file_name):
@@ -376,11 +393,12 @@ def config_file_changed(config_file_name):
     """
     config_changed = False
     try:
-        lines = get_file_content(VALUE_CONFIGCHANGED, "r", True)
-        for line in lines:
+        f = open(VALUE_CONFIGCHANGED, "r")
+        for line in f:
             if line.find(config_file_name) != -1:
                 config_changed=True
                 break
+        f.close()
     except:
         pass
     return config_changed
@@ -406,4 +424,3 @@ def backup_config_file(config_file_name):
     shutil.copyfile(config_file_name, os.path.join(VALUE_TMP_PREUPGRADE, config_file_name.strip("/")))
 
 shorten_envs()
-

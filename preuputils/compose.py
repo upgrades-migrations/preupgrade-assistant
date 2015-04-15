@@ -7,7 +7,7 @@ import datetime
 import six
 from distutils import dir_util
 
-from preup.utils import get_valid_scenario, get_file_content, write_to_file
+from preup.utils import get_valid_scenario
 from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
@@ -46,18 +46,20 @@ class XCCDFCompose(object):
         result_dirname = self.dir_name
         template_file = ComposeXML.get_template_file()
         try:
-            target_tree = ElementTree.fromstring(get_file_content(template_file, "r"))
+            f = open(template_file, "r")
         except IOError as e:
             print ('Problem with reading template.xml file')
             sys.exit(1)
+        target_tree = ElementTree.fromstring(f.read())
         target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
 
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
-            write_to_file(report_filename, "w", ElementTree.tostring(target_tree)
+            f = open(report_filename, "w")
+            f.write(ElementTree.tostring(target_tree, "utf-8").decode('utf-8'))
             print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
         except IOError as e:
-            print ("Problem with writing file ", report_filename)
+            print ("Problem with writing file ", f)
             raise
         return self.dir_name
 
@@ -89,12 +91,12 @@ class ComposeXML(object):
             if not os.path.isfile(group_file_path):
                 #print("Directory '%s' is missing a group.xml file!" % (new_dir))
                 continue
-            data = get_file_content(group_file_path, "r")
-            try:
-                ret[dirname] = (ElementTree.fromstring(data),
-                                cls.collect_group_xmls(new_dir, level=level + 1))
-            except ParseError as e:
-                print ("Encountered a parse error in file ", group_file_path, " details: ", e)
+            with open(group_file_path, "r") as file:
+                try:
+                    ret[dirname] = (ElementTree.fromstring(file.read()),
+                                    cls.collect_group_xmls(new_dir, level=level + 1))
+                except ParseError as e:
+                    print ("Encountered a parse error in file ", group_file_path, " details: ", e)
         return ret
 
     @classmethod

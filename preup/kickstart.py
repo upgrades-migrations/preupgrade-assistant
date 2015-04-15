@@ -92,8 +92,8 @@ class YumGroupGenerator(object):
             return [x for x in s.strip().split(',') if x]
 
         for fp in self.group_def_fp:
-            lines = get_file_content(fp, 'r', True)
-            for line in lines:
+            fd = open(fp, 'r')
+            for line in fd.readlines():
                 stuff = line.split('|')
                 name = stuff[0].strip()
                 mandatory = get_packages(stuff[1])

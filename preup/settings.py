@@ -9,9 +9,6 @@ if os.path.basename(sys.argv[0]) == "premigrate":
     prefix = "premigrate"
 else:
     prefix = "preupgrade"
-
-defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
-
 # dir where results of analysis are stored
 result_dir = os.path.join("/root", prefix)
 

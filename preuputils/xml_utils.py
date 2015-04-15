@@ -55,7 +55,8 @@ class XmlUtils(object):
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = get_file_content(os.patch.join(self.dirname, filename), "r", True)
+        with open(os.path.join(self.dirname, filename), 'r') as f_handle:
+            lines = f_handle.readlines()
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'
@@ -98,7 +99,9 @@ class XmlUtils(object):
                 new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
-            new_text = get_file_content(os.path.join(self.dirname, replace_exp), "r", True)
+            new_text = list()
+            with open(os.path.join(self.dirname, replace_exp), "r") as f_handle:
+                new_text = f_handle.readlines()
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
