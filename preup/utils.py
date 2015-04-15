@@ -203,8 +203,9 @@ def get_file_content(path, perms, method=False):
 
 def write_to_file(path, perms, data):
     """
-    shortcut for returning content of file:
-     open(...).read()
+    shortcut for write of data to file:
+     open(...).write()
+     data can be string or list of strings
     """
     try:
         f = open(path, perms)
@@ -275,7 +276,7 @@ def get_upgrade_dir_path(dirname):
     The function returns upgrade path dir like RHEL6_7
     If /root/preupgrade/ dir contaings RHEL6_7 dir then
     it return just RHEL6_7 dir.
-    This is used for get_get_assessment_version
+    This is used for get_assessment_version
     """
     is_dir = lambda x: os.path.isdir(os.path.join(dirname, x))
     dirs = os.listdir(dirname)
