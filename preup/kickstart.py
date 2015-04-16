@@ -124,10 +124,10 @@ class YumGroupGenerator(object):
         return output + output_packages
 
 
-class RepoData(commands.repo.RHEL7_RepoData):
+class RepoData(commands.repo.RHEL6_RepoData):
     def __init__(self, *arg, **kwargs):
         self.enabled = kwargs.pop("enabled", True)
-        commands.repo.RHEL7_RepoData.__init__(self, *args, **kwargs)
+        commands.repo.RHEL6_RepoData.__init__(self, *args, **kwargs)
 
 
 class KickstartGenerator(object):
