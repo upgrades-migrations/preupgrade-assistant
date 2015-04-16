@@ -562,27 +562,6 @@ class Application(object):
         # pack all configuration files to tarball
         return tar_ball_name
 
-    def post_scan(self):
-        """ This is used for postscan actions """
-        log_message("Running postscripts: ...",
-                    new_line=False)
-        try:
-            f_name = open(self.conf.post_script, "r")
-            for line in f_name.readlines():
-                if not line.strip().startswith("#"):
-                    cmd = line.strip()
-                    log_message("running command: %s" % cmd,
-                                print_output=self.conf.verbose)
-                    run_subprocess(cmd, shell=True)
-                    log_message("command execution has finished",
-                                print_output=self.conf.verbose)
-        except IOError:
-            log_message('Problem with openning file %s' % self.conf.post_scripts,
-                        level=logging.ERROR)
-        finally:
-            log_message("done")
-            f_name.close()
-
     def summary_report(self):
         """
          Function prints a summary report
@@ -658,10 +637,6 @@ class Application(object):
             return_val = xccdf.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
             return return_val
 
-        if self.conf.apply:
-            self.apply_scan()
-            return 0
-
         if self.conf.kickstart:
             kg = KickstartGenerator(self.get_preupgrade_kickstart())
             kg.copy_kickstart_files(self.conf.result_dir)
@@ -729,7 +704,6 @@ If you would like to use this tool, you have to have only one." % settings.sourc
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)
-            #self.post_scan()
             return 0
 
         log_message('Nothing to do. Give me a task, please.')

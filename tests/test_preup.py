@@ -178,26 +178,23 @@ class TestCLI(unittest.TestCase):
             "contents": "content/FOOBAR6_7",
             "id": 1,
             "list": True,
-            "apply": True,
-            "verbose": 0,
+            "verbose": 1,
             "text": True,
             "cleanup": True,
             "mode": 'upgrade',
         }
         dc = DummyConf(**conf)
         cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list",
-                   "--apply", "--verbose", "--text",
+                   "--verbose", "--text",
                    "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
         self.assertEqual(a.conf.contents, "content/FOOBAR6_7")
         self.assertTrue(a.conf.list)
-        self.assertTrue(a.conf.apply)
         self.assertTrue(a.conf.text)
         self.assertTrue(a.conf.cleanup)
-        #self.assertEqual(int(a.conf.upload), 123)
-        self.assertEqual(int(a.conf.verbose), 0)
+        self.assertEqual(int(a.conf.verbose), 1)
         self.assertEqual(a.conf.temp_dir, "d")
         self.assertEqual(a.conf.scan, "FOOBAR6_7")
         self.assertEqual(a.conf.mode, "upgrade")
