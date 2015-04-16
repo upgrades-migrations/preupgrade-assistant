@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.contrib.auth import get_user_model
 from django.db import models
 
 import json
@@ -9,7 +9,7 @@ class AppSettings(models.Model):
 
     for bools, value is either 'T' or 'F'
     """
-    key = models.CharField(max_length=32, blank=False, null=False)
+    key = models.CharField(max_length=32, primary_key=True)
     value = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
@@ -21,10 +21,6 @@ class AppSettings(models.Model):
         # TODO: when content is invalid, reset it to default _valid_ value
         try:
             value = cls.objects.get(key="STATES_FILTER").value
-        except ObjectDoesNotExist:
-            pass
-        except MultipleObjectsReturned:
-            pass
         except Exception:
             pass
         else:
@@ -54,45 +50,20 @@ class AppSettings(models.Model):
         return s
 
     @classmethod
-    def get_disable_auth(cls):
-        """
-        If there is record in DB, return True if value == 'T', False otherwise
-
-        If there is no record, return None.
-        """
+    def get_autologin_user_id(cls):
+        """ returns user to be auto-logged in """
         try:
-            val = cls.objects.get(key="DISABLE_AUTH").value
-            return val == 'T'
-        except (MultipleObjectsReturned, ObjectDoesNotExist, AttributeError):
+            return int(cls.objects.get(key="AUTOLOGIN_USER").value)
+        except cls.DoesNotExist:
             return None
 
     @classmethod
-    def set_disable_auth(cls, value):
-        """ value is either True or False """
-        db_value = 'T' if value else 'F'
-        cls.objects.filter(key="DISABLE_AUTH").delete()
-        s = cls(key="DISABLE_AUTH", value=db_value)
-        s.save()
-        return s
+    def set_autologin_user_id(cls, user_id):
+        """ sets user to be auto-logged in """
+        cls(key="AUTOLOGIN_USER", value=str(user_id)).save()
 
     @classmethod
-    def get_disable_local_auth(cls):
-        """
-        If there is record in DB, return True if value == 'T', False otherwise
+    def unset_autologin_user_id(cls):
+        """ unsets user to be auto-logged in """
+        cls.objects.filter(key="AUTOLOGIN_USER").delete()
 
-        If there is no record, return None.
-        """
-        try:
-            val = cls.objects.get(key="DISABLE_LOCAL_AUTH").value
-        except (MultipleObjectsReturned, ObjectDoesNotExist, AttributeError):
-            val = cls.set_disable_local_auth(False).value
-        return val == 'T'
-
-    @classmethod
-    def set_disable_local_auth(cls, value):
-        """ value is either True or False """
-        db_value = 'T' if value else 'F'
-        cls.objects.filter(key="DISABLE_LOCAL_AUTH").delete()
-        s = cls(key="DISABLE_LOCAL_AUTH", value=db_value)
-        s.save()
-        return s

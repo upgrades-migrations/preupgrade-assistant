@@ -9,11 +9,6 @@
     {% else %}
     <a class="btn btn-default" href="{% url "auth-enable" %}?next={% url "auth-list" %}">Enable Authentication</a>
     {% endif %}
-    {% if local_auth_enabled %}
-    <a class="btn btn-default" href="{% url "local-auth-disable" %}?next={% url "auth-list" %}">Disable Local Authentication</a>
-    {% else %}
-    <a class="btn btn-default" href="{% url "local-auth-enable" %}?next={% url "auth-list" %}">Enable Local Authentication</a>
-    {% endif %}
   </div>
   {% if user_list %}
   <table class="user-list">
