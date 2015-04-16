@@ -158,7 +158,7 @@ class Common(object):
         This will prepare a symlinks for relevant architecture
         and Server Variant
         """
-        server_variant = utils.get_server_variant()
+        server_variant = utils.get_variant()
         if server_variant is None:
             return
         self.common_result_dir = os.path.join(assessment_dir, settings.common_name)
@@ -172,8 +172,8 @@ class Common(object):
         # We have repositories for i386 architecture but packages are built
         # sometimes as i686 architecture. That's problematic in some cases
         # so we solve this for now by this little hack ugly.
-        if (not os.path.exists(os.path.join(self.common_result_dir,'i686'))
-           and os.path.exists(os.path.join(self.common_result_dir,'i386'))):
+        if (not os.path.exists(os.path.join(self.common_result_dir, 'i686'))
+           and os.path.exists(os.path.join(self.common_result_dir, 'i386'))):
             os.symlink(os.path.join(self.common_result_dir, 'i386'),
                        os.path.join(self.common_result_dir, 'i686'))
         add_ons = utils.get_addon_variant()
