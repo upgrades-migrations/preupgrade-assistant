@@ -28,7 +28,6 @@ These functions are available:
 
 import os
 import sys
-import datetime
 import re
 import shutil
 from preup import utils
@@ -166,8 +165,6 @@ def log(severity, message, component_arg=None):
     """
     global component
     comp_show = component_arg or component
-    #if not comp_show:
-    #    raise Exception('Component name wasn\'t set up. Please do so with function set_component().')
     sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message))
 
 
@@ -263,6 +260,7 @@ def exit_fail():
     """
     sys.exit(int(os.environ['XCCDF_RESULT_FAIL']))
 
+
 def exit_failed():
     """
     The test failed.
@@ -305,11 +303,13 @@ def exit_fixed():
     """
     sys.exit(int(os.environ['XCCDF_RESULT_FIXED']))
 
+
 def exit_informational():
     """
     Rule failed, but was later fixed.
     """
     sys.exit(int(os.environ['XCCDF_RESULT_INFORMATIONAL']))
+
 
 def switch_to_content():
     """
@@ -317,16 +317,17 @@ def switch_to_content():
     """
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
+
 def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
         lines = []
         try:
-            file = open(VALUE_RPM_QA, "r")
-            lines = file.readlines()
+            file_name = open(VALUE_RPM_QA, "r")
+            lines = file_name.readlines()
         finally:
-            file.close()
+            file_name.close()
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -334,6 +335,7 @@ def check_applies_to(check_applies=""):
                 not_applicable = 1
     if not_applicable:
         exit_not_applicable()
+
 
 def check_rpm_to(check_rpm="", check_bin=""):
     not_applicable = 0
@@ -362,12 +364,14 @@ def check_rpm_to(check_rpm="", check_bin=""):
     if not_applicable:
         exit_fail()
 
+
 def solution_file(message):
     try:
         f = open(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+")
         f.write(message)
     finally:
         f.close()
+
 
 def service_is_enabled(service_name):
     """
@@ -384,6 +388,7 @@ def service_is_enabled(service_name):
         f.close()
         
     return return_value
+
 
 def config_file_changed(config_file_name):
     """
@@ -403,6 +408,7 @@ def config_file_changed(config_file_name):
         pass
     return config_changed
 
+
 def backup_config_file(config_file_name):
     """
     Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure
@@ -416,7 +422,7 @@ def backup_config_file(config_file_name):
         if not config_file_changed(config_file_name):
             return 2
 
-       # stripping / from beginning is necessary to concat paths properly
+        # stripping / from beginning is necessary to concat paths properly
         os.mkdir(os.path.join(VALUE_TMP_PREUPGRADE, os.path.dirname(config_file_name.strip("/"))))
     except OSError:
         # path probably exists, it's ok
