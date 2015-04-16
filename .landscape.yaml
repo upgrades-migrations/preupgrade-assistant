@@ -1,0 +1,17 @@
+# Include warnings about missing documentation?
+doc-warnings: True
+
+# Include warnings about tests?
+test-warnings: True
+
+# tests stricktness
+strictness: medium
+max-line-length: 120
+
+# autodetect dependencies?
+autodetect: True
+
+# paths to be ignored
+ignore-paths:
+    - docs
+    - setup.py
