@@ -97,7 +97,7 @@ def tag_formating(text, extension):
         string_match = re.findall(expr_re, line)
         if string_match:
             for match in string_match:
-                #update = update_dict[string_match.group("tag")](match, extension)
+                # update = update_dict[string_match.group("tag")](match, extension)
                 inplace = False
                 if 'INPLACERISK:' in line:
                     inplace = True

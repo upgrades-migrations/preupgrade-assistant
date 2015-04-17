@@ -1,3 +1,4 @@
+# # -*- coding: utf-8 -*-
 from __future__ import print_function
 import os
 import unittest
@@ -17,40 +18,70 @@ from preup import xccdf
 from preup import settings
 from preuputils import variables
 from preuputils.xml_utils import XmlUtils
-from preuputils.script_utils import get_file_content
-from preup.utils import write_to_file
+from preuputils.oscap_group_xml import OscapGroupXml
+from preup.utils import write_to_file, get_file_content
 from preup.xml_manager import html_escape, html_escape_string
-
+from pprint import pprint
+import sys
 
 class TestXMLCompose(unittest.TestCase):
-    def test_compose(self):
+    def setUp(self):
         dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
-        result_dir = os.path.join(dir_name+variables.result_prefix)
+        self.result_dir = os.path.join(dir_name+variables.result_prefix)
         dir_name = os.path.join(dir_name, 'dummy')
-        if os.path.exists(result_dir):
-            shutil.rmtree(result_dir)
-        shutil.copytree(dir_name, result_dir)
+        if os.path.exists(self.result_dir):
+            shutil.rmtree(self.result_dir)
+        shutil.copytree(dir_name, self.result_dir)
         template_file = ComposeXML.get_template_file()
         tree = None
         try:
-            f = open(template_file, "r")
-            tree = ElementTree.fromstring(f.read())
-            f.close()
+            self.tree = ElementTree.parse(template_file).getroot()
         except IOError:
             assert False
 
         settings.autocomplete = False
-        target_tree = ComposeXML.run_compose(tree, result_dir)
-        self.assertTrue(target_tree)
+        self.target_tree = ComposeXML.run_compose(self.tree, self.result_dir)
+        self.assertTrue(self.target_tree)
 
+    def tearDown(self):
+        shutil.rmtree(self.result_dir)
+
+    def test_compose(self):
         expected_groups = ['failed', 'fixed', 'needs_action',
-                           'needs_inspection', 'not_applicable', 'pass']
+                           'needs_inspection', 'not_applicable', 'pass',
+                           'unicode']
 
         generated_group = []
-        for group in target_tree.findall(xccdf.XMLNS + "Group"):
+        for group in self.target_tree.findall(xccdf.XMLNS + "Group"):
             generated_group.append(group.get('id'))
         self.assertEqual(['xccdf_preupg_group_'+x for x in expected_groups], generated_group)
-        shutil.rmtree(result_dir)
+
+    def test_unicode_xml(self):
+        u_title = 'Čekujeme unicode u hasičů'.decode('utf-8')
+        u_descr = 'Hoří horní heršpická hospoda Hrbatý hrozen.'.decode('utf-8')
+        uni_xml = os.path.join(self.result_dir, "unicode", "group.xml")
+        try:
+            # XML files should be always in utf-8!
+            lines = [x.decode('utf-8') for x in get_file_content(uni_xml, "r", True, False)]
+        except IOError:
+            assert False
+        title = filter(lambda x: u_title in x, lines)
+        descr = filter(lambda x: u_descr in x, lines)
+        self.assertTrue(title, "title is wrong ecoded or missing")
+        self.assertTrue(descr, "description is wrong encoded or missing")
+
+    def test_unicode_script_author(self):
+        u_author = 'Petr Stodůlka'.decode(settings.defenc)
+        script_file = os.path.join(self.result_dir, "unicode", "dummy_unicode.sh")
+        settings.autocomplete = True
+        self.target_tree = ComposeXML.run_compose(self.tree, self.result_dir)
+        self.assertTrue(self.target_tree)
+        try:
+            lines = get_file_content(script_file, "r", True)
+        except IOError:
+            assert False
+        author = filter(lambda x: u_author in x, lines)
+        self.assertTrue(author)
 
 
 class TestXML(unittest.TestCase):
@@ -73,7 +104,6 @@ class TestXML(unittest.TestCase):
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
-        self.assertTrue(test_ini)
         self.loaded_ini[self.filename] = []
         self.loaded_ini[self.filename].append(test_ini)
         self.check_sh = """#!/bin/bash
@@ -426,7 +456,6 @@ class ComposeTest(unittest.TestCase):
 
     def setUp(self):
         pass
-
 
 def suite():
     loader = unittest.TestLoader()

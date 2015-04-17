@@ -73,7 +73,7 @@ def check_inplace_risk(xccdf_file, verbose):
     return value is get from function get_and_print_inplace_risk
     """
     try:
-        content = utils.get_file_content(xccdf_file, 'r')
+        content = utils.get_file_content(xccdf_file, 'r', False, False)
         if not content:
             # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
             return -1

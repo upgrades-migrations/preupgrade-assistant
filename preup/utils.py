@@ -6,6 +6,30 @@ import subprocess
 import fnmatch
 from preup.logger import *
 import shutil
+from os import path, access, stat, W_OK, R_OK
+
+def check_file(fp, mode):
+    """
+    Check if file exists and has set right mode
+    """
+    intern_mode = 0
+    if(isinstance(mode, str)):
+        if('w' in mode or 'a' in mode):
+            intern_mode += W_OK
+        if('r' in mode):
+            intern_mode += R_OK
+    else:
+        intern_mode = mode
+    if(path.exists(fp)):
+        if(path.isfile(fp)):
+            if(access(fp, intern_mode)):
+                return True
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
 
 
 def check_xml(xml_file):
@@ -92,7 +116,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
     stdout = ''
     for stdout_data in iter(sp.stdout.readline, b''):
         # communicate() method buffers everything in memory, we will read stdout directly
-        stdout += stdout_data.decode()
+        stdout += stdout_data.decode(settings.defenc)
         if function is None:
             if print_output:
                 print (stdout_data, end="", flush=True)
@@ -101,9 +125,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
     sp.communicate()
 
     if output is not None:
-        log = open(output, "wb")
-        log.write(stdout.encode('utf-8'))
-        log.close()
+        write_to_file(output, "wb", stdout)
     return sp.returncode
 
 
@@ -160,17 +182,22 @@ def get_valid_scenario(dir_name):
         return None
 
 
-def get_file_content(path, perms, method=False):
+def get_file_content(path, perms, method=False, decode_flag=True):
     """
     shortcut for returning content of file:
      open(...).read()
      if method is False then file is read by function read
      if method is True then file is read by function readlines
+     When decode_flag is True, read string is decoded to unicode. Otherwise
+     only read. (Some libraries request non-unicode strings - as ElementTree)
     """
     try:
         f = open(path, perms)
         try:
-            data = f.read() if not method else f.readlines()
+            if decode_flag is True:
+                data = f.read().decode(settings.defenc) if not method else [line.decode(settings.defenc) for line in f.readlines()]
+            else:
+                data = f.read() if not method else f.readlines()
         finally:
             f.close()
             return data
@@ -178,19 +205,28 @@ def get_file_content(path, perms, method=False):
         raise
 
 
-def write_to_file(path, perms, data):
+def write_to_file(path, perms, data, encode_flag=True):
     """
     shortcut for write of data to file:
      open(...).write()
      data can be string or list of strings
+
+    data contains unicode string(s) in most cases, so we encode them
+    to system default encoding before write. When you use encoded strings,
+    set encode_flag to False to suppress second encodiding process.
     """
     try:
         f = open(path, perms)
         try:
             if isinstance(data, list):
+                if encode_flag is True:
+                    data = [line.encode(settings.defenc) for line in data]
                 f.writelines(data)
             else:
-                f.write(data)
+                if encode_flag is True:
+                    f.write(data.encode(settings.defenc))
+                else:
+                    f.write(data)
         finally:
             f.close()
     except IOError:

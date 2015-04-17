@@ -551,7 +551,7 @@ class Application(object):
 
         self.copy_preupgrade_scripts(assessment_dir)
 
-        #It prints out result in table format
+        # It prints out result in table format
         format_rules_to_table(main_report, "main contents")
         for target, report in self.report_data.iteritems():
             format_rules_to_table(report, "3rdparty content " + target)

@@ -9,6 +9,9 @@ if os.path.basename(sys.argv[0]) == "premigrate":
     prefix = "premigrate"
 else:
     prefix = "preupgrade"
+
+defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
+
 # dir where results of analysis are stored
 result_dir = os.path.join("/root", prefix)
 
@@ -101,7 +104,7 @@ needs_inspection = "needs_inspection"
 needs_action = "needs_action"
 
 # The full license text
-license = """Preupgrade assistant performs system upgradability assessment
+license = u"""Preupgrade assistant performs system upgradability assessment
 and gathers information required for successful operating system upgrade.
 Copyright (C) 2013 Red Hat Inc.
 {0}

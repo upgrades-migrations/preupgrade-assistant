@@ -85,7 +85,8 @@ class ReportParser(object):
         self.path = report_path
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
         try:
-            content = get_file_content(report_path, 'r')
+            # ElementTree.fromstring can't parse safely unicode string
+            content = get_file_content(report_path, 'r', False, False)
         except IOError as ioerr:
             raise
         if not content:
@@ -133,7 +134,8 @@ class ReportParser(object):
         Function updates self.target_tree with the new path
         """
         self.path = path
-        content = get_file_content(self.path, 'r')
+        # ElementTree.fromstring can't parse safely unicode string
+        content = get_file_content(self.path, 'r', False, False)
         if not content:
             return None
         self.target_tree = ElementTree.fromstring(content)
@@ -202,10 +204,10 @@ class ReportParser(object):
         Function writes XML document to file
         """
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
+        # we really must set encoding here! and suppress it in write_to_file
         data = ElementTree.tostring(self.target_tree, "utf-8")
-        write_to_file(self.path, 'wb', data)
-        content = get_file_content(self.path, 'r')
-        self.target_tree = ElementTree.fromstring(content)
+        write_to_file(self.path, 'wb', data, False)
+        self.target_tree = ElementTree.parse(self.path).getroot()
 
     def modify_result_path(self, result_dir, scenario, mode):
         """
@@ -363,7 +365,7 @@ class ReportParser(object):
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
         try:
-            lines = [ i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
+            lines = [i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
         except IOError:
             return
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):

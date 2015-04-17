@@ -278,8 +278,7 @@ class ReportParser(object):
 
     def parse_report(self):
         """ parse XML report """
-        report_content = get_file_content(self.path, 'r')
-        root = ElementTree.fromstring(report_content)
+        root = ElementTree.parse(self.path).getroot()
         # rules & groups first
         self.parse_groups(root)
         self.parse_rule_results(root)
