@@ -22,7 +22,7 @@ def main():
                       action='store_true'
                       )
     opts, args = parser.parse_args()
-    if len(args) > 1:
+    if len(args) > 1 or len(args) == 0:
         print 'Specify just one directory with INI file.'
         parser.print_help()
         sys.exit(1)
