@@ -295,11 +295,13 @@ def get_convertors():
     return settings.text_converters.keys()
 
 
-def get_server_variant():
+def get_variant():
     """
     Function return a variant
     """
     redhat_release = get_file_content("/etc/redhat-release", "r")
+    if redhat_release.startswith('Fedora'):
+        return None
     try:
         rel = redhat_release.split()
         return rel[4]

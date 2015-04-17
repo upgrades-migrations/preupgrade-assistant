@@ -156,14 +156,6 @@ class Application(object):
         """
         return os.path.join(assessment, settings.add_ons)
 
-    def get_system(self):
-        """
-        Check if system is Fedora or RHEL
-        :return: Fedora or None
-        """
-        lines = get_file_content('/etc/redhat-release', 'r')
-        return [line for line in lines if line.startswith('Fedora')]
-
     def get_postupgrade_dir(self):
         """
         Function returns postupgrade dir

@@ -158,7 +158,7 @@ class Common(object):
         This will prepare a symlinks for relevant architecture
         and Server Variant
         """
-        server_variant = utils.get_server_variant()
+        server_variant = utils.get_variant()
         if server_variant is None:
             return
         self.common_result_dir = os.path.join(assessment_dir, settings.common_name)
