@@ -63,6 +63,9 @@ class OscapGroupXml(object):
                 print_error_msg(title="Missing section header")
             except configparser.NoSectionError as nse:
                 print_error_msg(title="Missing section header")
+            except configparser.ParsingError as pse:
+                print_error_msg(title="Incorrect INI file\n", msg=file_name)
+                os.sys.exit(1)
 
     def collect_group_xmls(self):
         """

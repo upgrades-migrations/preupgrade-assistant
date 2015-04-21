@@ -11,7 +11,6 @@ from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
 
-
 def get_full_xml_tag(dirname):
     """
     We need just from RHEL directory
@@ -339,7 +338,13 @@ class XmlUtils(object):
                                     ''.join(value_tag))
 
             for k, function in six.iteritems(update_fnc):
-                function(key, k)
+                try:
+                    function(key, k)
+                except IOError as e:
+                    e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
+                    e_msg= "'%s': %s" % (key[k], e.strerror)
+                    print_error_msg(title=e_title, msg=e_msg)
+                    os.sys.exit(1)
 
             self.update_values_list(self.rule,
                                     '{group_title}',

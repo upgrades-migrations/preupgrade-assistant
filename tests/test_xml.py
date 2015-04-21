@@ -352,49 +352,95 @@ A solution text for test suite"
         self.assertTrue(check_rpm_to)
 
 
-class TestMissingTag(unittest.TestCase):
+class TestIncorrectINI(unittest.TestCase):
     def setUp(self):
-        self.dir_name = "tests/FOOBAR6_7/missing_tag"
+        self.dir_name = "tests/FOOBAR6_7/incorrect_ini"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
         self.test_solution = "test_solution.sh"
         self.check_script = "check_script.sh"
         self.loaded_ini = {}
-        test_ini = {'content_title': 'Testing content title',
+        self.loaded_ini[self.filename] = []
+        self.test_ini = {'content_title': 'Testing content title',
                     'content_description': 'Some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
+                    'check_script': self.check_script,
                     'solution': self.test_solution,
                     'applies_to': 'test'}
-        self.assertTrue(test_ini)
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(test_ini)
-
-    def tearDown(self):
-        shutil.rmtree(self.dir_name)
-
-    def test_missing_check_script(self):
-        """
-        Basic test for whole program
-        """
         solution_text = """
 A solution text for test suite"
 """
-        write_to_file(os.path.join(self.dir_name, self.test_solution), "w", solution_text)
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_missing_solution_script(self):
         check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
 
 #This is testing check script
  """
+        write_to_file(os.path.join(self.dir_name, self.test_solution), "w", solution_text)
         write_to_file(os.path.join(self.dir_name, self.check_script), "w", check_sh)
+
+    def tearDown(self):
+        shutil.rmtree(self.dir_name)
+
+    def test_missing_tag_check_script(self):
+        """
+        Basic test for whole program
+        """
+        self.test_ini.pop('check_script', None)
+        self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
+    def test_missing_tag_solution_script(self):
+        """
+        Test of missing tag 'solution' - SystemExit should be raised
+        """
+        self.test_ini.pop('solution', None)
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
+    def test_file_solution_not_exists(self):
+        """
+        Test of missing 'solution' file - SystemExit should be raised
+        """
+        self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
+    def test_file_check_script_not_exists(self):
+        """
+        Test of missing 'check_script' file
+        """
+        self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
+    def test_check_script_is_directory(self):
+        """
+        Directory as input instead of regular file is incorrect input
+        Tests issue #29
+        """
+        self.test_ini['check_script'] = '.'
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
+    def test_incorrect_tag(self):
+        """
+        Check occurrence of incorrect tag
+        Tests issue #30
+        """
+        text_ini = '[preupgrade]\n'
+        text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
+        text_ini += '\n[]\neliskk\n'
+        write_to_file(self.filename, "w",text_ini)
+        oscap = OscapGroupXml(self.dir_name)
+        self.assertRaises(SystemExit, oscap.find_all_ini)
 
 
 class TestGroupXML(unittest.TestCase):
@@ -462,7 +508,7 @@ def suite():
     suite = unittest.TestSuite()
     suite.addTest(loader.loadTestsFromTestCase(TestGroupXML))
     suite.addTest(loader.loadTestsFromTestCase(TestXML))
-    suite.addTest(loader.loadTestsFromTestCase(TestMissingTag))
+    suite.addTest(loader.loadTestsFromTestCase(TestIncorrectINI))
     suite.addTest(loader.loadTestsFromTestCase(TestXMLCompose))
     suite.addTest(loader.loadTestsFromTestCase(HTMLEscapeTest))
     return suite
