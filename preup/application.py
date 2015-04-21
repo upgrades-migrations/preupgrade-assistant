@@ -633,7 +633,7 @@ class Application(object):
             self.upload_results()
             return 0
 
-        if not self.conf.riskcheck and not self.conf.apply and not self.conf.cleanup:
+        if not self.conf.riskcheck and not self.conf.apply and not self.conf.cleanup and not self.conf.kickstart:
             # If force option is not mentioned and user select NO then exits
             if not self.conf.force and not show_message(settings.warning_text):
                 # We do not want to continue
@@ -670,7 +670,7 @@ class Application(object):
 
         if self.conf.kickstart:
             kg = KickstartGenerator(self.get_preupgrade_kickstart())
-            kg.copy_kickstart_files(self.conf.result_dir)
+            KickstartGenerator.copy_kickstart_templates()
             ks = kg.generate()
             log_message('Kickstart for migration is %s.' % self.get_preupgrade_kickstart())
             return 0

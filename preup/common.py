@@ -148,10 +148,9 @@ class Common(object):
         for file_name in settings.KS_FILES:
             target_file = os.path.join(settings.KS_DIR, file_name)
             orig_name = file_name.replace('default', variant)
-            if not os.path.exists(target_file):
-                if os.path.exists(os.path.join(dir_name, platform.machine(), orig_name)):
-                    shutil.copyfile(os.path.join(dir_name, platform.machine(), orig_name),
-                                    target_file)
+            source_name = os.path.join(dir_name, platform.machine(), orig_name)
+            if not os.path.exists(target_file) and os.path.exists(source_name):
+                shutil.copyfile(source_name, target_file)
 
     def prep_symlinks(self, assessment_dir, scenario=""):
         """
