@@ -190,6 +190,8 @@ class KickstartGenerator(object):
         """ outputs %packages section """
         installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
+        if not installed_packages or not removed_packages:
+            return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(installed_packages, removed_packages, *abs_fps)
         display_package_names = ygg.get_list()
@@ -205,7 +207,7 @@ class KickstartGenerator(object):
         except AttributeError:
             log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py')
             return
-        script_str = get_file_content(script_path, 'r')
+        script_str = get_file_content(os.path.join(settings.KS_DIR, script_path), 'r')
         if not script_str:
             log_message("Can't open script template: {0}".format(script_path))
             return
@@ -222,11 +224,14 @@ class KickstartGenerator(object):
         self.ks_list.insert(cnt, text)
         return cnt + 1
 
-    def copy_kickstart_files(self, dir_name):
-        for f in settings.KS_TEMPLATES:
-            if os.path.exists(os.path.join(dir_name, f)):
-                shutil.copy(os.path.join(dir_name, f),
-                            os.path.join(settings.KS_DIR, f))
+    @staticmethod
+    def copy_kickstart_templates():
+        # Copy kickstart files (/usr/share/preupgrade/kickstart) for kickstart generation
+        for file_name in settings.KS_TEMPLATES:
+            target_name = os.path.join(settings.KS_DIR, file_name)
+            source_name = os.path.join(settings.source_dir, 'kickstart', file_name)
+            if not os.path.exists(target_name) and os.path.exists(source_name):
+                shutil.copy(source_name, target_name)
 
     def update_repositories(self, repositories):
         repos = ""
@@ -251,8 +256,9 @@ class KickstartGenerator(object):
 
     def generate(self):
         packages = self.output_packages()
+        if packages:
+            self.ks.handler.packages.add(packages)
         available_repos = KickstartGenerator.get_kickstart_repo('available-repos')
-        self.ks.handler.packages.add(packages)
         self.update_repositories(available_repos)
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
