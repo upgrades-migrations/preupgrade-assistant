@@ -87,6 +87,7 @@ class XmlUtils(object):
         The function replaces tags taken from INI files.
         Tags are mentioned in xml_tags.py
         """
+        forbidden_empty = ["{scap_name}", "{main_dir}"]
         if search_exp == "{content_description}":
             replace_exp = replace_exp.rstrip()
         elif search_exp == "{check_description}":
@@ -105,6 +106,10 @@ class XmlUtils(object):
             new_text = "_" + '_'.join(get_full_xml_tag(self.dirname))\
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
+        if replace_exp == '' and search_exp in forbidden_empty:
+            print_error_msg(title="Disapproved empty replacement for tag '%s'" % search_exp)
+            os.sys.exit(1)
+
         for cnt, line in enumerate(section):
             if search_exp in line:
                 section[cnt] = line.replace(search_exp, replace_exp)
@@ -191,7 +196,7 @@ class XmlUtils(object):
                                             prefix=check,
                                             script_name=key[k],
                                             check_func=check_func[check])
-        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[:-1][0])
+        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[0])
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
                         'requires': 'check_rpm'}
@@ -247,7 +252,7 @@ class XmlUtils(object):
         if name in key:
             self.check_script_modification(key, name)
             self.update_values_list(self.select_rules, "{scap_name}",
-                                    key[name].split('.')[:-1][0])
+                                    key[name].split('.')[0])
 
     def fnc_check_description(self, key, name):
         """

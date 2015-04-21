@@ -442,6 +442,15 @@ A solution text for test suite"
         oscap = OscapGroupXml(self.dir_name)
         self.assertRaises(SystemExit, oscap.find_all_ini)
 
+    def test_secret_check_script(self):
+        """Check occurrence of secret file for check script"""
+        self.test_ini['check_script'] = '.minicheck'
+        text = """#!/usr/bin/sh\necho 'ahojky'\n"""
+        write_to_file(os.path.join(self.dir_name, self.check_script), "w", text)
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+
 
 class TestGroupXML(unittest.TestCase):
     def setUp(self):

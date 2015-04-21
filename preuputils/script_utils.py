@@ -158,12 +158,24 @@ def get_script_type(dir_name, script_name=""):
     If it's not any script then return just txt
     """
     mime_type = mimetypes.guess_type(get_full_path(dir_name, script_name))[0]
+    if mime_type is None:
+        # try get mime type with shebang
+        line = get_file_content(get_full_path(dir_name, script_name), "r", True)[0]
+        if line.startswith("#!"):
+            if re.search(r"\bpython\b", line):
+                return 'python'
+            if re.search(r"\bperl\b", line):
+                return 'perl'
+            if re.search(r"\bcsh\b", line):
+                return 'csh'
+            if re.search(r"\b(bash|sh)\b", line):
+                return 'sh'
     file_types = {'text/x-python': 'python',
                   'application/x-csh': 'csh',
                   'application/x-sh': 'sh',
                   'application/x-perl': 'perl',
                   'text/plain': 'txt',
-                  'None': 'txt',
+                  None: 'txt',
                   }
     return file_types[mime_type]
 
