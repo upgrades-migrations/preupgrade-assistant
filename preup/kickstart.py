@@ -201,7 +201,7 @@ class KickstartGenerator(object):
         """ outputs %packages section """
         installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
-        if not installed_packages or removed_packages:
+        if not installed_packages or not removed_packages:
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(installed_packages, removed_packages, *abs_fps)
