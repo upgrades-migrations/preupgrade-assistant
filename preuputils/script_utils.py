@@ -162,9 +162,9 @@ def get_script_type(dir_name, script_name=""):
         # try get mime type with shebang
         line = get_file_content(get_full_path(dir_name, script_name), "r", True)[0]
         if line.startswith("#!"):
-            if re.search(r"\bpython\b", line):
+            if re.search(r"\bpython[0-9.-]*\b", line):
                 return 'python'
-            if re.search(r"\bperl\b", line):
+            if re.search(r"\bperl[0-9.-]*\b", line):
                 return 'perl'
             if re.search(r"\bcsh\b", line):
                 return 'csh'

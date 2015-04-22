@@ -91,7 +91,7 @@ class OscapGroupXml(object):
         try:
             write_to_file(file_name, "w", ["%s" % item for item in self.rule])
         except IOError as ior:
-            print ('Problem with write data to the filei ', file_name)
+            print ('Problem with write data to the file ', file_name)
 
     def write_profile_xml(self, target_tree):
         """
