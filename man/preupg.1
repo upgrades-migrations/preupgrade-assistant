@@ -5,46 +5,60 @@
 .TH preupg 1 2015-03-01 "" "Linux User's Manual"
 .SH NAME
 preupg \- Preupgrade assistant performs assessment of the system from
-the "upgradeability" point of view 
+the "upgradeability" point of view
 
 .SH SYNOPSIS
 \fBpreupg used in case of one installed contents on source system
 
-\fBpreupg [-l, --list-contents] 
+\fBpreupg [-l, --list-contents]
 
-\fBpreupg [-d, --debug] [--skip-common] [-s, --scan] PATH
+\fBpreupg [-d, --debug] [--skip-common] [-s, --scan PATH] [-m, --mode MODE] [--force] [--text] [--kickstart]
 
 \fBpreupg [-v, --verbose] [--riskcheck]
 
-\fBpreupg [-c, --contents] path to contents
+\fBpreupg [-c, --contents PATH]
+
+\fBpreupg [--cleanup]
 
 .SH DESCRIPTION
 \fBpreupg\fP is the main binary of Preupgrade Assistant.
 
 .SH OPTIONS
 .TP
-.B \-d, --debug
-makes preupgrade assistant log lots of debugging information
+.B \-c, --contents PATH
+Generates a content for preupgrade assistant.
 .TP
-.B --skip-common
-skips generating common log files used during assessment
+.B \-d, --debug
+Makes preupgrade assistant log lots of debugging information.
+.TP
+.B \-\-force
+Suppress user interaction.
+.TP
+.B \-\-kickstart
+Generate kickstart.
 .TP
 .B \-l, --list
-shows list of installed contents
+Shows list of installed contents
 .TP
-.B \-s, --scan [PATH]
-executes selected assessment taken from list option
+.B \-m, --mode MODE
+Select one (or both) from the possible modes: \fBmigrate\fR or \fBupgrade\fR. Both modes are used by default. \fBupgrade\fR is used for in-place upgrades on the same machine by \fIfedup\fR or \fIredhat-upgrade-tool\fR. \fBmigrate\fR is used for migration with kickstart with new clean installation, with settings of the new system as close as possible to settings of original system.
+.TP
+.B \-s, --scan PATH
+Executes selected assessment taken from list option.
+.TP
+.B --skip-common
+Skips generating common log files used during assessment.
 .TP
 .B --riskcheck
-returns value which depends on INPLACE RISK results.
+Returns value which depends on INPLACE RISK results.
 If verbose mode is mentioned then shows all inplace risks generated during assessment.
 Return values are 0 for NONE, SLIGHT risks or 1 for MEDIUM, HIGH risks or 2 for EXTREME risk.
 .TP
-.B \-v, --verbose
-shows more information during assessment. Verbose can be repeated more times
+.B \-\-text
+Convert HTML results to text form by elinks, lynx or w3m.
 .TP
-.B \-c, --contents
-generates a content for preupgrade assistant
+.B \-v, --verbose
+Shows more information during assessment. Verbose can be repeated more times.
 
 .SH NOTES
 All common log files are stored in /var/cache/preupgrade/common directory.

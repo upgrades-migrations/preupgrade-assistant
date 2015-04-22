@@ -131,7 +131,7 @@ will used -- http://127.0.0.1:8099/submit/)"
             "--kickstart",
             action="store_true",
             default=False,
-            help="Specify kickstart where upload is going to be used"
+            help="Generate kickstart"
         )
 
 if __name__ == '__main__':
