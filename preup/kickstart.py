@@ -258,6 +258,15 @@ class KickstartGenerator(object):
             tarball = os.path.join(directories, preupg_files[-1])
         return tarball
 
+    def remove_obsolete_rows(self):
+        """ Function removes obsolete rows """
+        obsolete_rows = ['key ']
+        kickstart_content = get_file_content(self.kick_start_name, 'r', method=True)
+        for row in obsolete_rows:
+            kickstart_content = [x for x in kickstart_content if not x.startswith(row)]
+
+        write_to_file(self.kick_start_name, 'w', kickstart_content)
+
     def generate(self):
         packages = self.output_packages()
         if packages:
@@ -266,6 +275,7 @@ class KickstartGenerator(object):
         self.update_repositories(available_repos)
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
+        self.remove_obsolete_rows()
 
 
 def main():
