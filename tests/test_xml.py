@@ -22,6 +22,7 @@ from preup.utils import write_to_file, get_file_content
 from preup.xml_manager import html_escape, html_escape_string
 
 class TestXMLCompose(unittest.TestCase):
+
     """Tests of right composing of contents in groups."""
 
     def setUp(self):
@@ -57,12 +58,10 @@ class TestXMLCompose(unittest.TestCase):
         self.assertEqual(['xccdf_preupg_group_'+x for x in expected_groups], generated_group)
 
     def test_unicode_xml(self):
-
         """
         Test processing of non-ascii characters inside title and description
         sections.
         """
-
         u_title = 'Čekujeme unicode u hasičů'.decode('utf-8')
         u_descr = 'Hoří horní heršpická hospoda Hrbatý hrozen.'.decode('utf-8')
         uni_xml = os.path.join(self.result_dir, "unicode", "group.xml")
@@ -92,6 +91,7 @@ class TestXMLCompose(unittest.TestCase):
 
 
 class TestXML(unittest.TestCase):
+
     """Main testing of right generating of XML files for OSCAP."""
 
     def setUp(self):
@@ -360,6 +360,7 @@ A solution text for test suite"
 
 
 class TestIncorrectINI(unittest.TestCase):
+
     """
     Tests right processing of INI files including incorrect input which
     could make for crash with traceback.
@@ -425,12 +426,10 @@ A solution text for test suite"
         self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_check_script_is_directory(self):
-
         """
         Directory as input instead of regular file is incorrect input
         Tests issue #29
         """
-
         self.test_ini['check_script'] = '.'
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
@@ -441,7 +440,6 @@ A solution text for test suite"
         Check occurrence of incorrect tag
         Tests issue #30
         """
-
         text_ini = '[preupgrade]\n'
         text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
         text_ini += '\n[]\neliskk\n'
@@ -460,7 +458,9 @@ A solution text for test suite"
 
 
 class TestGroupXML(unittest.TestCase):
+
     """Basic test for creating group.xml file"""
+
     #TODO: May should be deprecated and test could be moved under class TestXMLCompose
 
     def setUp(self):
@@ -488,6 +488,7 @@ class TestGroupXML(unittest.TestCase):
 
 
 class HTMLEscapeTest(unittest.TestCase):
+
     """Testing of right transform of unsafe characters to their entities"""
 
     def test_basic(self):
