@@ -12,9 +12,7 @@ from preuputils import xml_tags
 from preuputils import script_utils
 
 def get_full_xml_tag(dirname):
-    """
-    We need just from RHEL directory
-    """
+    """We need just from RHEL directory"""
     found = 0
     # Get index of scenario and cut directory till scenario (included)
     for index, dir_name in enumerate(dirname.split(os.path.sep)):
@@ -25,9 +23,7 @@ def get_full_xml_tag(dirname):
 
 
 class XmlUtils(object):
-    """
-    Class generate a XML from xml_tags and loaded INI file
-    """
+    """Class generate a XML from xml_tags and loaded INI file"""
     def __init__(self, dir_name, ini_files):
         self.keys = {}
         self.select_rules = []
@@ -36,9 +32,9 @@ class XmlUtils(object):
         self.ini_files = ini_files
 
     def update_files(self, file_name, content):
+        """Function updates file_name <migrate or update> according to INI file."""
+
         """
-        Function updates file_name <migrate or update>
-        according to INI file.
         :param file_name: specified in INI file like mode: upgrade, migrate
         :param content: name of the content like xccdf_rule_...
         :return: Nothing
@@ -140,9 +136,7 @@ class XmlUtils(object):
                 os.sys.exit(0)
 
     def add_value_tag(self):
-        """
-        The function adds VALUE tag in group.xml file
-        """
+        """The function adds VALUE tag in group.xml file"""
         value_tag = []
         check_export_tag = list()
         check_export_tag.append(xml_tags.RULE_SECTION_VALUE_IMPORT)
@@ -159,9 +153,7 @@ class XmlUtils(object):
         return value_tag, check_export_tag
 
     def solution_modification(self, key):
-        """
-        Function handles a solution text or scripts
-        """
+        """Function handles a solution text or scripts"""
         fix_tag = []
         for k in key['solution'].split(','):
             k = k.strip()
@@ -179,9 +171,7 @@ class XmlUtils(object):
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):
-        """
-        Function checks a check script
-        """
+        """Function checks a check script"""
         script_utils.check_scripts(k, self.dirname, script_name=key[k])
         check_func = {'log_': ['log_none_risk', 'log_slight_risk',
                                'log_medium_risk', 'log_high_risk',
@@ -211,9 +201,7 @@ class XmlUtils(object):
         self.update_values_list(self.rule, "{"+k+"}", key[k])
 
     def prepare_sections(self):
-        """
-        The function prepares all tags needed for generation group.xml file
-        """
+        """The function prepares all tags needed for generation group.xml file."""
         group_ini = False
         for main, self.keys in self.ini_files.items():
             if main.endswith("group.ini"):
@@ -234,9 +222,7 @@ class XmlUtils(object):
         return self.rule
 
     def fnc_config_file(self, key, name):
-        """
-        Function updates a config file
-        """
+        """Function updates a config file."""
         if name in key and key[name] is not None:
             self.update_values_list(self.rule, "{config_section}",
                                     xml_tags.CONFIG_SECTION)
@@ -246,18 +232,14 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{config_section}", "")
 
     def fnc_check_script(self, key, name):
-        """
-        Function updates a check_script
-        """
+        """Function updates a check_script."""
         if name in key:
             self.check_script_modification(key, name)
             self.update_values_list(self.select_rules, "{scap_name}",
                                     key[name].split('.')[0])
 
     def fnc_check_description(self, key, name):
-        """
-        Function updates a check_description
-        """
+        """Function updates a check_description."""
         if name in key and key[name] is not None:
             escaped_text = self._update_check_description(key[name])
             self.update_values_list(self.rule, "{check_description}", escaped_text)
@@ -265,9 +247,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{check_description}", "")
 
     def fnc_solution_text(self, key, name):
-        """
-        Function updates a solution text
-        """
+        """Function updates a solution text."""
         if name in key:
             self.solution_modification(key)
         else:
@@ -294,15 +274,11 @@ class XmlUtils(object):
             self.update_files(x.strip(), content)
 
     def dummy_fnc(self, key, name):
-        """
-        Function is only dummy
-        """
+        """Function is only dummy."""
         pass
 
     def update_text(self, key, name):
-        """
-        Function updates a text
-        """
+        """Function updates a text."""
         if key[name] is not None:
             # escape values so they can be loaded as XMLs
             escaped_text = html_escape_string(key[name])

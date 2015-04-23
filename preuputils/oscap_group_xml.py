@@ -1,10 +1,12 @@
-from __future__ import print_function
 
 """
 This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
+
+from __future__ import print_function
 import os
+
 try:
     import configparser
 except ImportError:
@@ -22,9 +24,9 @@ except ImportError:
 
 
 class OscapGroupXml(object):
-    """
-    Class creates a XML file for OpenSCAP
-    """
+
+    """Class creates a XML file for OpenSCAP"""
+
     def __init__(self, dir_name):
         self.dirname = dir_name
         if dir_name.endswith('/'):
@@ -59,18 +61,16 @@ class OscapGroupXml(object):
                 for option in config.options(section):
                     fields[option] = config.get(section, option).decode(settings.defenc)
                 self.loaded[file_name] = [fields]
-            except configparser.MissingSectionHeaderError as mshe:
+            except configparser.MissingSectionHeaderError:
                 print_error_msg(title="Missing section header")
-            except configparser.NoSectionError as nse:
+            except configparser.NoSectionError:
                 print_error_msg(title="Missing section header")
-            except configparser.ParsingError as pse:
+            except configparser.ParsingError:
                 print_error_msg(title="Incorrect INI file\n", msg=file_name)
                 os.sys.exit(1)
 
     def collect_group_xmls(self):
-        """
-        The functions is used for collecting all INI files into the one.
-        """
+        """The functions is used for collecting all INI files into the one."""
         # load content withoud decoding to unicode - ElementTree requests this
         content = get_file_content(os.path.join(self.dirname, "group.xml"),
                                    "r", False, False)
@@ -81,9 +81,7 @@ class OscapGroupXml(object):
         return self.ret
 
     def write_xml(self):
-        """
-        The function is used for storing a group.xml file
-        """
+        """The function is used for storing a group.xml file"""
         self.find_all_ini()
         xml_utils = XmlUtils(self.dirname, self.loaded)
         self.rule = xml_utils.prepare_sections()
@@ -91,12 +89,10 @@ class OscapGroupXml(object):
         try:
             write_to_file(file_name, "w", ["%s" % item for item in self.rule])
         except IOError as ior:
-            print ('Problem with write data to the file ', file_name)
+            print ('Problem with write data to the file ', file_name, ior.message)
 
     def write_profile_xml(self, target_tree):
-        """
-        The function stores all-xccdf.xml file into content directory
-        """
+        """The function stores all-xccdf.xml file into content directory"""
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
         print ('File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name))
         try:

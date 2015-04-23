@@ -7,7 +7,7 @@ import datetime
 import six
 from distutils import dir_util
 
-from preup.utils import get_valid_scenario, get_file_content, write_to_file
+from preup.utils import get_valid_scenario, write_to_file
 from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
@@ -47,7 +47,7 @@ class XCCDFCompose(object):
         template_file = ComposeXML.get_template_file()
         try:
             target_tree = ElementTree.parse(template_file).getroot()
-        except IOError as e:
+        except IOError:
             print ('Problem with reading template.xml file')
             sys.exit(1)
         target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
@@ -58,7 +58,7 @@ class XCCDFCompose(object):
                           ElementTree.tostring(target_tree, "utf-8"),
                           False)
             print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
-        except IOError as e:
+        except IOError:
             print ("Problem with writing file ", report_filename)
             raise
         return self.dir_name
@@ -141,7 +141,7 @@ class ComposeXML(object):
                           "' doesn't have exactly one check-content-ref inside its check element!")
                     continue
 
-                cref = crefs[0]
+                # cref = crefs[0]
 
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
@@ -171,7 +171,7 @@ class ComposeXML(object):
     def merge_trees(cls, target_tree, target_element, group_tree):
         def get_sorting_key_for_tree(group_tree, tree_key):
             prefix = 100
-            tree, subgroups = group_tree[tree_key]
+            tree, unused_subgroups = group_tree[tree_key]
             try:
                 prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")[-1].text)
             except:

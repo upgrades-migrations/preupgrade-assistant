@@ -5,15 +5,12 @@ import os
 import re
 import mimetypes
 
-from contextlib import closing
 from preup.utils import get_file_content, write_to_file, print_error_msg
 from preup import settings
 
 
 def get_full_path(dir_name, script_name):
-    """
-    The function returns full path
-    """
+    """The function returns full path"""
     return os.path.join(dir_name, script_name)
 
 
@@ -32,7 +29,7 @@ def check_scripts(type_name, dir_name, script_name=None):
         check_executable(dir_name, script_name)
 
 
-def apply_function(updates, begin_fnc, end_fnc, sep, script_type):
+def apply_function(updates, begin_fnc, end_fnc, unused_sep, script_type):
     """
     The function generates check_applies_to function into check_scripts
     mentioned in BASH or Python
@@ -180,11 +177,13 @@ def get_script_type(dir_name, script_name=""):
     return file_types[mime_type]
 
 
-def check_inplace_risk(dir_name, prefix="", script_name="", check_func=[]):
+def check_inplace_risk(dir_name, prefix="", script_name="", check_func=None):
     """
     The function checks inplace risks
     in check_script and informs user in case of wrong usage
     """
+    if(check_func is None):
+        check_func = []
     lines = get_file_content(get_full_path(dir_name, script_name), "r")
     compile_req = re.compile(r'^#', re.M|re.I)
     lines = [x for x in lines if not compile_req.search(x.strip())]

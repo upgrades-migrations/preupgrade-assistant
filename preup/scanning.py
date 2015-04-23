@@ -1,12 +1,10 @@
 import os
 
-from preup.logger import *
+from preup.logger import settings, logging, log_message
 
 
 def compare_data(row):
-    """
-     Function sorts a data output
-    """
+    """Function sorts a data output"""
     test_cases = {'error': '01',
                   'fail': '02',
                   'needs_action': '03',
@@ -17,7 +15,7 @@ def compare_data(row):
                   'notapplicable': '08',
                   'notchecked': '09'}
     try:
-        title, rule_id, result = row.split(':')
+        unused_title, rule_id, result = row.split(':')
     except ValueError:
         return '99'
     else:
@@ -28,9 +26,7 @@ def compare_data(row):
 
 
 def format_rules_to_table(output_data, content):
-    """
-    Function format output_data to table
-    """
+    """Function format output_data to table"""
     if not output_data:
         # If output_data does not contain anything then do not print nothing
         return
@@ -41,7 +37,7 @@ def format_rules_to_table(output_data, content):
     log_message("%s" % message)
     for data in sorted(output_data, key=compare_data, reverse=True):
         try:
-            title, rule_id, result = data.split(':')
+            title, unused_rule_id, result = data.split(':')
         except ValueError:
             # data is not an information about processed test; let's log it as an error
             log_message(data, level=logging.ERROR)
@@ -52,9 +48,7 @@ def format_rules_to_table(output_data, content):
 
 
 class ScanProgress(object):
-    """
-    The class is used for showing progress during the scan check.
-    """
+    """The class is used for showing progress during the scan check."""
     def __init__(self, total_count, debug):
         self.total_count = total_count
         self.current_count = 0
@@ -65,12 +59,10 @@ class ScanProgress(object):
         self.width_size = 0
 
     def get_full_name(self, count):
-        """
-        Function returns full name from dictionary
-        """
+        """Function returns full name from dictionary"""
         try:
             key = self.list_names[count]
-        except IndexError as index_error:
+        except IndexError:
             return ''
         return self.names[key]
 
@@ -88,11 +80,9 @@ class ScanProgress(object):
         return msg
 
     def show_progress(self, stdout_data):
-        """
-         Function shows a progress of assessment
-        """
+        """Function shows a progress of assessment"""
         self.width_size = int(ScanProgress.get_terminal_width()[1])
-        xccdf_rule, result = stdout_data.strip().split(':')
+        xccdf_rule, unused_result = stdout_data.strip().split(':')
         self.output_data.append('{0}:{1}'.format(self.names[xccdf_rule],
                                                  stdout_data.strip()))
         self.current_count += 1
@@ -121,9 +111,10 @@ class ScanProgress(object):
         log_message(stdout_data.strip(), print_output=0)
 
     def set_names(self, names):
+        """Function sets names of each rule"""
+
         """
-        Function sets names of each rule
-        names has format:
+        names have format:
                 key= xccdf_preupg_...
                 value = "Full description"
         """
@@ -131,18 +122,14 @@ class ScanProgress(object):
         self.list_names = sorted(names)
 
     def get_output_data(self):
-        """
-        Function gets an output data from oscap
-        """
+        """Function gets an output data from oscap"""
         return self.output_data
 
     def update_data(self, changed_fields):
-        """
-        Function updates a data
-        """
+        """Function updates a data"""
         for index, row in enumerate(self.output_data):
             try:
-                title, rule_id, result = row.split(':')
+                title, rule_id, unused_result = row.split(':')
             except ValueError:
                 continue
             else:

@@ -1,7 +1,7 @@
 import unittest
 import tempfile
 import shutil
-import shlex
+# import shlex
 
 import os
 
@@ -48,14 +48,13 @@ class TestGlobalContent(unittest.TestCase):
         for content in expected_contents:
             compose_xml = ComposeXML()
             dir_name = os.path.join(self.temp_dir, FOO_DIR, 'dummy')
-            result_dir = os.path.join(self.result_dir, content)
             compose_xml.collect_group_xmls(dir_name, content=content)
 
         xccdf_compose = XCCDFCompose(os.path.join(self.temp_dir, FOO_DIR))
         xccdf_compose.generate_xml()
         all_xccdf = os.path.join(self.result_dir, settings.content_file)
         self.assertTrue(os.path.exists(all_xccdf))
-        lines = utils.get_file_content(all_xccdf, 'r')
+        unused_lines = utils.get_file_content(all_xccdf, 'r')
 
 
 def suite():
