@@ -34,7 +34,7 @@ def format_rules_to_table(output_data, content):
     max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
     log_message(settings.result_text.format(content))
     message = '-' * (max_title_length + max_result_length + 4)
-    log_message("%s" % message)
+    log_message(u"%s" % message)
     for data in sorted(output_data, key=compare_data, reverse=True):
         try:
             title, unused_rule_id, result = data.split(':')
@@ -42,9 +42,9 @@ def format_rules_to_table(output_data, content):
             # data is not an information about processed test; let's log it as an error
             log_message(data, level=logging.ERROR)
         else:
-            log_message("|%s |%s|" % (title.ljust(max_title_length),
+            log_message(u"|%s |%s|" % (title.ljust(max_title_length),
                                       result.strip().ljust(max_result_length)))
-    log_message("%s" % message)
+    log_message(u"%s" % message)
 
 
 class ScanProgress(object):
@@ -83,7 +83,7 @@ class ScanProgress(object):
         """Function shows a progress of assessment"""
         self.width_size = int(ScanProgress.get_terminal_width()[1])
         xccdf_rule, unused_result = stdout_data.strip().split(':')
-        self.output_data.append('{0}:{1}'.format(self.names[xccdf_rule],
+        self.output_data.append(u'{0}:{1}'.format(self.names[xccdf_rule],
                                                  stdout_data.strip()))
         self.current_count += 1
         old_width = self.width_size
@@ -97,14 +97,14 @@ class ScanProgress(object):
                 log_message(cur_msg)
         else:
             cnt_back = 7 + len(prev_msg) + 3
-            msg = '%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
+            msg = u'%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
             log_message(msg,
                         new_line=True,
                         log=False)
             if self.total_count > self.current_count:
-                msg = self._return_correct_msg('%.3d/%.3d ...running (%s)' % (self.current_count + 1,
-                                                                              self.total_count,
-                                                                              cur_msg))
+                msg = self._return_correct_msg(u'%.3d/%.3d ...running (%s)' % (self.current_count + 1,
+                                                                               self.total_count,
+                                                                               cur_msg))
                 log_message(msg,
                             new_line=False,
                             log=False)
@@ -112,7 +112,6 @@ class ScanProgress(object):
 
     def set_names(self, names):
         """Function sets names of each rule"""
-
         """
         names have format:
                 key= xccdf_preupg_...
@@ -135,6 +134,6 @@ class ScanProgress(object):
             else:
                 result_list = [x for x in changed_fields if rule_id in x]
                 if result_list:
-                    self.output_data[index] = "%s:%s:%s" % (title,
+                    self.output_data[index] = u"%s:%s:%s" % (title,
                                                             rule_id,
                                                             result_list[0].split(':')[1])
