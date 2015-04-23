@@ -4,8 +4,12 @@ The application module serves for running oscap binary and reporting results to 
 """
 import shutil
 import datetime
-from xmlrpclib import Fault
 from distutils import dir_util
+
+try:
+    from xmlrpclib import Fault
+except ImportError:
+    from xmlrpc.client import Fault
 
 from preup import xccdf, xml_manager, remediate, utils
 from preup.common import Common

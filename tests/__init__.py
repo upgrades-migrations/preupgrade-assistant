@@ -1,8 +1,8 @@
-import test_preup
-import test_xml
+import tests.test_preup
+import tests.test_xml
 import unittest
-import test_oscap
-import test_generation
+import tests.test_oscap
+import tests.test_generation
 
 
 def suite():
