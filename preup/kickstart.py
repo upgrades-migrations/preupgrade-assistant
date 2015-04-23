@@ -8,18 +8,17 @@ from __future__ import print_function
 import base64
 import shutil
 import pykickstart.commands as commands
-from pykickstart.parser import *
-from pykickstart.version import *
-from pykickstart.constants import *
-from preup.logger import *
+import os
+from pykickstart.parser import KickstartError, KickstartParser, Script
+from pykickstart.version import makeVersion
+from pykickstart.constants import KS_SCRIPT_POST
+from preup.logger import  log_message
 from preup import settings
 from preup.utils import write_to_file, get_file_content
 
 
 class YumGroupManager(object):
-    """
-    more intelligent dict; enables searching in yum groups
-    """
+    """more intelligent dict; enables searching in yum groups"""
     def __init__(self):
         self.groups = {}
 
@@ -27,9 +26,7 @@ class YumGroupManager(object):
         self.groups[group.name] = group
 
     def find_match(self, packages):
-        """
-        is there a group whose packages are subset of argument 'packages'?
-        """
+        """is there a group whose packages are subset of argument 'packages'?"""
         groups = []
         for group in self.groups.itervalues():
             if len(group.required) != 0:
@@ -64,9 +61,7 @@ class YumGroup(object):
 
 
 class YumGroupGenerator(object):
-    """
-    class for aggregating packages into yum groups
-    """
+    """class for aggregating packages into yum groups"""
 
     def __init__(self, package_list, removed_packages, *args, **kwargs):
         """
@@ -131,9 +126,7 @@ class RepoData(commands.repo.F21_RepoData):
 
 
 class KickstartGenerator(object):
-    """
-    Generate kickstart using data from provided result
-    """
+    """Generate kickstart using data from provided result"""
     def __init__(self, kick_start_name):
         self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path())
         self.kick_start_name = kick_start_name
@@ -145,7 +138,7 @@ class KickstartGenerator(object):
 
     @staticmethod
     def load_or_default(system_ks_path):
-        """ load system ks or default ks """
+        """load system ks or default ks"""
         ksparser = KickstartParser(makeVersion())
         ksparser.repoData = RepoData
         try:
@@ -187,7 +180,7 @@ class KickstartGenerator(object):
         return repo_dict
 
     def output_packages(self):
-        """ outputs %packages section """
+        """outputs %packages section"""
         installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
         if not installed_packages or not removed_packages:
@@ -248,7 +241,7 @@ class KickstartGenerator(object):
 
     def get_latest_tarball(self):
         tarball = None
-        for directories, subdir, filenames in os.walk(settings.tarball_result_dir):
+        for directories, unused_subdir, filenames in os.walk(settings.tarball_result_dir):
             preupg_files = [x for x in sorted(filenames) if x.startswith(self.get_prefix())]
             # We need a last file
             tarball = os.path.join(directories, preupg_files[-1])
