@@ -241,7 +241,7 @@ class KickstartGenerator(object):
 
     def get_latest_tarball(self):
         tarball = None
-        for directories, unused_subdir, filenames in os.walk(settings.tarball_result_dir):
+        for directories, dummy_subdir, filenames in os.walk(settings.tarball_result_dir):
             preupg_files = [x for x in sorted(filenames) if x.startswith(self.get_prefix())]
             # We need a last file
             tarball = os.path.join(directories, preupg_files[-1])

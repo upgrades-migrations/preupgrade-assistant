@@ -15,7 +15,7 @@ def compare_data(row):
                   'notapplicable': '08',
                   'notchecked': '09'}
     try:
-        unused_title, rule_id, result = row.split(':')
+        dummy_title, rule_id, result = row.split(':')
     except ValueError:
         return '99'
     else:
@@ -34,17 +34,17 @@ def format_rules_to_table(output_data, content):
     max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
     log_message(settings.result_text.format(content))
     message = '-' * (max_title_length + max_result_length + 4)
-    log_message(u"%s" % message)
+    log_message(message)
     for data in sorted(output_data, key=compare_data, reverse=True):
         try:
-            title, unused_rule_id, result = data.split(':')
+            title, dummy_rule_id, result = data.split(':')
         except ValueError:
             # data is not an information about processed test; let's log it as an error
             log_message(data, level=logging.ERROR)
         else:
             log_message(u"|%s |%s|" % (title.ljust(max_title_length),
                                       result.strip().ljust(max_result_length)))
-    log_message(u"%s" % message)
+    log_message(message)
 
 
 class ScanProgress(object):
@@ -70,6 +70,7 @@ class ScanProgress(object):
     def get_terminal_width():
         """
         Function returns terminal width
+
         :return:
         """
         return os.popen('stty size', 'r').read().split()
@@ -82,7 +83,7 @@ class ScanProgress(object):
     def show_progress(self, stdout_data):
         """Function shows a progress of assessment"""
         self.width_size = int(ScanProgress.get_terminal_width()[1])
-        xccdf_rule, unused_result = stdout_data.strip().split(':')
+        xccdf_rule, dummy_result = stdout_data.strip().split(':')
         self.output_data.append(u'{0}:{1}'.format(self.names[xccdf_rule],
                                                  stdout_data.strip()))
         self.current_count += 1
@@ -111,8 +112,9 @@ class ScanProgress(object):
         log_message(stdout_data.strip(), print_output=0)
 
     def set_names(self, names):
-        """Function sets names of each rule"""
         """
+        Function sets names of each rule
+
         names have format:
                 key= xccdf_preupg_...
                 value = "Full description"
@@ -128,7 +130,7 @@ class ScanProgress(object):
         """Function updates a data"""
         for index, row in enumerate(self.output_data):
             try:
-                title, rule_id, unused_result = row.split(':')
+                title, rule_id, dummy_result = row.split(':')
             except ValueError:
                 continue
             else:

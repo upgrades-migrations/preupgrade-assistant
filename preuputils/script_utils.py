@@ -29,7 +29,7 @@ def check_scripts(type_name, dir_name, script_name=None):
         check_executable(dir_name, script_name)
 
 
-def apply_function(updates, begin_fnc, end_fnc, unused_sep, script_type):
+def apply_function(updates, begin_fnc, end_fnc, dummy_sep, script_type):
     """
     The function generates check_applies_to function into check_scripts
     mentioned in BASH or Python

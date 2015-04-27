@@ -4,13 +4,20 @@ import datetime
 import re
 import subprocess
 import fnmatch
-from preup.logger import *
+import os
+from preup import settings
+from preup.logger import log_message, logging
 import shutil
-from os import path, access, stat, W_OK, R_OK
+from os import path, access, W_OK, R_OK, X_OK
 
 def check_file(fp, mode):
     """
     Check if file exists and has set right mode
+
+    mode can be in string format as for function open (available letters: wrax)
+    or int number (in that case prefered are os constants W_OK, R_OK, X_OK)
+    (letter 'a' has same signification as 'w', is here due to compatibility
+    with open mode)
     """
     intern_mode = 0
     if(isinstance(mode, str)):
@@ -18,6 +25,8 @@ def check_file(fp, mode):
             intern_mode += W_OK
         if('r' in mode):
             intern_mode += R_OK
+        if('x' in mode):
+            intern_mode += X_OK
     else:
         intern_mode = mode
     if(path.exists(fp)):
@@ -34,6 +43,8 @@ def check_file(fp, mode):
 
 def check_xml(xml_file):
     """
+    Check XML
+
     return False if xml file is not okay or raise IOError if perms are
     not okay; use python-magic to check the file if module is available
     """
@@ -67,7 +78,7 @@ def check_xml(xml_file):
 
 
 def check_or_create_temp_dir(temp_dir, mode=None):
-    """ check if provided temp dir is valid """
+    """Check if provided temp dir is valid."""
     if os.path.isdir(temp_dir):
         if not os.access(temp_dir, os.W_OK):
             log_message("Directory %s is not writable." % temp_dir, level=logging.ERROR)
@@ -79,15 +90,17 @@ def check_or_create_temp_dir(temp_dir, mode=None):
     return temp_dir
 
 
-def get_interpreter(file, verbose=False):
-    # The function returns interpreter
-    # Checks extension of script and first line of script
+def get_interpreter(filename, verbose=False):
+    """
+    The function returns interpreter
+
+    Checks extension of script and first line of script
+    """
     script_types = {'/bin/bash': '.sh',
                     '/usr/bin/python': '.py',
                     '/usr/bin/perl': '.pl'}
-
-    inter = list(k for k, v in script_types.iteritems() if file.endswith(v))
-    content = get_file_content(file, 'r')
+    inter = list(k for k, v in script_types.iteritems() if filename.endswith(v))
+    content = get_file_content(filename, 'r')
     if inter and content.startswith('#!'+inter[0]):
         return inter
     else:
@@ -97,9 +110,7 @@ def get_interpreter(file, verbose=False):
 
 
 def print_error_msg(title="", msg="", level=' ERROR '):
-    """
-    Function prints a ERROR or WARNING messages
-    """
+    """Function prints a ERROR or WARNING messages"""
     number = 10
     print ('\n')
     print ('*'*number+level+'*'*number)
@@ -107,7 +118,7 @@ def print_error_msg(title="", msg="", level=' ERROR '):
 
 
 def run_subprocess(cmd, output=None, print_output=False, shell=False, function=None):
-    """ wrapper for Popen """
+    """wrapper for Popen"""
     sp = subprocess.Popen(cmd,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT,
@@ -147,6 +158,7 @@ def get_prefix():
 def get_system():
     """
     Check if system is Fedora or RHEL
+
     :return: Fedora or None
     """
     lines = get_file_content('/etc/redhat-release', 'r', method=True)
@@ -186,11 +198,11 @@ def get_file_content(path, perms, method=False, decode_flag=True):
     """
     shortcut for returning content of file
 
-     open(...).read()...
-     if method is False then file is read by function read
-     if method is True then file is read by function readlines
-     When decode_flag is True, read string is decoded to unicode. Otherwise
-     only read. (Some libraries request non-unicode strings - as ElementTree)
+    open(...).read()...
+    if method is False then file is read by function read
+    if method is True then file is read by function readlines
+    When decode_flag is True, read string is decoded to unicode. Otherwise
+    only read. (Some libraries request non-unicode strings - as ElementTree)
     """
 
     # data must be init due to possible troubles with binary data
@@ -204,11 +216,11 @@ def get_file_content(path, perms, method=False, decode_flag=True):
                 data = f.read() if not method else f.readlines()
         finally:
             f.close()
-            if data is None:
-                raise ValueError("You try decode binary data to unicode: %s" % path)
-            return data
     except IOError:
         raise
+    if data is None:
+        raise ValueError("You try decode binary data to unicode: %s" % path)
+    return data
 
 
 def write_to_file(path, perms, data, encode_flag=True):
@@ -255,6 +267,7 @@ def get_current_time():
 def tarball_result_dir(result_file, dirname, quiet, direction=True):
     """
     pack results to tarball
+
     direction is used as a flag for packing or extracting
     For packing True
     For unpacking False
@@ -294,6 +307,7 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
 def get_upgrade_dir_path(dirname):
     """
     The function returns upgrade path dir like RHEL6_7
+
     If /root/preupgrade/ dir contaings RHEL6_7 dir then
     it return just RHEL6_7 dir.
     This is used for get_assessment_version
@@ -310,6 +324,7 @@ def get_upgrade_dir_path(dirname):
 def get_message(title="", message="Do you want to continue?"):
     """
     Function asks for input from user
+
     :param title: Title of the message
     :param message: Message text
     :return: y or n
@@ -339,30 +354,30 @@ def get_needs_action():
 
 
 def get_convertors():
-    """
-    Function returns list of supported convertors
-    """
+    """Function returns list of supported convertors"""
     return settings.text_converters.keys()
 
 
 def get_variant():
-    """
-    Function return a variant
-    """
+    """Function return a variant"""
     redhat_release = get_file_content("/etc/redhat-release", "r")
     if redhat_release.startswith('Fedora'):
         return None
     try:
         rel = redhat_release.split()
         return rel[4]
-    except IndexError as ierr:
+    except IndexError:
         return None
 
 
 def get_addon_variant():
     """
     Function returns a addons variant if available
+
     83 - HighAvailability
+    85 - LoadBalancer
+    90 - ResilientStorage
+    92 - ScalableFileSystem
     """
     mapping_dict = {
         '83.pem': 'HighAvailability',
@@ -387,11 +402,12 @@ def get_addon_variant():
 def clean_directory(dir_name, pattern):
     """
     Function deleted specific files in dir_name
+
     :param dir_name: Dirname where the files are deleted
     :param pattern: What files with specific pattern are deleted
     :return:
     """
-    for root, dirs, files in os.walk(dir_name):
+    for root, dummy_dirs, files in os.walk(dir_name):
         for f in files:
             if fnmatch.fnmatch(f, pattern):
                 os.unlink(os.path.join(root, f))
@@ -400,6 +416,7 @@ def clean_directory(dir_name, pattern):
 def remove_home_issues():
     """
     Function removes /home rows from specific files
+
     :return:
     """
     files = [os.path.join(settings.cache_dir, settings.common_name, 'allmyfiles.log'),

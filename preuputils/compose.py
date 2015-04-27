@@ -171,7 +171,7 @@ class ComposeXML(object):
     def merge_trees(cls, target_tree, target_element, group_tree):
         def get_sorting_key_for_tree(group_tree, tree_key):
             prefix = 100
-            tree, unused_subgroups = group_tree[tree_key]
+            tree, dummy_subgroups = group_tree[tree_key]
             try:
                 prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")[-1].text)
             except:

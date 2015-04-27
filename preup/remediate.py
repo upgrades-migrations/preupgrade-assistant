@@ -12,9 +12,7 @@ from preup.utils import get_file_content, write_to_file
 
 
 def get_all_postupgrade_files(verbose, dir_name):
-    """
-    Function gets all postupgrade files from dir_name
-    """
+    """Function gets all postupgrade files from dir_name"""
     postupg_scripts = []
     for root, sub_dirs, files in os.walk(dir_name):
         # find all files in this directory
@@ -25,9 +23,7 @@ def get_all_postupgrade_files(verbose, dir_name):
 
 
 def get_hash_file(filename, hasher):
-    """
-    Function gets a hash from file
-    """
+    """Function gets a hash from file"""
     content = get_file_content(filename, "r", False, False)
     hasher.update('preupgrade-assistant' + content)
     return hasher.hexdigest()
@@ -36,6 +32,7 @@ def get_hash_file(filename, hasher):
 def postupgrade_scripts(verbose, dirname):
     """
     The function runs postupgrade directory
+
     If dir does not exists the report and return
     """
     if not os.path.exists(dirname):
@@ -61,9 +58,7 @@ def postupgrade_scripts(verbose, dirname):
 
 
 def get_hashes(filename):
-    """
-    Function gets all hashes from a filename
-    """
+    """Function gets all hashes from a filename"""
     if not os.path.exists(filename):
         return None
     hashed_file = get_file_content(filename, "r").split()
@@ -73,8 +68,9 @@ def get_hashes(filename):
 
 def copy_modified_config_files(result_dir):
     """
-    Function copies all modified files to dirtyconf directory
-    who are not mentioned in cleanconf directory
+    Function copies all modified files to dirtyconf directory.
+
+    (files which are not mentioned in cleanconf directory)
     """
     etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
     try:
@@ -105,11 +101,10 @@ def copy_modified_config_files(result_dir):
 
 def hash_postupgrade_file(verbose, dirname, check=False):
     """
-    The function creates hash file
-    over all scripts in postupgrade.d directory
-    In case of remediation it checks
-    whether checksums are different and
-    print what scripts were changed
+    The function creates hash file over all scripts in postupgrade.d directory.
+
+    In case of remediation it checks whether checksums are different and
+    print what scripts were changed.
     """
     if not os.path.exists(dirname):
         message = 'Directory {0} does not exist for creating checksum file'
@@ -150,6 +145,7 @@ def hash_postupgrade_file(verbose, dirname, check=False):
 def special_postupgrade_scripts(result_dir):
     """
     The function copies a special postupgrade.d scripts.
+
     postupgrade_dict is a dictionary with old and new files
     Files are copied from
             /usr/share/preupgrade/postupgrade.d/<key> directory
