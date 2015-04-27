@@ -184,13 +184,17 @@ def get_valid_scenario(dir_name):
 
 def get_file_content(path, perms, method=False, decode_flag=True):
     """
-    shortcut for returning content of file:
-     open(...).read()
+    shortcut for returning content of file
+
+     open(...).read()...
      if method is False then file is read by function read
      if method is True then file is read by function readlines
      When decode_flag is True, read string is decoded to unicode. Otherwise
      only read. (Some libraries request non-unicode strings - as ElementTree)
     """
+
+    # data must be init due to possible troubles with binary data
+    data = None
     try:
         f = open(path, perms)
         try:
@@ -200,6 +204,8 @@ def get_file_content(path, perms, method=False, decode_flag=True):
                 data = f.read() if not method else f.readlines()
         finally:
             f.close()
+            if data is None:
+                raise ValueError("You try decode binary data to unicode: %s" % path)
             return data
     except IOError:
         raise
@@ -208,8 +214,9 @@ def get_file_content(path, perms, method=False, decode_flag=True):
 def write_to_file(path, perms, data, encode_flag=True):
     """
     shortcut for write of data to file:
-     open(...).write()
-     data can be string or list of strings
+
+    open(...).write()...
+    data can be string or list of strings
 
     data contains unicode string(s) in most cases, so we encode them
     to system default encoding before write. When you use encoded strings,
