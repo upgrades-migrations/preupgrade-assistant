@@ -46,22 +46,25 @@ xccdf_tag = "xccdf_preupg_rule_"
 
 class DummyConf(object):
     """
-    Dummy conf class for Conf; use it like this:
+    Dummy conf class for Conf
+
+    use it like this:
     conf = Conf(DummyConf(id=123, skip_common=True))
     """
     def __init__(self, **kwargs):
         self.settings = kwargs
 
     def __getattr__(self, name):
-            try:
-                return self.settings.get(name)
-            except AttributeError:
-                return object.__getattribute__(self, name)
+        try:
+            return self.settings.get(name)
+        except AttributeError:
+            return object.__getattribute__(self, name)
 
 
 class Conf(object):
     """
     configuration of preupgrade assistant
+
     merged values from CLI and settings.py
     """
 
