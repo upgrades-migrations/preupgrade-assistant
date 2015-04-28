@@ -500,7 +500,7 @@ class Application(object):
         """
         if not self.conf.contents:
             xccdf_compose = XCCDFCompose(assessment_dir)
-            generated_dir = xccdf_compose.generate_xml()
+            generated_dir = xccdf_compose.generate_xml(generate_from_ini=False)
             if os.path.isdir(assessment_dir):
                 shutil.rmtree(assessment_dir)
             shutil.move(generated_dir, assessment_dir)

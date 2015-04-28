@@ -41,7 +41,7 @@ class XCCDFCompose(object):
             print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
             sys.exit(1)
 
-    def generate_xml(self):
+    def generate_xml(self, generate_from_ini=True):
         dir_util.copy_tree(self.result_dir, self.dir_name)
         result_dirname = self.dir_name
         template_file = ComposeXML.get_template_file()
@@ -50,15 +50,15 @@ class XCCDFCompose(object):
         except IOError:
             print ('Problem with reading template.xml file')
             sys.exit(1)
-        target_tree = ComposeXML.run_compose(target_tree, self.dir_name)
+        target_tree = ComposeXML.run_compose(target_tree, self.dir_name, generate_from_ini=generate_from_ini)
 
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
             write_to_file(report_filename, "w",
                           ElementTree.tostring(target_tree, "utf-8"),
                           False)
-            print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
-        except IOError:
+            #print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
+        except IOError as e:
             print ("Problem with writing file ", report_filename)
             raise
         return self.dir_name
@@ -69,7 +69,7 @@ class ComposeXML(object):
     upgrade_path = ""
 
     @classmethod
-    def collect_group_xmls(cls, source_dir, content=None, level=0):
+    def collect_group_xmls(cls, source_dir, content=None, level=0, generate_from_ini=True):
         ret = {}
 
         for dirname in os.listdir(source_dir):
@@ -81,7 +81,7 @@ class ComposeXML(object):
             if not os.path.isdir(new_dir):
                 continue
             ini_files = filter(lambda x: x.endswith(".ini"), os.listdir(new_dir))
-            if ini_files:
+            if ini_files and generate_from_ini:
                 oscap_group = OscapGroupXml(new_dir)
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
@@ -93,7 +93,7 @@ class ComposeXML(object):
                 continue
             try:
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
-                                cls.collect_group_xmls(new_dir, level=level + 1))
+                                cls.collect_group_xmls(new_dir, level=level + 1, generate_from_ini=generate_from_ini))
             except ParseError as e:
                 print ("Encountered a parse error in file ", group_file_path, " details: ", e)
         return ret
@@ -295,9 +295,9 @@ class ComposeXML(object):
         return os.path.join(os.path.dirname(__file__), "template.xml")
 
     @classmethod
-    def run_compose(cls, target_tree, dir_name, content=None):
+    def run_compose(cls, target_tree, dir_name, content=None, generate_from_ini=True):
         settings.UPGRADE_PATH = dir_name
-        group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0)
+        group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0, generate_from_ini=generate_from_ini)
         cls.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name
         cls.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
