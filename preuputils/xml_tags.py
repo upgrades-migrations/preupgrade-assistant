@@ -69,6 +69,7 @@ DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
               'solution_file': '',
               'migrate': '0',
               'upgrade': '0',
+              'result_part': ''
               }
 
 

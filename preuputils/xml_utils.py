@@ -11,6 +11,7 @@ from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
 
+
 def get_full_xml_tag(dirname):
     """We need just from RHEL directory"""
     found = 0
@@ -232,14 +233,14 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{config_section}", "")
 
     def fnc_check_script(self, key, name):
-        """Function updates a check_script."""
+        """ Function updates a check_script """
         if name in key:
             self.check_script_modification(key, name)
             self.update_values_list(self.select_rules, "{scap_name}",
                                     key[name].split('.')[0])
 
     def fnc_check_description(self, key, name):
-        """Function updates a check_description."""
+        """ Function updates a check_description """
         if name in key and key[name] is not None:
             escaped_text = self._update_check_description(key[name])
             self.update_values_list(self.rule, "{check_description}", escaped_text)
@@ -257,6 +258,7 @@ class XmlUtils(object):
                                     get_assessment_version(self.dirname)[1])
 
     def fnc_update_mode(self, key, name):
+
         """
         Function update <upgrade_path>/<migrate.conf|update.conf> files
         migrate_xccdf_path
@@ -264,9 +266,10 @@ class XmlUtils(object):
         :param name:
         :return:
         """
+
         content = "{rule}{main_dir}_{name}".format(rule=xml_tags.TAG_RULE,
-                                                     main_dir='_'.join(get_full_xml_tag(self.dirname)),
-                                                     name=key.split('.')[0])
+                                                   main_dir='_'.join(get_full_xml_tag(self.dirname)),
+                                                   name=key.split('.')[0])
         if not name:
             self.update_files('migrate', content)
             self.update_files('upgrade', content)
@@ -310,6 +313,12 @@ class XmlUtils(object):
             else:
                 xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
 
+            # Add flag where will be shown content if in admin part or in user part
+            if 'result_part' in key:
+                xml_tags.DIC_VALUES['result_part'] = key['result_part']
+            else:
+                xml_tags.DIC_VALUES['result_part'] = 'admin'
+
             self.update_values_list(self.rule, "{rule_tag}",
                                     ''.join(xml_tags.RULE_SECTION))
             value_tag, check_export_tag = self.add_value_tag()
@@ -323,13 +332,11 @@ class XmlUtils(object):
                     function(key, k)
                 except IOError as e:
                     e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
-                    e_msg= "'%s': %s" % (key[k], e.strerror)
+                    e_msg = "'%s': %s" % (key[k], e.strerror)
                     print_error_msg(title=e_title, msg=e_msg)
                     os.sys.exit(1)
 
-            self.update_values_list(self.rule,
-                                    '{group_title}',
-                                    html_escape_string(key['content_title']))
+            self.update_values_list(self.rule, '{group_title}', html_escape_string(key['content_title']))
             try:
                 if 'mode' not in key:
                     self.fnc_update_mode(key['check_script'], 'migrate, upgrade')

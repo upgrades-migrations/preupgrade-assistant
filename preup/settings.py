@@ -127,7 +127,7 @@ warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for {0}:"
 message = "We found some potential in-place upgrade risks.\n" \
-          "Read the file {0} for more details."
+          "Read the full report file {0} for more details."
 converter_message = "At least one of these converters ({0}) needs to be installed."
 
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
@@ -148,3 +148,4 @@ KS_FILES = ['default_grouplist-el6', 'default_grouplist-el7',
 PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
+REPORTS = ['admin', 'user']

@@ -21,6 +21,7 @@ from preup.logger import *
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
+from preup import settings
 
 
 def get_xsl_stylesheet():
@@ -162,7 +163,7 @@ class Application(object):
         """
         return os.path.join(self.conf.result_dir, settings.postupgrade_dir)
 
-    def build_generate_command(self):
+    def build_generate_command(self, xml_file, html_file):
         """
         Function builds a command for generating results
         """
@@ -170,8 +171,8 @@ class Application(object):
         command.extend(self.get_command_generate())
         if not get_system():
             command.extend(("--stylesheet", get_xsl_stylesheet()))
-        command.extend(("--output", self.get_default_html_result_path()))
-        command.append(check_xml(self.get_default_xml_result_path()))
+        command.extend(("--output", html_file))
+        command.append(check_xml(xml_file))
         return command
 
     def build_command(self):
@@ -179,18 +180,13 @@ class Application(object):
         self.result_file = self.get_default_xml_result_path()
         command = self.get_binary()
         report = self.get_default_html_result_path()
-        if self.conf.apply:
-            command.extend(self.command_remediate)
-            command.extend(("--results", self.result_file))
-            command.extend(("--report", report))
-        else:
-            command.extend(self.command_eval)
-            command.append('--progress')
-            command.extend(('--profile', self.conf.profile))
+        command.extend(self.command_eval)
+        command.append('--progress')
+        command.extend(('--profile', self.conf.profile))
 
-            # take name of content and create report: <content_name>.html
-            #command.extend(('--report', report))
-            command.extend(("--results", self.result_file))
+        # take name of content and create report: <content_name>.html
+        #command.extend(('--report', report))
+        command.extend(("--results", self.result_file))
         command.append(check_xml(self.content))
         return command
 
@@ -334,12 +330,12 @@ class Application(object):
         # fail if openscap wasn't successful; if debug, continue
         return run_subprocess(cmd, print_output=False, function=function)
 
-    def run_generate(self):
+    def run_generate(self, xml_file, html_file):
         """
         The function generates result.html file from result.xml file
         which was modified by preupgrade assistant
         """
-        cmd = self.build_generate_command()
+        cmd = self.build_generate_command(xml_file, html_file)
         return run_subprocess(cmd, print_output=True)
 
     def get_scenario(self):
@@ -391,10 +387,15 @@ class Application(object):
         Function prepares the XML file for conversion
         to HTML format
         """
-        self.report_parser.write_xccdf_version(direction=True)
-        self.run_generate()
-        # Switching back namespace
-        self.report_parser.write_xccdf_version()
+        # We separate admin contents
+        report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
+        # We separate user contents
+        report_user = self.report_parser.get_report_type(settings.REPORTS[1])
+        for report in [self.get_default_xml_result_path(), report_admin, report_user]:
+            ReportParser.write_xccdf_version(report, direction=True)
+            self.run_generate(report, report.replace('.xml', '.html'))
+            # Switching back namespace
+            ReportParser.write_xccdf_version(report)
 
     def prepare_xml_for_html(self):
         """
@@ -488,7 +489,6 @@ class Application(object):
 
     def generate_report(self):
         """Function generates report"""
-
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
         assessment_dir = os.path.join(self.conf.result_dir,
@@ -588,6 +588,11 @@ class Application(object):
             if report_dict[int(return_value)]:
                 log_message('Summary information:')
                 log_message(report_dict[int(return_value)])
+            for report_type in settings.REPORTS:
+                file_name = settings.result_name + '-' + report_type + '.html'
+                report_name = os.path.join(os.path.dirname(self.report_parser.get_path()), file_name)
+                if os.path.exists(report_name):
+                    log_message("Read the %s report file %s for more details." % (report_type, report_name))
         except KeyError:
             # We do not want to print anything in case of testing contents
             pass
