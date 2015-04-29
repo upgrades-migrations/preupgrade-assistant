@@ -51,7 +51,7 @@
       </ns0:description>
       <ns0:fixtext>_dummy_preupg_SOLUTION_MSG_TEXT</ns0:fixtext>
       <ns0:check system="http://open-scap.org/page/SCE">
-        <ns0:check-import import-name="stdout" />
+          <ns0:check-import import-name="stdout">INPLACE_TAG</ns0:check-import>
         <ns0:check-import import-name="stderr" />
         <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_tmp_preupgrade" />
         <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" />
