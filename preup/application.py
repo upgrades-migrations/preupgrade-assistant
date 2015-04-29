@@ -23,7 +23,6 @@ from preup.logger import log_message, logging
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
-from preup import settings
 
 
 def get_xsl_stylesheet():

@@ -13,7 +13,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import print_error_msg, XmlUtils
-from preup.utils import get_file_content, write_to_file, check_file
+from preup.utils import write_to_file, check_file
 from xml.etree import ElementTree
 from preup import settings
 

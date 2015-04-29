@@ -62,7 +62,7 @@ class Common(object):
                 line = line.strip()
                 if line.startswith("#"):
                     continue
-                cmd, log_file, unused_bash_value, name, values = line.split("=", 4)
+                cmd, log_file, dummy_bash_value, name, values = line.split("=", 4)
                 log_message("%s : %.2d/%d ...running" % (name.ljust(max_length),
                                                          counter+1,
                                                          len(self.lines)),
