@@ -16,7 +16,7 @@ from preup.logger import  log_message
 from preup import settings
 from preup.utils import write_to_file, get_file_content, get_system
 
-if get_system() is None:
+if not get_system():
     from pykickstart.commands.repo import RHEL6_RepoData as SystemRepoData
 else:
     from pykickstart.commands.repo import F21_RepoData as SystemRepoData
