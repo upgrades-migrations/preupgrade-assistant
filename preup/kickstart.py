@@ -14,8 +14,12 @@ from pykickstart.version import makeVersion
 from pykickstart.constants import KS_SCRIPT_POST
 from preup.logger import  log_message
 from preup import settings
-from preup.utils import write_to_file, get_file_content
+from preup.utils import write_to_file, get_file_content, get_system
 
+if get_system() is None:
+    from pykickstart.commands.repo import RHEL6_RepoData as SystemRepoData
+else:
+    from pykickstart.commands.repo import F21_RepoData as SystemRepoData
 
 class YumGroupManager(object):
     """more intelligent dict; enables searching in yum groups"""
@@ -119,10 +123,10 @@ class YumGroupGenerator(object):
         return output + output_packages
 
 
-class RepoData(commands.repo.F21_RepoData):
+class RepoData(SystemRepoData):
     def __init__(self, *args, **kwargs):
         self.enabled = kwargs.pop("enabled", True)
-        commands.repo.F21_RepoData.__init__(self, *args, **kwargs)
+        SystemRepoData.__init__(self, *args, **kwargs)
 
 
 class KickstartGenerator(object):
@@ -232,7 +236,7 @@ class KickstartGenerator(object):
             data = {}
             data['name'] = key
             data['baseurl'] = value.strip()
-            repodata = commands.repo.RHEL6_RepoData(**data)
+            repodata = SystemRepoData(**data)
             repos += repodata.__str__()
         self.ks.handler.repo.dataList().append(repos)
 
