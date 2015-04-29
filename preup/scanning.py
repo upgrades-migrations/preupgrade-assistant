@@ -15,7 +15,7 @@ def compare_data(row):
                   'notapplicable': '08',
                   'notchecked': '09'}
     try:
-        dummy_title, rule_id, result = row.split(':')
+        dummy_title, dummy_rule_id, result = row.split(':')
     except ValueError:
         return '99'
     else:

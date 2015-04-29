@@ -72,8 +72,6 @@ class OscapGroupXml(object):
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
         # load content withoud decoding to unicode - ElementTree requests this
-        content = get_file_content(os.path.join(self.dirname, "group.xml"),
-                                   "r", False, False)
         try:
             self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
         except ParseError as par_err:

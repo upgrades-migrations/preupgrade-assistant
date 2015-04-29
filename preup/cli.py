@@ -8,7 +8,7 @@ from optparse import OptionValueError
 from preup.constants import *
 
 
-def upload_callback(option, opt_str, value, parser):
+def upload_callback(option, dummy_opt_str, dummy_value, parser):
     if len(parser.rargs) == 0:
         setattr(parser.values, option.dest, True)
     else:
@@ -26,10 +26,11 @@ def upload_callback(option, opt_str, value, parser):
 
 
 class CLI(object):
-    """ Class for processing data from commandline """
+
+    """Class for processing data from commandline"""
 
     def __init__(self, args=None):
-        """ parse arguments """
+        """parse arguments"""
         self.parser = optparse.OptionParser(usage=USAGE, description=PROGRAM_DESCRIPTION)
 
         #self.parser.usage = "%%prog [-v] <content_file>"

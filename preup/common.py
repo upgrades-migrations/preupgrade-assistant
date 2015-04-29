@@ -21,9 +21,9 @@ def get_add_on_name(filename, add_on):
 
 
 class Common(object):
-    """
-    Class handles with common log files
-    """
+
+    """Class handles with common log files"""
+
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
@@ -31,19 +31,15 @@ class Common(object):
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
-        """ build path for provided filename """
+        """build path for provided filename"""
         return os.path.join(self.get_common_dir(), filename)
 
     def get_common_dir(self):
-        """
-        Function returns common dir
-        """
+        """Function returns common dir"""
         return os.path.join(self.conf.cache_dir, settings.common_name)
 
     def switch_dir(self):
-        """
-        Switch to current directory
-        """
+        """Switch to current directory"""
         com_dir = self.get_common_dir()
         if not os.path.exists(com_dir):
             utils.check_or_create_temp_dir(com_dir)
@@ -51,13 +47,11 @@ class Common(object):
         os.chdir(self.get_common_dir())
 
     def switch_back_dir(self):
-        """
-        Function switch back to self.cwd
-        """
+        """Function switch back to self.cwd"""
         os.chdir(self.cwd)
 
     def common_results(self):
-        """ run common scripts """
+        """run common scripts"""
         log_message("Gathering logs used by preupgrade assistant:")
         self.switch_dir()
         try:
@@ -68,7 +62,7 @@ class Common(object):
                 line = line.strip()
                 if line.startswith("#"):
                     continue
-                cmd, log_file, bash_value, name, values = line.split("=", 4)
+                cmd, log_file, unused_bash_value, name, values = line.split("=", 4)
                 log_message("%s : %.2d/%d ...running" % (name.ljust(max_length),
                                                          counter+1,
                                                          len(self.lines)),
@@ -90,7 +84,7 @@ class Common(object):
             return 1
 
     def copy_common_files(self):
-        """ run common scripts """
+        """run common scripts"""
         self.switch_dir()
 
         try:
@@ -114,15 +108,11 @@ class Common(object):
             return 1
 
     def get_default_name(self, filename):
-        """
-        Function returns a full default name need for symlink
-        """
+        """Function returns a full default name need for symlink"""
         return os.path.join(self.common_result_dir, filename)
 
     def remove_common_symlink(self, filename):
-        """
-        Function removes a symlink if it already exists
-        """
+        """Function removes a symlink if it already exists"""
         filename_remove = self.get_default_name(filename)
         if os.path.islink(filename_remove):
             os.unlink(filename_remove)
@@ -142,6 +132,7 @@ class Common(object):
     def copy_kickstart_files(self, dir_name, variant):
         """
         Function copies files which are needed by kickstart
+
         :param source dir_name:
         :return:
         """
@@ -153,10 +144,7 @@ class Common(object):
                 shutil.copyfile(source_name, target_file)
 
     def prep_symlinks(self, assessment_dir, scenario=""):
-        """
-        This will prepare a symlinks for relevant architecture
-        and Server Variant
-        """
+        """Prepare a symlinks for relevant architecture and Server Variant"""
         server_variant = utils.get_variant()
         if server_variant is None:
             return

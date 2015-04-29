@@ -19,9 +19,7 @@ def remove_node(tree, tag):
 
 
 def update_current_dir(result_dir, scenario, value, mode):
-    """
-    Replaces a current dir with the new value
-    """
+    """Replaces a current dir with the new value"""
     return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
 
 
@@ -34,7 +32,9 @@ def update_result_path(result_dir, scenario, value, mode):
 
 def update_migrate_value(result_dir, scenario, value, mode):
     """
-    Replaces a migrate value with mode given by preupgrade-assistant command line
+    Replaces a migrate value with mode
+
+    mode is given by preupgrade-assistant command line
     """
     if not mode:
         return "1"
@@ -46,7 +46,9 @@ def update_migrate_value(result_dir, scenario, value, mode):
 
 def update_upgrade_value(result_dir, scenario, value, mode):
     """
-    Replaces a upgrade value with mode given by preupgrade-assistant command line
+    Replaces a upgrade value with mode
+
+    mode is given by preupgrade-assistant command line
     """
     if not mode:
         return "1"
@@ -65,24 +67,19 @@ def upd_inspection(rule):
 
 
 def upd_action(rule):
-    """
-    Function updates result to needs_action in case
-    of HIGH
-    """
+    """Function updates result to needs_action in caseof HIGH"""
     return rule.get("idref"), utils.get_needs_action()
 
 
 def upd_extreme(rule):
-    """
-    Function does no update result for extreme risk
-    """
+    """Function does no update result for extreme risk"""
     return None, "fail"
 
 
 class ReportParser(object):
-    """
-    Class manipulates with XML files created by oscap
-    """
+
+    """Class manipulates with XML files created by oscap"""
+
     def __init__(self, report_path):
         self.path = report_path
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
@@ -132,9 +129,7 @@ class ReportParser(object):
         return ''
 
     def reload_xml(self, path):
-        """
-        Function updates self.target_tree with the new path
-        """
+        """Function updates self.target_tree with the new path"""
         self.path = path
         # ElementTree.fromstring can't parse safely unicode string
         content = get_file_content(self.path, 'r', False, False)
@@ -143,10 +138,7 @@ class ReportParser(object):
         self.target_tree = ElementTree.fromstring(content)
 
     def get_number_checks(self):
-        """
-        Function returns a number of checks
-        who are really selected
-        """
+        """Function returns a number of checkswho are really selected"""
         number_checks = 0
         select_number = self.filter_grandchildren(self.target_tree, self.profile, "select")
         for sel in select_number:
@@ -158,9 +150,7 @@ class ReportParser(object):
         return self.get_nodes(self.target_tree, "Rule", prefix=".//")
 
     def get_name_of_checks(self):
-        """
-        Function returns a names of rules
-        """
+        """Function returns a names of rules"""
         list_names = {}
         rule_nodes = self._get_all_rules()
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
@@ -171,15 +161,11 @@ class ReportParser(object):
         return list_names
 
     def get_all_result_rules(self):
-        """
-        Function returns all rul-result in TestResult xml tag
-        """
+        """Function returns all rul-result in TestResult xml tag"""
         return self.filter_grandchildren(self.target_tree, "TestResult", "rule-result")
 
     def get_all_results(self):
-        """
-        Function return all results
-        """
+        """Function return all results"""
         results = []
         for rule in self.get_all_result_rules():
             results.extend(self.get_nodes(rule, "result", prefix='./'))
@@ -188,6 +174,7 @@ class ReportParser(object):
     def get_solution_files(self):
         """
         Function returns a dictionary with solution_files
+
         Format is:
         xccdf_preupg_backup_solution_file=solution.txt
         """
@@ -202,9 +189,7 @@ class ReportParser(object):
         return dict_solution
 
     def write_xml(self):
-        """
-        Function writes XML document to file
-        """
+        """Function writes XML document to file"""
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
         # we really must set encoding here! and suppress it in write_to_file
         data = ElementTree.tostring(self.target_tree, "utf-8")
@@ -212,9 +197,7 @@ class ReportParser(object):
         self.target_tree = ElementTree.parse(self.path).getroot()
 
     def modify_result_path(self, result_dir, scenario, mode):
-        """
-        Function modifies result path in XML file
-        """
+        """Function modifies result path in XML file"""
         update_tags = {'_tmp_preupgrade': update_result_path,
                        '_current_dir': update_current_dir,
                        '_migrate': update_migrate_value,
@@ -229,9 +212,7 @@ class ReportParser(object):
         self.write_xml()
 
     def modify_platform_tag(self, platform_tag):
-        """
-        The function updates platform tag to the assessment system tag
-        """
+        """The function updates platform tag to the assessment system tag"""
         for platform in self.filter_children(self.target_tree, "platform"):
             if "cpe:/o:redhat:enterprise_linux:" in platform.get("idref"):
                 platform.set("idref", "cpe:/o:redhat:enterprise_linux:"+platform_tag)
@@ -239,9 +220,7 @@ class ReportParser(object):
         self.write_xml()
 
     def update_inplace_risk(self, scanning_progress, rule, res):
-        """
-        Function updates inplace risk
-        """
+        """Function updates inplace risk"""
         inplace_risk = xccdf.get_check_import_inplace_risk(rule)
         if inplace_risk:
             return_value = xccdf.get_and_print_inplace_risk(0, inplace_risk)
@@ -291,9 +270,7 @@ class ReportParser(object):
         self.write_xml()
 
     def remove_empty_check_import(self):
-        """
-        This function remove check_import tag which are empty
-        """
+        """This function remove check_import tag which are empty"""
         for rule in self.get_all_result_rules():
             # Filter all check-import=stdout which are empty and remove them
             for check in self.get_nodes(rule, "check"):
@@ -304,9 +281,7 @@ class ReportParser(object):
                         remove_node(check, res)
 
     def remove_debug_info(self):
-        """
-        Function removes debug information from report
-        """
+        """Function removes debug information from report"""
         re_expr = r'^DEBUG \[\w+\]\s+.*'
         for rule in self.get_all_result_rules():
             for check_import in self.filter_grandchildren(rule,
@@ -362,9 +337,9 @@ class ReportParser(object):
         self.write_xml()
 
     def select_rules(self, mode):
-
         """
         Function marks choice a specific rules based on the content generation
+
         :return:
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
@@ -383,6 +358,7 @@ class ReportParser(object):
     def get_report_type(self, report_type):
         """
         Function returns all reports for selected report_type
+
         :param type: specify report_type like 'admin' or 'user'
         :return: a set of content
         """
@@ -413,5 +389,5 @@ class ReportParser(object):
         return new_report_name
 
     def get_path(self):
-        """ Function return path to report"""
+        """Function return path to report"""
         return self.path

@@ -1,9 +1,9 @@
+
+"""Configuration file, key names has to match values in cli.py"""
+
 import sys
 import os
 
-"""
-Configuration file, key names has to match values in cli.py
-"""
 
 if os.path.basename(sys.argv[0]) == "premigrate":
     prefix = "premigrate"

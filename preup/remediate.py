@@ -11,10 +11,10 @@ from preup.utils import get_interpreter, run_subprocess
 from preup.utils import get_file_content, write_to_file
 
 
-def get_all_postupgrade_files(verbose, dir_name):
+def get_all_postupgrade_files(dummy_verbose, dir_name):
     """Function gets all postupgrade files from dir_name"""
     postupg_scripts = []
-    for root, sub_dirs, files in os.walk(dir_name):
+    for root, dummy_sub_dirs, files in os.walk(dir_name):
         # find all files in this directory
         postupg_scripts.extend([os.path.join(root, x) for x in files])
     if not postupg_scripts:
@@ -75,14 +75,14 @@ def copy_modified_config_files(result_dir):
     etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
     try:
         lines = get_file_content(etc_va_log, "r", method=True)
-    except IOError as ie_rr:
+    except IOError:
         return
     dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
     clean_conf = os.path.join(result_dir, settings.clean_conf_dir)
     for line in lines:
         try:
             (opts, flags, filename) = line.strip().split()
-        except ValueError as val_err:
+        except ValueError:
             return
         new_filename = filename[1:]
         # Check whether config file exists in cleanconf directory
@@ -95,7 +95,7 @@ def copy_modified_config_files(result_dir):
         # Copy filename to dirtyconf directory
         try:
             shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))
-        except IOError as io_err:
+        except IOError:
             continue
 
 
