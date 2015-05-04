@@ -7,19 +7,15 @@ Class creates a kickstart for migration scenario
 from __future__ import print_function
 import base64
 import shutil
-import pykickstart.commands as commands
 import os
+
 from pykickstart.parser import KickstartError, KickstartParser, Script
 from pykickstart.version import makeVersion
 from pykickstart.constants import KS_SCRIPT_POST
-from preup.logger import  log_message
+from preup.logger import log_message
 from preup import settings
-from preup.utils import write_to_file, get_file_content, get_system
+from preup.utils import write_to_file, get_file_content
 
-if not get_system():
-    from pykickstart.commands.repo import RHEL6_RepoData as SystemRepoData
-else:
-    from pykickstart.commands.repo import F21_RepoData as SystemRepoData
 
 class YumGroupManager(object):
     """more intelligent dict; enables searching in yum groups"""
@@ -123,12 +119,6 @@ class YumGroupGenerator(object):
         return output + output_packages
 
 
-class RepoData(SystemRepoData):
-    def __init__(self, *args, **kwargs):
-        self.enabled = kwargs.pop("enabled", True)
-        SystemRepoData.__init__(self, *args, **kwargs)
-
-
 class KickstartGenerator(object):
     """Generate kickstart using data from provided result"""
     def __init__(self, kick_start_name):
@@ -144,7 +134,6 @@ class KickstartGenerator(object):
     def load_or_default(system_ks_path):
         """load system ks or default ks"""
         ksparser = KickstartParser(makeVersion())
-        ksparser.repoData = RepoData
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
@@ -182,6 +171,20 @@ class KickstartGenerator(object):
             fields = line.split('=')
             repo_dict[fields[0]] = fields[2]
         return repo_dict
+
+    @staticmethod
+    def get_kickstart_users(filename):
+        """
+        returns dictionary with names and uid, gid, etc.
+        :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :return: dictionary with users
+        """
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'r', method=True)
+        user_dict = {}
+        for line in lines:
+            fields = line.split(':')
+            user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+        return user_dict
 
     def output_packages(self):
         """outputs %packages section"""
@@ -231,14 +234,13 @@ class KickstartGenerator(object):
                 shutil.copy(source_name, target_name)
 
     def update_repositories(self, repositories):
-        repos = ""
         for key, value in repositories.iteritems():
-            data = {}
-            data['name'] = key
-            data['baseurl'] = value.strip()
-            repodata = SystemRepoData(**data)
-            repos += repodata.__str__()
-        self.ks.handler.repo.dataList().append(repos)
+            self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
+
+    def update_users(self, users):
+        for key, value in users.iteritems():
+            uid, gid = value.strip().split(':')
+            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
 
     def get_prefix(self):
         return settings.tarball_prefix + settings.tarball_base
@@ -255,8 +257,8 @@ class KickstartGenerator(object):
         packages = self.output_packages()
         if packages:
             self.ks.handler.packages.add(packages)
-        available_repos = KickstartGenerator.get_kickstart_repo('available-repos')
-        self.update_repositories(available_repos)
+        self.update_repositories(KickstartGenerator.get_kickstart_repo('available-repos'))
+        self.update_users(KickstartGenerator.get_kickstart_users('Users'))
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
 
