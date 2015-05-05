@@ -382,11 +382,22 @@ class ReportParser(object):
             self.reload_xml(orig_name)
             return None
 
+        # Remove all reports from main Group node
+        search = './/%sRule' % self.element_prefix
+        for parent in self.target_tree.findall(search + '/..'):
+            for rule in parent.findall(search):
+                print(rule, rule.get('id'))
+                rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
+                if rule_id not in list_parts:
+                    parent.remove(rule)
+
+        # Remove all reports from TestResult node
         for test_result in self.get_nodes(self.target_tree, 'TestResult'):
             for rule in self.get_nodes(test_result, 'rule-result'):
                 idref = rule.get('idref').replace('xccdf_preupg_rule_', '')
                 if idref not in list_parts:
                     test_result.remove(rule)
+
         self.write_xml()
 
         self.reload_xml(orig_name)
