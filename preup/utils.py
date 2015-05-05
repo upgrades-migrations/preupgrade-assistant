@@ -130,7 +130,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
         stdout += stdout_data.decode(settings.defenc)
         if function is None:
             if print_output:
-                print (stdout_data, end="", flush=True)
+                print (stdout_data, end="")
         else:
             function(stdout_data)
     sp.communicate()
