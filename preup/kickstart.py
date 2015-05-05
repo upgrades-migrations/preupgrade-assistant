@@ -124,12 +124,6 @@ class YumGroupGenerator(object):
         return output + output_packages
 
 
-class RepoData(commands.repo.RHEL6_RepoData):
-    def __init__(self, *arg, **kwargs):
-        self.enabled = kwargs.pop("enabled", True)
-        commands.repo.RHEL6_RepoData.__init__(self, *args, **kwargs)
-
-
 class KickstartGenerator(object):
     """
     Generate kickstart using data from provided result
@@ -147,7 +141,6 @@ class KickstartGenerator(object):
     def load_or_default(system_ks_path):
         """ load system ks or default ks """
         ksparser = KickstartParser(makeVersion())
-        ksparser.repoData = RepoData
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
@@ -197,6 +190,20 @@ class KickstartGenerator(object):
             repo_dict[fields[0]] = fields[2]
         return repo_dict
 
+    @staticmethod
+    def get_kickstart_users(filename):
+        """
+        returns dictionary with names and uid, gid, etc.
+        :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :return: dictionary with users
+        """
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'r', method=True)
+        user_dict = {}
+        for line in lines:
+            fields = line.split(':')
+            user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+        return user_dict
+
     def output_packages(self):
         """ outputs %packages section """
         installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
@@ -238,14 +245,13 @@ class KickstartGenerator(object):
                 shutil.copyfile(source_name, target_name)
 
     def update_repositories(self, repositories):
-        repos = ""
         for key, value in repositories.iteritems():
-            data = {}
-            data['name'] = key
-            data['baseurl'] = value.strip()
-            repodata = commands.repo.RHEL6_RepoData(**data)
-            repos += repodata.__str__()
-        self.ks.handler.repo.dataList().append(repos)
+            self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
+
+    def update_users(self, users):
+        for key, value in users.iteritems():
+            uid, gid = value.strip().split(':')
+            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
 
     def get_prefix(self):
         return settings.tarball_prefix + settings.tarball_base
@@ -271,8 +277,8 @@ class KickstartGenerator(object):
         packages = self.output_packages()
         if packages:
             self.ks.handler.packages.add(packages)
-        available_repos = KickstartGenerator.get_kickstart_repo('available-repos')
-        self.update_repositories(available_repos)
+        self.update_repositories(KickstartGenerator.get_kickstart_repo('available-repos'))
+        self.update_users(KickstartGenerator.get_kickstart_users('Users'))
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
         self.remove_obsolete_rows()
