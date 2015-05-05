@@ -357,10 +357,16 @@ class Application(object):
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
         # We separate admin contents
+        reports = [self.get_default_xml_result_path()]
         report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
+        if not report_admin:
+            reports.append(report_admin)
         # We separate user contents
         report_user = self.report_parser.get_report_type(settings.REPORTS[1])
-        for report in [self.get_default_xml_result_path(), report_admin, report_user]:
+        if not report_user:
+            reports.append(report_user)
+
+        for report in [reports]:
             ReportParser.write_xccdf_version(report, direction=True)
             self.run_generate(report, report.replace('.xml', '.html'))
             # Switching back namespace

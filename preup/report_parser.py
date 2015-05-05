@@ -378,6 +378,10 @@ class ReportParser(object):
                 if value.text == report_type:
                     list_parts.append(values_id.replace('_state_result_part', '').replace('xccdf_preupg_value_', ''))
 
+        if not list_parts:
+            self.reload_xml(orig_name)
+            return None
+
         for test_result in self.get_nodes(self.target_tree, 'TestResult'):
             for rule in self.get_nodes(test_result, 'rule-result'):
                 idref = rule.get('idref').replace('xccdf_preupg_rule_', '')
