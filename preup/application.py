@@ -271,18 +271,15 @@ class Application(object):
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
         self.scanning_progress.set_names(self.report_parser.get_name_of_checks())
-        if not self.conf.debug:
-            log_message('%s:' % settings.assessment_text,
-                        new_line=True,
-                        log=False)
-            log_message('%.3d/%.3d ...running (%s)' % (
-                        1,
-                        self.get_total_check(),
-                        self.scanning_progress.get_full_name(0)),
-                        new_line=False,
-                        log=False)
-        else:
-            log_message(self.scanning_progress.get_full_name(0))
+        log_message('%s:' % settings.assessment_text,
+                    new_line=True,
+                    log=False)
+        log_message('%.3d/%.3d ...running (%s)' % (
+                    1,
+                    self.get_total_check(),
+                    self.scanning_progress.get_full_name(0)),
+                    new_line=False,
+                    log=False)
         start_time = datetime.datetime.now()
         self.run_scan(function=self.scanning_progress.show_progress)
         end_time = datetime.datetime.now()
