@@ -369,32 +369,36 @@ class ReportParser(object):
                                        settings.result_name + '-' + report_type + '.xml')
         shutil.copyfile(self.path, new_report_name)
         self.reload_xml(new_report_name)
-        list_parts = []
+        list_dict = {}
         for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
             values_id = values.get('id')
             if not values_id.endswith('_state_result_part'):
                 continue
             for value in self.get_nodes(values, "value"):
                 if value.text == report_type:
-                    list_parts.append(values_id.replace('_state_result_part', '').replace('xccdf_preupg_value_', ''))
+                    values_id = values_id.replace('_state_result_part', '').replace('xccdf_preupg_value_', '')
+                    group_id = '_'.join(values_id.split('_')[:-1])
+                    list_dict[group_id] = values_id
 
-        if not list_parts:
+        if not list_dict:
             self.reload_xml(orig_name)
             return None
 
         # Remove all reports from main Group node
-        search = './/%sRule' % self.element_prefix
-        for parent in self.target_tree.findall(search + '/..'):
+        search = '%sRule' % self.element_prefix
+        search_group = './/%sGroup' % self.element_prefix
+        for parent in self.target_tree.findall(search_group):
             for rule in parent.findall(search):
                 rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
-                if rule_id not in list_parts:
+                parent_id = parent.get('id').replace('xccdf_preupg_group_', '')
+                if parent_id not in list_dict.keys():
                     parent.remove(rule)
 
         # Remove all reports from TestResult node
         for test_result in self.get_nodes(self.target_tree, 'TestResult'):
             for rule in self.get_nodes(test_result, 'rule-result'):
                 idref = rule.get('idref').replace('xccdf_preupg_rule_', '')
-                if idref not in list_parts:
+                if idref not in list_dict.values():
                     test_result.remove(rule)
 
         self.write_xml()
