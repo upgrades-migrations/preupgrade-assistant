@@ -18,10 +18,10 @@
 
 {% block content %}
 <div id="toolbar" class="very-light-grey">
-    <form id="clear-form" action="{{ url }}" method="GET">
+    <form id="clear-form" action="{{ request.path }}" method="GET">
         <input type="submit" class="btn btn-default" value="Clear" id="clear-btn" />
     </form>
-    <form id="filter-form" class="form-inline" method="GET" action="{{ url }}" name="filterform">
+    <form id="filter-form" class="form-inline" method="GET" action="{{ request.path }}" name="filterform">
         {#<input id="id_text" class="form-control" type="text" onclick="this.value=''" name="search" placeholder="Search..." {% if filter_form.search.value %}value={{ filter_form.search.value }}{% endif %} />#}
         {{ filter_form.search }}
         <button class="btn btn-default fa fa-search search-button" type="submit"> </button>

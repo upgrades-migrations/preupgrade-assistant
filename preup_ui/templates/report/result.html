@@ -8,7 +8,7 @@
                         <input type="checkbox" class="all-states-checkbox" {% if state_filter_form.all_checked %}checked="checked"{% endif %}/>
                         <label for="id_pass5">All ({{ result.test_count }})</label>
                     </span>
-                    <form class="filter-by-state-form" action="{{ url }}" method="GET">
+                    <form class="filter-by-state-form" action="{{ request.path }}" method="GET">
                         {% for field in state_filter_form %}
                         <span class="state">
                             {{ field }} {{ field.label_tag }}

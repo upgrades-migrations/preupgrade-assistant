@@ -55,8 +55,6 @@ class RunsView(ListView):
             filter_form = FilterForm()
         context['title'] = 'List of runs'
         context['filter_form'] = filter_form
-        context['request'] = self.request
-        context['url'] = reverse('results-list')
         return context
 
 
