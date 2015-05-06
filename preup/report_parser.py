@@ -386,7 +386,6 @@ class ReportParser(object):
         search = './/%sRule' % self.element_prefix
         for parent in self.target_tree.findall(search + '/..'):
             for rule in parent.findall(search):
-                print(rule, rule.get('id'))
                 rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
                 if rule_id not in list_parts:
                     parent.remove(rule)
