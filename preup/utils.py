@@ -127,16 +127,19 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
     stdout = ''
     for stdout_data in iter(sp.stdout.readline, b''):
         # communicate() method buffers everything in memory, we will read stdout directly
-        stdout += stdout_data.decode(settings.defenc)
+        stdout += stdout_data
         if function is None:
             if print_output:
                 print (stdout_data, end="")
         else:
-            function(stdout_data)
+            # I don't know whot functions can comes here, however
+            # it's not common so put only unicode data here again
+            function(stdout_data.decode(settings.defenc))
     sp.communicate()
 
     if output is not None:
-        write_to_file(output, "wb", stdout)
+        # raw data, so without encoding
+        write_to_file(output, "wb", stdout, False)
     return sp.returncode
 
 
