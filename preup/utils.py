@@ -132,7 +132,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
             if print_output:
                 print (stdout_data, end="")
         else:
-            # I don't know whot functions can comes here, however
+            # I don't know what functions can come here, however
             # it's not common so put only unicode data here again
             function(stdout_data.decode(settings.defenc))
     sp.communicate()
