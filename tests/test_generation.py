@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import unittest
 import tempfile
 import shutil
@@ -54,7 +55,7 @@ class TestGlobalContent(unittest.TestCase):
         xccdf_compose.generate_xml()
         all_xccdf = os.path.join(self.result_dir, settings.content_file)
         self.assertTrue(os.path.exists(all_xccdf))
-        dummy_lines = utils.get_file_content(all_xccdf, 'r')
+        dummy_lines = utils.get_file_content(all_xccdf, 'rb')
 
 
 def suite():

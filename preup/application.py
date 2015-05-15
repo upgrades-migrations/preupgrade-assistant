@@ -2,10 +2,13 @@
 """
 The application module serves for running oscap binary and reporting results to UI
 """
+
+from __future__ import unicode_literals, print_function
 import shutil
 import datetime
 import os
 import sys
+import six
 from distutils import dir_util
 
 try:
@@ -245,7 +248,7 @@ class Application(object):
             check_or_create_temp_dir(os.path.join(self.conf.result_dir, dir_name))
 
         # Copy README files into proper directories
-        for key, val in settings.readme_files.iteritems():
+        for key, val in six.iteritems(settings.readme_files):
             shutil.copyfile(os.path.join(settings.share_dir, "preupgrade", key),
                             os.path.join(self.conf.result_dir, val))
 
@@ -408,7 +411,7 @@ class Application(object):
         3rd party contents are stored in
         /usr/share/preupgrade/RHEL6_7/3rdparty directory
         """
-        for self.third_party, content in list_contents(dir_name).iteritems():
+        for self.third_party, content in six.iteritems(list_contents(dir_name)):
             third_party_name = self.third_party
             log_message("Execution {0} assessments:".format(self.third_party))
             self.report_parser.reload_xml(content)
@@ -516,7 +519,7 @@ class Application(object):
 
         # It prints out result in table format
         format_rules_to_table(main_report, "main contents")
-        for target, report in self.report_data.iteritems():
+        for target, report in six.iteritems(self.report_data):
             format_rules_to_table(report, "3rdparty content " + target)
 
         tar_ball_name = tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
@@ -555,7 +558,7 @@ class Application(object):
             pass
         if self.report_data:
             log_message('Summary 3rd party providers:')
-            for target, dummy_report in self.report_data.iteritems():
+            for target, dummy_report in six.iteritems(self.report_data):
                 self.third_party = target
                 log_message("Read the 3rd party content {0} {1} for more details.".
                             format(target, path))
@@ -564,7 +567,7 @@ class Application(object):
     def run(self):
         """run analysis"""
         if self.conf.list_contents_set:
-            for dir_name, dummy_content in list_contents(self.conf.source_dir).iteritems():
+            for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
                 log_message("{0}".format(dir_name))
             return 0
 
@@ -591,7 +594,7 @@ class Application(object):
                 return 0
 
         if os.geteuid() != 0:
-            sys.stdout.write("Need to be root.\n")
+            print("Need to be root", end="\n")
             if not self.conf.debug:
                 return 2
 

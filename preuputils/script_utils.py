@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import sys
 import os
@@ -116,7 +116,7 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                                                          updates,
                                                          script_type)
     full_path_script = get_full_path(dir_name, script_name)
-    lines = get_file_content(full_path_script, "r", method=True)
+    lines = get_file_content(full_path_script, "rb", method=True)
     if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
         print_error_msg("#END GENERATED SECTION is missing in check_script {0}".
                                   format(full_path_script))
@@ -137,7 +137,7 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
             else:
                 output_text += 'set_component("'+component+'")\n'
         output_text += line
-    write_to_file(full_path_script, "w", output_text)
+    write_to_file(full_path_script, "wb", output_text)
 
 
 def check_executable(dir_name, script_name=""):
@@ -157,7 +157,7 @@ def get_script_type(dir_name, script_name=""):
     mime_type = mimetypes.guess_type(get_full_path(dir_name, script_name))[0]
     if mime_type is None:
         # try get mime type with shebang
-        line = get_file_content(get_full_path(dir_name, script_name), "r", True)[0]
+        line = get_file_content(get_full_path(dir_name, script_name), "rb", True)[0]
         if line.startswith("#!"):
             if re.search(r"\bpython[0-9.-]*\b", line):
                 return 'python'
@@ -184,7 +184,7 @@ def check_inplace_risk(dir_name, prefix="", script_name="", check_func=None):
     """
     if(check_func is None):
         check_func = []
-    lines = get_file_content(get_full_path(dir_name, script_name), "r")
+    lines = get_file_content(get_full_path(dir_name, script_name), "rb")
     compile_req = re.compile(r'^#', re.M|re.I)
     lines = [x for x in lines if not compile_req.search(x.strip())]
     inplace_lines = [x for x in lines if prefix in x]

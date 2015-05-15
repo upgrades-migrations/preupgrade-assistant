@@ -9,7 +9,6 @@ import logging
 import re
 
 from xml.etree import ElementTree
-from preup.utils import get_file_content
 
 logger = logging.getLogger('preup_ui')
 

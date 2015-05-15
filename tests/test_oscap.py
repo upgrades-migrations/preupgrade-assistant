@@ -1,4 +1,5 @@
 
+from __future__ import unicode_literals
 import unittest
 import os
 import shutil
@@ -100,7 +101,7 @@ def delete_tmp_xml(path_name):
 
 
 def get_result_tag(temp_dir):
-    content = utils.get_file_content(os.path.join(temp_dir, settings.xml_result_name), 'r')
+    content = utils.get_file_content(os.path.join(temp_dir, settings.xml_result_name), 'rb')
     if not content:
         return []
     target_tree = ElementTree.fromstring(content)
@@ -136,7 +137,7 @@ class TestOSCAPPass(unittest.TestCase):
         a = prepare_cli(self.temp_dir, self.result_name)
         return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
         self.assertEqual(return_string, 0)
-        lines = utils.get_file_content(test_log, perms='r')
+        lines = utils.get_file_content(test_log, perms='rb')
         os.unlink(test_log)
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)

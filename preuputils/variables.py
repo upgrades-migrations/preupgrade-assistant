@@ -1,2 +1,2 @@
-result_prefix = "-results"
+result_prefix = u"-results"
 

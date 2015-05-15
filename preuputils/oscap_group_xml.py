@@ -4,8 +4,8 @@ This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
 
-from __future__ import print_function
-import os
+from __future__ import print_function, unicode_literals
+import os, sys
 
 try:
     import configparser
@@ -44,6 +44,14 @@ class OscapGroupXml(object):
         This function is used for finding all _fix files in the user defined
         directory
         """
+        # solve python 2 & 3 compatibility
+        if(sys.version_info[0] == 2):
+            config_load = lambda x,y: x.read(y)
+            config_decode = lambda x: x.decode(settings.defenc)
+        else:
+            config_load = lambda x,y: x.read(y, settings.defenc)
+            config_decode = lambda x: x
+
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
@@ -52,14 +60,14 @@ class OscapGroupXml(object):
                 continue
             try:
                 config = configparser.ConfigParser()
-                config.readfp(open(file_name))
+                config_load(config, file_name)
                 fields = {}
                 if config.has_section('premigrate'):
                     section = 'premigrate'
                 else:
                     section = 'preupgrade'
                 for option in config.options(section):
-                    fields[option] = config.get(section, option).decode(settings.defenc)
+                    fields[option] = config_decode(config.get(section, option))
                 self.loaded[file_name] = [fields]
             except configparser.MissingSectionHeaderError:
                 print_error_msg(title="Missing section header")
@@ -85,7 +93,7 @@ class OscapGroupXml(object):
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
-            write_to_file(file_name, "w", ["%s" % item for item in self.rule])
+            write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
         except IOError as ior:
             print ('Problem with write data to the file ', file_name, ior.message)
 
@@ -97,7 +105,7 @@ class OscapGroupXml(object):
             # encoding must be set! otherwise ElementTree return non-ascii characters
             # as html entities instead, which are unsusable for us
             data = ElementTree.tostring(target_tree, "utf-8")
-            write_to_file(file_name, "w", data, False)
+            write_to_file(file_name, "wb", data, False)
         except IOError as ioe:
             print ('Problem with writing to file ', file_name, ioe.message)
 

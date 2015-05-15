@@ -1,6 +1,7 @@
 
 """Configuration file, key names has to match values in cli.py"""
 
+from __future__ import unicode_literals
 import sys
 import os
 

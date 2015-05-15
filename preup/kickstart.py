@@ -4,10 +4,11 @@
 Class creates a kickstart for migration scenario
 """
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import base64
 import shutil
 import os
+import six
 
 from pykickstart.parser import KickstartError, KickstartParser, Script
 from pykickstart.version import makeVersion
@@ -28,7 +29,7 @@ class YumGroupManager(object):
     def find_match(self, packages):
         """is there a group whose packages are subset of argument 'packages'?"""
         groups = []
-        for group in self.groups.itervalues():
+        for group in six.itervalues(self.groups):
             if len(group.required) != 0:
                 if group.match(packages):
                     groups.append(group)
@@ -153,7 +154,7 @@ class KickstartGenerator(object):
         replaced/obsoleted/removed between releases. It produces a file with a list
         of packages which should be installed.
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'r', method=True)
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         # Remove newline character from list
         lines = [line.strip() for line in lines]
         return lines
@@ -165,7 +166,7 @@ class KickstartGenerator(object):
         :param filename: filename with available-repos
         :return: dictionary with enabled repolist
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'r', method=True)
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         repo_dict = {}
         for line in lines:
             fields = line.split('=')
@@ -179,7 +180,7 @@ class KickstartGenerator(object):
         :param filename: filename with Users in /root/preupgrade/kickstart directory
         :return: dictionary with users
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'r', method=True)
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         user_dict = {}
         for line in lines:
             fields = line.split(':')
@@ -200,14 +201,14 @@ class KickstartGenerator(object):
         # return display_group_names + display_package_names
 
     def embed_script(self, tarball):
-        tarball_content = get_file_content(tarball, 'r')
+        tarball_content = get_file_content(tarball, 'rb')
         script_str = ''
         try:
             script_path = settings.KS_TEMPLATE_POSTSCRIPT
         except AttributeError:
             log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py')
             return
-        script_str = get_file_content(os.path.join(settings.KS_DIR, script_path), 'r')
+        script_str = get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
         if not script_str:
             log_message("Can't open script template: {0}".format(script_path))
             return
@@ -218,7 +219,7 @@ class KickstartGenerator(object):
         self.ks.handler.scripts.append(script)
 
     def save_kickstart(self):
-        write_to_file(self.kick_start_name, 'w', self.ks.handler.__str__())
+        write_to_file(self.kick_start_name, 'wb', self.ks.handler.__str__())
 
     def update_kickstart(self, text, cnt):
         self.ks_list.insert(cnt, text)
@@ -234,11 +235,11 @@ class KickstartGenerator(object):
                 shutil.copy(source_name, target_name)
 
     def update_repositories(self, repositories):
-        for key, value in repositories.iteritems():
+        for key, value in six.iteritems(repositories):
             self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
 
     def update_users(self, users):
-        for key, value in users.iteritems():
+        for key, value in six.iteritems(users):
             uid, gid = value.strip().split(':')
             self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
 

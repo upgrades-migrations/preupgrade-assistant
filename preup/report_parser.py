@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import re
 import os
 import shutil
@@ -85,7 +85,7 @@ class ReportParser(object):
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
         try:
             # ElementTree.fromstring can't parse safely unicode string
-            content = get_file_content(report_path, 'r', False, False)
+            content = get_file_content(report_path, 'rb', False, False)
         except IOError as ioerr:
             raise
         if not content:
@@ -132,7 +132,7 @@ class ReportParser(object):
         """Function updates self.target_tree with the new path"""
         self.path = path
         # ElementTree.fromstring can't parse safely unicode string
-        content = get_file_content(self.path, 'r', False, False)
+        content = get_file_content(self.path, 'rb', False, False)
         if not content:
             return None
         self.target_tree = ElementTree.fromstring(content)
@@ -304,12 +304,12 @@ class ReportParser(object):
         """
         namespace_1 = 'http://checklists.nist.gov/xccdf/1.1'
         namespace_2 = 'http://checklists.nist.gov/xccdf/1.2'
-        content = get_file_content(file_name, "r")
+        content = get_file_content(file_name, "rb")
         if direction:
             content = re.sub(namespace_2, namespace_1, content)
         else:
             content = re.sub(namespace_1, namespace_2, content)
-        write_to_file(file_name, 'w', content)
+        write_to_file(file_name, 'wb', content)
 
     def update_check_description(self):
         for rule in self._get_all_rules():
@@ -344,7 +344,7 @@ class ReportParser(object):
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
         try:
-            lines = [i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
+            lines = [i.rstrip() for i in get_file_content(full_path, 'rb', method=True)]
         except IOError:
             return
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):

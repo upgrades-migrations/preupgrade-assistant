@@ -1,5 +1,5 @@
 # # -*- coding: utf-8 -*-
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import os
 import unittest
 import shutil
@@ -62,12 +62,12 @@ class TestXMLCompose(unittest.TestCase):
         Test processing of non-ascii characters inside title and description
         sections.
         """
-        u_title = 'Čekujeme unicode u hasičů'.decode('utf-8')
-        u_descr = 'Hoří horní heršpická hospoda Hrbatý hrozen.'.decode('utf-8')
+        u_title = u'Čekujeme unicode u hasičů'
+        u_descr = u'Hoří horní heršpická hospoda Hrbatý hrozen.'
         uni_xml = os.path.join(self.result_dir, "unicode", "group.xml")
         try:
             # XML files should be always in utf-8!
-            lines = [x.decode('utf-8') for x in get_file_content(uni_xml, "r", True, False)]
+            lines = [x.decode('utf-8') for x in get_file_content(uni_xml, "rb", True, False)]
         except IOError:
             assert False
         title = filter(lambda x: u_title in x, lines)
@@ -77,13 +77,13 @@ class TestXMLCompose(unittest.TestCase):
 
     def test_unicode_script_author(self):
         """Test processing of non-ascii characters for author section"""
-        u_author = 'Petr Stodůlka'.decode(settings.defenc)
+        u_author = b'Petr Stod\xc5\xaflka'.decode(settings.defenc)
         script_file = os.path.join(self.result_dir, "unicode", "dummy_unicode.sh")
         settings.autocomplete = True
         self.target_tree = ComposeXML.run_compose(self.tree, self.result_dir)
         self.assertTrue(self.target_tree)
         try:
-            lines = get_file_content(script_file, "r", True)
+            lines = get_file_content(script_file, "rb", True)
         except IOError:
             assert False
         author = filter(lambda x: u_author in x, lines)
@@ -122,14 +122,14 @@ class TestXML(unittest.TestCase):
 #This is testing check script
  """
         check_name = os.path.join(self.dirname, self.check_script)
-        write_to_file(check_name, "w", self.check_sh)
+        write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
         test_solution_name = os.path.join(self.dirname, self.test_solution)
-        write_to_file(test_solution_name, "w", self.solution_text)
+        write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
@@ -182,7 +182,7 @@ A solution text for test suite"
 
     def test_check_script_author(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "r", method=True)
+        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         author = filter(lambda x: "test <test@redhat.com>" in x, lines)
         self.assertTrue(author)
 
@@ -231,11 +231,11 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'r', method=True)
+        migrate_file = get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         try:
-            upgrade_file = get_file_content(upgrade, 'r', method=True)
+            upgrade_file = get_file_content(upgrade, 'rb', method=True)
         except IOError:
             upgrade_file = None
         self.assertIsNone(upgrade_file)
@@ -260,11 +260,11 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        upgrade_file = get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         try:
-            migrate_file = get_file_content(migrate, 'r', method=True)
+            migrate_file = get_file_content(migrate, 'rb', method=True)
         except IOError:
             migrate_file = None
         self.assertIsNone(migrate_file)
@@ -289,10 +289,10 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'r', method=True)
+        migrate_file = get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
-        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        upgrade_file = get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         self._delete_temporary_dir(migrate, upgrade)
@@ -315,10 +315,10 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'r', method=True)
+        migrate_file = get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
-        upgrade_file = get_file_content(upgrade, 'r', method=True)
+        upgrade_file = get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         self._delete_temporary_dir(migrate, upgrade)
@@ -342,19 +342,19 @@ A solution text for test suite"
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "r", method=True)
+        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         applies = filter(lambda x: 'check_applies_to "test"' in x, lines)
         self.assertTrue(applies)
 
     def test_check_script_common(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "r", method=True)
+        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         common = filter(lambda x: '. /usr/share/preupgrade/common.sh' in x, lines)
         self.assertTrue(common)
 
     def test_check_script_requires(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "r", method=True)
+        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         check_rpm_to = filter(lambda x: 'check_rpm_to "bash" "sed"' in x, lines)
         self.assertTrue(check_rpm_to)
 
@@ -391,8 +391,8 @@ A solution text for test suite"
 
 #This is testing check script
  """
-        write_to_file(os.path.join(self.dir_name, self.test_solution), "w", solution_text)
-        write_to_file(os.path.join(self.dir_name, self.check_script), "w", check_sh)
+        write_to_file(os.path.join(self.dir_name, self.test_solution), "wb", solution_text)
+        write_to_file(os.path.join(self.dir_name, self.check_script), "wb", check_sh)
 
     def tearDown(self):
         shutil.rmtree(self.dir_name)
@@ -443,7 +443,7 @@ A solution text for test suite"
         text_ini = '[preupgrade]\n'
         text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
         text_ini += '\n[]\neliskk\n'
-        write_to_file(self.filename, "w", text_ini)
+        write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.dir_name)
         self.assertRaises(SystemExit, oscap.find_all_ini)
 
@@ -451,7 +451,7 @@ A solution text for test suite"
         """Check occurrence of secret file for check script"""
         self.test_ini['check_script'] = '.minicheck'
         text = """#!/usr/bin/sh\necho 'ahojky'\n"""
-        write_to_file(os.path.join(self.dir_name, self.check_script), "w", text)
+        write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))

@@ -1,5 +1,6 @@
-import os
 
+from __future__ import unicode_literals
+import os
 from preup.logger import settings, logging, log_message
 
 

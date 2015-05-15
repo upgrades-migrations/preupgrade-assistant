@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import re
 import os
@@ -43,15 +43,15 @@ class XmlUtils(object):
         path_name = os.path.join(settings.UPGRADE_PATH, file_name)
         lines = []
         if os.path.exists(path_name):
-            lines = get_file_content(path_name, 'r', method=True)
+            lines = get_file_content(path_name, 'rb', method=True)
         test_content = [x.strip() for x in lines if content in x.strip()]
         if not test_content:
             lines.append(content + '\n')
-            write_to_file(path_name, 'w', lines)
+            write_to_file(path_name, 'wb', lines)
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = get_file_content(os.patch.join(self.dirname, filename), "r", True)
+        lines = get_file_content(os.patch.join(self.dirname, filename), "rb", True)
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'
@@ -95,7 +95,7 @@ class XmlUtils(object):
                 new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
-            new_text = get_file_content(os.path.join(self.dirname, replace_exp), "r", True)
+            new_text = get_file_content(os.path.join(self.dirname, replace_exp), "rb", True)
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])

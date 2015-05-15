@@ -70,7 +70,7 @@ def main():
     try:
         # must be encoded by ElementTree!
         data = ElementTree.tostring(target_tree, "utf-8")
-        write_to_file(os.path.join(dir_name, filename), "w", data, False)
+        write_to_file(os.path.join(dir_name, filename), "wb", data, False)
         print 'Generated report file for preupgrade-assistant is:', ''.join(os.path.join(dir_name, filename))
     except IOError, e:
         print "Problem with writing file ", filename

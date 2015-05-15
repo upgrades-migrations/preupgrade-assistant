@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
 import re
 import six
 from operator import itemgetter
@@ -73,7 +74,7 @@ def check_inplace_risk(xccdf_file, verbose):
     return value is get from function get_and_print_inplace_risk
     """
     try:
-        content = utils.get_file_content(xccdf_file, 'r', False, False)
+        content = utils.get_file_content(xccdf_file, 'rb', False, False)
         if not content:
             # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
             return -1
@@ -86,4 +87,13 @@ def check_inplace_risk(xccdf_file, verbose):
     for profile in target_tree.findall(XMLNS + "TestResult"):
         inplace_risk = get_check_import_inplace_risk(profile)
 
-    return get_and_print_inplace_risk(verbose, inplace_risk)/2
+    result = get_and_print_inplace_risk(verbose, inplace_risk)
+    # different behaviour of division between py2 & 3
+    if(result == -1):
+        return -1
+    elif(result < 2):
+        return 0
+    elif(result < 4):
+        return 1
+    else:
+        return 2

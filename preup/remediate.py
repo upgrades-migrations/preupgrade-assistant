@@ -1,5 +1,8 @@
+
+from __future__ import unicode_literals
 import os
 import shutil
+import six
 from preup.logger import log_message, logging
 try:
     from hashlib import sha1
@@ -24,8 +27,8 @@ def get_all_postupgrade_files(dummy_verbose, dir_name):
 
 def get_hash_file(filename, hasher):
     """Function gets a hash from file"""
-    content = get_file_content(filename, "r", False, False)
-    hasher.update('preupgrade-assistant' + content)
+    content = get_file_content(filename, "rb", False, False)
+    hasher.update(b'preupgrade-assistant' + content)
     return hasher.hexdigest()
 
 
@@ -61,7 +64,7 @@ def get_hashes(filename):
     """Function gets all hashes from a filename"""
     if not os.path.exists(filename):
         return None
-    hashed_file = get_file_content(filename, "r").split()
+    hashed_file = get_file_content(filename, "rb").split()
     hashed_file = [x for x in hashed_file if "hashed_file" not in x]
     return hashed_file
 
@@ -74,7 +77,7 @@ def copy_modified_config_files(result_dir):
     """
     etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
     try:
-        lines = get_file_content(etc_va_log, "r", method=True)
+        lines = get_file_content(etc_va_log, "rb", method=True)
     except IOError:
         return
     dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
@@ -123,7 +126,7 @@ def hash_postupgrade_file(verbose, dirname, check=False):
         lines.append(post_name + "=" + get_hash_file(post_name, sha1())+"\n")
 
     full_path_name = os.path.join(dirname, filename)
-    write_to_file(full_path_name, "w", lines)
+    write_to_file(full_path_name, "wb", lines)
 
     if check:
         hashed_file = get_hashes(os.path.join(dirname, settings.base_hashed_file))
@@ -156,7 +159,7 @@ def special_postupgrade_scripts(result_dir):
     """
     postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh"}
 
-    for key, val in postupgrade_dict.iteritems():
+    for key, val in six.iteritems(postupgrade_dict):
         shutil.copy(os.path.join(settings.source_dir,
                                  settings.postupgrade_dir,
                                  key),

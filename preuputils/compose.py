@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import os
 import sys
 import re
@@ -59,7 +59,7 @@ class XCCDFCompose(object):
 
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
-            write_to_file(report_filename, "w",
+            write_to_file(report_filename, "wb",
                           ElementTree.tostring(target_tree, "utf-8"),
                           False)
             #print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
 import os
 import re
 import rpm
+import six
 from preup.utils import get_file_content, write_to_file
 from preup import settings
 
@@ -166,7 +168,7 @@ def clean_html(report_path):
     """
     Function cleans a report
     """
-    file_content = get_file_content(report_path, 'r')
+    file_content = get_file_content(report_path, 'rb')
 
     s_testres = ('[\t ]*<div id="intro">[\t ]*\n[\t ]*<h2>Introduction</h2>[\t ]*\n', False)
     e_testres = ('[\t ]*</table>[\t ]*\n[\t ]*</div>[\t ]*\n[\t ]*</div>[\t ]*\n', False)
@@ -183,7 +185,7 @@ def clean_html(report_path):
     # add preupg nvr
     nl = re.sub('[\t ]*<h2>Introduction</h2>[\t ]*\n', add_preupg_scanner_info(), nl)
 
-    write_to_file(report_path, 'w', nl)
+    write_to_file(report_path, 'wb', nl)
 
 
 class XmlManager(object):
@@ -249,7 +251,7 @@ class XmlManager(object):
          Function updates a XML or HTML file with relevant solution
          texts
         """
-        for dir_name, files in solution_files.iteritems():
+        for dir_name, files in six.iteritems(solution_files):
             section = dir_name.replace(os.path.join(self.dirname, self.scenario),
                                        "").replace("/", "_")
             solution_text = section + "_SOLUTION_MSG"
@@ -259,11 +261,11 @@ class XmlManager(object):
             if not file_name or file_name is None:
                 continue
             text = get_file_content(os.path.join(dir_name, file_name),
-                                    "r",
+                                    "rb",
                                     method=True)
             orig_file = os.path.join(self.dirname,
                                      self.result_base + "." + extension)
-            lines = get_file_content(orig_file, "r", method=True)
+            lines = get_file_content(orig_file, "rb", method=True)
 
             for cnt, line in enumerate(lines):
                 # If in INPLACERISK: is a [link] then update them
@@ -279,7 +281,7 @@ class XmlManager(object):
                                                    text,
                                                    line,
                                                    extension)
-            write_to_file(orig_file, "w", lines)
+            write_to_file(orig_file, "wb", lines)
 
     def find_solution_files(self, xml_solution_files):
         """
@@ -298,7 +300,7 @@ class XmlManager(object):
 
     def remove_html_information(self):
         report_path = os.path.join(self.dirname, self.result_base + ".html")
-        file_content = get_file_content(report_path, 'r', method=True)
+        file_content = get_file_content(report_path, 'rb', method=True)
         detail_start = '<br /><br /><strong class="bold">Details:</strong><br />'
         detail_end = '[\t ]*<div class="xccdf-fixtext">'
 
@@ -313,4 +315,4 @@ class XmlManager(object):
             if not found_section:
                 new_content.append(line)
 
-        write_to_file(report_path, 'w', new_content)
+        write_to_file(report_path, 'wb', new_content)

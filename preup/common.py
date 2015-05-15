@@ -4,6 +4,7 @@ generating common logs, coping these common logs
 to assessment
 """
 
+from __future__ import unicode_literals
 import os
 import platform
 import datetime
@@ -27,7 +28,7 @@ class Common(object):
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
-        self.lines = utils.get_file_content(self.conf.common_script, "r", method=True)
+        self.lines = utils.get_file_content(self.conf.common_script, "rb", method=True)
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
@@ -55,7 +56,7 @@ class Common(object):
         log_message("Gathering logs used by preupgrade assistant:")
         self.switch_dir()
         try:
-            max_length = max(max(list([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text)))
+            max_length = max(max([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text))
             # Log files which will not be updated
             # when RPM database is not changed
             for counter, line in enumerate(self.lines):

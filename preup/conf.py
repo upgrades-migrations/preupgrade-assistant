@@ -43,6 +43,7 @@ id = 123456
 xccdf_tag = "xccdf_preupg_rule_"
 """
 
+from __future__ import unicode_literals
 
 class DummyConf(object):
     """

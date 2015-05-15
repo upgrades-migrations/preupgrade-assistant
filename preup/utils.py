@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
+import six
 import datetime
 import re
 import subprocess
 import fnmatch
 import os
+import sys
 from preup import settings
 from preup.logger import log_message, logging
 import shutil
@@ -20,7 +22,7 @@ def check_file(fp, mode):
     with open mode)
     """
     intern_mode = 0
-    if(isinstance(mode, str)):
+    if(isinstance(mode, six.text_type)):
         if('w' in mode or 'a' in mode):
             intern_mode += W_OK
         if('r' in mode):
@@ -99,8 +101,8 @@ def get_interpreter(filename, verbose=False):
     script_types = {'/bin/bash': '.sh',
                     '/usr/bin/python': '.py',
                     '/usr/bin/perl': '.pl'}
-    inter = list(k for k, v in script_types.iteritems() if filename.endswith(v))
-    content = get_file_content(filename, 'r')
+    inter = list(k for k, v in six.iteritems(script_types) if filename.endswith(v))
+    content = get_file_content(filename, 'rb')
     if inter and content.startswith('#!'+inter[0]):
         return inter
     else:
@@ -124,7 +126,7 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
                           stderr=subprocess.STDOUT,
                           shell=shell,
                           bufsize=1)
-    stdout = ''
+    stdout = six.binary_type() # FIXME should't be this bytes()?
     for stdout_data in iter(sp.stdout.readline, b''):
         # communicate() method buffers everything in memory, we will read stdout directly
         stdout += stdout_data
@@ -133,7 +135,9 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
                 print (stdout_data, end="")
         else:
             # I don't know what functions can come here, however
-            # it's not common so put only unicode data here again
+            # it's not common so put only unicode data here again.
+            # Should be always raw data so we don't need test stdout_data
+            # on type
             function(stdout_data.decode(settings.defenc))
     sp.communicate()
 
@@ -164,7 +168,7 @@ def get_system():
 
     :return: Fedora or None
     """
-    lines = get_file_content('/etc/redhat-release', 'r', method=True)
+    lines = get_file_content('/etc/redhat-release', 'rb', method=True)
     return [line for line in lines if line.startswith('Fedora')]
 
 
@@ -245,7 +249,8 @@ def write_to_file(path, perms, data, encode_flag=True):
                     data = [line.encode(settings.defenc) for line in data]
                 f.writelines(data)
             else:
-                if encode_flag is True:
+                # TODO: May we should print warn w
+                if encode_flag is True and isinstance(data, six.text_type):
                     f.write(data.encode(settings.defenc))
                 else:
                     f.write(data)
@@ -339,7 +344,10 @@ def get_message(title="", message="Do you want to continue?"):
     print (message + prompt)
     while True:
         try:
-            choice = raw_input().lower()
+            if(sys.version_info[0] == 2):
+                choice = raw_input().lower()
+            else:
+                choice = input().lower()
         except KeyboardInterrupt:
             return "n"
         if choice not in yesno:
@@ -363,7 +371,7 @@ def get_convertors():
 
 def get_variant():
     """Function return a variant"""
-    redhat_release = get_file_content("/etc/redhat-release", "r")
+    redhat_release = get_file_content("/etc/redhat-release", "rb")
     if redhat_release.startswith('Fedora'):
         return None
     try:
@@ -426,15 +434,15 @@ def remove_home_issues():
              os.path.join(settings.KS_DIR, 'untrackeduser')]
     for f in files:
         try:
-            lines = get_file_content(f, 'r', method=True)
+            lines = get_file_content(f, 'rb', method=True)
             lines = [l for l in lines if not l.startswith('/home')]
-            write_to_file(f, 'w', lines)
+            write_to_file(f, 'wb', lines)
         except IOError:
             pass
 
 
 def update_platform(full_path):
-    file_lines = get_file_content(full_path, 'r', method=True)
+    file_lines = get_file_content(full_path, 'rb', method=True)
     platform = ''
     platform_id = ''
     if not get_system():
@@ -448,4 +456,4 @@ def update_platform(full_path):
         if 'PLATFORM_ID' in line:
             line = line.replace('PLATFORM_ID', platform_id[0])
         file_lines[index] = line
-    write_to_file(full_path, 'w', file_lines)
+    write_to_file(full_path, 'wb', file_lines)

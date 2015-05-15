@@ -26,6 +26,7 @@ These functions are available:
 * exit_* -- terminate execution with appropriate exit code
 """
 
+from __future__ import unicode_literals, print_function
 import os
 import sys
 import re
@@ -116,7 +117,7 @@ def log_risk(severity, message):
     """
     log risk level to stderr
     """
-    sys.stderr.write("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)))
+    print("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
 def log_extreme_risk(message):
@@ -161,12 +162,10 @@ def log_slight_risk(message):
 ##################
 
 def log(severity, message, component_arg=None):
-    """
-    log message to stdout
-    """
+    """log message to stdout"""
     global component
     comp_show = component_arg or component
-    sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)))
+    print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stdout)
 
 
 def log_error(message, component_arg=None):
@@ -232,9 +231,7 @@ def get_dest_dir():
 
 
 def shorten_envs():
-    """
-    make all the oscap's environemt variables shorter
-    """
+    """make all the oscap's environemt variables shorter"""
     envs = os.environ
     prefixes = ('XCCDF_VALUE_', 'XCCDF_RESULT_')
     for env_key, env_value in envs.items():
@@ -244,9 +241,7 @@ def shorten_envs():
 
 
 def set_component(c):
-    """
-    configure name of component globally (it will be used in logging)
-    """
+    """configure name of component globally (it will be used in logging)"""
     global component
     component = c
 
@@ -265,6 +260,7 @@ def exit_fail():
 def exit_failed():
     """
     The test failed.
+
     Moving to new release with this configuration will result in malfunction.
     """
     sys.exit(int(os.environ['XCCDF_RESULT_FAIL']))
@@ -272,50 +268,40 @@ def exit_failed():
 
 def exit_error():
     """
-    An error occurred and test could not complete. (script failed while doing its job)
+    An error occurred and test could not complete.
+
+    (script failed while doing its job)
     """
     sys.exit(int(os.environ['XCCDF_RESULT_ERROR']))
 
 
 def exit_pass():
-    """
-    Test passed.
-    """
+    """Test passed."""
     sys.exit(int(os.environ['XCCDF_RESULT_PASS']))
 
 
 def exit_unknown():
-    """
-    Could not tell what happened.
-    """
+    """Could not tell what happened."""
     sys.exit(int(os.environ['XCCDF_RESULT_UNKNOWN']))
 
 
 def exit_not_applicable():
-    """
-    Rule did not apply to test target. (e.g. package is not installed)
-    """
+    """Rule did not apply to test target. (e.g. package is not installed)"""
     sys.exit(int(os.environ['XCCDF_RESULT_NOT_APPLICABLE']))
 
 
 def exit_fixed():
-    """
-    Rule failed, but was later fixed.
-    """
+    """Rule failed, but was later fixed."""
     sys.exit(int(os.environ['XCCDF_RESULT_FIXED']))
 
 
 def exit_informational():
-    """
-    Rule failed, but was later fixed.
-    """
+    """Rule failed, but was later fixed."""
     sys.exit(int(os.environ['XCCDF_RESULT_INFORMATIONAL']))
 
 
 def switch_to_content():
-    """
-    Function for switch to the content directory
-    """
+    """Function for switch to the content directory"""
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
 
@@ -323,7 +309,7 @@ def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "r", True)
+        lines = get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -338,7 +324,7 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
     if check_rpm != "":
         rpms = check_rpm.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "r", True)
+        lines = get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -357,15 +343,13 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
 
 def solution_file(message):
-    write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+", message)
+    write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
 
 
 def service_is_enabled(service_name):
-    """
-    Returns true if given service is enabled on any runlevel
-    """
+    """Returns true if given service is enabled on any runlevel"""
     return_value = False
-    lines = get_file_content(VALUE_CHKCONFIG, "r", True)
+    lines = get_file_content(VALUE_CHKCONFIG, "rb", True)
     for line in lines:
         if re.match('^%s.*:on' % service_name, line):
             return_value = True
@@ -375,13 +359,15 @@ def service_is_enabled(service_name):
 
 def config_file_changed(config_file_name):
     """
-    Searches cached data in VALUE_CONFIGCHANGED and returns:
+    Searches cached data in VALUE_CONFIGCHANGED
+
+    returns:
     True if given config file has been changed
     False if given config file hasn't been changed
     """
     config_changed = False
     try:
-        lines = get_file_content(VALUE_CONFIGCHANGED, "r", True)
+        lines = get_file_content(VALUE_CONFIGCHANGED, "rb", True)
         for line in lines:
             if line.find(config_file_name) != -1:
                 config_changed = True
@@ -392,9 +378,7 @@ def config_file_changed(config_file_name):
 
 
 def backup_config_file(config_file_name):
-    """
-    Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure
-    """
+    """Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure"""
     try:
         # report error if file doesn't exist
         if not os.path.isfile(config_file_name):

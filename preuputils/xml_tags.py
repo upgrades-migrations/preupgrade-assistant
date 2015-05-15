@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 TAG_GROUP = "xccdf_preupg_group_"
 TAG_VALUE = "xccdf_preupg_value_"
 TAG_RULE = "xccdf_preupg_rule_"
