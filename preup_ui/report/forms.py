@@ -40,6 +40,18 @@ class FilterForm(forms.Form):
             'class': 'form-control',
         })
     )
+    host = forms.ChoiceField(required=False, widget=forms.Select(
+        attrs={
+            'class': 'selectpicker global-filter host-filter',
+            'data-live-search': 'true',
+        })
+    )
+    risk = forms.ChoiceField(required=False, widget=forms.Select(
+        attrs={
+            'class': 'selectpicker global-filter risk-filter',
+        })
+    )
+
 
     def __init__(self, *args, **kwargs):
         super(FilterForm, self).__init__(*args, **kwargs)
@@ -50,8 +62,7 @@ class FilterForm(forms.Form):
         risk_choices = zip(risk_choices, [risk.capitalize() for risk in risk_choices])
         # first option searches in every release
         risk_choices.insert(0, ('', 'All Risk Levels'))
-        self.fields['risk'] = forms.ChoiceField(choices=risk_choices, required=False)
-        self.fields['risk'].widget.attrs['class'] = "selectpicker global-filter risk-filter"
+        self.fields['risk'].choices = risk_choices
 
         host_choices = []
         for host in HostRun.objects.hosts():
@@ -60,9 +71,7 @@ class FilterForm(forms.Form):
         host_choices = zip(host_choices, host_choices)
         # first option searches in every release
         host_choices.insert(0, ('', 'All Hosts'))
-        self.fields['host'] = forms.ChoiceField(choices=host_choices, required=False)
-        self.fields['host'].widget.attrs['class'] = "selectpicker global-filter host-filter"
-        self.fields['host'].widget.attrs['data-live-search'] = "true"
+        self.fields['host'].choices = host_choices
 
     def is_valid(self):
         valid = super(FilterForm, self).is_valid()
