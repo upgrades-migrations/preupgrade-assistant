@@ -36,7 +36,6 @@ class FilterForm(forms.Form):
     search = forms.CharField(required=False, widget=forms.TextInput(
         attrs={
             'id': 'global-search',
-            'onclick': "this.value=''",
             'placeholder': "Search...",
             'class': 'form-control',
         })
