@@ -14,6 +14,7 @@ from django.views.generic import TemplateView, DeleteView, FormView, View
 from django.views.generic.list import ListView
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.core.urlresolvers import reverse, reverse_lazy
 from preup_ui.utils.tree import render_result
 from preup_ui.utils.views import is_state_filter, return_error, get_states_to_filter
@@ -47,6 +48,14 @@ class RunsView(ListView):
         query = query.select_related('result', 'run', 'host')
         return query
 
+    def get_action_form(self):
+        if self.request.method == 'POST':
+            form = ListActionForm(data=self.request.POST)
+        else:
+            form = ListActionForm()
+        form.fields['runs'].choices = [(r.id, r.id) for r in self.get_queryset()]
+        return form
+
     def get_context_data(self, **kwargs):
         context = super(RunsView, self).get_context_data(**kwargs)
         if self.request.GET:
@@ -55,7 +64,36 @@ class RunsView(ListView):
             filter_form = FilterForm()
         context['title'] = 'List of runs'
         context['filter_form'] = filter_form
+        context['action_form'] = self.get_action_form()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_action_form()
+        if form.is_valid():
+            action = getattr(self, form.cleaned_data['action'])
+            return action(form)
+        else:
+            return self.get(request, *args, **kwargs)
+
+    def delete_selected(self, form):
+        # TODO limit number of input values
+        hostruns = HostRun.objects.filter(id__in=form.cleaned_data['runs'])
+        if form.cleaned_data['confirm']:
+            for hostrun in hostruns:
+                hostrun.delete()
+            return HttpResponseRedirect('{}?{}'.format(
+                reverse('results-list'),
+                self.request.META['QUERY_STRING'],
+            ))
+        else:
+            return TemplateResponse(
+                request  = self.request,
+                template = 'report/hostrun_delete_selected.html',
+                context  = {
+                    'form':     form,
+                    'hostruns': hostruns,
+                },
+            )
 
 
 class RunView(RunsView):

@@ -51,6 +51,9 @@ class Host(models.Model):
 
     os = models.ForeignKey(OS, blank=True, null=True)
 
+    class Meta:
+        ordering = ('hostname',)
+
     def __unicode__(self):
         return u"%s (%s)" % (self.hostname, self.os)
 

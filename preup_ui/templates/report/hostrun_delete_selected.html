@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Delete results{% endblock %}
+{% block nav_results %}active{% endblock %}
+{% block content %}
+<div class="delete-result-container result-form">
+  <div class="row">
+    <div class="col-sm-11">
+      <div id="login-heading">
+        <h3 class="form-signin-heading">{{ title }}</h3>
+      </div><!--/#brand-->
+    </div><!--/.col-*-->
+    <div class="col-sm-7 col-md-6 col-lg-5 login">
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <span class="pficon-layered">
+          <span class="pficon pficon-error-octagon"></span>
+          <span class="pficon pficon-error-exclamation"></span>
+        </span>
+        {% for key, value in form.errors.items %}
+          {% for error in value %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form class="form-horizontal" role="form" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_selected"/>
+        <input type="hidden" name="confirm" value="1"/>
+        {% for hostrun in hostruns %}
+        <input type="hidden" name="runs" value="{{ hostrun.id }}"/>
+        <span class="row-title">{{ hostrun.run.dt_submitted|date:"Y-m-d H:i:s" }}</span>,
+        {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}{% endif %}<br/>
+        {% endfor %}
+        <div class="form-group">
+          <div class="col-sm-12 col-md-12">
+            Are you sure you want to delete the results?
+          </div>
+          <div class="col-sm-12 col-md-12 submit">
+            <a class="btn btn-default btn-lg" href="{% url 'results-list' %}?{{ request.META.QUERY_STRING }}">Back</a>
+            <button type="submit" class="btn btn-primary btn-lg" tabindex="2">Confirm</button>
+          </div>
+        </div>
+      </form>
+    </div><!--/.col-*-->
+  </div><!--/.row-->
+</div><!--/.container-->
+{% endblock %}

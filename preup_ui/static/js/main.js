@@ -255,21 +255,43 @@ $('.group-row').on("click", ".expand-all-btn", function() {
   unfold_groups(result_container);
 });
 
+/* select all runs
+ */
+$('#hostrun-select-all').change(function() {
+  checked = $(this).prop('checked');
+  $('.hostrun-select-input').prop('checked', checked);
+  if (checked) {
+    $('.hostrun-row').addClass('hostrun-row-selected');
+  } else {
+    $('.hostrun-row').removeClass('hostrun-row-selected');
+  }
+});
+
+/* select run
+ */
+$('.hostrun-select-input').change(function() {
+  var tr_jq = $(this).parent().parent().parent();
+  if (this.checked) {
+    tr_jq.addClass('hostrun-row-selected');
+  } else {
+    tr_jq.removeClass('hostrun-row-selected');
+    $('#hostrun-select-all').prop('checked', false);
+  }
+});
+
 /* reveal runs
  */
-$('.hostrun-row').click(function() {
-  var this_jq = $(this);
-  if (this_jq.hasClass('link')) {
-    var icon = this_jq.find('> td > span.icon');
-    icon.toggleClass('opened');
-    icon.toggleClass('closed');
-    var tr_id = this_jq[0].id.split('-')[3];
-    var result_tr = $('#result-' + tr_id + '-runhosts');
-    if (result_tr.children().length <= 0) {
-      load_result(result_tr, tr_id, serialize_filter_form());
-    } else {
-      reveal_sibling(this, '#result-' + tr_id + '-runhosts');
-    }
+$('.hostrun-toggle').click(function() {
+  var tr_jq = $(this).parent();
+  var icon = tr_jq.find('> td > span.icon');
+  icon.toggleClass('opened');
+  icon.toggleClass('closed');
+  var tr_id = tr_jq[0].id.split('-')[3];
+  var result_tr = $('#result-' + tr_id + '-runhosts');
+  if (result_tr.children().length <= 0) {
+    load_result(result_tr, tr_id, serialize_filter_form());
+  } else {
+    reveal_sibling(this.parentNode, '#result-' + tr_id + '-runhosts');
   }
 });
 

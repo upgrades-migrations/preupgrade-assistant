@@ -29,11 +29,22 @@
         {{ filter_form.host }}
     </form>
 </div>
+
+<form id="action-form" class="form-inline" method="POST" action="{{ request.path }}?{{ request.META.QUERY_STRING }}" name="actionform">{% csrf_token %}
+<div id="action-form-toolbar" class="very-light-grey">
+    <button type="submit" class="btn btn-danger" name="action" value="delete_selected" id="delete-selected-btn">Delete selected</button>
+</div>
+
 {# cellspacing is a workaround for firefox's 1px bug with collapse #}
 {# http://stackoverflow.com/questions/1035706/firefox-1-pixel-bug-with-border-collapse-workaround #}
 <table id="hostruns-table" cellspacing="0"> {# HOSTRUNS #}
     <thead>
         <tr>
+            <th class="hostrun-select">
+                <label for="hostrun-select-all">
+                    <input type="checkbox" title="select all" id="hostrun-select-all"/>
+                </label>
+            </th>
             <th>
                 Date
                 <span class="fa fa-sort-amount-desc hostruns-table-header-date"></span>
@@ -63,12 +74,17 @@
      </thead>
     <tbody>
     {% for hostrun in hostruns %}
-        <tr id="hostrun-{{ hostrun.id }}-result-{{ hostrun.result.id }}" class="hostrun-row{% if hostrun.result %} link{% endif %}{% if hostrun.running %} disabled-row{% endif %}">
-            <td>
+        <tr id="hostrun-{{ hostrun.id }}-result-{{ hostrun.result.id }}" class="hostrun-row{% if hostrun.running %} disabled-row{% endif %}">
+            <td class="hostrun-select">
+                <label for="hostrun-{{ hostrun.id }}-select-{{ hostrun.result.id }}">
+                    <input type="checkbox" name="runs" value="{{ hostrun.id }}" class="hostrun-select-input" id="hostrun-{{ hostrun.id }}-select-{{ hostrun.result.id }}"/>
+                </label>
+            </td>
+            <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 {% if hostrun.result %}<span class="fa icon closed"></span>{% endif %}
                 <span class="row-title">{{ hostrun.run.dt_submitted|date:"Y-m-d H:i:s" }}</span>
             </td>
-            <td>
+            <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 <span class="text">
                 {% if hostrun.finished %}
                 <span class="pficon pficon-ok green-text run-state-icon"></span>
@@ -79,23 +95,26 @@
                 {% endif %}
                 </span>
             </td>
-            <td>
+            <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 {{ hostrun.risk.lower|capfirst }}
             </td>
-            <td {% if hostrun.result.failed_test_count <= 0 %}class="disabled-row"{% else %}class="group-failed-tests-count bold"{% endif %}>
+            <td {% if hostrun.result %} class="hostrun-toggle"{% endif %}
+                {% if hostrun.result.failed_test_count <= 0 %}class="disabled-row"{% else %}class="group-failed-tests-count bold"{% endif %}>
                 {% if hostrun.result %}{{ hostrun.result.failed_test_count|default_if_none:"" }}{% endif %}
             </td>
-            <td {% if hostrun.result.na_test_count <= 0 %}class="disabled-row"{% else %}class="group-na-tests-count bold"{% endif %}>
+            <td {% if hostrun.result %} class="hostrun-toggle"{% endif %}
+                {% if hostrun.result.na_test_count <= 0 %}class="disabled-row"{% else %}class="group-na-tests-count bold"{% endif %}>
                 {% if hostrun.result %}{{ hostrun.result.na_test_count|default_if_none:""|default_if_none:"" }}{% endif %}
             </td>
-            <td {% if hostrun.result.ni_test_count <= 0 %}class="disabled-row"{% else %}class="group-ni-tests-count bold"{% endif %}>
+            <td {% if hostrun.result %} class="hostrun-toggle"{% endif %}
+                {% if hostrun.result.ni_test_count <= 0 %}class="disabled-row"{% else %}class="group-ni-tests-count bold"{% endif %}>
                 {% if hostrun.result %}{{ hostrun.result.ni_test_count|default_if_none:"" }}{% endif %}
             </td>
-            <td>
+            <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}{% endif %}
             </td>
             <td>
-              <a href="{% url "result-delete" hostrun.id %}" class="btn btn-danger btn-sm">Delete</a>
+              <a href="{% url 'result-delete' hostrun.id %}" class="btn btn-danger btn-sm">Delete</a>
             </td>
         </tr>
         {% if hostrun.result %}
@@ -106,8 +125,9 @@
     {% endfor %}
     </tbody>
 </table>
-{% if is_paginated %}
+</form>
 
+{% if is_paginated %}
 <ul class="pager">
 {% if page_obj.has_previous %}
     <li class="previous">
@@ -130,4 +150,5 @@
 {% endif %}
 </ul>
 {% endif %}
+
 {% endblock %}

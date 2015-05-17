@@ -110,3 +110,14 @@ class StateFilterForm(forms.Form):
     def all_checked(self):
         # reason of -2 is that notchecked and error are blacklisted, so dont count them in 100%
         return len(self.initial) >= len(TestResult.TEST_STATES.get_mapping()) - 2
+
+
+class ListActionForm(forms.Form):
+    ACTIONS = {
+        'delete_selected': 'Delete selected',
+    }
+    runs    = forms.MultipleChoiceField()
+    action  = forms.ChoiceField(choices=ACTIONS.items())
+    confirm = forms.BooleanField(required=False)
+
+
