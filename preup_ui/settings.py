@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
 from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 TEMPLATE_CONTEXT_PROCESSORS += (
     'django.core.context_processors.request',
+    'preup_ui.auth.context_processors.auth_enabled',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -115,6 +116,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 LOGIN_URL = 'auth-login'
+LOGIN_REDIRECT_URL = '/'
 LOGIN_EXEMPT_URLS = ['^xmlrpc/', '^submit/', '^login/', '^admin/', '^first/']
 
 ROOT_URLCONF = 'preup_ui.urls'

@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required as lr
 # these are private URLs for auth management
 
 urlpatterns = patterns('',
-    url(r'^login/$', login, name='auth-login'),
     url(r'^list/$', lr(AuthListView.as_view()), name='auth-list'),
     url(r'^create/$', lr(CreateUserView.as_view()), name='auth-create'),
     url(r'^enable/$', lr(EnableAuthView.as_view()), name='auth-enable'),

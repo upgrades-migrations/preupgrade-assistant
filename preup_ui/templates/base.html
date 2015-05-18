@@ -7,6 +7,9 @@
             {#<li class="{% block nav_settings %}{% endblock %}"><a href="{% url 'settings' %}">Settings</a></li>#}
             <li class="{% block nav_users %}{% endblock %}"><a href="{% url 'auth-list' %}">User Management</a></li>
             <li class="{% block nav_compare %}{% endblock %}"><a href="{% url 'compare' %}">Compare Runs</a></li>
+            {% if auth_enabled %}
+            <li class="pull-right"><a href="{% url 'auth-logout' %}">Logout</a></li>
+            {% endif %}
         </ul>
     </div>
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponseRedirect, Http404
 from django.utils.http import is_safe_url
@@ -11,7 +12,7 @@ from preup_ui.utils.views import return_error
 
 from django.views.generic import TemplateView, DeleteView, FormView, View
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login as auth_login, get_user_model
-from django.contrib.auth.views import login as auth_login_view
+from django.contrib.auth.views import login as auth_login_view, logout
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, resolve_url, get_object_or_404
 from django.forms.forms import NON_FIELD_ERRORS
@@ -40,7 +41,6 @@ class AuthListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AuthListView, self).get_context_data(**kwargs)
-        context['auth_enabled'] = AppSettings.get_autologin_user_id() is None
         context['title'] = 'User List'
         return context
 
