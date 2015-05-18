@@ -356,16 +356,7 @@ class Application(object):
 
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
-        # We separate admin contents
-        reports = [self.get_default_xml_result_path()]
-        report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
-        if report_admin:
-            reports.append(report_admin)
-        # We separate user contents
-        report_user = self.report_parser.get_report_type(settings.REPORTS[1])
-        if report_user:
-            reports.append(report_user)
-        for report in reports:
+        for report in self._get_reports():
             ReportParser.write_xccdf_version(report, direction=True)
             self.run_generate(report, report.replace('.xml', '.html'))
             # Switching back namespace
@@ -392,6 +383,17 @@ class Application(object):
                            print_output=False,
                            shell=True)
 
+    def _get_reports(self):
+        reports = [self.get_default_xml_result_path()]
+        report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
+        if report_admin:
+            reports.append(report_admin)
+        # We separate user contents
+        report_user = self.report_parser.get_report_type(settings.REPORTS[1])
+        if report_user:
+            reports.append(report_user)
+        return reports
+
     def finalize_xml_files(self):
         """
         Function copies postupgrade scripts and creates hash postupgrade file.
@@ -401,7 +403,9 @@ class Application(object):
         remediate.special_postupgrade_scripts(self.conf.result_dir)
         remediate.hash_postupgrade_file(self.conf.verbose,
                                         self.get_postupgrade_dir())
-        self.xml_mgr.find_solution_files(self.report_parser.get_solution_files())
+        solution_files = self.report_parser.get_solution_files()
+        for report in self._get_reports():
+            self.xml_mgr.find_solution_files(report.split('.')[0], solution_files)
         remediate.copy_modified_config_files(self.conf.result_dir)
 
     def run_third_party_modules(self, dir_name):
