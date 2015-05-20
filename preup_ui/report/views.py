@@ -270,7 +270,6 @@ class NewRunView(FormView, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {
-            'title': 'New Run',
             'new_host_form': NewHostForm(),
             'new_run_form': NewRunForm()
         }

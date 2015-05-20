@@ -2,7 +2,7 @@
 <html lang="en" class="{% block html_class %}{% endblock %}">
 <head>
     <meta charset="utf-8">
-    <title>{{ title }}</title>
+    <title>{% block title %}{{ title }}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Preupgrade assistant UI.">
     <meta name="author" content="Red Hat">
