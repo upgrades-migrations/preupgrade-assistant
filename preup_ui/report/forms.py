@@ -64,11 +64,9 @@ class FilterForm(forms.Form):
         risk_choices.insert(0, ('', 'All Risk Levels'))
         self.fields['risk'].choices = risk_choices
 
-        host_choices = []
-        for host in HostRun.objects.hosts():
-            if host and host not in host_choices:
-                host_choices.append(host)
-        host_choices = zip(host_choices, host_choices)
+        host_choices = [(hr['host__hostname'], hr['host__hostname'])
+            for hr in HostRun.objects.values('host__hostname').order_by('host__hostname').distinct()
+        ]
         # first option searches in every release
         host_choices.insert(0, ('', 'All Hosts'))
         self.fields['host'].choices = host_choices
