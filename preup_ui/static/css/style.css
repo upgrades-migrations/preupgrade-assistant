@@ -32,18 +32,8 @@ h3 {
 
 /* AUTH */
 
-/*.signin-container .login {
-    padding-right: 40px;
-}*/
-
-.login .submit {
+.submit {
     text-align: right;
-}
-
-#login-heading {
-    position: relative;
-    top: -20px;
-    left: 30px;
 }
 
 .login-pf .details {
@@ -58,38 +48,7 @@ h3 {
 .login-pf #disable-auth-btn {
     margin-top: 20px;
 }
-/*#login-container {
-    top: 13%;
-    padding-left: 80px;
-    position: absolute;
-    width: 100%;
-}*/
 
-.create-user-container.auth-form {
-    padding-top: 2em;
-}
-
-/*
-.form-signin input {
-    font-size: 14px;
-    height: 34px;
-}
-
-.signin-container {
-    text-align: center;
-    margin-top: 60px;
-}
-
-.signin-btn {
-    margin-top: 2em;
-}
-
-.first-run-container {
-    font-size: 14px;
-    margin-top: 2em;
-    padding: 1em;
-}
-*/
 /* NAVIGATION */
 
 .navbar {
@@ -257,9 +216,6 @@ table#hostruns-table tr:last-child td {
 }
 
 /* RESULT */
-
-.result-container {
-}
 
 .group-row-td {
     padding: 0 2em;
@@ -486,16 +442,6 @@ a.hostrun-result-type-link {
 }
 
 /* SCHEDULING */
-/*
-#new-host-container {
-    margin-bottom: 2em;
-    text-align: center;
-}
-
-#new-run-container {
-    text-align: center;
-}
-*/
 .new-run-container {
     border: 1px solid #D1D1D1;
     margin: 0.5em auto;

@@ -2,14 +2,8 @@
 {% block title %}Delete results{% endblock %}
 {% block nav_results %}active{% endblock %}
 {% block content %}
-<div class="delete-result-container result-form">
-  <div class="row">
-    <div class="col-sm-11">
-      <div id="login-heading">
-        <h3 class="form-signin-heading">{{ title }}</h3>
-      </div><!--/#brand-->
-    </div><!--/.col-*-->
-    <div class="col-sm-7 col-md-6 col-lg-5 login">
+<div class="row col-sm-7 col-md-6 col-lg-5">
+      <h3>{{ title }}</h3>
       {% if form.errors %}
       <div class="alert alert-danger">
         <span class="pficon-layered">
@@ -42,7 +36,5 @@
           </div>
         </div>
       </form>
-    </div><!--/.col-*-->
-  </div><!--/.row-->
-</div><!--/.container-->
+</div><!--/.row-->
 {% endblock %}
