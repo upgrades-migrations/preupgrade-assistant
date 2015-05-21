@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block nav_results %}active{% endblock %}
+
+{% block content %}
+<div class="row col-sm-7 col-md-6 col-lg-5">
+      <h3>{% block title %}Delete older results{% endblock %}</h3>
+      <p>It will keep only the last resutls for each host.</p>
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <span class="pficon-layered">
+          <span class="pficon pficon-error-octagon"></span>
+          <span class="pficon pficon-error-exclamation"></span>
+        </span>
+        {% for key, value in form.errors.items %}
+          {% for error in value %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form class="form-horizontal" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <div class="col-sm-12">
+              <p>Are you sure you want to delete these results?</p>
+              <ul class="hostruns">
+              {% for hostrun in hostruns %}
+                  <li>
+                      <input type="hidden" name="runs" value="{{ hostrun.id }}"/>
+                      <span class="row-title">{{ hostrun.run.dt_submitted|date:"Y-m-d H:i:s" }}</span>,
+                      {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}{% endif %}
+                  </li>
+              {% endfor %}
+              </ul>
+          </div>
+          <div class="col-sm-12 submit">
+              <a class="btn btn-default btn-lg" href="{% url 'results-list' %}?{{ request.META.QUERY_STRING }}">Back</a>
+              <button type="submit" class="btn btn-primary btn-lg" name="confirm" value="confirm" tabindex="2">Confirm</button>
+          </div>
+        </div>
+      </form>
+</div><!--/.row-->
+{% endblock %}

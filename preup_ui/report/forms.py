@@ -127,3 +127,14 @@ class ListActionForm(forms.Form):
     confirm = forms.BooleanField(required=False)
 
 
+class DeleteOlderForm(forms.Form):
+    host = forms.ChoiceField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(DeleteOlderForm, self).__init__(*args, **kwargs)
+        host_choices = [(hr['host__hostname'], hr['host__hostname'])
+            for hr in HostRun.objects.values('host__hostname').order_by('host__hostname').distinct()
+        ]
+        self.fields['host'].choices = host_choices
+
+

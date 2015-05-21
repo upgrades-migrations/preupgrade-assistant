@@ -96,6 +96,39 @@ class RunsView(ListView):
             )
 
 
+class DeleteOlderView(FormView):
+    template_name   = 'report/hostrun_delete_older.html'
+    form_class      = DeleteOlderForm
+
+    def get_form_kwargs(self):
+        # ensure that the form is always bound
+        return {'data': self.request.REQUEST}
+
+    def get_older_hostruns(self, form):
+        hostname = form.is_valid() and form.cleaned_data['host']
+        hostruns = HostRun.objects.all()
+        if hostname:
+            hostruns = hostruns.filter(host__hostname=hostname)
+        previous_host_id = None
+        for hostrun in hostruns.order_by('host', '-run__dt_submitted'):
+            if hostrun.host_id == previous_host_id:
+                yield hostrun
+            previous_host_id = hostrun.host_id
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteOlderView, self).get_context_data(**kwargs)
+        context['hostruns'] = self.get_older_hostruns(context['form'])
+        return context
+
+    def form_valid(self, form):
+        for hostrun in self.get_older_hostruns(form):
+            hostrun.delete()
+        return HttpResponseRedirect('{}?{}'.format(
+            reverse('results-list'),
+            self.request.META['QUERY_STRING'],
+        ))
+
+
 class RunView(RunsView):
     template_name = "report/runs.html"
 
