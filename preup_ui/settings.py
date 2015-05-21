@@ -1,15 +1,16 @@
+import os
+
 # Django settings for preup_ui project.
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+DEBUG = os.environ.get('DEBUG', False) and True or False
+DBDEBUG = os.environ.get('DEBUG', False) == 'DB'
+TEMPLATE_DEBUG = os.environ.get('DEBUG', False) == 'TEMPLATE'
 
 ADMINS = (
     ('root', 'root@localhost'),
 )
 
 MANAGERS = ADMINS
-
-import os
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'data')
 
@@ -158,7 +159,6 @@ XMLRPC_METHODS = {
     ),
 }
 
-LOGGING_CONFIG = None
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -184,6 +184,11 @@ LOGGING = {
             'handlers': ['console'],
             'level': DEBUG and 'DEBUG' or 'INFO',
             'propagate': True,
-        }
-    }
+        },
+        'django.db.backends': {
+            'level': DBDEBUG and 'DEBUG' or 'INFO',
+            'propagate': True,
+        },
+    },
 }
+
