@@ -76,8 +76,8 @@ class TestPreupg(unittest.TestCase):
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 0:
                         found_upgrade = 1
-        self.assertIs(found_migrate, 1)
-        self.assertIs(found_upgrade, 1)
+        self.assertEquals(found_migrate, 1)
+        self.assertEquals(found_upgrade, 1)
 
     def test_upgrade(self):
         """Basic test for whole program"""
@@ -114,8 +114,8 @@ class TestPreupg(unittest.TestCase):
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 1:
                         found_upgrade = 1
-        self.assertIs(found_migrate, 1)
-        self.assertIs(found_upgrade, 1)
+        self.assertEquals(found_migrate, 1)
+        self.assertEquals(found_upgrade, 1)
 
 
 class TestXMLUpdates(unittest.TestCase):
@@ -150,7 +150,7 @@ class TestXMLUpdates(unittest.TestCase):
                     if value.text == result_path:
                         found_tmp = 1
 
-        self.assertIs(found_tmp, 1)
+        self.assertEquals(found_tmp, 1)
 
     def test_result_dirs_current_dir(self):
         shutil.copyfile(self.content, self.test_content)
@@ -166,7 +166,7 @@ class TestXMLUpdates(unittest.TestCase):
                     if value.text == result_dir:
                         found_current = 1
 
-        self.assertIs(found_current, 1)
+        self.assertEquals(found_current, 1)
 
 
 class TestCLI(unittest.TestCase):
