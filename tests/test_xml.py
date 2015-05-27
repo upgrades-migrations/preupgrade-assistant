@@ -21,7 +21,9 @@ from preuputils.oscap_group_xml import OscapGroupXml
 from preup.utils import write_to_file, get_file_content
 from preup.xml_manager import html_escape, html_escape_string
 
-class TestXMLCompose(unittest.TestCase):
+import base
+
+class TestXMLCompose(base.TestCase):
 
     """Tests of right composing of contents in groups."""
 
@@ -90,7 +92,7 @@ class TestXMLCompose(unittest.TestCase):
         self.assertTrue(author)
 
 
-class TestXML(unittest.TestCase):
+class TestXML(base.TestCase):
 
     """Main testing of right generating of XML files for OSCAP."""
 
@@ -359,7 +361,7 @@ A solution text for test suite"
         self.assertTrue(check_rpm_to)
 
 
-class TestIncorrectINI(unittest.TestCase):
+class TestIncorrectINI(base.TestCase):
 
     """
     Tests right processing of INI files including incorrect input which
@@ -457,7 +459,7 @@ A solution text for test suite"
         self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
 
 
-class TestGroupXML(unittest.TestCase):
+class TestGroupXML(base.TestCase):
 
     """Basic test for creating group.xml file"""
 
@@ -487,7 +489,7 @@ class TestGroupXML(unittest.TestCase):
         self.assertTrue(title_tag)
 
 
-class HTMLEscapeTest(unittest.TestCase):
+class HTMLEscapeTest(base.TestCase):
 
     """Testing of right transform of unsafe characters to their entities"""
 
@@ -520,7 +522,7 @@ class HTMLEscapeTest(unittest.TestCase):
         self.assertEqual(output, expected_output)
 
 
-class ComposeTest(unittest.TestCase):
+class ComposeTest(base.TestCase):
 
     def setUp(self):
         pass

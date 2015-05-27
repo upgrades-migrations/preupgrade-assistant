@@ -3,8 +3,10 @@ from __future__ import unicode_literals
 import unittest
 import os
 
+import base
 
-class TestKickstart(unittest.TestCase):
+
+class TestKickstart(base.TestCase):
 
     def setUp(self):
         dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')

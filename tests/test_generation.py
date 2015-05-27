@@ -11,11 +11,13 @@ from preuputils import variables
 from preup import utils
 from preup import settings
 
+import base
+
 FOO_DIR = 'FOOBAR6_7'
 FOO_RESULTS = FOO_DIR + variables.result_prefix
 
 
-class TestContentGenerate(unittest.TestCase):
+class TestContentGenerate(base.TestCase):
     def setUp(self):
         self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
         self.result_dir = os.path.join(os.getcwd(), 'tests', FOO_RESULTS, 'dummy')
@@ -33,7 +35,7 @@ class TestContentGenerate(unittest.TestCase):
             self.assertFalse(os.path.exists(os.path.join(result_dir, 'all-xccdf.xml')))
 
 
-class TestGlobalContent(unittest.TestCase):
+class TestGlobalContent(base.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.mktemp(prefix='preupgrade', dir='/tmp')

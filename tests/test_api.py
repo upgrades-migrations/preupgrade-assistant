@@ -11,8 +11,9 @@ from preup.cli import CLI
 from preup.application import Application
 from preup import settings
 
+import base
 
-class TestRiskCheck(unittest.TestCase):
+class TestRiskCheck(base.TestCase):
 
     def _generate_result(self, content_temp):
         conf = {

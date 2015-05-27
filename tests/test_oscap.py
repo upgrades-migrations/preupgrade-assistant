@@ -14,6 +14,8 @@ from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
 
+import base
+
 FOOBAR6_dummy = os.path.join('tests', 'FOOBAR6_7', 'dummy')
 FOOBAR6_results = os.path.join('tests', 'FOOBAR6_7' + variables.result_prefix)
 
@@ -113,7 +115,7 @@ def get_result_tag(temp_dir):
     return text
 
 
-class TestOSCAPPass(unittest.TestCase):
+class TestOSCAPPass(base.TestCase):
 
     def setUp(self):
         self.name = 'pass'
@@ -145,7 +147,7 @@ class TestOSCAPPass(unittest.TestCase):
         self.assertEqual(value, "pass")
 
 
-class TestOSCAPFail(unittest.TestCase):
+class TestOSCAPFail(base.TestCase):
     def setUp(self):
         self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
@@ -170,7 +172,7 @@ class TestOSCAPFail(unittest.TestCase):
         self.assertEqual(value, "fail")
 
 
-class TestOSCAPNeedsInspection(unittest.TestCase):
+class TestOSCAPNeedsInspection(base.TestCase):
     def setUp(self):
         self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
@@ -197,7 +199,7 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
         self.assertEqual(value, "needs_inspection")
 
 
-class TestOSCAPNeedsAction(unittest.TestCase):
+class TestOSCAPNeedsAction(base.TestCase):
     def setUp(self):
         self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
@@ -224,7 +226,7 @@ class TestOSCAPNeedsAction(unittest.TestCase):
         self.assertEqual(value, "needs_action")
 
 
-class TestOSCAPNotApplicable(unittest.TestCase):
+class TestOSCAPNotApplicable(base.TestCase):
     def setUp(self):
         self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
@@ -249,7 +251,7 @@ class TestOSCAPNotApplicable(unittest.TestCase):
         self.assertEqual(value, "notapplicable")
 
 
-class TestOSCAPFixed(unittest.TestCase):
+class TestOSCAPFixed(base.TestCase):
     def setUp(self):
         self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()

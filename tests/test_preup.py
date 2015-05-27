@@ -10,8 +10,9 @@ from preup.cli import CLI
 from preup import settings, remediate, utils, xml_manager
 from preup.report_parser import ReportParser
 
+import base
 
-class TestPreupg(unittest.TestCase):
+class TestPreupg(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -118,7 +119,7 @@ class TestPreupg(unittest.TestCase):
         self.assertEquals(found_upgrade, 1)
 
 
-class TestXMLUpdates(unittest.TestCase):
+class TestXMLUpdates(base.TestCase):
     def setUp(self):
         self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"
         self.test_content = self.content+".test"
@@ -169,7 +170,7 @@ class TestXMLUpdates(unittest.TestCase):
         self.assertEquals(found_current, 1)
 
 
-class TestCLI(unittest.TestCase):
+class TestCLI(base.TestCase):
     def test_opts(self):
         """ basic test of several options """
         conf = {
@@ -201,7 +202,7 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(a.conf.mode, "upgrade")
 
 
-class TestHashes(unittest.TestCase):
+class TestHashes(base.TestCase):
     def setUp(self):
         self.dir_name = tempfile.mkdtemp()
 
@@ -220,7 +221,7 @@ class TestHashes(unittest.TestCase):
         self.assertTrue(return_value)
 
 
-class TestSolutionReplacement(unittest.TestCase):
+class TestSolutionReplacement(base.TestCase):
     def setUp(self):
         self.extension = "html"
 
@@ -261,7 +262,7 @@ class TestSolutionReplacement(unittest.TestCase):
         self.assertEqual(expected_text, line)
 
 
-class TestScenario(unittest.TestCase):
+class TestScenario(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -338,7 +339,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(a.get_scenario(), None)
 
 
-class TestPreupgradePrefix(unittest.TestCase):
+class TestPreupgradePrefix(base.TestCase):
     def setUp(self):
         settings.prefix = 'preupgrade'
 
@@ -351,7 +352,7 @@ class TestPreupgradePrefix(unittest.TestCase):
         self.assertEqual(version, None)
 
 
-class TestPremigratePrefix(unittest.TestCase):
+class TestPremigratePrefix(base.TestCase):
     def setUp(self):
         settings.prefix = 'premigrate'
 
