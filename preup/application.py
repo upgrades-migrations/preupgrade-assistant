@@ -196,7 +196,7 @@ class Application(object):
                 'to allow connections on port 8099.' % url)
 
         tarball_results = self.conf.results or tarball_path
-        file_content = get_file_content(tarball_results, 'rb')
+        file_content = get_file_content(tarball_results, 'rb', False, False)
 
         binary = xmlrpclib.Binary(file_content)
         host = socket.gethostname()
