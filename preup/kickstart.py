@@ -167,6 +167,9 @@ class KickstartGenerator(object):
         :return: dictionary with enabled repolist
         """
         lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
+        if not lines:
+            return None
         repo_dict = {}
         for line in lines:
             fields = line.split('=')
@@ -174,16 +177,17 @@ class KickstartGenerator(object):
         return repo_dict
 
     @staticmethod
-    def get_kickstart_users(filename):
+    def get_kickstart_users(filename, splitter=":"):
         """
         returns dictionary with names and uid, gid, etc.
         :param filename: filename with Users in /root/preupgrade/kickstart directory
         :return: dictionary with users
         """
         lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
         user_dict = {}
         for line in lines:
-            fields = line.split(':')
+            fields = line.split(splitter)
             user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
         return user_dict
 
@@ -201,7 +205,7 @@ class KickstartGenerator(object):
         # return display_group_names + display_package_names
 
     def embed_script(self, tarball):
-        tarball_content = get_file_content(tarball, 'rb')
+        tarball_content = get_file_content(tarball, 'rb', decode_flag=False)
         script_str = ''
         try:
             script_path = settings.KS_TEMPLATE_POSTSCRIPT
@@ -235,12 +239,15 @@ class KickstartGenerator(object):
                 shutil.copy(source_name, target_name)
 
     def update_repositories(self, repositories):
-        for key, value in six.iteritems(repositories):
-            self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
+        if repositories:
+            for key, value in six.iteritems(repositories):
+                self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
 
     def update_users(self, users):
-        for key, value in six.iteritems(users):
-            uid, gid = value.strip().split(':')
+        if not users:
+            return None
+        for key, value in users.iteritems():
+            uid, gid = value
             self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
 
     def get_prefix(self):
@@ -254,12 +261,25 @@ class KickstartGenerator(object):
             tarball = os.path.join(directories, preupg_files[-1])
         return tarball
 
+    def filter_kickstart_users(self):
+        kickstart_users = {}
+        users = KickstartGenerator.get_kickstart_users('Users')
+        setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
+        uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
+        for user, ids in six.iteritems(users):
+            if [x for x in six.iterkeys(setup_passwd) if user in x]:
+                continue
+            if [x for x in six.iterkeys(uidgid) if user in x]:
+                continue
+            kickstart_users[user] = ids.split(':')
+        return kickstart_users
+
     def generate(self):
         packages = self.output_packages()
         if packages:
             self.ks.handler.packages.add(packages)
         self.update_repositories(KickstartGenerator.get_kickstart_repo('available-repos'))
-        self.update_users(KickstartGenerator.get_kickstart_users('Users'))
+        self.update_users(self.filter_kickstart_users())
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
 
