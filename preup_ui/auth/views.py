@@ -145,7 +145,7 @@ class FirstRunDisableAuthView(GenericAuthMngmntView):
     def get(self, request, *args, **kwargs):
         user = get_user_model()(username='autologin')
         user.save()
-        AppSettings.set_autologin_user_id(request.user.id)
+        AppSettings.set_autologin_user_id(user.id)
         return self.get_redirect()
 
 
