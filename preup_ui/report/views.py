@@ -81,7 +81,7 @@ class RunsView(ListView):
         if form.cleaned_data['confirm']:
             for hostrun in hostruns:
                 hostrun.delete()
-            return HttpResponseRedirect('{}?{}'.format(
+            return HttpResponseRedirect('{0}?{1}'.format(
                 reverse('results-list'),
                 self.request.META['QUERY_STRING'],
             ))
@@ -123,7 +123,7 @@ class DeleteOlderView(FormView):
     def form_valid(self, form):
         for hostrun in self.get_older_hostruns(form):
             hostrun.delete()
-        return HttpResponseRedirect('{}?{}'.format(
+        return HttpResponseRedirect('{0}?{1}'.format(
             reverse('results-list'),
             self.request.META['QUERY_STRING'],
         ))
