@@ -619,6 +619,11 @@ class Application(object):
             if report_dict[int(return_value)]:
                 log_message('Summary information:')
                 log_message(report_dict[int(return_value)])
+            for report_type in settings.REPORTS:
+                file_name = settings.result_name + '-' + report_type + '.html'
+                report_name = os.path.join(os.path.dirname(self.report_parser.get_path()), file_name)
+                if os.path.exists(report_name):
+                    log_message("Read the %s report file %s for more details." % (report_type, report_name))
         except KeyError:
             # We do not want to print anything in case of testing contents
             pass
