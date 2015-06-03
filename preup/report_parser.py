@@ -1,9 +1,11 @@
 import re
 import os
 import collections
+import shutil
+
 
 from preup.utils import get_file_content, write_to_file
-from preup import xccdf, utils
+from preup import xccdf, utils, settings
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -319,19 +321,20 @@ class ReportParser(object):
                     check_import.text = '\n'.join(new_check)
         self.write_xml()
 
-    def write_xccdf_version(self, direction=False):
+    @staticmethod
+    def write_xccdf_version(file_name, direction=False):
         """
         Function updates XCCDF version because
         of separate HTML generation and our own XSL stylesheet
         """
         namespace_1 = 'http://checklists.nist.gov/xccdf/1.1'
         namespace_2 = 'http://checklists.nist.gov/xccdf/1.2'
-        content = get_file_content(self.path, "r")
+        content = get_file_content(file_name, "r")
         if direction:
             content = re.sub(namespace_2, namespace_1, content)
         else:
             content = re.sub(namespace_1, namespace_2, content)
-        write_to_file(self.path, 'w', content)
+        write_to_file(file_name, 'w', content)
 
     def update_check_description(self):
         for rule in self._get_all_rules():
@@ -375,3 +378,57 @@ class ReportParser(object):
             else:
                 select.set('selected', 'false')
         self.write_xml()
+
+    def get_report_type(self, report_type):
+        """
+        Function returns all reports for selected report_type
+        :param type: specify report_type like 'admin' or 'user'
+        :return: a set of content
+        """
+        if not os.path.exists(self.path):
+            return None
+        orig_name = self.path
+        new_report_name = os.path.join(os.path.dirname(self.path),
+                                       settings.result_name + '-' + report_type + '.xml')
+        shutil.copyfile(self.path, new_report_name)
+        self.reload_xml(new_report_name)
+        list_dict = {}
+        for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
+            values_id = values.get('id')
+            if not values_id.endswith('_state_result_part'):
+                continue
+            for value in self.get_nodes(values, "value"):
+                if value.text == report_type:
+                    values_id = values_id.replace('_state_result_part', '').replace('xccdf_preupg_value_', '')
+                    group_id = '_'.join(values_id.split('_')[:-1])
+                    list_dict[group_id] = values_id
+
+        if not list_dict:
+            self.reload_xml(orig_name)
+            return None
+
+        # Remove all reports from main Group node
+        search = '%sRule' % self.element_prefix
+        search_group = './/%sGroup' % self.element_prefix
+        for parent in self.target_tree.findall(search_group):
+            for rule in parent.findall(search):
+                rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
+                parent_id = parent.get('id').replace('xccdf_preupg_group_', '')
+                if parent_id not in list_dict.keys():
+                    parent.remove(rule)
+
+        # Remove all reports from TestResult node
+        for test_result in self.get_nodes(self.target_tree, 'TestResult'):
+            for rule in self.get_nodes(test_result, 'rule-result'):
+                idref = rule.get('idref').replace('xccdf_preupg_rule_', '')
+                if idref not in list_dict.values():
+                    test_result.remove(rule)
+
+        self.write_xml()
+
+        self.reload_xml(orig_name)
+        return new_report_name
+
+    def get_path(self):
+        """Function return path to report"""
+        return self.path

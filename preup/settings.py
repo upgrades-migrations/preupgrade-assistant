@@ -147,3 +147,4 @@ KS_FILES = ['default_grouplist-el5', 'default_grouplist-el7',
             'default-optional_grouplist-el5', 'default-optional_grouplist-el7']
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
+REPORTS = ['admin', 'user']

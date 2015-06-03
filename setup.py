@@ -16,7 +16,7 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "0.11.9"
+package_version         = "0.11.10"
 
 script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml']
 

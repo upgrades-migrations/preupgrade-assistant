@@ -18,13 +18,13 @@ python2 >&2 setup.py sdist --formats=tar
 
 # fix stamps to make the tarball reproducible and save compressed
 tar-fixup-stamp-comment.pl $TIMESTAMP < dist/${NAME}-${VERSION}.tar \
-| gzip -n -c -                        > dist/${NAME}-${VERSION}.tar.gz
+| gzip -n -c -                        > dist/${NAME}-${VERSION}-rhel5.tar.gz
 
 # remove original tar archive
 rm dist/${NAME}-${VERSION}.tar
 
 # provide useful output
-echo "$PWD/dist/${NAME}-${VERSION}.tar.gz"
+echo "$PWD/dist/${NAME}-${VERSION}-rhel5.tar.gz"
 
 popd > /dev/null
 

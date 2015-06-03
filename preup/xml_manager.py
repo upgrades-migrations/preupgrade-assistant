@@ -250,7 +250,7 @@ class XmlManager(object):
                 pass
         return file_name
 
-    def update_html(self, solution_files, extension="html"):
+    def update_html(self, result_name, solution_files, extension="html"):
         """
          Function updates a XML or HTML file with relevant solution
          texts
@@ -268,7 +268,7 @@ class XmlManager(object):
                                     "r",
                                     method=True)
             orig_file = os.path.join(self.dirname,
-                                     self.result_base + "." + extension)
+                                     result_name + "." + extension)
             lines = get_file_content(orig_file, "r", method=True)
 
             for cnt, line in enumerate(lines):
@@ -287,7 +287,7 @@ class XmlManager(object):
                                                    extension)
             write_to_file(orig_file, "w", lines)
 
-    def find_solution_files(self, xml_solution_files):
+    def find_solution_files(self, result_name, xml_solution_files):
         """
         Function finds all text files in conten
         and updates XML and HTML results
@@ -298,9 +298,9 @@ class XmlManager(object):
             files = [x for x in file_name if x.endswith(".txt")]
             if files:
                 solution_files[dir_name] = files
-        self.update_html(solution_files)
-        self.update_html(solution_files, extension="xml")
-        clean_html(os.path.join(self.dirname, self.result_base + ".html"))
+        self.update_html(result_name, solution_files)
+        self.update_html(result_name, solution_files, extension="xml")
+        clean_html(os.path.join(self.dirname, result_name + ".html"))
 
     def remove_html_information(self):
         report_path = os.path.join(self.dirname, self.result_base + ".html")

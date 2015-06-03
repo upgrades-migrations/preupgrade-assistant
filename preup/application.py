@@ -162,7 +162,7 @@ class Application(object):
         """
         return os.path.join(self.conf.result_dir, settings.postupgrade_dir)
 
-    def build_generate_command(self):
+    def build_generate_command(self, xml_file, html_file):
         """
         Function builds a command for generating results
         """
@@ -170,8 +170,8 @@ class Application(object):
         command.extend(self.get_command_generate())
         if not get_system():
             command.extend(("--stylesheet", get_xsl_stylesheet()))
-        command.extend(("--output", self.get_default_html_result_path()))
-        command.append(check_xml(self.get_default_xml_result_path()))
+        command.extend(("--output", html_file))
+        command.append(check_xml(xml_file))
         return command
 
     def build_command(self):
@@ -303,18 +303,15 @@ class Application(object):
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
         self.scanning_progress.set_names(self.report_parser.get_name_of_checks())
-        if not self.conf.debug:
-            log_message('%s:' % settings.assessment_text,
-                        new_line=True,
-                        log=False)
-            log_message('%.3d/%.3d ...running (%s)' % (
-                        1,
-                        self.get_total_check(),
-                        self.scanning_progress.get_full_name(0)),
-                        new_line=False,
-                        log=False)
-        else:
-            log_message(self.scanning_progress.get_full_name(0))
+        log_message('%s:' % settings.assessment_text,
+                    new_line=True,
+                    log=False)
+        log_message('%.3d/%.3d ...running (%s)' % (
+                    1,
+                    self.get_total_check(),
+                    self.scanning_progress.get_full_name(0)),
+                    new_line=False,
+                    log=False)
         start_time = datetime.datetime.now()
         self.run_scan(function=self.scanning_progress.show_progress)
         end_time = datetime.datetime.now()
@@ -335,12 +332,12 @@ class Application(object):
         # fail if openscap wasn't successful; if debug, continue
         return run_subprocess(cmd, print_output=False, function=function)
 
-    def run_generate(self):
+    def run_generate(self, xml_file, html_file):
         """
         The function generates result.html file from result.xml file
         which was modified by preupgrade assistant
         """
-        cmd = self.build_generate_command()
+        cmd = self.build_generate_command(xml_file, html_file)
         return run_subprocess(cmd, print_output=True)
 
     def get_scenario(self):
@@ -388,14 +385,12 @@ class Application(object):
             shutil.rmtree(self.conf.result_dir)
 
     def prepare_for_generation(self):
-        """
-        Function prepares the XML file for conversion
-        to HTML format
-        """
-        self.report_parser.write_xccdf_version(direction=True)
-        self.run_generate()
-        # Switching back namespace
-        self.report_parser.write_xccdf_version()
+        """Function prepares the XML file for conversion to HTML format"""
+        for report in self._get_reports():
+            ReportParser.write_xccdf_version(report, direction=True)
+            self.run_generate(report, report.replace('.xml', '.html'))
+            # Switching back namespace
+            ReportParser.write_xccdf_version(report)
 
     def prepare_xml_for_html(self):
         """
@@ -421,6 +416,17 @@ class Application(object):
                            print_output=False,
                            shell=True)
 
+    def _get_reports(self):
+        reports = [self.get_default_xml_result_path()]
+        report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
+        if report_admin:
+            reports.append(report_admin)
+        # We separate user contents
+        report_user = self.report_parser.get_report_type(settings.REPORTS[1])
+        if report_user:
+            reports.append(report_user)
+        return reports
+
     def finalize_xml_files(self):
         """
         Function copies postupgrade scripts and creates
@@ -431,7 +437,9 @@ class Application(object):
         remediate.special_postupgrade_scripts(self.conf.result_dir)
         remediate.hash_postupgrade_file(self.conf.verbose,
                                         self.get_postupgrade_dir())
-        self.xml_mgr.find_solution_files(self.report_parser.get_solution_files())
+        solution_files = self.report_parser.get_solution_files()
+        for report in self._get_reports():
+            self.xml_mgr.find_solution_files(report.split('.')[0], solution_files)
         remediate.copy_modified_config_files(self.conf.result_dir)
 
     def run_third_party_modules(self, dir_name):

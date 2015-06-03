@@ -52,6 +52,10 @@ class XCCDFCompose(object):
         if self.result_dir.endswith("/"):
             self.dir_name = self.result_dir[:-1] + variables.result_prefix
 
+        # Delete previous contents if they exist.
+        if os.path.exists(self.dir_name):
+            shutil.rmtree(self.dir_name)
+
         if get_valid_scenario(self.dir_name) is None:
             print 'Use valid scenario like RHEL6_7 or CENTOS6_RHEL6'
             sys.exit(1)
