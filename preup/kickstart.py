@@ -188,7 +188,10 @@ class KickstartGenerator(object):
         user_dict = {}
         for line in lines:
             fields = line.split(splitter)
-            user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+            try:
+                user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+            except IndexError:
+                pass
         return user_dict
 
     def output_packages(self):
