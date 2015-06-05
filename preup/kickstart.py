@@ -315,6 +315,7 @@ class KickstartGenerator(object):
         self.update_users(self.filter_kickstart_users())
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
+        self.remove_obsolete_rows()
 
 
 
