@@ -405,17 +405,18 @@ class ReportParser(object):
 
         if not list_dict:
             self.reload_xml(orig_name)
+            os.unlink(new_report_name)
             return None
-
         # Remove all reports from main Group node
         search = '%sRule' % self.element_prefix
         search_group = './/%sGroup' % self.element_prefix
-        for parent in self.target_tree.findall(search_group):
+        """for parent in self.target_tree.findall(search_group):
             for rule in parent.findall(search):
                 rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
                 parent_id = parent.get('id').replace('xccdf_preupg_group_', '')
                 if parent_id not in list_dict.keys():
                     parent.remove(rule)
+        """
 
         # Remove all reports from TestResult node
         for test_result in self.get_nodes(self.target_tree, 'TestResult'):

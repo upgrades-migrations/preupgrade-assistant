@@ -255,21 +255,21 @@ class XmlManager(object):
          Function updates a XML or HTML file with relevant solution
          texts
         """
+        orig_file = os.path.join(self.dirname,
+                                 result_name + "." + extension)
+        lines = get_file_content(orig_file, "r", method=True)
         for dir_name, files in solution_files.iteritems():
             section = dir_name.replace(os.path.join(self.dirname, self.scenario),
                                        "").replace("/", "_")
             solution_text = section + "_SOLUTION_MSG"
-            if extension == "html":
-                solution_text = "<p>" + solution_text
+
             file_name = self._return_correct_text_file(section, files)
             if not file_name or file_name is None:
                 continue
-            text = get_file_content(os.path.join(dir_name, file_name),
-                                    "r",
-                                    method=True)
-            orig_file = os.path.join(self.dirname,
-                                     result_name + "." + extension)
-            lines = get_file_content(orig_file, "r", method=True)
+            else:
+                text = get_file_content(os.path.join(dir_name, file_name),
+                                        "r",
+                                        method=True)
 
             for cnt, line in enumerate(lines):
                 # If in INPLACERISK: is a [link] then update them
@@ -285,6 +285,10 @@ class XmlManager(object):
                                                    text,
                                                    line,
                                                    extension)
+            if extension == 'xml':
+                for cnt, line in enumerate(lines):
+                    if 'SOLUTION_MSG' in line.strip():
+                        lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<', '><', line.strip())
             write_to_file(orig_file, "w", lines)
 
     def find_solution_files(self, result_name, xml_solution_files):
