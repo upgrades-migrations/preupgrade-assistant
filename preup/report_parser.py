@@ -382,6 +382,7 @@ class ReportParser(object):
 
         if not list_dict:
             self.reload_xml(orig_name)
+            os.unlink(new_report_name)
             return None
 
         # Remove all reports from main Group node
