@@ -85,11 +85,15 @@ def copy_modified_config_files(result_dir):
     for line in lines:
         try:
             (opts, flags, filename) = line.strip().split()
+            log_message("File name to copy '%s'" % filename, logging.DEBUG)
         except ValueError:
             return
         new_filename = filename[1:]
         # Check whether config file exists in cleanconf directory
-        if os.path.exists(os.path.join(clean_conf, new_filename)):
+        file_name = os.path.join(clean_conf, new_filename)
+        if os.path.exists(file_name):
+            message = "Configuration file '%s' exists in '%s' directory"
+            log_message(message % (file_name, clean_conf) , level=logging.DEBUG)
             continue
         dirty_path = os.path.join(dirty_conf, os.path.dirname(new_filename))
         # Check whether dirtyconf directory with dirname(filename) exists
@@ -97,7 +101,16 @@ def copy_modified_config_files(result_dir):
             os.makedirs(dirty_path)
         # Copy filename to dirtyconf directory
         try:
-            shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))
+            target_name = os.path.join(dirty_conf, new_filename)
+            if os.path.islink(filename):
+                filename = os.path.realpath(filename)
+            if os.path.exists(target_name):
+                log_message("File '%s' already exists in dirtyconf directory" % target_name, level=logging.DEBUG)
+                continue
+            shutil.copyfile(filename, target_name)
+        except shutil.Error:
+            log_message("Copying file '%s' to '%s' failed." % (filename, target_name), level=logging.DEBUG)
+            continue
         except IOError:
             continue
 
@@ -110,8 +123,8 @@ def hash_postupgrade_file(verbose, dirname, check=False):
     print what scripts were changed.
     """
     if not os.path.exists(dirname):
-        message = 'Directory {0} does not exist for creating checksum file'
-        log_message(message.format(settings.postupgrade_dir), level=logging.ERROR)
+        message = 'Directory %s does not exist for creating checksum file'
+        log_message(message, settings.postupgrade_dir, level=logging.ERROR)
         return
 
     postupg_scripts = get_all_postupgrade_files(verbose, dirname)
