@@ -22,7 +22,7 @@ from preup.scanning import ScanProgress, format_rules_to_table
 from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
 from preup.utils import run_subprocess, get_assessment_version, get_message
 from preup.utils import tarball_result_dir, get_system
-from preup.logger import log_message, logging
+from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
@@ -91,6 +91,10 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+        if self.conf.debug:
+            set_level(logging.DEBUG)
+        else:
+            set_level(logging.INFO)
 
     def get_command_generate(self):
         if not get_system():

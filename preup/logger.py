@@ -6,7 +6,7 @@ import sys
 from preup import settings
 
 
-# Currently we have only on log
+# Currently we have only one log
 logger = logging.getLogger('preupgrade-assistant')
 try:
     hdlr = logging.FileHandler(os.path.join(settings.log_dir, "preupg.log"))
@@ -16,8 +16,10 @@ except IOError:
     hdlr = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.INFO)
+
+def set_level(level):
+    logger.addHandler(hdlr)
+    logger.setLevel(level)
 
 if(sys.version_info[0] == 2):
     def log_message(message, print_output=1, new_line=True, level=logging.INFO, log=True):
