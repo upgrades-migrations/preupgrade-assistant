@@ -91,10 +91,10 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
-        if self.conf.debug:
-            set_level(logging.DEBUG)
-        else:
+        if self.conf.debug is None:
             set_level(logging.INFO)
+        else:
+            set_level(logging.DEBUG)
 
     def get_command_generate(self):
         if not get_system():

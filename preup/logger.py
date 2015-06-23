@@ -16,9 +16,9 @@ except IOError:
     hdlr = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
 
 def set_level(level):
-    logger.addHandler(hdlr)
     logger.setLevel(level)
 
 if(sys.version_info[0] == 2):

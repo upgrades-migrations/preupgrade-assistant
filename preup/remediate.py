@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import os
 import shutil
 import six
-from preup.logger import log_message, logging
 try:
     from hashlib import sha1
 except ImportError:
@@ -12,6 +11,7 @@ except ImportError:
 from preup import settings
 from preup.utils import get_interpreter, run_subprocess
 from preup.utils import get_file_content, write_to_file
+from preup.logger import log_message, logging
 
 
 def get_all_postupgrade_files(dummy_verbose, dir_name):
@@ -85,15 +85,19 @@ def copy_modified_config_files(result_dir):
     for line in lines:
         try:
             (opts, flags, filename) = line.strip().split()
-            log_message("File name to copy '%s'" % filename, logging.DEBUG)
         except ValueError:
             return
+        log_message("File name to copy '%s'" % filename,
+                    print_output=0,
+                    level=logging.INFO)
         new_filename = filename[1:]
         # Check whether config file exists in cleanconf directory
         file_name = os.path.join(clean_conf, new_filename)
         if os.path.exists(file_name):
             message = "Configuration file '%s' exists in '%s' directory"
-            log_message(message % (file_name, clean_conf) , level=logging.DEBUG)
+            log_message(message % (file_name, clean_conf),
+                        print_output=0,
+                        level=logging.INFO)
             continue
         dirty_path = os.path.join(dirty_conf, os.path.dirname(new_filename))
         # Check whether dirtyconf directory with dirname(filename) exists
@@ -105,11 +109,15 @@ def copy_modified_config_files(result_dir):
             if os.path.islink(filename):
                 filename = os.path.realpath(filename)
             if os.path.exists(target_name):
-                log_message("File '%s' already exists in dirtyconf directory" % target_name, level=logging.DEBUG)
+                log_message("File '%s' already exists in dirtyconf directory" % target_name,
+                            print_output=0,
+                            level=logging.INFO)
                 continue
             shutil.copyfile(filename, target_name)
         except shutil.Error:
-            log_message("Copying file '%s' to '%s' failed." % (filename, target_name), level=logging.DEBUG)
+            log_message("Copying file '%s' to '%s' failed." % (filename, target_name),
+                        print_output=0,
+                        level=logging.INFO)
             continue
         except IOError:
             continue
