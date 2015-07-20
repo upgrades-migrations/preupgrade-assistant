@@ -536,9 +536,9 @@ class Application(object):
         # pack all configuration files to tarball
         return tar_ball_name
 
-    def summary_report(self):
+    def summary_report(self, tarball_path):
         """Function prints a summary report"""
-        command = settings.ui_command.format(settings.tarball_result_dir)
+        command = settings.ui_command.format(tarball_path)
         if self.conf.text:
             path = self.get_default_txt_result_path()
         else:
@@ -675,7 +675,7 @@ If you would like to use this tool, you have to have only one." % settings.sourc
             current_dir = os.getcwd()
             os.chdir("/tmp")
             tarball_path = self.scan_system()
-            self.summary_report()
+            self.summary_report(tarball_path)
             self.common.copy_common_files()
             utils.remove_home_issues()
             if self.conf.upload:
