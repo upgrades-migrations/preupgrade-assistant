@@ -290,18 +290,23 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
     tar_options = ["--numeric-owner", "--acls", "--selinux"]
 
     # used for packing directories into tarball
-    os.chdir(dirname)
+    os.chdir('/root')
+    tarball_dir = get_tarball_name(result_file, current_time)
+    tarball_name = tarball_dir + '.tar.gz'
+    bkp_tar_dir = os.path.join('/root', tarball_dir)
     if direction:
-        tarball = get_tarball_result_path(dirname, get_tarball_name(result_file, current_time))
+        shutil.copytree(dirname, bkp_tar_dir, symlinks=True)
+        tarball = get_tarball_result_path(dirname, tarball_name)
         cmd.append(cmd_pack)
         cmd.append(tarball)
-        cmd.append(".")
+        cmd.append(tarball_dir)
     else:
         cmd.append(cmd_extract)
         cmd.append(result_file)
 
     cmd.extend(tar_options)
     run_subprocess(cmd, print_output=quiet)
+    shutil.rmtree(bkp_tar_dir)
     if direction:
         try:
             shutil.copy(tarball, os.path.join(settings.tarball_result_dir+"/"))
@@ -309,7 +314,7 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
             log_message("Problem with copying tarball {0} to /root/preupgrade-results".format(tarball))
     os.chdir(current_dir)
 
-    return os.path.join(settings.tarball_result_dir, get_tarball_name(result_file, current_time))
+    return os.path.join(settings.tarball_result_dir, tarball_name)
 
 
 def get_upgrade_dir_path(dirname):

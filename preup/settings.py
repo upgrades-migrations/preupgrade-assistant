@@ -24,7 +24,7 @@ result_name = "result"
 
 tarball_base = result_name + 's'
 tarball_prefix = "preupg_"
-tarball_name = tarball_prefix + tarball_base + "-{0}.tar.gz"
+tarball_name = tarball_prefix + tarball_base + "-{0}"
 
 xml_result_name = result_name + '.xml'
 html_result_name = result_name + '.html'
