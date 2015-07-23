@@ -40,7 +40,7 @@ class FilterForm(forms.Form):
             'class': 'form-control',
         })
     )
-    host = forms.ChoiceField(required=False, widget=forms.Select(
+    hosts = forms.MultipleChoiceField(required=False, widget=forms.SelectMultiple(
         attrs={
             'class': 'selectpicker global-filter host-filter',
             'data-live-search': 'true',
@@ -69,13 +69,13 @@ class FilterForm(forms.Form):
         ]
         # first option searches in every release
         host_choices.insert(0, ('', 'All Hosts'))
-        self.fields['host'].choices = host_choices
+        self.fields['hosts'].choices = host_choices
 
     def is_valid(self):
         valid = super(FilterForm, self).is_valid()
         if not valid:
             return valid
-        if not self.cleaned_data['host'] and not self.cleaned_data['risk'] and not self.cleaned_data['search']:
+        if not self.cleaned_data['hosts'] and not self.cleaned_data['risk'] and not self.cleaned_data['search']:
             return False
         return True
 

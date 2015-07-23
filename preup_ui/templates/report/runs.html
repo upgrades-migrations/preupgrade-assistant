@@ -26,7 +26,8 @@
         {{ filter_form.search }}
         <button class="btn btn-default fa fa-search search-button" type="submit"> </button>
         {{ filter_form.risk }}
-        {{ filter_form.host }}
+        <button class="btn btn-default fa fa-filter filter-button global-filter" type="submit"> </button>
+        {{ filter_form.hosts }}
         <a class="btn btn-danger global-filter" href="{% url 'delete-older' %}?host={{ request.GET.host }}" title="Keep only the last run for each host">Delete older runs</a>
     </form>
 </div>

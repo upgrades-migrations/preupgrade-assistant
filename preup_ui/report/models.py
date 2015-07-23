@@ -305,8 +305,8 @@ class HostRunMixin(object):
     def by_risk(self, risk):
         return self.filter(risk=risk)
 
-    def by_host_processed(self, host):
-        return self.filter(result__hostname=host)
+    def by_hosts_processed(self, hosts):
+        return self.filter(result__hostname__in=hosts)
 
 
 class HostRunQuerySet(models.query.QuerySet, HostRunMixin):

@@ -121,10 +121,6 @@ $('#id_risk').change(function(){
   filterform.submit();
 });
 
-$('#id_host').change(function(){
-  filterform.submit();
-});
-
 $('.group-row').on("change", ".all-states-checkbox", function() {
   var this_jq = $(this);
   var is_checked = this_jq.prop('checked')

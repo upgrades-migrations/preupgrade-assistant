@@ -41,8 +41,8 @@ class RunsView(ListView):
             filter_form = FilterForm(self.request.GET)
             if filter_form.is_valid():
                 query = HostRun.objects.finished()
-                if filter_form.cleaned_data['host']:
-                    query = query.by_host_processed(filter_form.cleaned_data['host'])
+                if filter_form.cleaned_data['hosts']:
+                    query = query.by_hosts_processed(filter_form.cleaned_data['hosts'])
                 if filter_form.cleaned_data['risk']:
                     query = query.by_risk(filter_form.cleaned_data['risk'])
         query = query.select_related('result', 'run', 'host')
