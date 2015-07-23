@@ -326,11 +326,7 @@ load_pa_configuration() {
     log_error "Can't load any configuration from section preupgrade-assistant!"
     exit_error
   }
-  #TODO: what about empty _pa_conf??
-  #TODO: enable comments only when # is first character on line
-  #TODO: files which begins witch # or looks like sections, should start
-  #      with e.g. "./" prefix, which kept same directory - or solve it
-  #      by some function here too??
+
   printf "%s\n" "$_pa_conf" | while read line; do
     tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
     tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
