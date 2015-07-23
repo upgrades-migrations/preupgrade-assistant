@@ -23,6 +23,7 @@ script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-g
 data_files = {
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
     'preuputils/': ['preuputils/template.xml'],
+    '/etc': ['preup-conf/preupgrade-assistant.conf'],
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
