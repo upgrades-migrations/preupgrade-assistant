@@ -9,11 +9,13 @@ import base64
 import shutil
 import os
 import six
+import re
+import random
 
 from pykickstart.parser import KickstartError, KickstartParser, Script
 from pykickstart.version import makeVersion
-from pykickstart.constants import KS_SCRIPT_POST
-from preup.logger import log_message
+from pykickstart.constants import KS_SCRIPT_POST, KS_SCRIPT_PRE
+from preup.logger import log_message, logging
 from preup import settings
 from preup.utils import write_to_file, get_file_content
 
@@ -120,16 +122,85 @@ class YumGroupGenerator(object):
         return output + output_packages
 
 
+class PartitionGenerator(object):
+    """Generate partition layout"""
+    def __init__(self, layout, vg_info, lvdisplay):
+        self.layout = layout
+        self.vg_info = vg_info
+        self.lvdisplay = lvdisplay
+        self.raid_dict = {}
+        self.part_dict = {}
+        self.volgroup_dict = {}
+        self.logvol_dict = {}
+
+    def _update_raid(self, pv_name, size, crypt):
+        self.raid_dict[pv_name] = [size, crypt]
+
+    def generate_partitioning(self):
+        pv_name = ""
+        vg_name = ""
+        index_pv = 1
+        for index, row in enumerate(self.layout):
+            print (row)
+            fields = row.strip().split(' ')
+            device = fields[0]
+            size = fields[3]
+            device_type = fields[5]
+            try:
+                mount_point = fields[6]
+            except IndexError:
+                mount_point = None
+            if device_type == 'disk' or device_type == 'crypt' or device_type == 'rom':
+                continue
+            if device_type == 'part':
+                if not mount_point:
+                    ident = index_pv
+                    pv_name = 'pv.%.5d' % int(ident)
+                    crypt = ""
+                    if self.layout[index + 1].strip().endswith('crypt'):
+                        crypt = '--encrypted'
+                    if 'raid' in self.layout[index + 1].strip():
+                        continue
+                    part_dict[pv_name] = [size, crypt]
+                    index_pv += 1
+                    continue
+                else:
+                    device = ''.join([x for x in device if not x.isdigit()])
+                    self.part_layout.append('%s --size=%s --ondisk=%s --fstype="ext4"' % (device_type, size, device))
+                    continue
+            if 'raid' in device_type:
+                raid_type = device_type[-1]
+                if self.layout[index + 1].strip().endswith('crypt'):
+                    crypt = '--encrypted'
+                pv_name = 'pv.%.5d' % int(ident)
+                self.part_layout.append('raid %s --level=%d --device=%s %s' % (pv_name, int(raid_type), device, crypt))
+                index_pv += 1
+                continue
+            if device_type == 'lvm':
+                vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
+                # Get volume group name
+                vg_row = 'volgroup %s' % vg_name
+                found_vg = [x for x in self.part_layout if x.startswith(vg_row)]
+                if not found_vg:
+                    self.part_layout.append('%s %s --pesize=4096' % (vg_row, pv_name))
+                lv_name = [x for x in six.iterkeys(self.vg_info) if x in device][0]
+                if mount_point == '[SWAP]':
+                    mount_point = 'swap'
+                self.part_layout.append('logvol %s --vgname=%s --size=%s --name=%s' % (mount_point, vg_name, size, lv_name))
+        print('\n'.join(self.part_layout))
+
+
 class KickstartGenerator(object):
     """Generate kickstart using data from provided result"""
-    def __init__(self, kick_start_name):
-        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path())
+    def __init__(self, kick_start_name, dir_name):
+        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(dir_name))
         self.kick_start_name = kick_start_name
         self.ks_list = []
+        self.part_layout = ['clearpart --all']
 
     @staticmethod
-    def get_kickstart_path():
-        return os.path.join(settings.KS_DIR, 'anaconda-ks.cfg')
+    def get_kickstart_path(dir_name):
+        return os.path.join(dir_name, 'anaconda-ks.cfg')
 
     @staticmethod
     def load_or_default(system_ks_path):
@@ -183,7 +254,10 @@ class KickstartGenerator(object):
         :param filename: filename with Users in /root/preupgrade/kickstart directory
         :return: dictionary with users
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        try:
+            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        except IOError:
+            return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
         user_dict = {}
         for line in lines:
@@ -194,10 +268,26 @@ class KickstartGenerator(object):
                 pass
         return user_dict
 
+    @staticmethod
+    def _get_sizes(filename):
+        part_sizes = {}
+        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        lines = [x for x in lines if x.startswith('/')]
+        for line in lines:
+            fields = line.strip().split(' ')
+            part_name = fields[0]
+            try:
+                size = fields[2]
+            except IndexError:
+                size = fields[1]
+            part_sizes[part_name] = size
+        return part_sizes
+
     def output_packages(self):
         """outputs %packages section"""
         installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
+        # TODO We should think about if ObsoletedPkg-{required,optional} should be used
         if not installed_packages or not removed_packages:
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
@@ -241,6 +331,15 @@ class KickstartGenerator(object):
             if not os.path.exists(target_name) and os.path.exists(source_name):
                 shutil.copy(source_name, target_name)
 
+    @staticmethod
+    def get_volume_info(filename, first_index, second_index):
+        volume_list = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        volume_info = {}
+        for line in volume_list:
+            fields = line.strip().split(':')
+            volume_info[fields[first_index]] = fields[second_index]
+        return volume_info
+
     def update_repositories(self, repositories):
         if repositories:
             for key, value in six.iteritems(repositories):
@@ -252,6 +351,76 @@ class KickstartGenerator(object):
         for key, value in users.iteritems():
             uid, gid = value
             self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
+
+    def get_partition_layout(self, lsblk, vgs, lvdisplay):
+        """
+        Returns dictionary with partition and realname and size
+        :param filename:  filename with partition_layout in /root/preupgrade/kickstart directory
+        :return: dictionary with layout
+        """
+        self.layout = get_file_content(os.path.join(settings.KS_DIR, lsblk), 'rb', method=True, decode_flag=False)
+        self.vg_info = KickstartGenerator.get_volume_info(vgs, 0, 5)
+        self.lv_info = KickstartGenerator.get_volume_info(lvdisplay, 0, 1)
+        #part_dict = PartitionGenerator(layout, vg_info, lv_info)
+        pv_name = ""
+        vg_name = ""
+        index_pv = 1
+        for index, row in enumerate(self.layout):
+            fields = row.strip().split(' ')
+            device = fields[0]
+            size = fields[3]
+            device_type = fields[5]
+            try:
+                mount_point = fields[6]
+            except IndexError:
+                mount_point = None
+            if device_type == 'disk' or device_type == 'crypt' or device_type == 'rom':
+                continue
+            if device_type == 'part':
+                if not mount_point:
+                    ident = index_pv
+                    pv_name = 'pv.%.2d' % int(ident)
+                    crypt = ""
+                    if self.layout[index + 1].strip().endswith('crypt'):
+                        crypt = '--encrypted'
+                    if 'raid' in self.layout[index + 1].strip():
+                        continue
+                    self.part_layout.append('%s %s --size %s %s' % (device_type, pv_name, size, crypt))
+                    index_pv += 1
+                    continue
+                else:
+                    device = ''.join([x for x in device if not x.isdigit()])
+                    self.part_layout.append('%s --size=%s --ondisk=%s --fstype="ext4"' % (device_type, size, device))
+                    continue
+            """if 'raid' in device_type:
+                raid_type = device_type[-1]
+                if self.layout[index + 1].strip().endswith('crypt'):
+                    crypt = '--encrypted'
+                pv_name = 'pv.%.5d' % int(ident)
+                self.part_layout.append('raid %s --level=%d --device=%s %s' % (pv_name, int(raid_type), device, crypt))
+                index_pv += 1
+                continue
+            """
+            if device_type == 'lvm':
+                vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
+                # Get volume group name
+                vg_row = 'volgroup %s' % vg_name
+                found_vg = [x for x in self.part_layout if x.startswith(vg_row)]
+                if not found_vg:
+                    self.part_layout.append('%s %s --pesize=4096' % (vg_row, pv_name))
+                lv_name = [x for x in six.iterkeys(self.lv_info) if x in device][0]
+                if mount_point == '[SWAP]':
+                    mount_point = 'swap'
+                self.part_layout.append('logvol %s --vgname=%s --size=%s --name=%s' % (mount_point, vg_name, size, lv_name))
+
+    def update_partitioning(self):
+        temp_file = '/tmp/part-include'
+        # Index 1 means size
+        script_str = ['echo "# This is partition layout generated by preupg --kickstart command" > %s' % temp_file]
+        script_str.extend(['echo "%s" >> %s' % (line, temp_file) for line in self.part_layout])
+        print (script_str)
+        script = Script('\n'.join(script_str), type=KS_SCRIPT_PRE, inChroot=True)
+        self.ks.handler.scripts.append(script)
 
     def get_prefix(self):
         return settings.tarball_prefix + settings.tarball_base
@@ -270,11 +439,15 @@ class KickstartGenerator(object):
         setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
         for user, ids in six.iteritems(users):
-            if [x for x in six.iterkeys(setup_passwd) if user in x]:
-                continue
-            if [x for x in six.iterkeys(uidgid) if user in x]:
-                continue
+            if setup_passwd:
+                if [x for x in six.iterkeys(setup_passwd) if user in x]:
+                    continue
+            if uidgid:
+                if [x for x in six.iterkeys(uidgid) if user in x]:
+                    continue
             kickstart_users[user] = ids.split(':')
+        if not kickstart_users:
+            return None
         return kickstart_users
 
     def generate(self):
@@ -283,6 +456,8 @@ class KickstartGenerator(object):
             self.ks.handler.packages.add(packages)
         self.update_repositories(KickstartGenerator.get_kickstart_repo('available-repos'))
         self.update_users(self.filter_kickstart_users())
+        self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
+        self.update_partitioning()
         self.embed_script(self.get_latest_tarball())
         self.save_kickstart()
 
