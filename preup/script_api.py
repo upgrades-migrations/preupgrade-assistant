@@ -31,6 +31,8 @@ import os
 import sys
 import re
 import shutil
+import ConfigParser
+
 from preup import utils, settings
 from preup.utils import get_file_content, write_to_file
 
@@ -80,10 +82,13 @@ __all__ = (
     'KICKSTART_README',
     'MIGRATE',
     'UPGRADE',
+    'HOME_DIRECTORY_FILE',
+    'USER_CONFIG_FILE'
 )
 
 CACHE = "/var/cache/preupgrade"
 PREUPGRADE_CACHE = os.path.join(CACHE, "common")
+PREUPGRADE_CONFIG = os.path.join('/etc', 'preupgrade-assistant.conf')
 VALUE_RPM_QA = os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
 VALUE_ALLCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
 VALUE_CONFIGCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
@@ -105,6 +110,8 @@ except KeyError:
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 
+HOME_DIRECTORY_FILE = ""
+USER_CONFIG_FILE = 0
 
 component = "unknown"
 
@@ -394,5 +401,52 @@ def backup_config_file(config_file_name):
         # path probably exists, it's ok
         pass
     shutil.copyfile(config_file_name, os.path.join(VALUE_TMP_PREUPGRADE, config_file_name.strip("/")))
+
+
+def load_pa_configuration():
+    """ Loads preupgrade-assistant configuration file """
+    global HOME_DIRECTORY_FILE
+    global USER_CONFIG_FILE
+
+    if not os.path.exists(PREUPGRADE_CONFIG):
+        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
+        exit_error()
+
+    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config.read(PREUPGRADE_CONFIG)
+    section = 'preupgrade-assistant'
+    home_option = 'home_directory_file'
+    user_file = 'user_config_file'
+    if config.has_section(section):
+        if config.has_option(section, home_option):
+            HOME_DIRECTORY_FILE = config.get(section, home_option)
+        if config.has_option(section, user_file):
+            USER_CONFIG_FILE = config.get(section, user_file)
+
+
+def print_home_dirs(user_name=""):
+    """ Loads preupgrade-assistant configuration file """
+    if not os.path.exists(PREUPGRADE_CONFIG):
+        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
+        exit_error()
+
+    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    home_option = 'home-dirs'
+    try:
+        if USER_CONFIG_FILE == 'enabled' and user_name == "":
+            config.read(PREUPGRADE_CONFIG)
+            return config.options(home_option)
+        user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
+        if not os.path.exists(user_home_dir):
+            return 0
+        config.read(user_home_dir)
+        return config.options(home_option)
+    except ConfigParser.NoSectionError:
+        pass
+    except ConfigParser.NoOptionError:
+        pass
+
+
+load_pa_configuration()
 
 shorten_envs()
