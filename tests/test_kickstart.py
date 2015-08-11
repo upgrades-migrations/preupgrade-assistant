@@ -28,11 +28,11 @@ class TestPartitioning(base.TestCase):
         lvdisplay = get_full_path('lvdisplay')
         self.ks.get_partition_layout(lvm_lsblk, vgs_list, lvdisplay)
         expected_layout = ['clearpart --all',
-                           'part --size=500M --ondisk=vda --fstype="ext4"',
-                           'part pv.01 --size 9.5G ',
+                           'part /boot --size=500 --ondisk=vda --fstype="ext4"',
+                           'part pv.01 --size=9000 ',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
-                           'logvol / --vgname=vg_rhel67 --size=8.5G --name=lv_root',
-                           'logvol swap --vgname=vg_rhel67 --size=1G --name=lv_swap']
+                           'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
+                           'logvol swap --vgname=vg_rhel67 --size=1000 --name=lv_swap']
         self.assertEqual(expected_layout, self.ks.part_layout)
 
     def test_lvm_crypt_partitions(self):
@@ -41,11 +41,26 @@ class TestPartitioning(base.TestCase):
         lvdisplay = get_full_path('lvdisplay')
         self.ks.get_partition_layout(lvm_lsblk, vgs_list, lvdisplay)
         expected_layout = ['clearpart --all',
-                           'part --size=500M --ondisk=vda --fstype="ext4"',
-                           'part pv.01 --size 9.5G --encrypted',
+                           'part /boot --size=500 --ondisk=vda --fstype="ext4"',
+                           'part pv.01 --size=9000 --encrypted',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
-                           'logvol / --vgname=vg_rhel67 --size=8.5G --name=lv_root',
-                           'logvol swap --vgname=vg_rhel67 --size=1G --name=lv_swap']
+                           'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
+                           'logvol swap --vgname=vg_rhel67 --size=1000 --name=lv_swap']
+        self.assertEqual(expected_layout, self.ks.part_layout)
+
+    def test_raid_crypt_partitions(self):
+        raid_lsblk = get_full_path('raid_lsblk_list')
+        self.ks.get_partition_layout(raid_lsblk, None, None)
+        expected_layout = ['clearpart --all',
+                           'part /boot --size=200 --ondisk=sda --fstype="ext4"',
+                           'part swap --size=1000 --ondisk=sda --fstype="ext4"',
+                           'part raid.01 --grow --size=2048',
+                           'part raid.02 --grow --size=2048',
+                           'raid / --level=1 --device=md1 raid.01 raid.02',
+                           'part raid.03 --grow --size=2048',
+                           'part raid.04 --grow --size=2048',
+                           'raid /home --level=0 --device=md0 raid.03 raid.04 --encrypted --passphrase='
+                           ]
         self.assertEqual(expected_layout, self.ks.part_layout)
 
     """def test_lvm_complicated_partitions(self):
@@ -57,8 +72,8 @@ class TestPartitioning(base.TestCase):
                            'part --size=500M --ondisk=vda --fstype="ext4"',
                            'part pv.1 --size 9.5G --encrypted',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
-                           'logvol / --vgname=vg_rhel67 --size=8.5G --name=lv_root',
-                           'logvol swap --vgname=vg_rhel67 --size=1G --name=lv_swap']
+                           'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
+                           'logvol swap --vgname=vg_rhel67 --size=1000 --name=lv_swap']
         self.assertEqual(expected_layout, self.ks.part_layout)
     """
 
