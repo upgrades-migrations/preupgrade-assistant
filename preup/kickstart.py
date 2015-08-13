@@ -403,6 +403,15 @@ class KickstartGenerator(object):
             if not os.path.exists(target_name) and os.path.exists(source_name):
                 shutil.copy(source_name, target_name)
 
+    @staticmethod
+    def get_volume_info(filename, first_index, second_index):
+        volume_list = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        volume_info = {}
+        for line in volume_list:
+            fields = line.strip().split(':')
+            volume_info[fields[first_index]] = fields[second_index]
+        return volume_info
+
     def update_repositories(self, repositories):
         if repositories:
             for key, value in six.iteritems(repositories):
