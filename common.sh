@@ -330,7 +330,6 @@ load_pa_configuration() {
   while read line; do
     tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
     tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
-    echo "$line -- $tmp_option - $tmp_val -"
     # HERE add your actions
     case $tmp_option in
       home_directory_file)
