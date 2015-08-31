@@ -327,7 +327,7 @@ load_pa_configuration() {
     exit_error
   }
 
-  printf "%s\n" "$_pa_conf" | while read line; do
+  while read line; do
     tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
     tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
     echo "$line -- $tmp_option - $tmp_val -"
@@ -341,7 +341,7 @@ load_pa_configuration() {
         ;;
       *) log_error "Unknown option $tmp_option"; exit_error
     esac
-  done
+  done < <(printf "%s\n" "$_pa_conf")
 }
 
 # print items from [home-dirs] which are relevant for given user
