@@ -173,13 +173,7 @@ class Common(object):
         self.copy_kickstart_files(self.common_result_dir, server_variant)
         for files in server_variant_files:
             # First create a default links to "ServerVariant_"
-            if files.startswith(server_variant+"_"):
+            if files.startswith(server_variant):
                 self.create_common_symlink(files, server_variant)
             elif files.startswith("Common"):
                 self.create_common_symlink(files, "Common")
-            else:
-                # Now create a symlink for ServerVariant-AddOn_
-                for add_on in add_ons:
-                    if not files.startswith(get_add_on_name(server_variant, add_on)+"_"):
-                        continue
-                    self.create_common_symlink(files, server_variant)
