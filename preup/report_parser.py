@@ -23,6 +23,11 @@ def update_current_dir(result_dir, scenario, value, mode):
     return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
 
 
+def update_report_dir(result_dir, scenario, value, mode):
+    """Replaces a report_dir with the new value"""
+    return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
+
+
 def update_result_path(result_dir, scenario, value, mode):
     """
     Replaces a result path with the new value
@@ -201,7 +206,8 @@ class ReportParser(object):
         update_tags = {'_tmp_preupgrade': update_result_path,
                        '_current_dir': update_current_dir,
                        '_migrate': update_migrate_value,
-                       '_upgrade': update_upgrade_value}
+                       '_upgrade': update_upgrade_value,
+                       '_report_dir': update_report_dir}
         for key, val in update_tags.items():
             for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
                 if key not in values.get('id'):

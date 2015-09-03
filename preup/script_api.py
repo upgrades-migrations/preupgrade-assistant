@@ -77,6 +77,7 @@ __all__ = (
     'VALUE_EXECUTABLES',
     'VALUE_RPM_RHSIGNED',
     'VALUE_TMP_PREUPGRADE',
+    'COMMON_DIR',
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
     'KICKSTART_README',
@@ -109,6 +110,8 @@ except KeyError:
     UPGRADE = 1
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
+COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
+
 
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
