@@ -28,7 +28,7 @@ class TestPartitioning(base.TestCase):
         lvdisplay = get_full_path('lvdisplay')
         self.ks.get_partition_layout(lvm_lsblk, vgs_list, lvdisplay)
         expected_layout = ['clearpart --all',
-                           'part /boot --size=500 --ondisk=vda --fstype="ext4"',
+                           'part /boot --size=500 --ondisk=vda',
                            'part pv.01 --size=9000 ',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
                            'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
@@ -41,7 +41,7 @@ class TestPartitioning(base.TestCase):
         lvdisplay = get_full_path('lvdisplay')
         self.ks.get_partition_layout(lvm_lsblk, vgs_list, lvdisplay)
         expected_layout = ['clearpart --all',
-                           'part /boot --size=500 --ondisk=vda --fstype="ext4"',
+                           'part /boot --size=500 --ondisk=vda',
                            'part pv.01 --size=9000 --encrypted',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
                            'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
@@ -52,8 +52,8 @@ class TestPartitioning(base.TestCase):
         raid_lsblk = get_full_path('raid_lsblk_list')
         self.ks.get_partition_layout(raid_lsblk, None, None)
         expected_layout = ['clearpart --all',
-                           'part /boot --size=200 --ondisk=sda --fstype="ext4"',
-                           'part swap --size=1000 --ondisk=sda --fstype="ext4"',
+                           'part /boot --size=200 --ondisk=sda',
+                           'part swap --size=1000 --ondisk=sda',
                            'part raid.01 --grow --size=2048',
                            'part raid.02 --grow --size=2048',
                            'raid / --level=1 --device=md1 raid.01 raid.02',
@@ -69,7 +69,7 @@ class TestPartitioning(base.TestCase):
         lvdisplay = get_full_path('lvdisplay_complicated')
         self.ks.get_partition_layout(lvm_lsblk, vgs_list, lvdisplay)
         expected_layout = ['clearpart --all',
-                           'part --size=500M --ondisk=vda --fstype="ext4"',
+                           'part --size=500M --ondisk=vda',
                            'part pv.1 --size 9.5G --encrypted',
                            'volgroup vg_rhel67 pv.01 --pesize=4096',
                            'logvol / --vgname=vg_rhel67 --size=8000 --name=lv_root',
