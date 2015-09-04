@@ -63,7 +63,7 @@ def show_message(message):
     Return True on accept (y/yes). Otherwise returns False
     """
     accept = ['y', 'yes']
-    choice = get_message(title=message)
+    choice = get_message(title=message, prompt=' y/n')
     if choice in accept:
         return True
     else:

@@ -334,7 +334,7 @@ def get_upgrade_dir_path(dirname):
     return None
 
 
-def get_message(title="", message="Do you want to continue?"):
+def get_message(title="", message="Do you want to continue?", prompt=None):
     """
     Function asks for input from user
 
@@ -344,7 +344,6 @@ def get_message(title="", message="Do you want to continue?"):
     """
     yes = ['yes', 'y']
     yesno = yes + ['no', 'n']
-    prompt = ' y/n'
     print (title)
     print (message + prompt)
     while True:
@@ -355,7 +354,7 @@ def get_message(title="", message="Do you want to continue?"):
                 choice = input().lower()
         except KeyboardInterrupt:
             return "n"
-        if choice not in yesno:
+        if prompt and choice not in yesno:
             print ('You have to choose one of y/n.')
         else:
             return choice
