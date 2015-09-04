@@ -19,8 +19,8 @@ class TestPartitioning(base.TestCase):
     ks = None
 
     def setUp(self):
-        kickstart_file = get_full_path(PREUPGRADE_KS)
-        self.ks = KickstartGenerator(kickstart_file, os.path.join(os.getcwd(), 'tests', 'partition_data'))
+        kickstart_file = 'preupgrade.ks'
+        self.ks = KickstartGenerator(os.path.join(os.getcwd(), 'tests', 'partition_data'), kickstart_file)
 
     def test_lvm_partitions(self):
         lvm_lsblk = get_full_path('lvm_lsblk_list')

@@ -217,7 +217,7 @@ class PartitionGenerator(object):
         layout = []
         for key, value in sorted(six.iteritems(self.part_dict)):
             if value['crypt'] is None:
-                layout.append('part %s --size=%s --ondisk=%s ' % (key, value['size'], value['device']))
+                layout.append('part %s --size=%s --ondisk=%s' % (key, value['size'], value['device']))
             else:
                 layout.append('part %s --size=%s %s' % (key, value['size'], value['crypt']))
         return layout
