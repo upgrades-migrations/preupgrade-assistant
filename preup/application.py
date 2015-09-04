@@ -615,6 +615,9 @@ class Application(object):
             return return_val
 
         if self.conf.kickstart:
+            if not os.path.exists(self.get_default_xml_result_path()):
+                log_message("'preupg' command was not run yet. Run them before kickstart generation.")
+                return 1
             kg = KickstartGenerator(settings.KS_DIR, self.get_preupgrade_kickstart())
             KickstartGenerator.copy_kickstart_templates()
             dummy_ks = kg.generate()
