@@ -356,7 +356,7 @@ class KickstartGenerator(object):
 
     def output_packages(self):
         """outputs %packages section"""
-        installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist')
+        installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist_kept')
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
         if not installed_packages or not removed_packages:
@@ -387,7 +387,6 @@ class KickstartGenerator(object):
         self.ks.handler.scripts.append(script)
 
     def save_kickstart(self):
-        log_message('Saving ks file to %s' % self.kick_start_name)
         write_to_file(self.kick_start_name, 'wb', self.ks.handler.__str__())
 
     def update_kickstart(self, text, cnt):
@@ -422,7 +421,7 @@ class KickstartGenerator(object):
             return None
         for key, value in users.iteritems():
             uid, gid = value
-            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=uid, gid=gid))
+            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=int(uid), groups=[gid]))
 
     def get_partition_layout(self, lsblk, vgs, lvdisplay):
         """
