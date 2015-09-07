@@ -130,13 +130,14 @@ result_text = "Result table with checks and their results for {0}:"
 message = "We found some potential in-place upgrade risks.\n" \
           "Read the full report file {0} for more details."
 converter_message = "At least one of these converters ({0}) needs to be installed."
-kickstart_text = "Preupgrade-assistant generates a kickstart file %s.\n" \
-                 "The kickstart file contains:\n" \
+kickstart_text = "The Preupgrade Assistant generates a kickstart file in %s.\n" \
+                 "The Kickstart file contains:\n" \
                  "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
-                 "- partition layout which was used on this system\n" \
-                 "Kickstart is pregenerated from this system and has not to be used directly for \n" \
-                 "Red Hat Enterprise Linux 7 installation directly.\n" \
-                 "Kickstart has to be modified by administator.\n"
+                 "- the partitioning layout which was used on this system\n" \
+                 "- the package set which was installed on this system.\n" \
+                 "The Kickstart file is pre-generated from this system and is not to be used directly for \n\n" \
+                 "installation of Red Hat Enterprise Linux 7.\n" \
+                 "The Kickstart file needs to be modified by administator.\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
                    'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
