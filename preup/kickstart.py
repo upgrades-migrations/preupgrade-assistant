@@ -264,10 +264,24 @@ class PartitionGenerator(object):
 class KickstartGenerator(object):
     """Generate kickstart using data from provided result"""
     def __init__(self, dir_name, kick_start_name):
-        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(dir_name))
+        self.dir_name = dir_name
+        self.ks = None
         self.kick_start_name = kick_start_name
         self.ks_list = []
         self.part_layout = ['clearpart --all']
+        self.repos = None
+        self.users = None
+        self.latest_tarball = ""
+
+    def collect_data(self):
+        collected_data = True
+        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name))
+        if self.ks is None:
+            collected_data = False
+        self.repos = KickstartGenerator.get_kickstart_repo('available-repos')
+        self.users = KickstartGenerator.get_kickstart_users('Users')
+        self.latest_tarball = self.get_latest_tarball()
+        return collected_data
 
     @staticmethod
     def get_kickstart_path(dir_name):
@@ -287,6 +301,7 @@ class KickstartGenerator(object):
                 log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
             except IOError:
                 log_message("Can't read kickstart template {0}".format(settings.KS_TEMPLATE))
+                return None
         return ksparser
 
     @staticmethod
@@ -308,7 +323,10 @@ class KickstartGenerator(object):
         :param filename: filename with available-repos
         :return: dictionary with enabled repolist
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        try:
+            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        except IOError:
+            return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
         if not lines:
             return None
@@ -356,7 +374,10 @@ class KickstartGenerator(object):
 
     def output_packages(self):
         """outputs %packages section"""
-        installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist_kept')
+        try:
+            installed_packages = KickstartGenerator.get_package_list('RHRHEL7rpmlist_kept')
+        except IOError:
+            return None
         removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
         if not installed_packages or not removed_packages:
@@ -400,7 +421,11 @@ class KickstartGenerator(object):
             target_name = os.path.join(settings.KS_DIR, file_name)
             source_name = os.path.join(settings.source_dir, 'kickstart', file_name)
             if not os.path.exists(target_name) and os.path.exists(source_name):
-                shutil.copy(source_name, target_name)
+                try:
+                    shutil.copy(source_name, target_name)
+                except IOError:
+                    log_message("Copying %s to %s failed" % (source_name, target_name))
+                    pass
 
     @staticmethod
     def get_volume_info(filename, first_index, second_index):
@@ -469,10 +494,11 @@ class KickstartGenerator(object):
 
     def filter_kickstart_users(self):
         kickstart_users = {}
-        users = KickstartGenerator.get_kickstart_users('Users')
+        if not self.users:
+            return None
         setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in six.iteritems(users):
+        for user, ids in six.iteritems(self.users):
             if setup_passwd:
                 if [x for x in six.iterkeys(setup_passwd) if user in x]:
                     continue
@@ -485,14 +511,16 @@ class KickstartGenerator(object):
         return kickstart_users
 
     def generate(self):
+        if not self.collect_data():
+            log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
+            return None
         packages = self.output_packages()
-        if packages:
-            self.ks.handler.packages.add(packages)
-        self.update_repositories(KickstartGenerator.get_kickstart_repo('available-repos'))
-        self.update_users(self.filter_kickstart_users())
+        self.ks.handler.packages.add(packages)
+        self.update_repositories(self.repos)
+        self.update_users(self.users)
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
         self.update_partitioning()
-        self.embed_script(self.get_latest_tarball())
+        self.embed_script(self.latest_tarball)
         self.save_kickstart()
 
 
