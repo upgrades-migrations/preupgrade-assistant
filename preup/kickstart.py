@@ -392,6 +392,7 @@ class KickstartGenerator(object):
 
     def embed_script(self, tarball):
         tarball_content = get_file_content(tarball, 'rb', decode_flag=False)
+        tarball_name = os.path.splitext(os.path.splitext(os.path.basename(tarball))[0])[0]
         script_str = ''
         try:
             script_path = settings.KS_TEMPLATE_POSTSCRIPT
@@ -404,6 +405,7 @@ class KickstartGenerator(object):
             return
 
         script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
+        script_str = script_str.replace('{RESULT_NAME}', tarball_name)
 
         script = Script(script_str, type=KS_SCRIPT_POST, inChroot=True)
         self.ks.handler.scripts.append(script)

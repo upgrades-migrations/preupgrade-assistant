@@ -7,6 +7,7 @@ echo "{tar_ball}" > data
 base64 --decode data > ${TAR_BALL}
 tar -xzvf ${TAR_BALL}
 ls -laR >> ${PREUPGRADE_LOG}
+cd {RESULT_NAME}
 PWD=${pwd}
 cd cleanconf
 for file in $(find . -type f)
