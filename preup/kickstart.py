@@ -167,8 +167,13 @@ class PartitionGenerator(object):
                     pv_name = 'pv.%.2d' % int(ident)
                     if 'raid' in self.layout[index + 1].strip():
                         continue
-                    if 'crypt' in self.layout[index + 1].strip():
-                        crypt = '--encrypted'
+                    new_row_fields = self.layout[index + 1].strip().split()
+                    if 'crypt' in new_row_fields:
+                        crypt = ' --encrypted'
+                        try:
+                            pv_name = new_row_fields[6]
+                        except IndexError:
+                            pass
                     if not self.part_dict.has_key(pv_name):
                         self.part_dict[pv_name] = {}
                     self.part_dict[pv_name]['size'] = size
@@ -182,14 +187,18 @@ class PartitionGenerator(object):
                         self.part_dict[mount] = {}
                     self.part_dict[mount]['size'] = size
                     self.part_dict[mount]['device'] = device
-                    self.part_dict[mount]['crypt'] = None
+                    self.part_dict[mount]['crypt'] = ""
                     continue
             if 'raid' in device_type:
                 raid_type = device_type[-1]
-                if 'crypt' in self.layout[index + 1].strip():
-                    crypt = ' --encrypted --passphrase='
-                    fields = self.layout[index + 1].strip().split()
-                    mount = fields[6]
+                try:
+                    new_row_fields = self.layout[index + 1].strip().split()
+                    if 'crypt' in new_row_fields:
+                        crypt = ' --encrypted --passphrase='
+                        fields = self.layout[index + 1].strip().split()
+                        mount = fields[6]
+                except IndexError:
+                    pass
                 if not self.raid_devices.has_key(mount):
                     self.raid_devices[mount] = {}
                     self.raid_devices[mount]['raid_devices'] = []
@@ -200,12 +209,16 @@ class PartitionGenerator(object):
                 index_pv += 1
                 continue
             if device_type == 'lvm':
+                if self.vg_info is None or not self.vg_info:
+                    continue
                 vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
                 # Get volume group name
                 if not self.vol_group.has_key(vg_name):
                     self.vol_group[vg_name] = {}
                 self.vol_group[vg_name]['pesize'] = 4096
                 self.vol_group[vg_name]['pv_name'] = pv_name
+                if self.lvdisplay is None or not self.lvdisplay:
+                    continue
                 lv_name = [x for x in six.iterkeys(self.lvdisplay) if x in device][0]
                 if not self.logvol.has_key(mount):
                     self.logvol[mount] = {}
@@ -216,10 +229,15 @@ class PartitionGenerator(object):
     def _get_part_devices(self):
         layout = []
         for key, value in sorted(six.iteritems(self.part_dict)):
-            if value['crypt'] is None:
-                layout.append('part %s --size=%s --ondisk=%s' % (key, value['size'], value['device']))
+            crypt = value['crypt']
+            try:
+                device = " --ondisk=%s" % value['device']
+            except KeyError:
+                device = ""
+            if crypt == "":
+                layout.append('part %s --size=%s%s' % (key, value['size'], device))
             else:
-                layout.append('part %s --size=%s %s' % (key, value['size'], value['crypt']))
+                layout.append('part %s --size=%s%s' % (key, value['size'], crypt))
         return layout
 
     def _get_logvol_device(self):
@@ -434,7 +452,11 @@ class KickstartGenerator(object):
 
     @staticmethod
     def get_volume_info(filename, first_index, second_index):
-        volume_list = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        try:
+            volume_list = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        except IOError:
+            log_message("File %s is missing. Partitioning layout has not to be complete." % filename, level=logging.WARNING)
+            return None
         volume_info = {}
         for line in volume_list:
             fields = line.strip().split(':')
@@ -527,6 +549,7 @@ class KickstartGenerator(object):
         self.update_partitioning()
         self.embed_script(self.latest_tarball)
         self.save_kickstart()
+        return True
 
 
 def main():
