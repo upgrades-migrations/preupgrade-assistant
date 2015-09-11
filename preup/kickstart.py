@@ -165,15 +165,21 @@ class PartitionGenerator(object):
                 if not mount:
                     ident = index_pv
                     pv_name = 'pv.%.2d' % int(ident)
-                    if 'raid' in self.layout[index + 1].strip():
-                        continue
-                    new_row_fields = self.layout[index + 1].strip().split()
-                    if 'crypt' in new_row_fields:
-                        crypt = ' --encrypted'
-                        try:
-                            pv_name = new_row_fields[6]
-                        except IndexError:
-                            pass
+                    try:
+                        new_row = self.layout[index + 1].strip()
+                        if 'raid' in new_row:
+                            continue
+                        if 'part' in new_row:
+                            continue
+                        new_row_fields = new_row.split()
+                        if 'crypt' in new_row_fields:
+                            crypt = ' --encrypted'
+                            try:
+                                pv_name = new_row_fields[6]
+                            except IndexError:
+                                pass
+                    except IndexError:
+                        pass
                     if not self.part_dict.has_key(pv_name):
                         self.part_dict[pv_name] = {}
                     self.part_dict[pv_name]['size'] = size

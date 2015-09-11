@@ -13,7 +13,6 @@ def suite():
     suite.addTests(test_xml.suite())
     suite.addTests(test_oscap.suite())
     suite.addTests(test_api.suite())
-    #suite.addTests(test_generation.suite())
     suite.addTests(test_kickstart.suite())
     return suite
 

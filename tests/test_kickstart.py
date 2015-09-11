@@ -86,6 +86,17 @@ class TestPartitioning(base.TestCase):
                            ]
         self.assertListEqual(self.ks.part_layout, expected_layout)
 
+    def test_native_partitioning(self):
+        raid_lsblk = get_full_path('lsblk_native_list')
+        self.ks.get_partition_layout(raid_lsblk, None, None)
+        expected_layout = ['clearpart --all',
+                           'part / --size=5000 --ondisk=vda',
+                           'part /boot --size=200 --ondisk=vda',
+                           'part /home --size=2000 --ondisk=vda',
+                           'part swap --size=1000 --ondisk=vda',
+                           ]
+        self.assertListEqual(self.ks.part_layout, expected_layout)
+
     """def test_lvm_complicated_partitions(self):
         lvm_lsblk = get_full_path('lvm_complicated_lsblk_list')
         vgs_list = get_full_path('vgs_list_complicated')
