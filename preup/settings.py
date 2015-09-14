@@ -135,7 +135,7 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in %s.\n" 
                  "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
                  "- the partitioning layout which was used on this system\n" \
                  "- the package set which was installed on this system.\n" \
-                 "The Kickstart file is pre-generated from this system and is not to be used directly for \n\n" \
+                 "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
                  "installation of Red Hat Enterprise Linux 7.\n" \
                  "The Kickstart file needs to be modified by administator.\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
