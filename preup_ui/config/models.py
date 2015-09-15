@@ -29,7 +29,7 @@ class AppSettings(models.Model):
                     return json.loads(value)
                 except ValueError:
                     pass
-        s = cls.set_initial_state_filter(["fail", "needs_action", "needs_inspection", "fixed", "pass", "informational"])
+        s = cls.set_initial_state_filter(["error", "fail", "needs_action", "needs_inspection", "fixed", "pass", "informational"])
         return json.loads(s.value)
 
     @classmethod

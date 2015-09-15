@@ -90,7 +90,7 @@ class StateFilterForm(forms.Form):
 
         #states.insert(0, ('', 'All'))
 
-        blacklisted_states = ['notchecked', 'error']
+        self.blacklisted_states = ['notchecked']
 
         sorted_mapping = sorted(TestResult.TEST_STATES.get_mapping(), key=lambda x: x[0])
 
@@ -98,7 +98,7 @@ class StateFilterForm(forms.Form):
             try:
                 print_state = states[state_css]
             except KeyError:
-                if not TestResult.TEST_STATES[state_key] in blacklisted_states:
+                if not TestResult.TEST_STATES[state_key] in self.blacklisted_states:
                     print_state = "%s (0)" % TestResult.TEST_STATES.display(state_key)
                 else:
                     continue
@@ -114,8 +114,7 @@ class StateFilterForm(forms.Form):
         #    self.fields[field_name].initial = initial
 
     def all_checked(self):
-        # reason of -2 is that notchecked and error are blacklisted, so dont count them in 100%
-        return len(self.initial) >= len(TestResult.TEST_STATES.get_mapping()) - 2
+        return len(self.initial) >= len(TestResult.TEST_STATES.get_mapping()) - len(self.blacklisted_states)
 
 
 class ListActionForm(forms.Form):
