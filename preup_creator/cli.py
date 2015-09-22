@@ -26,6 +26,7 @@ class CLICreator(object):
 
     def add_args(self):
         self.parser.add_option(
+            "-m",
             "--main-directory",
             dest="maindir",
             help="Specify main directory for content",
@@ -39,8 +40,8 @@ class CLICreator(object):
         self.parser.add_option(
             "-d",
             "--debug",
-            acttion='store_true',
-            help="Turn on debugging mode",
+            action='store_true',
+            help="Turn on debugging mode"
         )
 
 if __name__ == '__main__':

@@ -5,26 +5,26 @@
 import sys
 from preup_creator.cli import CLICreator
 from preup_creator.conf import ConfCreator
+from preup_creator.application import Application
 from preup import settings
 
 #preupgrade_binary="/usr/bin/preupgrade-oscap"
 
 
 def main():
-    cli = CLICreator()
-    conf = ConfCreator(cli.opts, settings, cli)
+    cli_creator = CLICreator()
+    conf = ConfCreator(cli_creator.opts, settings, cli_creator)
     app = Application(conf)
     ret = 0
-    if cli.opts.debug:
+    if cli_creator.opts.debug:
         ret = app.run()
     else:
         try:
             ret = app.run()
         except KeyboardInterrupt:
-            print '\nAssessment interrupted.'
             return 1
         except Exception as ex:
-            cli.parser.error(str(ex))
+            cli_creator.parser.error(str(ex))
     return ret
 
 

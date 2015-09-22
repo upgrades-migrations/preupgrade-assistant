@@ -342,18 +342,21 @@ def get_message(title="", message="Do you want to continue?", prompt=None):
     :param message: Message text
     :return: y or n
     """
-    yes = ['yes', 'y']
-    yesno = yes + ['no', 'n']
+    yes = ['yes', 'y', 'Y', 'Yes']
+    yesno = yes + ['no', 'n', 'N', 'No']
     print (title)
-    print (message + prompt)
+    if prompt is not None:
+        print (message + prompt)
+    else:
+        print (message)
     while True:
         try:
             if(sys.version_info[0] == 2):
-                choice = raw_input().lower()
+                choice = raw_input()
             else:
-                choice = input().lower()
+                choice = input()
         except KeyboardInterrupt:
-            return "n"
+            raise
         if prompt and choice not in yesno:
             print ('You have to choose one of y/n.')
         else:
