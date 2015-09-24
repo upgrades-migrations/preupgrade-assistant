@@ -8,23 +8,19 @@ from preup_creator.conf import ConfCreator
 from preup_creator.application import Application
 from preup import settings
 
-#preupgrade_binary="/usr/bin/preupgrade-oscap"
-
 
 def main():
     cli_creator = CLICreator()
     conf = ConfCreator(cli_creator.opts, settings, cli_creator)
     app = Application(conf)
     ret = 0
-    if cli_creator.opts.debug:
+    try:
         ret = app.run()
-    else:
-        try:
-            ret = app.run()
-        except KeyboardInterrupt:
-            return 1
-        except Exception as ex:
-            cli_creator.parser.error(str(ex))
+    except KeyboardInterrupt:
+        print ('\nContent creation was interrupted by user.\n')
+        return 1
+    #except Exception as ex:
+    #    cli_creator.parser.error(str(ex))
     return ret
 
 

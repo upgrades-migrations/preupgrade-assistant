@@ -23,10 +23,6 @@ class Application(object):
         self.ui_helper = UIHelper(self.conf.maindir)
 
     def run(self):
-        try:
-            self.ui_helper.take_manadatory_info()
-        except KeyboardInterrupt:
-            print ('\nContent creation was interrupted by user.\n')
-            raise
+        self.ui_helper.take_manadatory_info()
 
 
