@@ -334,7 +334,7 @@ def get_upgrade_dir_path(dirname):
     return None
 
 
-def get_message(title="", message="Do you want to continue?"):
+def get_message(title="", message="Do you want to continue?", prompt=None):
     """
     Function asks for input from user
 
@@ -342,20 +342,22 @@ def get_message(title="", message="Do you want to continue?"):
     :param message: Message text
     :return: y or n
     """
-    yes = ['yes', 'y']
-    yesno = yes + ['no', 'n']
-    prompt = ' y/n'
+    yes = ['yes', 'y', 'Y', 'Yes']
+    yesno = yes + ['no', 'n', 'N', 'No']
     print (title)
-    print (message + prompt)
+    if prompt is not None:
+        print (message + prompt)
+    else:
+        print (message)
     while True:
         try:
             if(sys.version_info[0] == 2):
-                choice = raw_input().lower()
+                choice = raw_input()
             else:
-                choice = input().lower()
+                choice = input()
         except KeyboardInterrupt:
-            return "n"
-        if choice not in yesno:
+            raise
+        if prompt and choice not in yesno:
             print ('You have to choose one of y/n.')
         else:
             return choice

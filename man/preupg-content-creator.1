@@ -1,0 +1,38 @@
+.\" Copyright Petr Hracek, 2015
+.\"
+.\" This page is distributed under GPL.
+.\"
+.TH preupg-content-creator 1 2015-10-30 "" "Linux User's Manual"
+.SH NAME
+preupg-content-creator \- Preupgrade assistant provides this script for faster creation of content
+
+.SH AVAILABLE FUNCTIONS
+API provides a set of functions which can be used for better handling of your data.
+
+\fBcheck_applies_to\fP - Function can be used for specific RPM package detection. If the RPM package does not exists then check script exit with \fBexit_not_applicable\fP return code.
+
+\fBcheck_root\fP - Function checks whether user is root.
+
+\fBsolution_file\fP - Function adds a message to solution file defined in INI file.
+
+\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory.
+
+\fBservice_is_enabled\fP - Function checks if service provided by command chkconfig is enabled.
+
+.SH HOW TO TEST CONTENT
+
+For testing your content on system follow these steps:
+
+1. Execute preupg-create-group-xml command which checks whether your content is properly created and nothing is missing.
+
+preupg-create-group-xml contents/[Migration_path]/[content_dir]/
+
+2. The command preupg-create-group-xml creates XML file in contents/[Migration_path]-results/[content_dir]/all_xccdf.xml
+
+3. Execute preupg binary as a root user:
+
+preupg -c contents/[Migration_path]/[content_dir]/
+
+
+.SH AUTHORS
+Petr Hracek, <phracek@redhat.com> (man page)
