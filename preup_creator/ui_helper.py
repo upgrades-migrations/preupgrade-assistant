@@ -8,7 +8,9 @@ from __future__ import print_function
 import os
 import ConfigParser
 import shutil
+import sys
 
+from distutils.util import strtobool
 from preup import utils
 from preup.utils import get_valid_scenario
 from preup_creator import settings
@@ -16,8 +18,36 @@ from preup_creator import settings
 section = 'preupgrade'
 
 
-def get_user_value(message, prompt=None):
-    return utils.get_message(message=message, prompt=prompt)
+def get_user_input(message, any_input=False):
+    """
+    Function for command line messages
+
+    :param message: prompt string
+    :param default_yes: If the default value is YES
+    :param any_input: if True, return input without checking it first
+    :return: True or False, based on user's input
+    """
+    choice = '([y]/n)'
+
+    if any_input:
+        msg = '{0} '.format(message)
+    else:
+        msg = '{0} {1}? '.format(message, choice)
+
+    while True:
+        if(sys.version_info[0] == 2):
+            user_input = raw_input(msg)
+        else:
+            user_input = input(msg)
+
+        if not any_input:
+            try:
+                user_input = strtobool(user_input)
+            except ValueError:
+                print ('You have to type [y]es or [n]o.')
+                continue
+
+        return user_input
 
 
 class UIHelper(object):
@@ -39,9 +69,8 @@ class UIHelper(object):
     @staticmethod
     def check_path(path, msg):
         if os.path.exists(path):
-            accept = ['y', 'yes', 'Y']
-            choice = utils.get_message(message=msg, prompt='y/n')
-            if choice not in accept:
+            choice = get_user_input(msg)
+            if not choice:
                 return None
         return True
 
@@ -74,7 +103,7 @@ class UIHelper(object):
 
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
-            self.upgrade_path = get_user_value(settings.upgrade_path)
+            self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
 
         if not get_valid_scenario(self.upgrade_path):
             print ("Scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
@@ -87,8 +116,8 @@ class UIHelper(object):
         return True
 
     def get_content_info(self):
-        self._group_name = get_user_value(settings.group_name)
-        self._content_name = get_user_value(settings.content_name)
+        self._group_name = get_user_input(settings.group_name, any_input=True)
+        self._content_name = get_user_input(settings.content_name, any_input=True)
         self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
         if os.path.exists(self.get_content_path()):
             message = "Content %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
@@ -98,22 +127,22 @@ class UIHelper(object):
                 self.refresh_content = True
         else:
             os.makedirs(self.get_content_path())
-        checkscript = get_user_value(settings.check_script)
+        checkscript = get_user_input(settings.check_script, any_input=True)
         if UIHelper.check_path(os.path.join(self.get_content_path(), checkscript),
                                settings.check_path % checkscript) is None:
             self.check_script = False
         self.content_dict['check_script'] = checkscript
-        solution = get_user_value(settings.solution_text)
+        solution = get_user_input(settings.solution_text, any_input=True)
         if UIHelper.check_path(os.path.join(self.get_content_path(), solution),
                                settings.check_path % solution) is None:
             self.solution_file = False
         self.content_dict['solution'] = solution
-        self.content_dict['content_title'] = get_user_value(settings.content_title)
-        response = get_user_value(settings.content_desc, prompt='y/n')
-        if response is 'n':
+        self.content_dict['content_title'] = get_user_input(settings.content_title, any_input=True)
+        response = get_user_input(settings.content_desc)
+        if not response:
             self.content_dict['content_description'] = None
         else:
-            desc = get_user_value(settings.content_desc_text)
+            desc = get_user_input(settings.content_desc_text, any_input=True)
             self.content_dict['content_description'] = desc
 
     def _create_ini_file(self):
@@ -185,7 +214,6 @@ class UIHelper(object):
 
     def _brief_summary(self):
         content_path = os.path.join(self.upgrade_path, self.get_group_name(), self.get_content_name())
-        print (self.content_ini)
         print (settings.summary_title)
         print (settings.summary_directory % self.get_content_path())
         print (settings.summary_ini % os.path.join(content_path, self.get_content_ini_file()))
