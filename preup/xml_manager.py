@@ -117,18 +117,15 @@ def remove_lines(string, regex_t, post_regex_t):
 
     s_search = re.search(s_re, string)
     e_search = re.search(e_re, string)
-    s_pos = 0
-    e_pos = 0
-    if not s_search or not e_search:
-        return string
     if remove_start:
         s_pos = s_search.start()
     else:
-        s_search.end()
+        s_pos = s_search.end()
+
     if remove_end:
         e_pos = e_search.start()
     else:
-        e_search.end()
+        e_pos = e_search.end()
 
     return string[:s_pos] + string[e_pos:]
 
@@ -172,7 +169,7 @@ def clean_html(report_path):
     """
     Function cleans a report
     """
-    file_content = get_file_content(report_path, 'r')
+    file_content = get_file_content(report_path, 'rb')
 
     s_testres = ('[\t ]*<div id="intro">[\t ]*\n[\t ]*<h2>Introduction</h2>[\t ]*\n', False)
     e_testres = ('[\t ]*</table>[\t ]*\n[\t ]*</div>[\t ]*\n[\t ]*</div>[\t ]*\n', False)
@@ -189,7 +186,7 @@ def clean_html(report_path):
     # add preupg nvr
     nl = re.sub('[\t ]*<h2>Introduction</h2>[\t ]*\n', add_preupg_scanner_info(), nl)
 
-    write_to_file(report_path, 'w', nl)
+    write_to_file(report_path, 'wb', nl)
 
 
 class XmlManager(object):
@@ -257,7 +254,7 @@ class XmlManager(object):
         """
         orig_file = os.path.join(self.dirname,
                                  result_name + "." + extension)
-        lines = get_file_content(orig_file, "r", method=True)
+        lines = get_file_content(orig_file, "rb", method=True)
         for dir_name, files in solution_files.iteritems():
             section = dir_name.replace(os.path.join(self.dirname, self.scenario),
                                        "").replace("/", "_")
@@ -268,7 +265,7 @@ class XmlManager(object):
                 continue
             else:
                 text = get_file_content(os.path.join(dir_name, file_name),
-                                        "r",
+                                        "rb",
                                         method=True)
 
             for cnt, line in enumerate(lines):
@@ -289,7 +286,7 @@ class XmlManager(object):
                 for cnt, line in enumerate(lines):
                     if 'SOLUTION_MSG' in line.strip():
                         lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<', '><', line.strip())
-            write_to_file(orig_file, "w", lines)
+            write_to_file(orig_file, "wb", lines)
 
     def find_solution_files(self, result_name, xml_solution_files):
         """
@@ -323,4 +320,4 @@ class XmlManager(object):
             if not found_section:
                 new_content.append(line)
 
-        write_to_file(report_path, 'w', new_content)
+        write_to_file(report_path, 'wb', new_content)

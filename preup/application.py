@@ -4,36 +4,30 @@ The application module serves for running oscap binary and reporting results to 
 """
 import shutil
 import datetime
+import os
+import sys
 from xmlrpclib import Fault
 from distutils import dir_util
 
-from preup import xccdf, xml_manager, remediate, utils
+from preup import xccdf, xml_manager, remediate, utils, settings
 from preup.common import Common
 from preup.scanning import ScanProgress, format_rules_to_table
 from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
 from preup.utils import run_subprocess, get_assessment_version, get_message
 from preup.utils import tarball_result_dir, get_system
-from preup.logger import *
+from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
-from preup import utils
-from preup.kickstart import KickstartGenerator
-
-from xmlrpclib import Fault
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
 
 
 def get_xsl_stylesheet():
-    """
-    Return full XSL stylesheet path
-    """
+    """Return full XSL stylesheet path"""
     return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
 
 
 def fault_repr(self):
-    """
-    monkey patching Fault's repr method so newlines are actually interpreted
-    """
+    """monkey patching Fault's repr method so newlines are actually interpreted"""
     log_message(self.faultString)
     return "<Fault %s: %s>" % (self.faultCode, self.faultString)
 
@@ -41,9 +35,7 @@ Fault.__repr__ = fault_repr
 
 
 def list_contents(source_dir):
-    """
-    Function returns a list of installed contents
-    """
+    """Function returns a list of installed contents"""
     content_dict = {}
     is_dir = lambda x: os.path.isdir(os.path.join(source_dir, x))
     dirs = os.listdir(source_dir)
@@ -58,14 +50,11 @@ def list_contents(source_dir):
 
 def show_message(message):
     """
-    The function will print out on stdout
-    message and title
-    Return values are:
-    y, yes for accept
-    n, ne for reject
+    Prints message out on stdout message (kind of yes/no) and return answer
+    Return True on accept (y/yes). Otherwise returns False
     """
     accept = ['y', 'yes']
-    choice = get_message(title=message)
+    choice = get_message(title=message, prompt='y/n')
     if choice in accept:
         return True
     else:
@@ -73,17 +62,14 @@ def show_message(message):
 
 
 class Application(object):
-    """
-    Class for oscap binary and reporting results to UI
-    """
+
+    """Class for oscap binary and reporting results to UI"""
     binary = "/usr/bin/oscap"
     command_eval = ['xccdf', 'eval']
     command_remediate = ['xccdf', 'remediate']
 
     def __init__(self, conf):
-        """
-        conf is preup.conf.Conf object, contains configuration
-        """
+        """conf is preup.conf.Conf object, contains configuration"""
         self.conf = conf
         self.content = ""
         self.result_file = ""
@@ -95,6 +81,10 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+        if self.conf.debug is None:
+            set_level(logging.INFO)
+        else:
+            set_level(logging.DEBUG)
 
     def get_command_generate(self):
         if not get_system():
@@ -104,36 +94,29 @@ class Application(object):
         return command_generate
 
     def get_third_party_name(self):
-        """
-        Function returns correct third party name
-        """
+        """Function returns correct third party name"""
         if self.third_party != "" and not self.third_party.endswith("_"):
             self.third_party += "_"
         return self.third_party
 
     def get_default_xml_result_path(self):
-        """
-        Returns full XML result path
-        """
+        """Returns full XML result path"""
         return os.path.join(self.conf.result_dir,
                             self.get_third_party_name() + self.conf.xml_result_name)
 
     def get_default_html_result_path(self):
-        """
-        Returns full HTML result path
-        """
+        """Returns full HTML result path"""
         return os.path.join(self.conf.result_dir,
                             self.get_third_party_name() + self.conf.html_result_name)
 
     def get_default_tarball_path(self):
-        """
-        Returns full tarball path
-        """
+        """Returns full tarball path"""
         return os.path.join(self.conf.result_dir, self.conf.tarball_name)
 
     def get_default_txt_result_path(self):
         """
         Function returns default txt result path based on result_dir
+
         :return: default txt result path
         """
         return os.path.join(self.conf.result_dir,
@@ -142,6 +125,7 @@ class Application(object):
     def get_binary(self):
         """
         Returns oscap binary
+
         :return: list with path to oscap binary
         """
         return [self.binary]
@@ -157,15 +141,11 @@ class Application(object):
         return os.path.join(assessment, settings.add_ons)
 
     def get_postupgrade_dir(self):
-        """
-        Function returns postupgrade dir
-        """
+        """Function returns postupgrade dir"""
         return os.path.join(self.conf.result_dir, settings.postupgrade_dir)
 
     def build_generate_command(self, xml_file, html_file):
-        """
-        Function builds a command for generating results
-        """
+        """Function builds a command for generating results"""
         command = self.get_binary()
         command.extend(self.get_command_generate())
         if not get_system():
@@ -179,18 +159,13 @@ class Application(object):
         self.result_file = self.get_default_xml_result_path()
         command = self.get_binary()
         report = self.get_default_html_result_path()
-        if self.conf.apply:
-            command.extend(self.command_remediate)
-            command.extend(("--results", self.result_file))
-            command.extend(("--report", report))
-        else:
-            command.extend(self.command_eval)
-            command.append('--progress')
-            command.extend(('--profile', self.conf.profile))
+        command.extend(self.command_eval)
+        command.append('--progress')
+        command.extend(('--profile', self.conf.profile))
 
-            # take name of content and create report: <content_name>.html
-            #command.extend(('--report', report))
-            command.extend(("--results", self.result_file))
+        # take name of content and create report: <content_name>.html
+        #command.extend(('--report', report))
+        command.extend(("--results", self.result_file))
         command.append(check_xml(self.content))
         return command
 
@@ -216,7 +191,7 @@ class Application(object):
                 'to allow connections on port 8099.' % url)
 
         tarball_results = self.conf.results or tarball_path
-        file_content = get_file_content(tarball_results, 'rb')
+        file_content = get_file_content(tarball_results, 'rb', False, False)
 
         binary = xmlrpclib.Binary(file_content)
         host = socket.gethostname()
@@ -228,7 +203,7 @@ class Application(object):
             status = response['status']
         except KeyError:
             log_message('Invalid response from server.')
-            log_message("Invalid response from server: %s" % response, level=logging.ERROR)
+            log_message("Invalid response from server: ", response, level=logging.ERROR)
         else:
             if status == 'OK':
                 try:
@@ -240,10 +215,10 @@ class Application(object):
             else:
                 try:
                     message = response['message']
-                    log_message('Report not submitted. Server returned message: %s' % message)
+                    log_message('Report not submitted. Server returned message: ', message)
                     log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
                 except KeyError:
-                    log_message('Report not submitted. Server returned status: %s' % status)
+                    log_message('Report not submitted. Server returned status: ', status)
                     log_message("Report submit: %s" % status, level=logging.ERROR)
 
     def apply_scan(self):
@@ -257,9 +232,7 @@ class Application(object):
             remediate.postupgrade_scripts(self.conf.verbose, self.get_postupgrade_dir())
 
     def prepare_scan_directories(self):
-        """ The function is used for prepartion directories used during
-        scan functionality
-        """
+        """Used for preparation of directories used during scan functionality"""
         self.basename = os.path.basename(self.content)
         #today = datetime.datetime.today()
         if not self.conf.temp_dir:
@@ -275,23 +248,16 @@ class Application(object):
                             os.path.join(self.conf.result_dir, val))
 
     def prepare_apply_directories(self):
-        """
-        The function is used for preparation directories
-        during remedation
-        """
+        """The function is used for preparation directories during remedation"""
 
         check_or_create_temp_dir(self.conf.result_dir)
 
     def get_total_check(self):
-        """
-         Returns a total check
-        """
+        """Returns a total check"""
         return self.report_parser.get_number_checks()
 
     def run_scan_process(self):
-        """
-        Function scans the source system
-        """
+        """Function scans the source system"""
         self.xml_mgr = xml_manager.XmlManager(self.conf.result_dir,
                                               self.get_scenario(),
                                               os.path.basename(self.content),
@@ -503,16 +469,12 @@ class Application(object):
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
-        """
-        Copy directory try with contents to /root/preupgrade
-        Call xccdf_compose API for generating all-xccdf.xml
-
-        """
-        xccdf_compose = XCCDFCompose(assessment_dir)
-        generated_dir = xccdf_compose.generate_xml()
-        if os.path.isdir(assessment_dir):
-            shutil.rmtree(assessment_dir)
-        shutil.move(generated_dir, assessment_dir)
+        if not self.conf.contents:
+            xccdf_compose = XCCDFCompose(assessment_dir)
+            generated_dir = xccdf_compose.generate_xml(generate_from_ini=False)
+            if os.path.isdir(assessment_dir):
+                shutil.rmtree(assessment_dir)
+            shutil.move(generated_dir, assessment_dir)
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         if not self.conf.contents:
@@ -576,33 +538,11 @@ class Application(object):
         # pack all configuration files to tarball
         return tar_ball_name
 
-    def post_scan(self):
-        """ This is used for postscan actions """
-        log_message("Running postscripts: ...",
-                    new_line=False)
-        try:
-            try:
-                f_name = open(self.conf.post_script, "r")
-                for line in f_name.readlines():
-                    if not line.strip().startswith("#"):
-                        cmd = line.strip()
-                        log_message("running command: %s" % cmd,
-                                    print_output=self.conf.verbose)
-                        run_subprocess(cmd, shell=True)
-                        log_message("command execution has finished",
-                                    print_output=self.conf.verbose)
-            except IOError:
-                log_message('Problem with openning file %s.' % self.conf.post_scripts,
-                            level=logging.ERROR)
-        finally:
-            log_message("done")
-            f_name.close()
-
-    def summary_report(self):
+    def summary_report(self, tarball_path):
         """
          Function prints a summary report
         """
-        command = settings.ui_command % settings.tarball_result_dir
+        command = settings.ui_command % tarball_path
         if self.conf.text:
             path = self.get_default_txt_result_path()
         else:
@@ -677,15 +617,15 @@ class Application(object):
             return_val = xccdf.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
             return return_val
 
-        if self.conf.apply:
-            self.apply_scan()
-            return 0
-
         if self.conf.kickstart:
-            kg = KickstartGenerator(self.get_preupgrade_kickstart())
+            if not os.path.exists(self.get_default_xml_result_path()):
+                log_message("'preupg' command was not run yet. Run them before kickstart generation.")
+                return 1
+            kg = KickstartGenerator(settings.KS_DIR, self.get_preupgrade_kickstart())
             KickstartGenerator.copy_kickstart_templates()
-            ks = kg.generate()
-            log_message('Kickstart for migration is %s.' % self.get_preupgrade_kickstart())
+            dummy_ks = kg.generate()
+            if dummy_ks:
+                log_message(settings.kickstart_text % self.get_preupgrade_kickstart())
             return 0
 
         if not self.conf.scan and not self.conf.contents:
@@ -697,7 +637,7 @@ class Application(object):
                     self.conf.scan = dir_name
                     cnt += 1
 
-            if int(cnt) != 1:
+            if int(cnt) < 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
                 return 1
@@ -742,13 +682,12 @@ If you would like to use this tool, you have to have only one." % settings.sourc
             current_dir = os.getcwd()
             os.chdir("/tmp")
             tarball_path = self.scan_system()
-            self.summary_report()
+            self.summary_report(tarball_path)
             self.common.copy_common_files()
             utils.remove_home_issues()
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)
-            #self.post_scan()
             return 0
 
         log_message('Nothing to do. Give me a task, please.')

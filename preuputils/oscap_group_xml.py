@@ -4,13 +4,15 @@ This class will ready the YAML file as INI file.
 So no change is needed from maintainer point of view
 """
 import os
+import sys
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import print_error_msg, XmlUtils
-from preup.utils import get_file_content, write_to_file
+from preup.utils import get_file_content, write_to_file, check_file
+from preup import settings
 from lxml.etree import ElementTree
 
 try:
@@ -40,29 +42,40 @@ class OscapGroupXml(object):
         This function is used for finding all _fix files in the user defined
         directory
         """
+        # solve python 2 & 3 compatibility
+        if(sys.version_info[0] == 2):
+            config_load = lambda x,y: x.read(y)
+            config_decode = lambda x: x.decode(settings.defenc)
+        else:
+            config_load = lambda x,y: x.read(y, settings.defenc)
+            config_decode = lambda x: x
+
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
         for file_name in self.lists:
+            if check_file(file_name, "r") is False:
+                continue
             try:
                 stream = open(file_name, 'r')
                 try:
                     config = configparser.ConfigParser()
-                    config.readfp(open(file_name))
+                    config_load(config, file_name)
                     fields = {}
                     if config.has_section('premigrate'):
                         section = 'premigrate'
                     else:
                         section = 'preupgrade'
                     for option in config.options(section):
-                        fields[option] = config.get(section, option)
+                        fields[option] = config_decode(config.get(section, option))
                     self.loaded[file_name] = [fields]
                 except configparser.MissingSectionHeaderError, mshe:
                     print_error_msg(title="Missing section header")
                 except configparser.NoSectionError, nse:
                     print_error_msg(title="Missing section header")
-            except IOError:
-                print 'Problem with reading file %s' % file_name
+            except configparser.ParsingError:
+                print_error_msg(title="Incorrect INI file\n", msg=file_name)
+                os.sys.exit(1)
 
     def collect_group_xmls(self):
         """
@@ -70,7 +83,7 @@ class OscapGroupXml(object):
         """
         content = get_file_content(os.path.join(self.dirname, "group.xml"), "r")
         try:
-            self.ret[self.dirname] = (ElementTree.fromstring(content))
+            self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
         except ParseError, par_err:
             print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
         return self.ret
@@ -84,9 +97,9 @@ class OscapGroupXml(object):
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
-            write_to_file(file_name, "w", ["%s" % item for item in self.rule])
+            write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
         except IOError, ior:
-            print 'Problem with rite data to file ', file_name
+            print 'Problem with write data to the file %s %s' % (file_name, ior.message)
 
     def write_profile_xml(self, target_tree):
         """
@@ -98,3 +111,10 @@ class OscapGroupXml(object):
             write_to_file(file_name, "w", ElementTree.tostring(target_tree, "utf-8"))
         except IOError, ioe:
             print 'Problem with writing to file ', file_name, ioe.message
+            # encoding must be set! otherwise ElementTree return non-ascii characters
+            # as html entities instead, which are unsusable for us
+            data = ElementTree.tostring(target_tree, "utf-8")
+            write_to_file(file_name, "wb", data, False)
+        except IOError, ioe:
+            print ('Problem with writing to file ', file_name, ioe.message)
+

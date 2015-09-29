@@ -5,6 +5,37 @@ import subprocess
 import fnmatch
 from preup.logger import *
 import shutil
+from os import path, access, W_OK, R_OK, X_OK
+
+def check_file(fp, mode):
+    """
+    Check if file exists and has set right mode
+
+    mode can be in string format as for function open (available letters: wrax)
+    or int number (in that case prefered are os constants W_OK, R_OK, X_OK)
+    (letter 'a' has same signification as 'w', is here due to compatibility
+    with open mode)
+    """
+    intern_mode = 0
+    if(isinstance(mode, unicode)):
+        if('w' in mode or 'a' in mode):
+            intern_mode += W_OK
+        if('r' in mode):
+            intern_mode += R_OK
+        if('x' in mode):
+            intern_mode += X_OK
+    else:
+        intern_mode = mode
+    if(path.exists(fp)):
+        if(path.isfile(fp)):
+            if(access(fp, intern_mode)):
+                return True
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
 
 
 def check_xml(xml_file):
@@ -62,13 +93,20 @@ def get_interpreter(file, verbose=False):
                     '/usr/bin/perl': '.pl'}
 
     inter = list(k for k, v in script_types.iteritems() if file.endswith(v))
-    content = get_file_content(file, 'r')
+    content = get_file_content(file, 'rb')
     if inter and content.startswith('#!'+inter[0]):
         return inter
     else:
         if verbose:
             log_message("Problem with getting interpreter", level=logging.ERROR)
         return None
+
+def print_error_msg(title="", msg="", level=' ERROR '):
+    """Function prints a ERROR or WARNING messages"""
+    number = 10
+    print ('\n')
+    print ('*'*number+level+'*'*number)
+    print (title, ''.join(msg))
 
 
 def run_subprocess(cmd, output=None, print_output=False, shell=False, function=None):
@@ -86,14 +124,12 @@ def run_subprocess(cmd, output=None, print_output=False, shell=False, function=N
             if print_output:
                 print stdout_data,
         else:
-            function(stdout_data)
+            function(stdout_data.decode(settings.defenc))
     sp.communicate()
 
     if output is not None:
-        #stdout = '\n'.join(stdout)
-        log = open(output, "wb")
-        log.write(stdout)
-        log.close()
+        # raw data, so without encoding
+        write_to_file(output, "wb", stdout, False)
     return sp.returncode
 
 
@@ -117,7 +153,7 @@ def get_system():
     Check if system is Fedora or RHEL
     :return: Fedora or None
     """
-    lines = get_file_content('/etc/redhat-release', 'r', method=True)
+    lines = get_file_content('/etc/redhat-release', 'rb', method=True)
     return [line for line in lines if line.startswith('Fedora')]
 
 
@@ -143,35 +179,47 @@ def get_assessment_version(dir_name):
 
 
 def get_valid_scenario(dir_name):
-    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d*)(-results)?$', x, re.I)]
+    matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
     if matched:
         return matched[0]
     else:
         return None
 
 
-def get_file_content(path, perms, method=False):
+def get_file_content(path, perms, method=False, decode_flag=True):
     """
     shortcut for returning content of file:
      open(...).read()
      if method is False then file is read by function read
      if method is True then file is read by function readlines
     """
+
+    # data must be init due to possible troubles with binary data
+    data = None
+
     try:
         f = open(path, perms)
         try:
-            if not method:
-                data = f.read()
+            if decode_flag is True:
+                if not method:
+                    data = f.read().decode(settings.defenc)
+                else:
+                    data = [line.decode(settings.defenc) for line in f.readlines()]
             else:
-                data = f.readlines()
+                if not method:
+                    data = f.read()
+                else:
+                    data = f.readlines()
         finally:
             f.close()
-            return data
     except IOError:
         raise
+    if data is None:
+        raise ValueError("You try decode binary data to unicode: %s" % path)
+    return data
 
 
-def write_to_file(path, perms, data):
+def write_to_file(path, perms, data, encode_flag=True):
     """
     shortcut for returning content of file:
      open(...).read()
@@ -180,13 +228,18 @@ def write_to_file(path, perms, data):
         f = open(path, perms)
         try:
             if isinstance(data, list):
+                if encode_flag is True:
+                    data = [line.encode(settings.defenc) for line in data]
                 f.writelines(data)
             else:
-                f.write(data)
+                # TODO: May we should print warn w
+                if encode_flag is True and isinstance(data, unicode):
+                    f.write(data.encode(settings.defenc))
+                else:
+                    f.write(data)
         finally:
             f.close()
     except IOError:
-        log_message('Unable to access file %s' % path, level=logging.ERROR)
         raise
 
 
@@ -219,18 +272,23 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
     tar_options = ["--numeric-owner", "--acls", "--selinux"]
 
     # used for packing directories into tarball
-    os.chdir(dirname)
+    os.chdir('/root')
+    tarball_dir = get_tarball_name(result_file, current_time)
+    tarball_name = tarball_dir + '.tar.gz'
+    bkp_tar_dir = os.path.join('/root', tarball_dir)
     if direction:
-        tarball = get_tarball_result_path(dirname, get_tarball_name(result_file, current_time))
+        shutil.copytree(dirname, bkp_tar_dir, symlinks=True)
+        tarball = get_tarball_result_path(dirname, tarball_name)
         cmd.append(cmd_pack)
         cmd.append(tarball)
-        cmd.append(".")
+        cmd.append(tarball_dir)
     else:
         cmd.append(cmd_extract)
         cmd.append(result_file)
 
     cmd.extend(tar_options)
     run_subprocess(cmd, print_output=quiet)
+    shutil.rmtree(bkp_tar_dir)
     if direction:
         try:
             shutil.copy(tarball, os.path.join(settings.tarball_result_dir+"/"))
@@ -238,7 +296,7 @@ def tarball_result_dir(result_file, dirname, quiet, direction=True):
             log_message("Problem with copying tarball %s to /root/preupgrade-results" % tarball)
     os.chdir(current_dir)
 
-    return os.path.join(settings.tarball_result_dir, get_tarball_name(result_file, current_time))
+    return os.path.join(settings.tarball_result_dir, tarball_name)
 
 
 def get_upgrade_dir_path(dirname):
@@ -257,24 +315,29 @@ def get_upgrade_dir_path(dirname):
     return None
 
 
-def get_message(title="", message="Do you want to continue?"):
+def get_message(title="", message="Do you want to continue?",  prompt=None):
     """
     Function asks for input from user
     :param title: Title of the message
     :param message: Message text
     :return: y or n
     """
-    yes = ['yes', 'y']
-    yesno = yes + ['no', 'n']
-    prompt = ' y/n'
+    yes = ['yes', 'y', 'Y', 'Yes']
+    yesno = yes + ['no', 'n', 'N', 'No']
     print title
-    print message + prompt
+    if prompt is not None:
+        print (message + prompt)
+    else:
+        print (message)
     while True:
         try:
-            choice = raw_input().lower()
+            if(sys.version_info[0] == 2):
+                choice = raw_input()
+            else:
+                choice = input()
         except KeyboardInterrupt:
-            return "n"
-        if choice not in yesno:
+            raise
+        if prompt and choice not in yesno:
             print 'You have to choose one of y/n.'
         else:
             return choice
@@ -299,7 +362,7 @@ def get_variant():
     """
     Function return a variant
     """
-    redhat_release = get_file_content("/etc/redhat-release", "r")
+    redhat_release = get_file_content("/etc/redhat-release", "rb")
     if redhat_release.startswith('Fedora'):
         return None
     try:
@@ -313,6 +376,9 @@ def get_addon_variant():
     """
     Function returns a addons variant if available
     83 - HighAvailability
+    85 - LoadBalancer
+    90 - ResilientStorage
+    92 - ScalableFileSystem
     """
     mapping_dict = {
         '83.pem': 'HighAvailability',
@@ -341,7 +407,7 @@ def clean_directory(dir_name, pattern):
     :param pattern: What files with specific pattern are deleted
     :return:
     """
-    for root, dirs, files in os.walk(dir_name):
+    for root, dummy_dirs, files in os.walk(dir_name):
         for f in files:
             if fnmatch.fnmatch(f, pattern):
                 os.unlink(os.path.join(root, f))
@@ -356,15 +422,15 @@ def remove_home_issues():
              os.path.join(settings.KS_DIR, 'untrackeduser')]
     for f in files:
         try:
-            lines = get_file_content(f, 'r', method=True)
+            lines = get_file_content(f, 'rb', method=True)
             lines = [l for l in lines if not l.startswith('/home')]
-            write_to_file(f, 'w', lines)
+            write_to_file(f, 'wb', lines)
         except IOError:
             pass
 
 
 def update_platform(full_path):
-    file_lines = get_file_content(full_path, 'r', method=True)
+    file_lines = get_file_content(full_path, 'rb', method=True)
     platform = ''
     platform_id = ''
     if not get_system():
@@ -378,4 +444,4 @@ def update_platform(full_path):
         if 'PLATFORM_ID' in line:
             line = line.replace('PLATFORM_ID', platform_id[0])
         file_lines[index] = line
-    write_to_file(full_path, 'w', file_lines)
+    write_to_file(full_path, 'wb', file_lines)

@@ -4,7 +4,7 @@ import os
 import re
 import xml_utils
 import mimetypes
-from preup.utils import get_file_content
+from preup.utils import get_file_content, print_error_msg, write_to_file
 from preup import settings
 
 
@@ -30,7 +30,7 @@ def check_scripts(type_name, dir_name, script_name=None):
         check_executable(dir_name, script_name)
 
 
-def apply_function(updates, begin_fnc, end_fnc, sep, script_type):
+def apply_function(updates, begin_fnc, end_fnc, dummy_sep, script_type):
     """
     The function generates check_applies_to function into check_scripts
     mentioned in BASH or Python
@@ -117,30 +117,28 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                                                          updates,
                                                          script_type)
     full_path_script = get_full_path(dir_name, script_name)
-    lines = get_file_content(full_path_script, "r", method=True)
+    lines = get_file_content(full_path_script, "rb", method=True)
     if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-        xml_utils.print_error_msg("#END GENERATED SECTION is missing in check_script {0}".
+        print_error_msg("#END GENERATED SECTION is missing in check_script {0}".
                                   format(full_path_script))
     for func in functions:
         lines = [x for x in lines if func not in x.strip()]
-    try:
-        f_handle = open(full_path_script, mode="w")
-        for line in lines:
-            if '#END GENERATED SECTION' in line:
-                new_line = '\n'.join(generated_section)
-                new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
-                f_handle.write(new_line+'\n')
-                if 'check_applies' in updates:
-                    component = updates['check_applies']
-                else:
-                    component = "distribution"
-                if script_type == "sh":
-                    f_handle.write('COMPONENT="'+component+'"\n')
-                else:
-                    f_handle.write('set_component("'+component+'")\n')
-            f_handle.write(line)
-    except IOError:
-        raise
+    output_text = ""
+    for line in lines:
+        if '#END GENERATED SECTION' in line:
+            new_line = '\n'.join(generated_section)
+            new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
+            output_text += new_line+'\n'
+            if 'check_applies' in updates:
+                component = updates['check_applies']
+            else:
+                component = "distribution"
+            if script_type == "sh":
+                output_text += 'COMPONENT="'+component+'"\n'
+            else:
+                output_text += 'set_component("'+component+'")\n'
+        output_text += line
+    write_to_file(full_path_script, "wb", output_text)
 
 
 def check_executable(dir_name, script_name=""):
@@ -149,7 +147,7 @@ def check_executable(dir_name, script_name=""):
     If not then ERROR message arise
     """
     if not os.access(get_full_path(dir_name, script_name), os.X_OK):
-        xml_utils.print_error_msg(title="The file %s is not executable" % os.path.join(dir_name, script_name))
+        print_error_msg(title="The file %s is not executable" % os.path.join(dir_name, script_name))
 
 
 def get_script_type(dir_name, script_name=""):
@@ -158,12 +156,24 @@ def get_script_type(dir_name, script_name=""):
     If it's not any script then return just txt
     """
     mime_type = mimetypes.guess_type(get_full_path(dir_name, script_name))[0]
+    if mime_type is None:
+        # try get mime type with shebang
+        line = get_file_content(get_full_path(dir_name, script_name), "rb", True)[0]
+        if line.startswith("#!"):
+            if re.search(r"\bpython[0-9.-]*\b", line):
+                return 'python'
+            if re.search(r"\bperl[0-9.-]*\b", line):
+                return 'perl'
+            if re.search(r"\bcsh\b", line):
+                return 'csh'
+            if re.search(r"\b(bash|sh)\b", line):
+                return 'sh'
     file_types = {'text/x-python': 'python',
                   'application/x-csh': 'csh',
                   'application/x-sh': 'sh',
                   'application/x-perl': 'perl',
                   'text/plain': 'txt',
-                  'None': 'txt',
+                  None: 'txt',
                   }
     return file_types[mime_type]
 
@@ -173,7 +183,9 @@ def check_inplace_risk(dir_name, prefix="", script_name="", check_func=[]):
     The function checks inplace risks
     in check_script and informs user in case of wrong usage
     """
-    lines = get_file_content(get_full_path(dir_name, script_name), "r")
+    if check_func is None:
+        check_func = []
+    lines = get_file_content(get_full_path(dir_name, script_name), "rb")
     compile_req = re.compile(r'^#', re.M|re.I)
     lines = [x for x in lines if not compile_req.search(x.strip())]
     inplace_lines = [x for x in lines if prefix in x]

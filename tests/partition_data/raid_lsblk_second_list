@@ -1,0 +1,8 @@
+vda 252:0 0 5G 0 disk
+vda1 252:1 0 1000M 0 part /boot
+vda2 252:2 0 4G 0 part
+md0 9:0 0 8G 0 raid0 /
+vdb 252:16 0 5G 0 disk
+vdb1 252:17 0 1000M 0 part [SWAP]
+vdb2 252:18 0 4G 0 part
+md0 9:0 0 8G 0 raid0 /

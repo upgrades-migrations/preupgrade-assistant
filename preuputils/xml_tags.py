@@ -68,7 +68,9 @@ DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
               'current_directory': '/root/preupgrade',
               'solution_file': '',
               'migrate': '0',
-              'upgrade': '0'
+              'upgrade': '0',
+              'result_part': '',
+              'report_dir': '/root/preupgrade',
               }
 
 

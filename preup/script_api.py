@@ -31,7 +31,9 @@ import sys
 import datetime
 import re
 import shutil
+from ConfigParser import ConfigParser
 from preup import utils
+from preup.utils import get_file_content, write_to_file
 
 __all__ = (
     'log_debug',
@@ -74,13 +76,19 @@ __all__ = (
     'VALUE_EXECUTABLES',
     'VALUE_RPM_RHSIGNED',
     'VALUE_TMP_PREUPGRADE',
+    'COMMON_DIR',
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
     'KICKSTART_README',
+    'MIGRATE',
+    'UPGRADE',
+    'HOME_DIRECTORY_FILE',
+    'USER_CONFIG_FILE'
 )
 
 CACHE="/var/cache/preupgrade"
 PREUPGRADE_CACHE=os.path.join(CACHE, "common")
+PREUPGRADE_CONFIG = os.path.join('/etc', 'preupgrade-assistant.conf')
 VALUE_RPM_QA=os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
 VALUE_ALLCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
 VALUE_CONFIGCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
@@ -101,6 +109,11 @@ except KeyError:
     UPGRADE = 1
 POSTUPGRADE_DIR=os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README=os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
+COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
+
+
+HOME_DIRECTORY_FILE = ""
+USER_CONFIG_FILE = 0
 
 
 component = "unknown"
@@ -114,7 +127,7 @@ def log_risk(severity, message):
     """
     log risk level to stderr
     """
-    sys.stderr.write("INPLACERISK: %s: %s\n" % (severity, message))
+    sys.stderr.write("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)))
 
 
 def log_extreme_risk(message):
@@ -166,7 +179,7 @@ def log(severity, message, component_arg=None):
     comp_show = component_arg or component
     #if not comp_show:
     #    raise Exception('Component name wasn\'t set up. Please do so with function set_component().')
-    sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message))
+    sys.stdout.write("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)))
 
 
 def log_error(message, component_arg=None):
@@ -303,11 +316,13 @@ def exit_fixed():
     """
     sys.exit(int(os.environ['XCCDF_RESULT_FIXED']))
 
+
 def exit_informational():
     """
     Rule failed, but was later fixed.
     """
     sys.exit(int(os.environ['XCCDF_RESULT_INFORMATIONAL']))
+
 
 def switch_to_content():
     """
@@ -315,16 +330,12 @@ def switch_to_content():
     """
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
+
 def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
-        lines = []
-        try:
-            file = open(VALUE_RPM_QA, "r")
-            lines = file.readlines()
-        finally:
-            file.close()
+        lines = get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -333,17 +344,13 @@ def check_applies_to(check_applies=""):
     if not_applicable:
         exit_not_applicable()
 
+
 def check_rpm_to(check_rpm="", check_bin=""):
     not_applicable = 0
 
     if check_rpm != "":
         rpms = check_rpm.split(',')
-        lines = []
-        try:
-            file = open(VALUE_RPM_QA, "r")
-            lines = file.readlines()
-        finally:
-            file.close()
+        lines = get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -360,28 +367,23 @@ def check_rpm_to(check_rpm="", check_bin=""):
     if not_applicable:
         exit_fail()
 
+
 def solution_file(message):
-    try:
-        f = open(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+")
-        f.write(message)
-    finally:
-        f.close()
+    write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
+
 
 def service_is_enabled(service_name):
     """
     Returns true if given service is enabled on any runlevel
     """
     return_value = False
-    f = open(VALUE_CHKCONFIG, "r")
-    try:
-        for line in f:
-            if re.match('^%s.*:on' % service_name, line):
-                return_value = True
-                break
-    finally:
-        f.close()
-        
+    lines = get_file_content(VALUE_CHKCONFIG, "rb", True)
+    for line in lines:
+        if re.match('^%s.*:on' % service_name, line):
+            return_value = True
+            break
     return return_value
+
 
 def config_file_changed(config_file_name):
     """
@@ -391,12 +393,11 @@ def config_file_changed(config_file_name):
     """
     config_changed = False
     try:
-        f = open(VALUE_CONFIGCHANGED, "r")
-        for line in f:
+        lines = get_file_content(VALUE_CONFIGCHANGED, "rb", True)
+        for line in lines:
             if line.find(config_file_name) != -1:
                 config_changed=True
                 break
-        f.close()
     except:
         pass
     return config_changed
@@ -421,4 +422,50 @@ def backup_config_file(config_file_name):
         pass
     shutil.copyfile(config_file_name, os.path.join(VALUE_TMP_PREUPGRADE, config_file_name.strip("/")))
 
+
+def load_pa_configuration():
+    """ Loads preupgrade-assistant configuration file """
+    global HOME_DIRECTORY_FILE
+    global USER_CONFIG_FILE
+
+    if not os.path.exists(PREUPGRADE_CONFIG):
+        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
+        exit_error()
+
+    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config.read(PREUPGRADE_CONFIG)
+    section = 'preupgrade-assistant'
+    home_option = 'home_directory_file'
+    user_file = 'user_config_file'
+    if config.has_section(section):
+        if config.has_option(section, home_option):
+            HOME_DIRECTORY_FILE = config.get(section, home_option)
+        if config.has_option(section, user_file):
+            USER_CONFIG_FILE = config.get(section, user_file)
+
+
+def print_home_dirs(user_name=""):
+    """ Loads preupgrade-assistant configuration file """
+    if not os.path.exists(PREUPGRADE_CONFIG):
+        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
+        exit_error()
+
+    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    home_option = 'home-dirs'
+    try:
+        if USER_CONFIG_FILE == 'enabled' and user_name == "":
+            config.read(PREUPGRADE_CONFIG)
+            return config.options(home_option)
+        user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
+        if not os.path.exists(user_home_dir):
+            return 0
+        config.read(user_home_dir)
+        return config.options(home_option)
+    except ConfigParser.NoSectionError:
+        pass
+    except ConfigParser.NoOptionError:
+        pass
+
+
+load_pa_configuration()
 shorten_envs()

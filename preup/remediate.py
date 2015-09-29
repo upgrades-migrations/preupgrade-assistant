@@ -16,7 +16,7 @@ def get_all_postupgrade_files(verbose, dir_name):
     Function gets all postupgrade files from dir_name
     """
     postupg_scripts = []
-    for root, sub_dirs, files in os.walk(dir_name):
+    for root, dummy_sub_dirs, files in os.walk(dir_name):
         # find all files in this directory
         postupg_scripts.extend([os.path.join(root, x) for x in files])
     if not postupg_scripts:
@@ -28,7 +28,7 @@ def get_hash_file(filename, hasher):
     """
     Function gets a hash from file
     """
-    content = get_file_content(filename, "r")
+    content = get_file_content(filename, "rb", False, False)
     hasher.update('preupgrade-assistant' + content)
     return hasher.hexdigest()
 
@@ -66,7 +66,7 @@ def get_hashes(filename):
     """
     if not os.path.exists(filename):
         return None
-    hashed_file = get_file_content(filename, "r").split()
+    hashed_file = get_file_content(filename, "rb").split()
     hashed_file = [x for x in hashed_file if "hashed_file" not in x]
     return hashed_file
 
@@ -78,7 +78,7 @@ def copy_modified_config_files(result_dir):
     """
     etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
     try:
-        lines = get_file_content(etc_va_log, "r", method=True)
+        lines = get_file_content(etc_va_log, "rb", method=True)
     except IOError:
         return
     dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
@@ -88,9 +88,17 @@ def copy_modified_config_files(result_dir):
             (opts, flags, filename) = line.strip().split()
         except ValueError:
             return
+        log_message("File name to copy '%s'" % filename,
+                    print_output=0,
+                    level=logging.INFO)
         new_filename = filename[1:]
         # Check whether config file exists in cleanconf directory
-        if os.path.exists(os.path.join(clean_conf, new_filename)):
+        file_name = os.path.join(clean_conf, new_filename)
+        if os.path.exists(file_name):
+            message = "Configuration file '%s' exists in '%s' directory"
+            log_message(message % (file_name, clean_conf),
+                        print_output=0,
+                        level=logging.INFO)
             continue
         dirty_path = os.path.join(dirty_conf, os.path.dirname(new_filename))
         # Check whether dirtyconf directory with dirname(filename) exists
@@ -98,22 +106,34 @@ def copy_modified_config_files(result_dir):
             os.makedirs(dirty_path)
         # Copy filename to dirtyconf directory
         try:
-            shutil.copyfile(filename, os.path.join(dirty_conf, new_filename))
+            target_name = os.path.join(dirty_conf, new_filename)
+            if os.path.islink(filename):
+                filename = os.path.realpath(filename)
+            if os.path.exists(target_name):
+                log_message("File '%s' already exists in dirtyconf directory" % target_name,
+                            print_output=0,
+                            level=logging.INFO)
+                continue
+            shutil.copyfile(filename, target_name)
+        except shutil.Error:
+            log_message("Copying file '%s' to '%s' failed." % (filename, target_name),
+                        print_output=0,
+                        level=logging.INFO)
+            continue
         except IOError:
             continue
 
 
 def hash_postupgrade_file(verbose, dirname, check=False):
     """
-    The function creates hash file
-    over all scripts in postupgrade.d directory
-    In case of remediation it checks
-    whether checksums are different and
-    print what scripts were changed
+    The function creates hash file over all scripts in postupgrade.d directory.
+
+    In case of remediation it checks whether checksums are different and
+    print what scripts were changed.
     """
     if not os.path.exists(dirname):
-        message = 'Directory {0} does not exist for creating checksum file'
-        log_message(message.format(settings.postupgrade_dir), level=logging.ERROR)
+        message = 'Directory %s does not exist for creating checksum file'
+        log_message(message, settings.postupgrade_dir, level=logging.ERROR)
         return
 
     postupg_scripts = get_all_postupgrade_files(verbose, dirname)
@@ -128,7 +148,7 @@ def hash_postupgrade_file(verbose, dirname, check=False):
         lines.append(post_name + "=" + get_hash_file(post_name, sha1())+"\n")
 
     full_path_name = os.path.join(dirname, filename)
-    write_to_file(full_path_name, "w", lines)
+    write_to_file(full_path_name, "wb", lines)
 
     if check:
         hashed_file = get_hashes(os.path.join(dirname, settings.base_hashed_file))

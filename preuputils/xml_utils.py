@@ -4,7 +4,7 @@ import os
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
-from preup.utils import get_system
+from preup.utils import print_error_msg
 from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
@@ -23,20 +23,8 @@ def get_full_xml_tag(dirname):
     return main_dir
 
 
-def print_error_msg(title="", msg="", level=' ERROR '):
-    """
-    Function prints a ERROR or WARNING messages
-    """
-    number = 10
-    print '\n'
-    print '*'*number+level+'*'*number
-    print title, ''.join(msg)
-
-
 class XmlUtils(object):
-    """
-    Class generate a XML from xml_tags and loaded INI file
-    """
+    """Class generate a XML from xml_tags and loaded INI file"""
     def __init__(self, dir_name, ini_files):
         self.keys = {}
         self.select_rules = []
@@ -55,19 +43,15 @@ class XmlUtils(object):
         path_name = os.path.join(settings.UPGRADE_PATH, file_name)
         lines = []
         if os.path.exists(path_name):
-            lines = get_file_content(path_name, 'r', method=True)
+            lines = get_file_content(path_name, 'rb', method=True)
         test_content = [x.strip() for x in lines if content in x.strip()]
         if not test_content:
             lines.append(content + '\n')
-            write_to_file(path_name, 'w', lines)
+            write_to_file(path_name, 'wb', lines)
 
     def _update_check_description(self, filename):
         new_text = []
-        try:
-            f_handle = open(os.path.join(self.dirname, filename), 'r')
-            lines = f_handle.readlines()
-        except IOError:
-            raise
+        lines = get_file_content(os.patch.join(self.dirname, filename), "rb", True)
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'
@@ -100,6 +84,7 @@ class XmlUtils(object):
         The function replaces tags taken from INI files.
         Tags are mentioned in xml_tags.py
         """
+        forbidden_empty = ["{scap_name}", "{main_dir}"]
         if search_exp == "{content_description}":
             replace_exp = replace_exp.rstrip()
         elif search_exp == "{check_description}":
@@ -110,12 +95,7 @@ class XmlUtils(object):
                 new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
-            new_text = list()
-            try:
-                f_handle = open(os.path.join(self.dirname, replace_exp), "r")
-                new_text = f_handle.readlines()
-            except IOError:
-                raise
+            new_text = get_file_content(os.path.join(self.dirname, replace_exp), "rb", True)
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
@@ -123,6 +103,10 @@ class XmlUtils(object):
             new_text = "_" + '_'.join(get_full_xml_tag(self.dirname))\
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
+        if replace_exp == '' and search_exp in forbidden_empty:
+            print_error_msg(title="Disapproved empty replacement for tag '%s'" % search_exp)
+            os.sys.exit(1)
+
         for cnt, line in enumerate(section):
             if search_exp in line:
                 section[cnt] = line.replace(search_exp, replace_exp)
@@ -164,6 +148,8 @@ class XmlUtils(object):
             if key == 'current_directory':
                 val = '/'.join(get_full_xml_tag(self.dirname))
                 val = 'SCENARIO/' + val
+            if key == 'report_dir':
+                val = 'SCENARIO'
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
@@ -186,10 +172,10 @@ class XmlUtils(object):
                 fix_tag.append(xml_tags.FIX)
 
             if 'solution_type' in key:
-                text = key['solution_type']
+                solution_type = key['solution_type']
             else:
-                text = 'text'
-            self.update_values_list(fix_tag, "{solution_text}", text)
+                solution_type = "text"
+            self.update_values_list(fix_tag, "{solution_text}", solution_type)
             self.update_values_list(fix_tag, "{solution}", k)
             self.update_values_list(fix_tag, "{script_type}", script_type)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
@@ -212,7 +198,7 @@ class XmlUtils(object):
                                             prefix=check,
                                             script_name=key[k],
                                             check_func=check_func[check])
-        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[:-1][0])
+        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[0])
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
                         'requires': 'check_rpm'}
@@ -223,7 +209,7 @@ class XmlUtils(object):
         if 'author' in key:
             author = key['author']
         else:
-            author = ''
+            author = ""
         script_utils.update_check_script(self.dirname,
                                          updates,
                                          script_name=key[k],
@@ -272,7 +258,7 @@ class XmlUtils(object):
         if name in key:
             self.check_script_modification(key, name)
             self.update_values_list(self.select_rules, "{scap_name}",
-                                    key[name].split('.')[:-1][0])
+                                    key[name].split('.')[0])
 
     def fnc_check_description(self, key, name):
         """
@@ -354,6 +340,12 @@ class XmlUtils(object):
             else:
                 xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
 
+            # Add flag where will be shown content if in admin part or in user part
+            if 'result_part' in key:
+                xml_tags.DIC_VALUES['result_part'] = key['result_part']
+            else:
+                xml_tags.DIC_VALUES['result_part'] = 'admin'
+
             self.update_values_list(self.rule, "{rule_tag}",
                                     ''.join(xml_tags.RULE_SECTION))
             value_tag, check_export_tag = self.add_value_tag()
@@ -363,8 +355,13 @@ class XmlUtils(object):
                                     ''.join(value_tag))
 
             for k, function in update_fnc.iteritems():
-                function(key, k)
-
+                try:
+                    function(key, k)
+                except IOError, e:
+                    e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
+                    e_msg = "'%s': %s" % (key[k], e.strerror)
+                    print_error_msg(title=e_title, msg=e_msg)
+                    os.sys.exit(1)
             self.update_values_list(self.rule,
                                     '{group_title}',
                                     html_escape_string(key['content_title']))

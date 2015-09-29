@@ -9,6 +9,12 @@ if os.path.basename(sys.argv[0]) == "premigrate":
     prefix = "premigrate"
 else:
     prefix = "preupgrade"
+
+if sys.getdefaultencoding() == "ascii":
+    defenc = "utf-8"
+else:
+    defenc = sys.getdefaultencoding()
+
 # dir where results of analysis are stored
 result_dir = os.path.join("/root", prefix)
 
@@ -20,7 +26,7 @@ result_name = "result"
 
 tarball_base = result_name + 's'
 tarball_prefix = "preupg_"
-tarball_name = tarball_prefix + tarball_base + "-%s.tar.gz"
+tarball_name = tarball_prefix + tarball_base + "-%s"
 
 xml_result_name = result_name + '.xml'
 html_result_name = result_name + '.html'
@@ -129,12 +135,20 @@ message = "We found some potential in-place upgrade risks.\n" \
           "Read the file %s for more details."
 converter_message = "At least one of these converters (%s) needs to be installed."
 
+kickstart_text = "The Preupgrade Assistant generates a kickstart file in %s.\n" \
+                 "The Kickstart file contains:\n" \
+                 "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
+                 "- the partitioning layout which was used on this system\n" \
+                 "- the package set which was installed on this system.\n" \
+                 "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
+                 "installation of Red Hat Enterprise Linux 7.\n" \
+                 "The Kickstart file needs to be modified by administator.\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
                    'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
                    }
 
-ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r %s/preupg_results-*.tar.gz"
+ui_command = "preupg -u http://127.0.0.1:8099/submit/ -r %s"
 openssl_command = "openssl x509 -text -in %s | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""

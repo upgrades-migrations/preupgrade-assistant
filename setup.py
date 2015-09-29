@@ -16,12 +16,13 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "0.11.10"
+package_version         = "2.0.4"
 
 script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml']
 
 data_files = {
     'preuputils/': ['preuputils/template.xml'],
+    '/etc': ['preup-conf/preupgrade-assistant.conf'],
     '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
     '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
     '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],

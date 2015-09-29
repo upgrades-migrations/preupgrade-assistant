@@ -21,9 +21,12 @@ def remove_node(tree, tag):
 
 
 def update_current_dir(result_dir, scenario, value, mode):
-    """
-    Replaces a current dir with the new value
-    """
+    """Replaces a current dir with the new value"""
+    return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
+
+
+def update_report_dir(result_dir, scenario, value, mode):
+    """Replaces a report_dir with the new value"""
     return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
 
 
@@ -36,7 +39,9 @@ def update_result_path(result_dir, scenario, value, mode):
 
 def update_migrate_value(result_dir, scenario, value, mode):
     """
-    Replaces a migrate value with mode given by preupgrade-assistant command line
+    Replaces a migrate value with mode
+
+    mode is given by preupgrade-assistant command line
     """
     if not mode:
         return "1"
@@ -48,7 +53,9 @@ def update_migrate_value(result_dir, scenario, value, mode):
 
 def update_upgrade_value(result_dir, scenario, value, mode):
     """
-    Replaces a upgrade value with mode given by preupgrade-assistant command line
+    Replaces a upgrade value with mode
+
+    mode is given by preupgrade-assistant command line
     """
     if not mode:
         return "1"
@@ -89,8 +96,9 @@ class ReportParser(object):
         self.path = report_path
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
         try:
-            content = get_file_content(report_path, 'r')
-        except IOError:
+            # ElementTree.fromstring can't parse safely unicode string
+            content = get_file_content(report_path, 'rb', False, False)
+        except IOError, ioerr:
             raise
         if not content:
             return None
@@ -137,7 +145,8 @@ class ReportParser(object):
         Function updates self.target_tree with the new path
         """
         self.path = path
-        content = get_file_content(self.path, 'r')
+        # ElementTree.fromstring can't parse safely unicode string
+        content = get_file_content(self.path, 'rb', False, False)
         if not content:
             return None
         self.target_tree = ElementTree.fromstring(content)
@@ -207,9 +216,8 @@ class ReportParser(object):
         """
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
         data = ElementTree.tostring(self.target_tree, "utf-8")
-        write_to_file(self.path, 'w', data)
-        content = get_file_content(self.path, 'r')
-        self.target_tree = ElementTree.fromstring(content)
+        write_to_file(self.path, 'wb', data, False)
+        self.target_tree = ElementTree.parse(self.path).getroot()
 
     def modify_result_path(self, result_dir, scenario, mode):
         """
@@ -218,7 +226,8 @@ class ReportParser(object):
         update_tags = {'_tmp_preupgrade': update_result_path,
                        '_current_dir': update_current_dir,
                        '_migrate': update_migrate_value,
-                       '_upgrade': update_upgrade_value}
+                       '_upgrade': update_upgrade_value,
+                       '_report_dir': update_report_dir}
         for key, val in update_tags.items():
             for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
                 if key not in values.get('id'):
@@ -329,12 +338,12 @@ class ReportParser(object):
         """
         namespace_1 = 'http://checklists.nist.gov/xccdf/1.1'
         namespace_2 = 'http://checklists.nist.gov/xccdf/1.2'
-        content = get_file_content(file_name, "r")
+        content = get_file_content(file_name, "rb")
         if direction:
             content = re.sub(namespace_2, namespace_1, content)
         else:
             content = re.sub(namespace_1, namespace_2, content)
-        write_to_file(file_name, 'w', content)
+        write_to_file(file_name, 'wb', content)
 
     def update_check_description(self):
         for rule in self._get_all_rules():
@@ -368,7 +377,7 @@ class ReportParser(object):
         """
         full_path = os.path.join(os.path.dirname(self.path), mode)
         try:
-            lines = [i.rstrip() for i in get_file_content(full_path, 'r', method=True)]
+            lines = [i.rstrip() for i in get_file_content(full_path, 'rb', method=True)]
         except IOError:
             return
         for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):

@@ -9,8 +9,10 @@ from preup.cli import CLI
 from preup import settings, remediate, utils, xml_manager
 from preup.report_parser import ReportParser
 
+import base
 
-class TestPreupg(unittest.TestCase):
+
+class TestPreupg(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -76,8 +78,8 @@ class TestPreupg(unittest.TestCase):
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 0:
                         found_upgrade = 1
-        self.assertIs(found_migrate, 1)
-        self.assertIs(found_upgrade, 1)
+        self.assertEquals(found_migrate, 1)
+        self.assertEquals(found_upgrade, 1)
 
     def test_upgrade(self):
 
@@ -115,15 +117,14 @@ class TestPreupg(unittest.TestCase):
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 1:
                         found_upgrade = 1
-        self.assertIs(found_migrate, 1)
-        self.assertIs(found_upgrade, 1)
+        self.assertEquals(found_migrate, 1)
+        self.assertEquals(found_upgrade, 1)
 
 
-class TestXMLUpdates(unittest.TestCase):
+class TestXMLUpdates(base.TestCase):
     def setUp(self):
         self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"
         self.test_content = self.content+".test"
-        shutil.copyfile(self.content, self.test_content)
 
     def tearDown(self):
         os.remove(self.test_content)
@@ -152,7 +153,7 @@ class TestXMLUpdates(unittest.TestCase):
                     if value.text == result_path:
                         found_tmp = 1
 
-        self.assertIs(found_tmp, 1)
+        self.assertEquals(found_tmp, 1)
 
     def test_result_dirs_current_dir(self):
         shutil.copyfile(self.content, self.test_content)
@@ -168,10 +169,10 @@ class TestXMLUpdates(unittest.TestCase):
                     if value.text == result_dir:
                         found_current = 1
 
-        self.assertIs(found_current, 1)
+        self.assertEquals(found_current, 1)
 
 
-class TestCLI(unittest.TestCase):
+class TestCLI(base.TestCase):
     def test_opts(self):
         """ basic test of several options """
         conf = {
@@ -181,32 +182,29 @@ class TestCLI(unittest.TestCase):
             "contents": "content/FOOBAR6_7",
             "id": 1,
             "list": True,
-            "apply": True,
-            "verbose": 0,
+            "verbose": 1,
             "text": True,
             "cleanup": True,
-            "mode": 'upgrade'
+            "mode": 'upgrade',
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list", "--upload",
-                   "123", "--apply", "--verbose", "--text",
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list",
+                   "--verbose", "--text",
                    "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
         self.assertEqual(a.conf.contents, "content/FOOBAR6_7")
         self.assertTrue(a.conf.list)
-        self.assertTrue(a.conf.apply)
         self.assertTrue(a.conf.text)
         self.assertTrue(a.conf.cleanup)
-        self.assertEqual(int(a.conf.upload), 123)
-        self.assertEqual(int(a.conf.verbose), 0)
+        self.assertEqual(int(a.conf.verbose), 1)
         self.assertEqual(a.conf.temp_dir, "d")
         self.assertEqual(a.conf.scan, "FOOBAR6_7")
-        self.assertEqual(a.conf.scan, "upgrade")
+        self.assertEqual(a.conf.mode, "upgrade")
 
 
-class TestHashes(unittest.TestCase):
+class TestHashes(base.TestCase):
     def setUp(self):
         self.dir_name = tempfile.mkdtemp()
 
@@ -219,13 +217,13 @@ class TestHashes(unittest.TestCase):
         """
         self.dir_name = "tests/hashes"
         os.mkdir(self.dir_name)
-        utils.write_to_file(os.path.join(self.dir_name, "post_script"), 'w', text_to_hash)
+        utils.write_to_file(os.path.join(self.dir_name, "post_script"), 'wb', text_to_hash)
         remediate.hash_postupgrade_file(False, self.dir_name)
         return_value = remediate.hash_postupgrade_file(False, self.dir_name, check=True)
         self.assertTrue(return_value)
 
 
-class TestSolutionReplacement(unittest.TestCase):
+class TestSolutionReplacement(base.TestCase):
     def setUp(self):
         self.extension = "html"
 
@@ -266,7 +264,7 @@ class TestSolutionReplacement(unittest.TestCase):
         self.assertEqual(expected_text, line)
 
 
-class TestScenario(unittest.TestCase):
+class TestScenario(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -343,7 +341,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(a.get_scenario(), None)
 
 
-class TestPreupgradePrefix(unittest.TestCase):
+class TestPreupgradePrefix(base.TestCase):
     def setUp(self):
         settings.prefix = 'preupgrade'
 
@@ -356,7 +354,7 @@ class TestPreupgradePrefix(unittest.TestCase):
         self.assertEqual(version, None)
 
 
-class TestPremigratePrefix(unittest.TestCase):
+class TestPremigratePrefix(base.TestCase):
     def setUp(self):
         settings.prefix = 'premigrate'
 

@@ -13,8 +13,10 @@ from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
 
-FOOBAR6_dummy = os.path.join("tests", "FOOBAR6_7", "dummy")
-FOOBAR6_results = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix)
+import base
+
+FOOBAR6_dummy = os.path.join('tests', 'FOOBAR6_7', 'dummy')
+FOOBAR6_results = os.path.join('tests', 'FOOBAR6_7' + variables.result_prefix)
 
 
 def generate_test_xml(path_name, test):
@@ -38,7 +40,7 @@ def prepare_xml(path_name):
                                   content=os.path.basename(path_name))
     try:
         file = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
-        file.write(ElementTree.tostring(tree, "utf-8"))
+        file.write(ElementTree.tostring(tree, encoding="utf-8").decode('utf-8'))
         file.close()
     except IOError, e:
         print "Problem with writing file {0}".format(path_name)
@@ -71,7 +73,8 @@ def update_xml(path_name, test):
     f = open(full_path, mode='r')
     lines = f.readlines()
     f.close()
-    lines = filter(lambda x: '<ns0:platform idref="cpe:/o:' not in x, lines)
+    lines = [x for x in lines if '<ns0:platform idref="cpe:/o:' not in x]
+
     for index, line in enumerate(lines):
         if 'tmp_preupgrade' in line:
             lines[index+1] = lines[index+1].replace('SCENARIO', os.path.join(os.getcwd(), 'tests/FOOBAR6_7-results'))
@@ -99,7 +102,7 @@ def delete_tmp_xml(path_name):
 
 
 def get_result_tag(temp_dir):
-    content = utils.get_file_content(os.path.join(temp_dir, settings.xml_result_name), 'r')
+    content = utils.get_file_content(os.path.join(temp_dir, settings.xml_result_name), 'rb')
     if not content:
         return []
     target_tree = ElementTree.fromstring(content)
@@ -111,7 +114,7 @@ def get_result_tag(temp_dir):
     return text
 
 
-class TestOSCAPPass(unittest.TestCase):
+class TestOSCAPPass(base.TestCase):
 
     def setUp(self):
         self.name = 'pass'
@@ -135,7 +138,7 @@ class TestOSCAPPass(unittest.TestCase):
         a = prepare_cli(self.temp_dir, self.result_name)
         return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
         self.assertEqual(return_string, 0)
-        lines = utils.get_file_content(test_log, perms='r')
+        lines = utils.get_file_content(test_log, perms='rb')
         os.unlink(test_log)
         self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
@@ -143,7 +146,7 @@ class TestOSCAPPass(unittest.TestCase):
         self.assertEqual(value, "pass")
 
 
-class TestOSCAPFail(unittest.TestCase):
+class TestOSCAPFail(base.TestCase):
     def setUp(self):
         self.name = 'failed'
         self.temp_dir = tempfile.mkdtemp()
@@ -168,7 +171,7 @@ class TestOSCAPFail(unittest.TestCase):
         self.assertEqual(value, "fail")
 
 
-class TestOSCAPNeedsInspection(unittest.TestCase):
+class TestOSCAPNeedsInspection(base.TestCase):
     def setUp(self):
         self.name = 'needs_inspection'
         self.temp_dir = tempfile.mkdtemp()
@@ -195,7 +198,7 @@ class TestOSCAPNeedsInspection(unittest.TestCase):
         self.assertEqual(value, "needs_inspection")
 
 
-class TestOSCAPNeedsAction(unittest.TestCase):
+class TestOSCAPNeedsAction(base.TestCase):
     def setUp(self):
         self.name = 'needs_action'
         self.temp_dir = tempfile.mkdtemp()
@@ -222,7 +225,7 @@ class TestOSCAPNeedsAction(unittest.TestCase):
         self.assertEqual(value, "needs_action")
 
 
-class TestOSCAPNotApplicable(unittest.TestCase):
+class TestOSCAPNotApplicable(base.TestCase):
     def setUp(self):
         self.name = 'not_applicable'
         self.temp_dir = tempfile.mkdtemp()
@@ -247,7 +250,7 @@ class TestOSCAPNotApplicable(unittest.TestCase):
         self.assertEqual(value, "notapplicable")
 
 
-class TestOSCAPFixed(unittest.TestCase):
+class TestOSCAPFixed(base.TestCase):
     def setUp(self):
         self.name = 'fixed'
         self.temp_dir = tempfile.mkdtemp()

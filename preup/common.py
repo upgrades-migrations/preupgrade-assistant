@@ -27,7 +27,7 @@ class Common(object):
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
-        self.lines = utils.get_file_content(self.conf.common_script, "r", method=True)
+        self.lines = utils.get_file_content(self.conf.common_script, "rb", method=True)
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
@@ -61,14 +61,14 @@ class Common(object):
         log_message("Gathering logs used by preupgrade assistant:")
         self.switch_dir()
         try:
-            max_length = max(max(list([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text)))
+            max_length = max(max([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text))
             # Log files which will not be updated
             # when RPM database is not changed
             for counter, line in enumerate(self.lines):
                 line = line.strip()
                 if line.startswith("#"):
                     continue
-                cmd, log_file, bash_value, name, values = line.split("=", 4)
+                cmd, log_file, dummy_bash_value, name, values = line.split("=", 4)
                 log_message("%s : %.2d/%d ...running" % (name.ljust(max_length),
                                                          counter+1,
                                                          len(self.lines)),
@@ -168,6 +168,13 @@ class Common(object):
             usr_common_name = os.path.join(settings.source_dir, scenario, settings.common_name)
             if os.path.exists(usr_common_name):
                 dir_util.copy_tree(usr_common_name, os.path.join(assessment_dir, settings.common_name))
+        # We have repositories for i386 architecture but packages are built
+        # sometimes as i686 architecture. That's problematic in some cases
+        # so we solve this for now by this little hack ugly.
+        if (not os.path.exists(os.path.join(self.common_result_dir, 'i686'))
+            and os.path.exists(os.path.join(self.common_result_dir, 'i386'))):
+            os.symlink(os.path.join(self.common_result_dir, 'i386'),
+                       os.path.join(self.common_result_dir, 'i686'))
         add_ons = utils.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
@@ -177,13 +184,7 @@ class Common(object):
         self.copy_kickstart_files(self.common_result_dir, server_variant)
         for files in server_variant_files:
             # First create a default links to "ServerVariant_"
-            if files.startswith(server_variant+"_"):
+            if files.startswith(server_variant):
                 self.create_common_symlink(files, server_variant)
             elif files.startswith("Common"):
                 self.create_common_symlink(files, "Common")
-            else:
-                # Now create a symlink for ServerVariant-AddOn_
-                for add_on in add_ons:
-                    if not files.startswith(get_add_on_name(server_variant, add_on)+"_"):
-                        continue
-                    self.create_common_symlink(files, server_variant)

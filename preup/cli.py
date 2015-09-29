@@ -84,11 +84,6 @@ will used -- http://127.0.0.1:8099/submit/)"
             help="Path to contents set"
         )
         self.parser.add_option(
-            "-a",
-            "--apply",
-            help="Path to the result set from assessment system"
-        )
-        self.parser.add_option(
             "--riskcheck",
             action="store_true",
             default=False,

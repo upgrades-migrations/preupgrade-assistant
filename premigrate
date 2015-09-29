@@ -21,7 +21,7 @@ def main():
     else:
         try:
             ret = app.run()
-        except Exception as ex:
+        except Exception, ex:
             cli.parser.error(str(ex))
     return ret
 

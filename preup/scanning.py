@@ -17,7 +17,7 @@ def compare_data(row):
                   'notapplicable': '08',
                   'notchecked': '09'}
     try:
-        title, rule_id, result = row.split(':')
+        dummy_title, dummy_rule_id, result = row.split(':')
     except ValueError:
         return '99'
     else:
@@ -41,7 +41,7 @@ def format_rules_to_table(output_data, content):
     log_message("%s" % message)
     for data in sorted(output_data, key=compare_data, reverse=True):
         try:
-            title, rule_id, result = data.split(':')
+            title, dummy_rule_id, result = data.split(':')
         except ValueError:
             # data is not an information about processed test; let's log it as an error
             log_message(data, level=logging.ERROR)
@@ -92,9 +92,8 @@ class ScanProgress(object):
          Function shows a progress of assessment
         """
         self.width_size = int(ScanProgress.get_terminal_width()[1])
-        xccdf_rule, result = stdout_data.strip().split(':')
-        self.output_data.append('%s:%s' % (self.names[xccdf_rule],
-                                                 stdout_data.strip()))
+        xccdf_rule, dummy_result = stdout_data.strip().split(':')
+        self.output_data.append(u'%s:%s' % (self.names[xccdf_rule], stdout_data.strip()))
         self.current_count += 1
         old_width = self.width_size
         self.width_size -= 21
@@ -102,12 +101,12 @@ class ScanProgress(object):
         self.width_size = old_width
         cur_msg = self._return_correct_msg(self.get_full_name(self.current_count))
         cnt_back = 7 + len(prev_msg) + 3
-        msg = '%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
+        msg = u'%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
         log_message(msg,
                     new_line=True,
                     log=False)
         if self.total_count > self.current_count:
-            msg = self._return_correct_msg('%.3d/%.3d ...running (%s)' % (self.current_count + 1,
+            msg = self._return_correct_msg(u'%.3d/%.3d ...running (%s)' % (self.current_count + 1,
                                                                           self.total_count,
                                                                           cur_msg))
             log_message(msg,
@@ -137,7 +136,7 @@ class ScanProgress(object):
         """
         for index, row in enumerate(self.output_data):
             try:
-                title, rule_id, result = row.split(':')
+                title, rule_id, dummy_result = row.split(':')
             except ValueError:
                 continue
             else:

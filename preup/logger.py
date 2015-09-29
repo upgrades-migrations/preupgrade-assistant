@@ -15,7 +15,10 @@ except IOError:
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
-logger.setLevel(logging.INFO)
+
+
+def set_level(level):
+    logger.setLevel(level)
 
 
 def log_message(message, print_output=1, new_line=True, level=logging.INFO, log=True):
