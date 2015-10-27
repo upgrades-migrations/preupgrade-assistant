@@ -47,7 +47,7 @@ def submit_new(request, opts):
     # as soon as the tarball will be unpacked, this die will be erased
     tmp_dir = os.path.join(settings.MEDIA_ROOT, uuid.uuid4().hex)
     try:
-        os.makedirs(tmp_dir, mode=0744)
+        os.makedirs(tmp_dir, mode=0o0744)
     except OSError as e:
         # TODO: log
         return {

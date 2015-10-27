@@ -406,7 +406,7 @@ class Result(models.Model):
         run_dir = self.hostrun.run.get_run_dir()
         path = os.path.join(run_dir, str(self.id))
         if not os.path.isdir(path):
-            os.makedirs(path, mode=0755)
+            os.makedirs(path, mode=0o0755)
         return path
 
     @property

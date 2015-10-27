@@ -3,6 +3,7 @@
 Functions for processing reports -- extracting data from XML documents
 """
 
+from __future__ import print_function
 from datetime import datetime
 import logging
 
@@ -297,7 +298,7 @@ def main():
     try:
         r = parse_report(sys.argv[1])
     except KeyError:
-        print 'Usage: prog <content.xml>'
+        print ('Usage: prog <content.xml>')
         sys.exit(1)
     pprint(r)
 
