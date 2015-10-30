@@ -15,7 +15,7 @@ VERSION="$(   python setup.py --version)"
 python setup.py sdist --formats=gztar
 
 # provide useful output
-echo "$PWD/dist/${NAME}-${VERSION}.tar.bz2"
+echo "$PWD/dist/${NAME}-${VERSION}.tar.gz"
 
 popd > /dev/null
 
