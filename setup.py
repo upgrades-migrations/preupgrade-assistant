@@ -6,10 +6,9 @@ import os
 import distutils.command.sdist
 from distutils.command.install import INSTALL_SCHEMES
 from scripts.include import *
-from setuptools import setup
+from setuptools import setup, find_packages
 
 project_name            = "preupgrade-assistant"
-project_dirs            = ["preup", "preup_ui", "common", "preuputils"]
 project_url             = "https://github.com/phracek/preupgrade-assistant/"
 project_author          = "Red Hat, Inc."
 project_author_email    = "phracek@redhat.com"
@@ -47,7 +46,7 @@ if os.path.isdir(".git"):
         git_date = get_git_date(os.path.dirname(__file__))
         package_version[4] = "%s.%s" % (git_date,git_version)
 
-packages = get_packages(project_dirs)
+packages = find_packages()
 
 root_dir = os.path.dirname(__file__)
 if root_dir != "":

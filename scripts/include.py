@@ -7,7 +7,6 @@ import subprocess
 
 __all__ = (
     "get_module",
-    "get_packages",
     "get_git_date",
     "get_git_version",
     "write_version",
@@ -22,25 +21,6 @@ def get_module(path):
         head, tail = os.path.split(head)
         result.append(tail)
     return ".".join(reversed(result))
-
-
-def get_packages(project_dirs):
-    """Return packages found in project dirs."""
-    packages = []
-
-    for project_dir in project_dirs:
-        for dirpath, dirnames, filenames in os.walk(project_dir):
-            # ignore dirnames that start with "."
-            dir_name = os.path.basename(dirpath)
-
-            if dir_name.startswith(".") or dir_name == "CVS":
-                continue
-
-            if "__init__.py" in filenames:
-                packages.append(get_module(dirpath))
-                continue
-
-    return packages
 
 
 def get_git_date(git_repo_path):
