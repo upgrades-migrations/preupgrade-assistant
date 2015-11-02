@@ -22,4 +22,3 @@ include ui-conf/99-preup-httpd.conf.private
 include ui-conf/99-preup-httpd.conf.public
 recursive-include preup_ui/static *
 recursive-include preup_ui/templates *
-recursive-include preup_ui/lib *

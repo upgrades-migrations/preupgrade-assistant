@@ -1,21 +1,45 @@
 #!/bin/bash
 
-# Create source tarrball using setuptools.
+# Creates development source tarball.
+# * generates development version string from git
+# * cretes git archive with particular name-version prefix
+# * updates setup.py to contain the version string
+# * writes out the name of the tarball
+
+# NOTE:
+# Production (released) tarballs should be taken from github:
+# http://github.srcurl.net/phracek/%{name}/%{version}/%{name}-%{version}.tar.gz
+# It is our responsibility to update setup.py before we create version tag.
 
 set -e
 
 # ensure that current working directory is OK
-pushd "$(dirname "$(realpath "$0")")" > /dev/null
+BASE_DIR="$(dirname "$(realpath "$0")")"
+pushd "$BASE_DIR" > /dev/null
 
-# get information about source
-NAME="$(      python setup.py --name)"
-VERSION="$(   python setup.py --version)"
+# get version from git
+VERSION="$(git describe --tags | sed -r -e 's/-([0-9]+)-[0-9a-z]{8}/.post\1/')"
+PREFIX="preupgrade-assistant-$VERSION"
 
-# use standard setup.py sdist to generate tar archive
-python setup.py sdist --formats=gztar
+# create base archive from git
+mkdir -p dist
+rm -rf dist/${PREFIX}
+git archive --format=tar --prefix=${PREFIX}/ HEAD | { cd dist; tar -x; }
+
+# enter dist directory
+cd dist
+
+# update setup.py
+sed -i -r "s/^(package_version\s*=\s*).*/\\1'$VERSION'/" ${PREFIX}/setup.py
+
+# compress archive
+tar -czf ${PREFIX}.tar.gz ${PREFIX}
+
+# clean
+rm -rf ${PREFIX}
 
 # provide useful output
-echo "$PWD/dist/${NAME}-${VERSION}.tar.gz"
+echo "$BASE_DIR/dist/${PREFIX}.tar.gz"
 
 popd > /dev/null
 
