@@ -46,4 +46,4 @@ class CLICreator(object):
 
 if __name__ == '__main__':
     x = CLICreator()
-    print (x.args.id)
+
