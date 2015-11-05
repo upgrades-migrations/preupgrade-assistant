@@ -1,11 +1,11 @@
+from django import VERSION
 from django.conf.urls import patterns, include, url
-
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from preup_ui.auth.views import FirstRunView, FirstRunDisableAuthView, login, logout
 from preup_ui.auth.decorators import first_run_required as frr
 
-admin.autodiscover()
+if VERSION < (1, 7):
+    admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^', include('preup_ui.report.urls')),
@@ -30,4 +30,3 @@ urlpatterns = patterns('',
     url(r'^first/$', frr(FirstRunView.as_view()), name='first-run'),
     url(r'^first/disable/$', frr(FirstRunDisableAuthView.as_view()), name='first-run-disable-auth'),
 )
-
