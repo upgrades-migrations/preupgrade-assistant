@@ -22,7 +22,7 @@ def main():
         try:
             ret = app.run()
         except KeyboardInterrupt:
-            print '\nAssessment interrupted.'
+            print ('\nAssessment interrupted.')
             return 1
         except Exception as ex:
             cli.parser.error(str(ex))
