@@ -65,13 +65,17 @@ RULE_SECTION_VALUE_IMPORT = """\t\t<check-import import-name="stderr"/>"""
 
 RULE_SECTION_VALUE = """\t\t<check-export export-name="{value_name_upper}" value-id=\""""+TAG_VALUE+"""{main_dir}_{scap_name}_state_{val}" />
 """
-DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
-              'current_directory': '/root/preupgrade',
+DIC_VALUES = {'current_directory': '/root/preupgrade',
               'solution_file': '',
-              'migrate': '0',
-              'upgrade': '0',
               'result_part': '',
-              'report_dir': '/root/preupgrade',
               }
 
+GLOBAL_DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
+                     'migrate': '0',
+                     'upgrade': '0',
+                     'non_rh_signed': 'NON_RH_SIGNED',
+                     'report_dir': '/root/preupgrade',
+                     }
 
+RULE_SECTION_VALUE_GLOBAL = """\t\t<check-export export-name="{value_name_upper}" value-id=\""""+TAG_VALUE+"""{value_name}" />
+"""

@@ -271,6 +271,13 @@ class Application(object):
                                               self.get_scenario(),
                                               os.path.basename(self.content),
                                               self.conf.result_name)
+        if self.conf.nonrhsigned is None:
+            self.conf.nonrhsigned = 0
+
+        self.report_parser.add_global_tags(self.conf.result_dir,
+                                           self.get_proper_scenario(self.get_scenario()),
+                                           self.conf.mode,
+                                           self.conf.nonrhsigned)
 
         self.report_parser.modify_result_path(self.conf.result_dir,
                                               self.get_proper_scenario(self.get_scenario()),

@@ -25,6 +25,17 @@ def upload_callback(option, dummy_opt_str, dummy_value, parser):
                     raise OptionValueError("Specify at most one argument for upload option.")
 
 
+def optional_rh_arg(arg_default):
+    def func(option, opt_str, value, parser):
+        if parser.rargs and not parser.rargs[0].startswith('-'):
+            val = parser.rargs[0]
+            parser.rargs.pop(0)
+        else:
+            val = arg_default
+        setattr(parser.values, option.dest, val)
+    return func
+
+
 class CLI(object):
 
     """Class for processing data from commandline"""
@@ -133,6 +144,15 @@ will used -- http://127.0.0.1:8099/submit/)"
             action="store_true",
             default=False,
             help="Generate kickstart"
+        )
+        self.parser.add_option(
+            "--non-rh-signed",
+            action='callback',
+            callback=optional_rh_arg(''),
+            dest="nonrhsigned",
+            help="Testing option. "
+                 "Specify a full path to file which contains package which will not be checked."
+                 "File has to be line based."
         )
 
 if __name__ == '__main__':
