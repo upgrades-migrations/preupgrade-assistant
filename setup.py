@@ -15,9 +15,10 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "2.1.1"
+package_version         = "2.1.2"
 
-script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml', 'preup_ui_manage']
+script_files = ['preupg', 'premigrate', 'preup_ui_manage',
+                'preupg-xccdf-compose', 'preupg-create-group-xml', 'preupg-content-creator']
 
 data_files = {
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],

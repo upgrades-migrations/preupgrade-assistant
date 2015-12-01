@@ -40,6 +40,14 @@ result.html - File with final migration assessment report in human readable
          form (we are sorry for "listing" functionality only)
 result.xml - File with final migration assessment report in machine
          readable form
+result-admin.html - File with final migration assessment report in human readable
+         form (we are sorry for "listing" functionality only) for administrators
+result-admin.xml - File with final migration assessment report in machine
+         readable form for administrators
+result-admin.html - File with final migration assessment report in human readable
+         form (we are sorry for "listing" functionality only) for users
+result-admin.xml - File with final migration assessment report in machine
+         readable form for users
 README - this file
 results.tar.gz - Tar ball with all files in directory /root/preupgrade
 

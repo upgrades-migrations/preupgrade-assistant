@@ -83,8 +83,10 @@ __all__ = (
     'KICKSTART_README',
     'MIGRATE',
     'UPGRADE',
+    'NON_RH_SIGNED',
     'HOME_DIRECTORY_FILE',
-    'USER_CONFIG_FILE'
+    'USER_CONFIG_FILE',
+    'PREUPG_API_VERSION'
 )
 
 CACHE = "/var/cache/preupgrade"
@@ -108,6 +110,10 @@ try:
 except KeyError:
     MIGRATE = 1
     UPGRADE = 1
+try:
+    NON_RH_SIGNED = os.environ['XCCDF_VALUE_NONRHSIGNED']
+except KeyError:
+    NON_RH_SIGNED = 0
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
@@ -115,6 +121,8 @@ COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
 
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
+
+PREUPG_API_VERSION=1
 
 component = "unknown"
 
@@ -410,6 +418,7 @@ def load_pa_configuration():
     """ Loads preupgrade-assistant configuration file """
     global HOME_DIRECTORY_FILE
     global USER_CONFIG_FILE
+    global RH_SIGNED_PKGS
 
     if not os.path.exists(PREUPGRADE_CONFIG):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
