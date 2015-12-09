@@ -367,7 +367,7 @@ class ReportParser(object):
         """Function return path to report"""
         return self.path
 
-    def add_global_tags(self, result_dir, scenario, mode, debug_mode, dist_native):
+    def add_global_tags(self, result_dir, scenario, mode, devel_mode, dist_native):
 
         for child in self.get_nodes(self.target_tree, self.profile):
             last_child = child
@@ -383,8 +383,8 @@ class ReportParser(object):
                         val = "0"
                 elif key == "report_dir":
                     val = os.path.join(result_dir, scenario)
-                elif key == "debug_mode":
-                    val = str(debug_mode)
+                elif key == "devel_mode":
+                    val = str(devel_mode)
                 elif key == "dist_native":
                     if dist_native is None:
                         val = "sign"

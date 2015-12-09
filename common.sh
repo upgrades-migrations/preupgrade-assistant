@@ -21,7 +21,7 @@ SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
 KICKSTART_README=$VALUE_TMP_PREUPGRADE/kickstart/README
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
-DEBUG_MODE=$XCCDF_VALUE_DEBUG_MODE
+DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
 
 RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
@@ -321,8 +321,8 @@ conf_get_section() {
 
 # is_dist_native function return only 0 or 1
 # return 1 if package is not installed and of course information log.
-# Case DEBUG_MODE is turn off then return 0 if package is signed or 1 if not.
-# Case DEBUG_MODE is turn on:
+# Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+# Case DEVEL_MODE is turn on:
 #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
 #   DIST_NATIVE = all: always return 0
 #   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
@@ -338,7 +338,7 @@ is_dist_native()
         log_info "Package $pkg is not installed on Red Hat Enterprise Linux system."
         return 1
     fi
-    if [ x"$DEBUG_MODE" == "x0" ]; then
+    if [ x"$DEVEL_MODE" == "x0" ]; then
         grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
         if [ $? -eq 0 ]; then
             return 0

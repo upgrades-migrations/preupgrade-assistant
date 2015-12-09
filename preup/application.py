@@ -91,7 +91,7 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
-        self._debug_mode = 0
+        self._devel_mode = 0
         self._dist_mode = None
         if self.conf.debug is None:
             set_level(logging.INFO)
@@ -277,7 +277,7 @@ class Application(object):
         self.report_parser.add_global_tags(self.conf.result_dir,
                                            self.get_proper_scenario(self.get_scenario()),
                                            self.conf.mode,
-                                           self._debug_mode,
+                                           self._devel_mode,
                                            self._dist_mode)
 
         self.report_parser.modify_result_path(self.conf.result_dir,
@@ -502,7 +502,7 @@ class Application(object):
 
     def scan_system(self):
         """The function is used for scanning system with all steps."""
-        self._set_debug_mode()
+        self._set_devel_mode()
         self.prepare_scan_system()
         assessment_dir = self.generate_report()
         # Update source XML file in temporary directory
@@ -581,13 +581,13 @@ class Application(object):
                             format(target, path))
         log_message("Upload results to UI by command:\ne.g. {0} .".format(command))
 
-    def _set_debug_mode(self):
+    def _set_devel_mode(self):
         # Check for devel_mode
-        if os.path.exists(settings.DEBUG_MODE):
-            self._debug_mode = 1
+        if os.path.exists(settings.DEVEL_MODE):
+            self._devel_mode = 1
             self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE, 'dist_mode')
         else:
-            self._debug_mode = 0
+            self._devel_mode = 0
 
     def run(self):
         """run analysis"""

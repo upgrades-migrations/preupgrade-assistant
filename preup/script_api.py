@@ -87,7 +87,7 @@ __all__ = (
     'HOME_DIRECTORY_FILE',
     'USER_CONFIG_FILE',
     'PREUPG_API_VERSION',
-    'DEBUG_MODE',
+    'DEVEL_MODE',
     'DIST_NATIVE',
 )
 
@@ -113,9 +113,9 @@ except KeyError:
     MIGRATE = 1
     UPGRADE = 1
 try:
-    DEBUG_MODE = os.environ['XCCDF_VALUE_DEBUG_MODE']
+    DEVEL_MODE = os.environ['XCCDF_VALUE_DEVEL_MODE']
 except KeyError:
-    DEBUG_MODE = 0
+    DEVEL_MODE = 0
 
 try:
     DIST_NATIVE = os.environ['XCCDF_VALUE_DIST_NATIVE']
@@ -425,8 +425,8 @@ def is_dist_native(pkg):
     """
     is_dist_native function return only 0 or 1
     return 1 if package is not installed and of course information log.
-    Case DEBUG_MODE is turn off then return 0 if package is signed or 1 if not.
-    Case DEBUG_MODE is turn on:
+    Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+    Case DEVEL_MODE is turn on:
     DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
     DIST_NATIVE = all: always return 0
     DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
@@ -439,7 +439,7 @@ def is_dist_native(pkg):
         return False
 
     rpm_signed = get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
-    if int(DEBUG_MODE) == 0:
+    if int(DEVEL_MODE) == 0:
         found = [x for x in rpm_signed if x.startswith(pkg)]
         if found:
             return 0

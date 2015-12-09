@@ -74,7 +74,7 @@ GLOBAL_DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
                      'migrate': '0',
                      'upgrade': '0',
                      'report_dir': '/root/preupgrade',
-                     'debug_mode': '0',
+                     'devel_mode': '0',
                      'dist_native': ''
                      }
 

@@ -159,4 +159,4 @@ CPE_FEDORA = 'fedoraproject:fedora'
 REPORTS = ['admin', 'user']
 PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
-DEBUG_MODE = os.path.join(cache_dir, 'debug_mode')
+DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
