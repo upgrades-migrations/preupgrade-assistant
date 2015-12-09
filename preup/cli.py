@@ -145,15 +145,6 @@ will used -- http://127.0.0.1:8099/submit/)"
             default=False,
             help="Generate kickstart"
         )
-        self.parser.add_option(
-            "--non-rh-signed",
-            action='callback',
-            callback=optional_rh_arg(''),
-            dest="nonrhsigned",
-            help="Testing option. "
-                 "Specify a full path to file which contains package which will not be checked."
-                 "File has to be line based."
-        )
 
 if __name__ == '__main__':
     x = CLI()

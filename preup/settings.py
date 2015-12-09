@@ -157,3 +157,6 @@ PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
 REPORTS = ['admin', 'user']
+PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
+
+DEBUG_MODE = os.path.join(cache_dir, 'debug_mode')

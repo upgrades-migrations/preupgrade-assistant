@@ -73,8 +73,9 @@ DIC_VALUES = {'current_directory': '/root/preupgrade',
 GLOBAL_DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
                      'migrate': '0',
                      'upgrade': '0',
-                     'non_rh_signed': 'NON_RH_SIGNED',
                      'report_dir': '/root/preupgrade',
+                     'debug_mode': '0',
+                     'dist_native': ''
                      }
 
 RULE_SECTION_VALUE_GLOBAL = """\t\t<check-export export-name="{value_name_upper}" value-id=\""""+TAG_VALUE+"""{value_name}" />

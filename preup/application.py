@@ -91,6 +91,8 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+        self._debug_mode = 0
+        self._dist_mode = None
         if self.conf.debug is None:
             set_level(logging.INFO)
         else:
@@ -271,13 +273,12 @@ class Application(object):
                                               self.get_scenario(),
                                               os.path.basename(self.content),
                                               self.conf.result_name)
-        if self.conf.nonrhsigned is None:
-            self.conf.nonrhsigned = 0
 
         self.report_parser.add_global_tags(self.conf.result_dir,
                                            self.get_proper_scenario(self.get_scenario()),
                                            self.conf.mode,
-                                           self.conf.nonrhsigned)
+                                           self._debug_mode,
+                                           self._dist_mode)
 
         self.report_parser.modify_result_path(self.conf.result_dir,
                                               self.get_proper_scenario(self.get_scenario()),
@@ -501,6 +502,7 @@ class Application(object):
 
     def scan_system(self):
         """The function is used for scanning system with all steps."""
+        self._set_debug_mode()
         self.prepare_scan_system()
         assessment_dir = self.generate_report()
         # Update source XML file in temporary directory
@@ -578,6 +580,14 @@ class Application(object):
                 log_message("Read the 3rd party content {0} {1} for more details.".
                             format(target, path))
         log_message("Upload results to UI by command:\ne.g. {0} .".format(command))
+
+    def _set_debug_mode(self):
+        # Check for devel_mode
+        if os.path.exists(settings.DEBUG_MODE):
+            self._debug_mode = 1
+            self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE, 'dist_mode')
+        else:
+            self._debug_mode = 0
 
     def run(self):
         """run analysis"""
