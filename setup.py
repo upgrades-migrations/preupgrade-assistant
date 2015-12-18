@@ -9,7 +9,7 @@ from scripts.include import *
 from setuptools import setup
 
 project_name            = "preupgrade-assistant"
-project_dirs            = ["preup", "common", "preuputils"]
+project_dirs            = ["preup", "common", "preuputils", "preup_creator"]
 project_url             = "https://github.com/phracek/preupgrade-assistant/"
 project_author          = "Red Hat, Inc."
 project_author_email    = "phracek@redhat.com"
