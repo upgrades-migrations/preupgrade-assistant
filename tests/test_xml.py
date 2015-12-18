@@ -23,6 +23,7 @@ from preup.xml_manager import html_escape, html_escape_string
 
 import base
 
+
 class TestXMLCompose(base.TestCase):
 
     """Tests of right composing of contents in groups."""
