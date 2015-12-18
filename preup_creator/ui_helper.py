@@ -99,6 +99,8 @@ class UIHelper(object):
         return os.path.join(self.get_upgrade_path(), self.content_path)
 
     def get_upgrade_path(self):
+        if self.upgrade_path.startswith("/"):
+            return self.upgrade_path
         return os.path.join(os.getcwd(), self.upgrade_path)
 
     def specify_upgrade_path(self):
@@ -115,10 +117,13 @@ class UIHelper(object):
 
         return True
 
+    def prepare_content_env(self):
+        self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
+
     def get_content_info(self):
         self._group_name = get_user_input(settings.group_name, any_input=True)
         self._content_name = get_user_input(settings.content_name, any_input=True)
-        self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
+        self.prepare_content_env()
         if os.path.exists(self.get_content_path()):
             message = "Content %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
                                                                                                   self.content_path)
@@ -128,11 +133,15 @@ class UIHelper(object):
         else:
             os.makedirs(self.get_content_path())
         checkscript = get_user_input(settings.check_script, any_input=True)
+        if checkscript == "":
+            checkscript = "check.sh"
         if UIHelper.check_path(os.path.join(self.get_content_path(), checkscript),
                                settings.check_path % checkscript) is None:
             self.check_script = False
         self.content_dict['check_script'] = checkscript
         solution = get_user_input(settings.solution_text, any_input=True)
+        if solution == "":
+            solution = "solution.txt"
         if UIHelper.check_path(os.path.join(self.get_content_path(), solution),
                                settings.check_path % solution) is None:
             self.solution_file = False
@@ -164,7 +173,7 @@ class UIHelper(object):
                 config.set(section, key, val)
 
         self.content_ini = self.get_content_name() + '.ini'
-        ini_path = os.path.join(self.get_content_path(), self.content_ini)
+        ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
         try:
             f = open(ini_path, 'wb')
             config.write(f)
@@ -196,20 +205,24 @@ class UIHelper(object):
             print ('We have a problem with writing %s file to disc' % group_ini)
             raise
 
+    def _create_check_script(self):
+        if self.check_script:
+            utils.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
+            os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
+
+    def _create_solution_file(self):
+        if self.solution_file:
+            utils.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
+
     def create_final_content(self):
-        if self.refresh_content:
-            shutil.rmtree(self.get_content_path())
-            os.makedirs(self.get_content_path())
         try:
             self._create_group_ini()
             self._create_ini_file()
         except IOError:
             return None
-        if self.check_script:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
-            os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
-        if self.solution_file:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
+
+        self._create_check_script()
+        self._create_solution_file()
         return True
 
     def _brief_summary(self):
@@ -224,6 +237,9 @@ class UIHelper(object):
         if self.specify_upgrade_path() is None:
             return 1
         self.get_content_info()
+        if self.refresh_content:
+            shutil.rmtree(self.get_content_path())
+            os.makedirs(self.get_content_path())
         if self.create_final_content() is None:
             return 1
         self._brief_summary()
