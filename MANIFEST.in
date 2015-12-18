@@ -14,5 +14,6 @@ recursive-include preuputils *
 recursive-include postupgrade.d *
 recursive-include man *
 recursive-include kickstart *
+recursive-include preup_creator *
 include preup-conf/preupgrade-assistant.conf
 
