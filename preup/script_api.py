@@ -34,6 +34,7 @@ import shutil
 from ConfigParser import ConfigParser
 from preup import utils
 from preup.utils import get_file_content, write_to_file
+from preup import settings
 
 __all__ = (
     'log_debug',
@@ -83,12 +84,15 @@ __all__ = (
     'MIGRATE',
     'UPGRADE',
     'HOME_DIRECTORY_FILE',
-    'USER_CONFIG_FILE'
+    'USER_CONFIG_FILE',
+    'PREUPG_API_VERSION',
+    'DEVEL_MODE',
+    'DIST_NATIVE',
 )
 
 CACHE="/var/cache/preupgrade"
 PREUPGRADE_CACHE=os.path.join(CACHE, "common")
-PREUPGRADE_CONFIG = os.path.join('/etc', 'preupgrade-assistant.conf')
+PREUPGRADE_CONFIG = settings.PREUPG_CONFIG_FILE
 VALUE_RPM_QA=os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
 VALUE_ALLCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
 VALUE_CONFIGCHANGED=os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
@@ -107,6 +111,14 @@ try:
 except KeyError:
     MIGRATE = 1
     UPGRADE = 1
+try:
+    DEVEL_MODE = os.environ['XCCDF_VALUE_DEVEL_MODE']
+except KeyError:
+    DEVEL_MODE = 0
+try:
+    DIST_NATIVE = os.environ['XCCDF_VALUE_DIST_NATIVE']
+except KeyError:
+    DIST_NATIVE = 0
 POSTUPGRADE_DIR=os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_README=os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
@@ -115,6 +127,7 @@ COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
 
+PREUPG_API_VERSION=1
 
 component = "unknown"
 
@@ -423,10 +436,51 @@ def backup_config_file(config_file_name):
     shutil.copyfile(config_file_name, os.path.join(VALUE_TMP_PREUPGRADE, config_file_name.strip("/")))
 
 
+def is_dist_native(pkg):
+    """
+    is_dist_native function return only 0 or 1
+    return 1 if package is not installed and of course information log.
+    Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+    Case DEVEL_MODE is turn on:
+    DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
+    DIST_NATIVE = all: always return 0
+    DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
+    """
+
+    rpm_qa = get_file_content(VALUE_RPM_QA, "rb", True)
+    found = [x for x in rpm_qa if x.startswith(pkg)]
+    if not found:
+        log_info("Package %s is not installed on Red Hat Enterprise Linux system.")
+        return False
+
+    rpm_signed = get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
+    if int(DEVEL_MODE) == 0:
+        found = [x for x in rpm_signed if x.startswith(pkg)]
+        if found:
+            return 0
+        else:
+            return 1
+    else:
+        if DIST_NATIVE == "all":
+            return 0
+        if DIST_NATIVE == "sign":
+            found = [x for x in rpm_signed if x.startswith(pkg)]
+            if found:
+                return 0
+            else:
+                return 1
+        if os.path.exists(DIST_NATIVE):
+            list_native = get_file_content(DIST_NATIVE)
+            if pkg in list_native:
+                return 0
+        return 1
+
+
 def load_pa_configuration():
     """ Loads preupgrade-assistant configuration file """
     global HOME_DIRECTORY_FILE
     global USER_CONFIG_FILE
+    global RH_SIGNED_PKGS
 
     if not os.path.exists(PREUPGRADE_CONFIG):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")

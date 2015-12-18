@@ -81,6 +81,8 @@ class Application(object):
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
+        self._devel_mode = 0
+        self._dist_mode = None
         if self.conf.debug is None:
             set_level(logging.INFO)
         else:
@@ -262,6 +264,12 @@ class Application(object):
                                               self.get_scenario(),
                                               os.path.basename(self.content),
                                               self.conf.result_name)
+
+        self.report_parser.add_global_tags(self.conf.result_dir,
+                                           self.get_proper_scenario(self.get_scenario()),
+                                           self.conf.mode,
+                                           self._devel_mode,
+                                           self._dist_mode)
 
         self.report_parser.modify_result_path(self.conf.result_dir,
                                               self.get_proper_scenario(self.get_scenario()),
@@ -494,6 +502,7 @@ class Application(object):
         """
         The function is used for scanning system with all steps.
         """
+        self._set_devel_mode()
         self.prepare_scan_system()
         assessment_dir = self.generate_report()
 
@@ -574,6 +583,14 @@ class Application(object):
                 log_message("Read the 3rd party content %s %s for more details."
                             % (target, path))
         log_message("Upload results to UI by command:\ne.g. %s ." % command)
+
+    def _set_devel_mode(self):
+        # Check for devel_mode
+        if os.path.exists(settings.DEVEL_MODE):
+            self._devel_mode = 1
+            self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE, 'dist_mode')
+        else:
+            self._devel_mode = 0
 
     def run(self):
         """ run analysis """

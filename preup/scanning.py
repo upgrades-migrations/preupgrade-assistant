@@ -91,7 +91,10 @@ class ScanProgress(object):
         """
          Function shows a progress of assessment
         """
-        self.width_size = int(ScanProgress.get_terminal_width()[1])
+        try:
+            self.width_size = int(ScanProgress.get_terminal_width()[1])
+        except IndexError:
+            self.width_size = 80
         xccdf_rule, dummy_result = stdout_data.strip().split(':')
         self.output_data.append(u'%s:%s' % (self.names[xccdf_rule], stdout_data.strip()))
         self.current_count += 1

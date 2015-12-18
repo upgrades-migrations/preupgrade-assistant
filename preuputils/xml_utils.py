@@ -148,13 +148,16 @@ class XmlUtils(object):
             if key == 'current_directory':
                 val = '/'.join(get_full_xml_tag(self.dirname))
                 val = 'SCENARIO/' + val
-            if key == 'report_dir':
-                val = 'SCENARIO'
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
             self.update_values_list(check_export_tag, "{value_name_upper}", key.upper())
             self.update_values_list(check_export_tag, "{val}", key.lower())
+        for key, val in xml_tags.GLOBAL_DIC_VALUES.items():
+            check_export_tag.append(xml_tags.RULE_SECTION_VALUE_GLOBAL)
+            self.update_values_list(check_export_tag, "{value_name_upper}", key.upper())
+            self.update_values_list(check_export_tag, "{value_name}", key)
+
         return value_tag, check_export_tag
 
     def solution_modification(self, key):

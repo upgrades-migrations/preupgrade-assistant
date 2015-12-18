@@ -16,9 +16,11 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "2.0.4"
+package_version         = "2.1.3"
 
-script_files = ['preupg', 'premigrate', 'preupg-xccdf-compose', 'preupg-create-group-xml']
+script_files = ['preupg', 'premigrate',
+                'preupg-xccdf-compose', 'preupg-create-group-xml',
+                'preupg-content-creator']
 
 data_files = {
     'preuputils/': ['preuputils/template.xml'],

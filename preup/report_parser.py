@@ -1,11 +1,11 @@
 import re
 import os
-import collections
 import shutil
-
+import six
 
 from preup.utils import get_file_content, write_to_file
 from preup import xccdf, utils, settings
+from preuputils import xml_tags
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -18,51 +18,6 @@ def get_node(tree, tag, name_space='', prefix=''):
 
 def remove_node(tree, tag):
     return tree.remove(tag)
-
-
-def update_current_dir(result_dir, scenario, value, mode):
-    """Replaces a current dir with the new value"""
-    return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
-
-
-def update_report_dir(result_dir, scenario, value, mode):
-    """Replaces a report_dir with the new value"""
-    return value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
-
-
-def update_result_path(result_dir, scenario, value, mode):
-    """
-    Replaces a result path with the new value
-    """
-    return value.text.replace("SCENARIO", result_dir)
-
-
-def update_migrate_value(result_dir, scenario, value, mode):
-    """
-    Replaces a migrate value with mode
-
-    mode is given by preupgrade-assistant command line
-    """
-    if not mode:
-        return "1"
-    if 'migrate' in mode:
-        return "1"
-    else:
-        return "0"
-
-
-def update_upgrade_value(result_dir, scenario, value, mode):
-    """
-    Replaces a upgrade value with mode
-
-    mode is given by preupgrade-assistant command line
-    """
-    if not mode:
-        return "1"
-    if 'upgrade' in mode:
-        return "1"
-    else:
-        return "0"
 
 
 def upd_inspection(rule):
@@ -223,18 +178,11 @@ class ReportParser(object):
         """
         Function modifies result path in XML file
         """
-        update_tags = {'_tmp_preupgrade': update_result_path,
-                       '_current_dir': update_current_dir,
-                       '_migrate': update_migrate_value,
-                       '_upgrade': update_upgrade_value,
-                       '_report_dir': update_report_dir}
-        for key, val in update_tags.items():
-            for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
-                if key not in values.get('id'):
-                    continue
-                for value in self.get_nodes(values, "value"):
-                    value.text = update_tags[key](result_dir, scenario, value, mode)
-
+        for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
+            if '_current_dir' not in values.get('id'):
+                continue
+            for value in self.get_nodes(values, "value"):
+                value.text = value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
         self.write_xml()
 
     def modify_platform_tag(self, platform_tag):
@@ -316,7 +264,7 @@ class ReportParser(object):
         """
         Function removes debug information from report
         """
-        re_expr = r'^DEBUG \[\w+\]\s+.*'
+        re_expr = r'^DEBUG.*'
         for rule in self.get_all_result_rules():
             for check_import in self.filter_grandchildren(rule,
                                                           "check",
@@ -442,3 +390,36 @@ class ReportParser(object):
     def get_path(self):
         """Function return path to report"""
         return self.path
+
+    def add_global_tags(self, result_dir, scenario, mode, devel_mode, dist_native):
+
+        for child in self.get_nodes(self.target_tree, self.profile):
+            last_child = child
+            for key, val in six.iteritems(xml_tags.GLOBAL_DIC_VALUES):
+                if key == 'result_part':
+                    continue
+                if key == "tmp_preupgrade":
+                    val = result_dir
+                elif key == "migrate" or key == "upgrade":
+                    if not mode or 'migrate' in mode or 'upgrade' in mode:
+                        val = "1"
+                    else:
+                        val = "0"
+                elif key == "report_dir":
+                    val = os.path.join(result_dir, scenario)
+                elif key == "devel_mode":
+                    val = str(devel_mode)
+                elif key == "dist_native":
+                    if dist_native is None:
+                        val = "sign"
+                    else:
+                        val = dist_native
+                new_child = ElementTree.Element(self.element_prefix + 'Value',
+                                                {'id': xml_tags.TAG_VALUE + key,
+                                                 'type': 'string'
+                                                 })
+                sub_child = ElementTree.SubElement(new_child, self.element_prefix + 'value')
+                sub_child.text = val
+                self.target_tree.insert(self.target_tree._children.index(last_child) + 1,
+                                        new_child)
+        self.write_xml()

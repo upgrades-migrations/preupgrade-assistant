@@ -20,6 +20,8 @@ UPGRADE=$XCCDF_VALUE_UPGRADE
 SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
 KICKSTART_README=$VALUE_TMP_PREUPGRADE/kickstart/README
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
+DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
+DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
 
 RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
@@ -34,6 +36,7 @@ RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
 HOME_DIRECTORY_FILE=""
 USER_CONFIG_FILE=0
 
+PREUPG_API_VERSION=1
 
 export LC_ALL=C
 
@@ -172,7 +175,7 @@ check_applies_to
         RPM_NAME=`echo "$RPM_NAME" | tr "," " "`
         for pkg in $RPM_NAME
         do
-            grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
+            grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
             if [ $? -ne 0 ]; then
                 log_info "Package $pkg is not installed"
                 NOT_APPLICABLE=1
@@ -233,6 +236,7 @@ check_rpm_to
         exit_fail
     fi
 }
+
 # This check can be used if you need root privilegues
 check_root
 {
@@ -314,6 +318,57 @@ conf_get_section() {
   return 0
 }
 
+# is_dist_native function return only 0 or 1
+# return 1 if package is not installed and of course information log.
+# Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+# Case DEVEL_MODE is turn on:
+#   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
+#   DIST_NATIVE = all: always return 0
+#   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
+is_dist_native()
+{
+    if [ $# -ne 1 ]; then
+        return 1
+    fi
+    echo "is_dist_native: $DIST_NATIVE"
+    pkg=$1
+    grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
+    if [ $? -ne 0 ]; then
+        log_info "Package $pkg is not installed on Red Hat Enterprise Linux system."
+        return 1
+    fi
+    if [ x"$DEVEL_MODE" == "x0" ]; then
+        grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
+        if [ $? -eq 0 ]; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        case "$DIST_NATIVE" in
+            "all")
+                return 0
+                ;;
+            "sign")
+                grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
+                if [ $? -eq 0 ]; then
+                    return 0
+                else
+                    return 1
+                fi
+                ;;
+            *)
+                if [ -f "$DIST_NATIVE" ]; then
+                    grep "^$pkg" $DIST_NATIVE > /dev/null
+                    if [ $? -eq 0 ]; then
+                        return 0
+                    fi
+                fi
+                return 1
+                ;;
+        esac
+    fi
+}
 
 # here is parsed PA configuration
 load_pa_configuration() {
@@ -338,6 +393,9 @@ load_pa_configuration() {
         ;;
       user_config_file)
         USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
+        ;;
+      dist_native)
+        temp="$tmp_val"
         ;;
       *) log_error "Unknown option $tmp_option"; exit_error
     esac

@@ -5,7 +5,9 @@ import subprocess
 import fnmatch
 from preup.logger import *
 import shutil
+import ConfigParser
 from os import path, access, W_OK, R_OK, X_OK
+
 
 def check_file(fp, mode):
     """
@@ -445,3 +447,15 @@ def update_platform(full_path):
             line = line.replace('PLATFORM_ID', platform_id[0])
         file_lines[index] = line
     write_to_file(full_path, 'wb', file_lines)
+
+
+def get_preupg_config_file(path, key, section="preupgrade"):
+    if not os.path.exists(path):
+        return None
+
+    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config.read(path)
+    section = 'preupgrade-assistant'
+    if config.has_section(section):
+        if config.has_option(section, key):
+            return config.get(section, key)
