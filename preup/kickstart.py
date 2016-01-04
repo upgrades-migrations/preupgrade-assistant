@@ -9,8 +9,6 @@ import base64
 import shutil
 import os
 import six
-import re
-import random
 
 from pykickstart.parser import KickstartError, KickstartParser, Script
 from pykickstart.version import makeVersion
@@ -18,6 +16,7 @@ from pykickstart.constants import KS_SCRIPT_POST, KS_SCRIPT_PRE
 from preup.logger import log_message, logging
 from preup import settings
 from preup.utils import write_to_file, get_file_content
+from preup import utils
 
 
 class YumGroupManager(object):
@@ -556,6 +555,25 @@ class KickstartGenerator(object):
         self.embed_script(self.latest_tarball)
         self.save_kickstart()
         return True
+
+    @staticmethod
+    def kickstart_scripts():
+        try:
+            lines = utils.get_file_content(os.path.join(settings.common_dir,
+                                                        settings.KS_SCRIPTS),
+                                           "rb",
+                                           method=True)
+            for counter, line in enumerate(lines):
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                if 'is not installed' in line:
+                    continue
+                cmd, name = line.split("=", 2)
+                kickstart_file = os.path.join(settings.KS_DIR, name)
+                utils.run_subprocess(cmd, output=kickstart_file, shell=True)
+        except IOError:
+            pass
 
 
 def main():

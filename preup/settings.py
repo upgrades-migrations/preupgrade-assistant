@@ -156,6 +156,7 @@ KS_TEMPLATE_POSTSCRIPT = 'finish.sh'
 KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
 KS_FILES = ['default_grouplist-el6', 'default_grouplist-el7',
             'default-optional_grouplist-el6', 'default-optional_grouplist-el7']
+KS_SCRIPTS = "kickstart_scripts.txt"
 PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
