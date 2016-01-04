@@ -138,6 +138,9 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in %s.\n" 
                  "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
                  "installation of Red Hat Enterprise Linux 7.\n" \
                  "The Kickstart file needs to be modified by administator.\n"
+options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
+list_rules = "List of all available rules:\n%s\n"
+unknown_rules = "These rules does not exist:\n%s\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
                    'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
