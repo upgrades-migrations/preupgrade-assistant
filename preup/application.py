@@ -480,6 +480,7 @@ class Application(object):
         common_path = os.path.join(assessment_dir, 'common')
         if os.path.exists(common_path):
             shutil.rmtree(common_path)
+        os.mkdir(common_path)
         dir_util.copy_tree(static_data_path, common_path)
         # Try copy directory with contents to /root/preupgrade
         # Call xccdf_compose API for generating all-xccdf.xml
