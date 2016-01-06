@@ -415,7 +415,10 @@ class KickstartGenerator(object):
         display_package_names = ygg.get_list()
         display_package_names = ygg.remove_packages(display_package_names)
         return display_package_names
-        # return display_group_names + display_package_names
+
+    def delete_obsolete_issues(self):
+        """ Remove obsolete items which does not exist on RHEL-7 anymore"""
+        self.ks.handler.bootloader.location = None
 
     def embed_script(self, tarball):
         tarball_content = get_file_content(tarball, 'rb', decode_flag=False)
@@ -557,6 +560,7 @@ class KickstartGenerator(object):
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
         self.update_partitioning()
         self.embed_script(self.latest_tarball)
+        self.delete_obsolete_issues()
         self.save_kickstart()
         return True
 
