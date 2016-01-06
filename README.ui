@@ -1,0 +1,39 @@
+Preupgrade Assistant UI
+=======================
+
+Installation and configuration
+------------------------------
+
+1.  Install package preupgrade-assistant-ui:
+
+    yum install preupgrade-assistant-ui
+
+2.  Choose configuration file.
+    If you want the UI to be accessible over network,
+    enable configuration file 99-preup-httpd.conf.public:
+
+        mv /etc/httpd/conf.d/99-preup-httpd.conf.public \
+           /etc/httpd/conf.d/99-preup-httpd.conf
+
+    If you want the UI to be only accessible on localhost,
+    enable configuration file 99-preup-httpd.conf.private:
+
+        mv /etc/httpd/conf.d/99-preup-httpd.conf.private \
+           /etc/httpd/conf.d/99-preup-httpd.conf
+
+3.  Start httpd service (and enable it to start after reboot):
+
+        service httpd start
+        chkconfig httpd on
+
+4.  The UI is listenning on port 8099.
+    Use your favorite web browser to access it:
+
+    http://127.0.0.1:8099/
+
+    (Replace 127.0.0.1 with the actual address,
+    if you are accessing the UI over network.)
+
+
+For more information see https://access.redhat.com/solutions/637583
+
