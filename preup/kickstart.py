@@ -12,7 +12,7 @@ import six
 
 from pykickstart.parser import KickstartError, KickstartParser, Script
 from pykickstart.version import makeVersion
-from pykickstart.constants import KS_SCRIPT_POST, KS_SCRIPT_PRE
+from pykickstart.constants import KS_SCRIPT_POST, KS_SCRIPT_PRE, KS_MISSING_IGNORE
 from preup.logger import log_message, logging
 from preup import settings
 from preup.utils import write_to_file, get_file_content
@@ -547,7 +547,9 @@ class KickstartGenerator(object):
             log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
             return None
         packages = self.output_packages()
-        self.ks.handler.packages.add(packages)
+        if packages:
+            self.ks.handler.packages.add(packages)
+            self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.update_repositories(self.repos)
         self.update_users(self.filter_kickstart_users())
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
