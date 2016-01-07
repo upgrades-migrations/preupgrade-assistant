@@ -423,43 +423,55 @@ def backup_config_file(config_file_name):
 
 def is_dist_native(pkg):
     """
-    is_dist_native function return only 0 or 1
-    return 1 if package is not installed and of course information log.
-    Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+    is_dist_native function return only True or False
+    return False if package is not installed and of course information log.
+    Case DEVEL_MODE is turn off then return True if package is signed or False if not.
     Case DEVEL_MODE is turn on:
-    DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
-    DIST_NATIVE = all: always return 0
-    DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
+    DIST_NATIVE = sign: return True if is RH_SIGNED else return False
+    DIST_NATIVE = all: always return True
+    DIST_NATIVE = path_to_file: return True if package is in file else return False
     """
 
     rpm_qa = get_file_content(VALUE_RPM_QA, "rb", True)
     found = [x for x in rpm_qa if x.startswith(pkg)]
     if not found:
-        log_info("Package %s is not installed on Red Hat Enterprise Linux system.")
+        log_warning("Package %s is not installed on Red Hat Enterprise Linux system.")
         return False
 
     rpm_signed = get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
     if int(DEVEL_MODE) == 0:
         found = [x for x in rpm_signed if x.startswith(pkg)]
         if found:
-            return 0
+            return True
         else:
-            return 1
+            return False
     else:
         if DIST_NATIVE == "all":
-            return 0
+            return True
         if DIST_NATIVE == "sign":
             found = [x for x in rpm_signed if x.startswith(pkg)]
             if found:
-                return 0
+                return True
             else:
-                return 1
+                return False
         if os.path.exists(DIST_NATIVE):
             list_native = get_file_content(DIST_NATIVE)
             if pkg in list_native:
-                return 0
-        return 1
+                return True
+        return False
 
+def get_dist_native_list():
+    """
+    returns list of all installed native packages
+    """
+
+    native_pkgs = []
+    tmp = get_file_content(VALUE_RPM_QA, "rb", True)
+    pkgs = [i.split("\t")[0] for i in tmp]
+    for pkg in pkgs:
+        if(is_dist_native(pkg) is True):
+            native_pkgs.append(pkg)
+    return native_pkgs
 
 def load_pa_configuration():
     """ Loads preupgrade-assistant configuration file """

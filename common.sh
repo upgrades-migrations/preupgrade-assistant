@@ -320,7 +320,7 @@ conf_get_section() {
 }
 
 # is_dist_native function return only 0 or 1
-# return 1 if package is not installed and of course information log.
+# return 1 if package is not installed and print warning log.
 # Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
 # Case DEVEL_MODE is turn on:
 #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
@@ -334,7 +334,7 @@ is_dist_native()
     pkg=$1
     grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
     if [ $? -ne 0 ]; then
-        log_info "Package $pkg is not installed on Red Hat Enterprise Linux system."
+        log_warning "Package $pkg is not installed on Red Hat Enterprise Linux system."
         return 1
     fi
     if [ x"$DEVEL_MODE" == "x0" ]; then
@@ -370,7 +370,7 @@ is_dist_native()
     fi
 }
 
-# return list of all dist natives packages according to is_dist_native()
+# return list of all dist native packages according to is_dist_native()
 get_dist_native_list() {
   while read line; do
     pkg=$(echo $line | cut -d " " -f1 )
