@@ -330,7 +330,6 @@ is_dist_native()
     if [ $# -ne 1 ]; then
         return 1
     fi
-    echo "is_dist_native: $DIST_NATIVE"
     pkg=$1
     grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
     if [ $? -ne 0 ]; then
@@ -368,6 +367,14 @@ is_dist_native()
                 ;;
         esac
     fi
+}
+
+# return list of all dist natives packages according to is_dist_native()
+get_dist_native_list() {
+  while read line; do
+    pkg=$(echo $line | cut -d " " -f1 )
+    is_dist_native $pkg >/dev/null && echo $pkg
+  done < "$VALUE_RPM_RHSIGNED"
 }
 
 # here is parsed PA configuration
