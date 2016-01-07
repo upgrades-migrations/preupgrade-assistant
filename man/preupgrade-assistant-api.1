@@ -78,6 +78,25 @@ There are several directories located in /root/preupgrade which are used by \fBp
 
 Your script should also tell the administrator how risky is to upgrade your component. This can be done with api functions log_{none,slight,medium,high,extreme}_risk.
 
+.SH AVAILABLE RETURN CODES IN REPORTS
+\fBpass\fP - The same as in RETURN CODES
+
+\fBnot_applicable\fP - Rule did not apply to test target. (e.g. package is not installed). Useful if pripare requirements are not met.
+
+\fBinformational\fP - Rule was evaluated by the checking engine, but isn't to be scored. Ideal for informational results, which have "migration guide" chapter style.
+
+\fBfixed\fP - Rule failed, but was later fixed. Ideal if you automatically fixed some configuration file/incompatibility, no manual review expected, but still we should notify the user.
+
+\fBunknown\fP - Could not tell what happened. Don't know when this should be used ;).
+
+\fBerror\fP - An error occurred and test could not complete. (script failed while doing its job). Should be used in "assert way", not as common result.
+
+\fBneeds_inspection\fP - The test failed with return code exit_fail. But content developer add one of these logs (log_{medium|slight|None}_risk before exit_fail.
+
+\fBneeds_action\fP - The test failed with return code exit_fail. But content developer add the log_high_risk before exit_fail.
+
+\fBfail\fP - The test failed and inplace upgrade is not recommended and marked as EXTERME risk. We do not recommend it.
+
 .SH RISK ASSESSMENT LEVELS
 The available risk assessment levels are:
 \fBNone\fP - Default. It can be used as an indicator for some checks. It is not necessary to enter these values.
