@@ -7,6 +7,7 @@ import re
 import subprocess
 from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
+from preup.version import VERSION
 
 project_name            = "preupgrade-assistant"
 project_url             = "https://github.com/phracek/preupgrade-assistant/"
@@ -15,7 +16,7 @@ project_author_email    = "phracek@redhat.com"
 project_description     = "Preupgrade assistant"
 package_name            = "%s" % project_name
 package_module_name     = project_name
-package_version         = "2.1.4"
+package_version         = VERSION
 
 script_files = ['preupg', 'premigrate', 'preup_ui_manage',
                 'preupg-xccdf-compose', 'preupg-create-group-xml', 'preupg-content-creator']

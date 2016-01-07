@@ -461,6 +461,7 @@ def is_dist_native(pkg):
                 return True
         return False
 
+
 def get_dist_native_list():
     """
     returns list of all installed native packages
@@ -473,6 +474,7 @@ def get_dist_native_list():
         if(is_dist_native(pkg) is True):
             native_pkgs.append(pkg)
     return native_pkgs
+
 
 def load_pa_configuration():
     """ Loads preupgrade-assistant configuration file """

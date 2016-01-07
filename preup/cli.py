@@ -156,6 +156,12 @@ will used -- http://127.0.0.1:8099/submit/)"
             default=False,
             help="List available contents"
         )
+        self.parser.add_option(
+            "--version",
+            action="store_true",
+            default=False,
+            help="Show Preupgrade Assistant version"
+        )
 
 if __name__ == '__main__':
     x = CLI()
