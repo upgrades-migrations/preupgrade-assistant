@@ -65,6 +65,7 @@ __all__ = (
     'switch_to_content',
     'service_is_enabled',
     'is_dist_native',
+    'get_dist_native_list',
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
