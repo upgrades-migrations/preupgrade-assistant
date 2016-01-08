@@ -608,7 +608,9 @@ class Application(object):
         # Check for devel_mode
         if os.path.exists(settings.DEVEL_MODE):
             self._devel_mode = 1
-            self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE, 'dist_mode')
+            self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE,
+                                                           'dist_mode',
+                                                           section="devel-mode")
         else:
             self._devel_mode = 0
 
