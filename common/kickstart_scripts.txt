@@ -1,0 +1,1 @@
+yumdb search reason user | grep -v '^ ' | grep -v '^$' | sed -r 's/^[0-9]+://' | xargs rpm --qf "%{NAME}\n" -q=PA_RHRHEL7rpmlist

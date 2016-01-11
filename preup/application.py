@@ -721,6 +721,7 @@ If you would like to use this tool, you have to have only one." % settings.sourc
             tarball_path = self.scan_system()
             self.summary_report(tarball_path)
             self.common.copy_common_files()
+            KickstartGenerator.kickstart_scripts()
             utils.remove_home_issues()
             if self.conf.upload:
                 self.upload_results(tarball_path)

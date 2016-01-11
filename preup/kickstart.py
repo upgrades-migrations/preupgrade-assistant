@@ -558,6 +558,25 @@ class KickstartGenerator(object):
         self.save_kickstart()
         return True
 
+    @staticmethod
+    def kickstart_scripts():
+        try:
+            lines = utils.get_file_content(os.path.join(settings.common_dir,
+                                                        settings.KS_SCRIPTS),
+                                           "rb",
+                                           method=True)
+            for counter, line in enumerate(lines):
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                if 'is not installed' in line:
+                    continue
+                cmd, name = line.split("=", 2)
+                kickstart_file = os.path.join(settings.KS_DIR, name)
+                utils.run_subprocess(cmd, output=kickstart_file, shell=True)
+        except IOError:
+            pass
+
 
 def main():
     kg = KickstartGenerator()
