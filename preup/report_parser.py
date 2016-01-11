@@ -1,7 +1,6 @@
 import re
 import os
 import shutil
-import six
 
 from preup.utils import get_file_content, write_to_file
 from preup import xccdf, utils, settings
@@ -416,7 +415,7 @@ class ReportParser(object):
 
         for child in self.get_nodes(self.target_tree, self.profile):
             last_child = child
-            for key, val in six.iteritems(xml_tags.GLOBAL_DIC_VALUES):
+            for key, val in xml_tags.GLOBAL_DIC_VALUES.iteritems():
                 if key == 'result_part':
                     continue
                 if key == "tmp_preupgrade":

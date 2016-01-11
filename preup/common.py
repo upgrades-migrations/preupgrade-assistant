@@ -10,7 +10,6 @@ import datetime
 import shutil
 from distutils import dir_util
 from preup import utils
-from preup.utils import run_subprocess
 from preup.logger import log_message
 from preup import settings
 
@@ -75,7 +74,7 @@ class Common(object):
                             new_line=False, log=False)
                 start_time = datetime.datetime.now()
                 common_file_path = self.common_logfiles(log_file)
-                run_subprocess(cmd, output=common_file_path, shell=True)
+                utils.run_subprocess(cmd, output=common_file_path, shell=True)
                 end_time = datetime.datetime.now()
                 diff = end_time - start_time
                 log_message(" %sfinished (time %.2d:%.2ds)" % ('\b' * 8,
