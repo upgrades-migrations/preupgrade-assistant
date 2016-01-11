@@ -523,8 +523,24 @@ class Application(object):
                             level=logging.ERROR)
                 sys.exit(1)
             self.report_parser.modify_platform_tag(version[0])
+        if self.conf.list_rules:
+            log_message(settings.list_rules % '\n'.join(self.report_parser.list_rules()))
+            sys.exit(0)
         if self.conf.mode:
-            self.report_parser.select_rules(self.conf.mode)
+            try:
+                lines = [i.rstrip() for i in get_file_content(os.path.join(os.path.dirname(self.path),
+                                                                           self.conf.mode),
+                                                              'rb',
+                                                              method=True)]
+            except IOError:
+                return
+            self.report_parser.select_rules(lines)
+        if self.conf.select_rules:
+            lines = [i.strip() for i in self.conf.select_rules.split(',')]
+            unknown_rules = self.report_parser.check_rules(lines)
+            if unknown_rules:
+                log_message(settings.unknown_rules % '\n'.join(unknown_rules))
+            self.report_parser.select_rules(lines)
         self.run_scan_process()
         main_report = self.scanning_progress.get_output_data()
         # This function prepare XML and generate HTML
@@ -602,6 +618,10 @@ class Application(object):
         if self.conf.upload and self.conf.results:
             self.upload_results()
             return 0
+
+        if self.conf.mode and self.conf.select_rules:
+            log_message(settings.options_not_allowed)
+            return 1
 
         if not self.conf.riskcheck and not self.conf.apply and not self.conf.cleanup and not self.conf.kickstart:
             # If force option is not mentioned and user select NO then exits

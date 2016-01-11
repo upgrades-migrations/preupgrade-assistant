@@ -142,6 +142,17 @@ will used -- http://127.0.0.1:8099/submit/)"
             default=False,
             help="Generate kickstart"
         )
+        self.parser.add_option(
+            "--select-rules",
+            metavar="RULES",
+            help="Specify a rules, separated by comma, which will be checked"
+        )
+        self.parser.add_option(
+            "--list-rules",
+            action="store_true",
+            default=False,
+            help="List all avaible rules installed on system"
+        )
 
 if __name__ == '__main__':
     x = CLI()

@@ -106,17 +106,23 @@ class ReportParser(object):
             return None
         self.target_tree = ElementTree.fromstring(content)
 
+    def get_select_rules(self):
+        selected = self.filter_grandchildren(self.target_tree, self.profile, "select")
+        return selected
+
+    def get_allowed_selected_rules(self):
+        selected = []
+        for sel in self.get_select_rules():
+            if sel.get('selected') == 'true':
+                selected.append(sel)
+        return selected
+
     def get_number_checks(self):
         """
         Function returns a number of checks
         who are really selected
         """
-        number_checks = 0
-        select_number = self.filter_grandchildren(self.target_tree, self.profile, "select")
-        for sel in select_number:
-            if sel.get('selected') == 'true':
-                number_checks += 1
-        return number_checks
+        return len(self.get_allowed_selected_rules())
 
     def _get_all_rules(self):
         return self.get_nodes(self.target_tree, "Rule", prefix=".//")
@@ -127,11 +133,10 @@ class ReportParser(object):
         """
         list_names = {}
         rule_nodes = self._get_all_rules()
-        for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
-            if select.get('selected', '') == 'true':
-                id_ref = select.get('idref', '')
-                rule = [x for x in rule_nodes if x.get('id', '') == id_ref]
-                list_names[id_ref] = self.get_nodes_text(rule[0], "title")
+        for select in self.get_allowed_selected_rules():
+            id_ref = select.get('idref, ''')
+            rule = [x for x in rule_nodes if x.get('id', '') == id_ref]
+            list_names[id_ref] = self.get_nodes_text(rule[0], "title")
         return list_names
 
     def get_all_result_rules(self):
@@ -318,23 +323,39 @@ class ReportParser(object):
                     description.text = '\n'.join(lines)
         self.write_xml()
 
-    def select_rules(self, mode):
+    def select_rules(self, list_rules):
         """
         Function marks choice a specific rules based on the content generation
         :return:
         """
-        full_path = os.path.join(os.path.dirname(self.path), mode)
-        try:
-            lines = [i.rstrip() for i in get_file_content(full_path, 'rb', method=True)]
-        except IOError:
-            return
-        for select in self.filter_grandchildren(self.target_tree, self.profile, "select"):
+        for select in self.self.get_select_rules():
             idref = select.get('idref', None)
-            if idref in lines:
+            if idref in list_rules:
                 select.set('selected', 'true')
             else:
                 select.set('selected', 'false')
         self.write_xml()
+
+    def check_rules(self, list_rules):
+        """
+        Function checks if rules exists
+        :param list_rules:
+        :return: List of rules which does not exist
+        """
+        unknown_rules = []
+        for select in list_rules:
+            found = [i for i in self.get_select_rules() if select in i.get('idref')]
+            if not found:
+                unknown_rules.append(select)
+        return unknown_rules
+
+    def list_rules(self):
+        list_rules = []
+        for select in self.get_select_rules():
+            idref = select.get('idref', None)
+            if idref:
+                list_rules.append(idref)
+        return list_rules
 
     def get_report_type(self, report_type):
         """
