@@ -19,6 +19,7 @@ from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
+from preup.version import VERSION
 
 
 def get_xsl_stylesheet():
@@ -613,6 +614,9 @@ class Application(object):
 
     def run(self):
         """ run analysis """
+        if self.conf.version:
+            print ("Preupgrade Assistant version: %s" % VERSION)
+            return 0
         if self.conf.list_contents_set:
             for dir_name, content in list_contents(self.conf.source_dir).iteritems():
                 log_message("%s" % dir_name)
