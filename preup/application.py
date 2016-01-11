@@ -474,9 +474,12 @@ class Application(object):
 
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
+        static_data_path = os.path.join(settings.static_data, scenario)
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
+        common_path = os.path.join(assessment_dir, 'common')
+        dir_util.copy_tree(static_data_path, common_path)
         if not self.conf.contents:
             xccdf_compose = XCCDFCompose(assessment_dir)
             generated_dir = xccdf_compose.generate_xml(generate_from_ini=False)
