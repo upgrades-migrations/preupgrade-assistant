@@ -4,9 +4,7 @@
 Class creates a set of packages for migration scenario
 """
 
-from __future__ import print_function, unicode_literals
 import os
-import six
 
 from preup.utils import get_file_content
 
@@ -22,7 +20,7 @@ class YumGroupManager(object):
     def find_match(self, packages):
         """is there a group whose packages are subset of argument 'packages'?"""
         groups = []
-        for group in six.itervalues(self.groups):
+        for group in self.groups.itervalues():
             if len(group.required) != 0:
                 if group.match(packages):
                     groups.append(group)
@@ -129,11 +127,14 @@ class PackagesHandling(object):
         self.obsoleted = obsoleted
 
     def replace_obsolete(self):
+        self.packages = []
         for pkg in self.obsoleted:
             fields = pkg.split()
             old_pkg = fields[0]
             new_pkg = fields[len(fields) - 1]
-            self.packages = [new_pkg if x == old_pkg else x for x in self.packages]
+            for p in self.packages:
+                if p == old_pkg:
+                    self.packages.append(new_pkg)
 
     def get_packages(self):
         return self.packages

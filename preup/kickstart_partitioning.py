@@ -4,10 +4,6 @@
 Class creates a kickstart for migration scenario
 """
 
-from __future__ import print_function, unicode_literals
-import six
-
-
 class PartitionGenerator(object):
     """Generate partition layout"""
     def __init__(self, layout, vg_info, lvdisplay):
@@ -103,7 +99,7 @@ class PartitionGenerator(object):
             if device_type == 'lvm':
                 if self.vg_info is None or not self.vg_info:
                     continue
-                vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
+                vg_name = [x for x in self.vg_info.iterkeys() if device.startswith(x)][0]
                 # Get volume group name
                 if not self.vol_group.has_key(vg_name):
                     self.vol_group[vg_name] = {}
@@ -111,7 +107,7 @@ class PartitionGenerator(object):
                 self.vol_group[vg_name]['pv_name'] = pv_name
                 if self.lvdisplay is None or not self.lvdisplay:
                     continue
-                lv_name = [x for x in six.iterkeys(self.lvdisplay) if x in device][0]
+                lv_name = [x for x in self.lvdisplay.iterkeys() if x in device][0]
                 if not self.logvol.has_key(mount):
                     self.logvol[mount] = {}
                 self.logvol[mount]['vgname'] = vg_name
@@ -120,7 +116,7 @@ class PartitionGenerator(object):
 
     def _get_part_devices(self):
         layout = []
-        for key, value in sorted(six.iteritems(self.part_dict)):
+        for key, value in sorted(self.part_dict.iteritems()):
             crypt = value['crypt']
             try:
                 device = " --ondisk=%s" % value['device']
@@ -134,7 +130,7 @@ class PartitionGenerator(object):
 
     def _get_logvol_device(self):
         layout = []
-        for key, value in sorted(six.iteritems(self.logvol)):
+        for key, value in sorted(self.logvol.iteritems()):
             layout.append('logvol %s --vgname=%s --size=%s --name=%s' % (key,
                                                                          value['vgname'],
                                                                          value['size'],
@@ -143,7 +139,7 @@ class PartitionGenerator(object):
 
     def _get_vg_device(self):
         vg_layout = []
-        for key, value in six.iteritems(self.vol_group):
+        for key, value in self.vol_group.iteritems():
             pesize = value['pesize']
             pv_name = value['pv_name']
             vg_layout.append('volgroup %s %s --pesize=%s' % (key, pv_name, pesize))
@@ -151,7 +147,7 @@ class PartitionGenerator(object):
 
     def _get_raid_devices(self):
         layout = []
-        for key, value in six.iteritems(self.raid_devices):
+        for key, value in self.raid_devices.iteritems():
             level = value['level']
             crypt = value['crypt']
             raid_vol = ""
