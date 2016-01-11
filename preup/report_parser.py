@@ -133,9 +133,10 @@ class ReportParser(object):
         list_names = {}
         rule_nodes = self._get_all_rules()
         for select in self.get_allowed_selected_rules():
-            id_ref = select.get('idref, ''')
+            id_ref = select.get('idref', '')
             rule = [x for x in rule_nodes if x.get('id', '') == id_ref]
-            list_names[id_ref] = self.get_nodes_text(rule[0], "title")
+            if rule:
+                list_names[id_ref] = self.get_nodes_text(rule[0], "title")
         return list_names
 
     def get_all_result_rules(self):

@@ -51,7 +51,7 @@ export LC_ALL=C
 #
 # Note that if env variable $COMPONENT is defined, it may be omitted from
 # parameters.
-log
+function log
 {
     SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
@@ -70,99 +70,99 @@ log
     echo "$SEVERITY $COMPONENT: $1"
 }
 
-log_debug
+function log_debug
 {
     log "DEBUG" "$@"
 }
 
-log_info
+function log_info
 {
     log "INFO" "$@"
 }
 
-log_error
+function log_error
 {
     log "ERROR" "$@"
 }
 
-log_warning
+function log_warning
 {
     log "WARNING" "$@"
 }
 
-log_risk
+function log_risk
 {
     echo "INPLACERISK: $1: $2" >&2
 }
 
-log_none_risk
+function log_none_risk
 {
     log_risk "NONE" "$1"
 }
 
-log_slight_risk
+function log_slight_risk
 {
     log_risk "SLIGHT" "$1"
 }
 
-log_medium_risk
+function log_medium_risk
 {
     log_risk "MEDIUM" "$1"
 }
 
-log_high_risk
+function log_high_risk
 {
     log_risk "HIGH" "$1"
 }
 
-log_extreme_risk
+function log_extreme_risk
 {
     log_risk "EXTREME" "$1"
 }
 
-exit_unknown
+function exit_unknown
 {
     exit $RESULT_UNKNOWN
 }
 
-exit_pass
+function exit_pass
 {
     exit $RESULT_PASS
 }
 
-exit_fail
+function exit_fail
 {
     exit $RESULT_FAIL
 }
 
-exit_error
+function exit_error
 {
     exit $RESULT_ERROR
 }
 
-exit_not_applicable
+function exit_not_applicable
 {
     exit $RESULT_NOT_APPLICABLE
 }
 
-exit_informational
+function exit_informational
 {
     exit $RESULT_INFORMATIONAL
 }
 
-exit_fixed
+function exit_fixed
 {
     exit $RESULT_FIXED
 }
 
-switch_to_content
+function switch_to_content
 {
     cd $CURRENT_DIRECTORY
 }
 
-check_applies_to
+function check_applies_to
 {
-    local RPM=1
+    RPM=1
     if [ -z "$1" ]
     then
         RPM=0
@@ -170,7 +170,7 @@ check_applies_to
         RPM_NAME=$1
     fi
 
-    local NOT_APPLICABLE=0
+    NOT_APPLICABLE=0
     if [ $RPM -eq 1 ]; then
         RPM_NAME=`echo "$RPM_NAME" | tr "," " "`
         for pkg in $RPM_NAME
@@ -187,10 +187,10 @@ check_applies_to
     fi
 }
 
-check_rpm_to
+function check_rpm_to
 {
-    local RPM=1
-    local BINARY=1
+    RPM=1
+    BINARY=1
     if [ -z "$1" ]
     then
         RPM=0
@@ -206,7 +206,7 @@ check_rpm_to
     fi
 
 
-    local NOT_APPLICABLE=0
+    NOT_APPLICABLE=0
     if [ $RPM -eq 1 ]; then
         RPM_NAME=`echo "$RPM_NAME" | tr "," " "`
         for pkg in $RPM_NAME
@@ -231,14 +231,13 @@ check_rpm_to
         done
     fi
 
-
     if [ $NOT_APPLICABLE -eq 1 ]; then
         exit_fail
     fi
 }
 
 # This check can be used if you need root privilegues
-check_root
+function check_root
 {
     if [ "$(id -u)" != "0" ]; then
         log_error "This script must be run as root"
@@ -247,14 +246,14 @@ check_root
     fi
 }
 
-solution_file
+function solution_file
 {
     echo "$1" >> $SOLUTION_FILE
 }
 
 
 # returns true if service in $1 is enabled in any runlevel
-service_is_enabled {
+function service_is_enabled {
     if [ $# -ne 1 ] ; then
         echo "Usage: service_is_enabled servicename"
         return 2
@@ -266,7 +265,7 @@ service_is_enabled {
 # true if cp succeeds,
 # 1 if config file doesn't exist
 # 2 if config file was not changed and thus is not necessary to back-up
-backup_config_file {
+function backup_config_file {
     CONFIG_FILE=$1
 
     # config file exists?
@@ -282,14 +281,14 @@ backup_config_file {
     return $?
 }
 
-space_trim() {
+function space_trim() {
   echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
 # functions for easy parsing of config files
 # returns 0 on success, otherwise 1
 # requires path
-conf_get_sections() {
+function conf_get_sections() {
   [ $# -eq 1 ] || return 1
   [ -f "$1" ] || return 1
 
@@ -299,14 +298,14 @@ conf_get_sections() {
 
 # get all items from config file $1 inside section $2
 # e.g.: conf_get_section CONFIG_FILE section-without-brackets
-conf_get_section() {
+function conf_get_section() {
   [ $# -eq 2 ] || return 1
   [ -f "$1" ] || return 1
   _section=""
   while read line; do
     [ -z "$line" ] && continue
     echo "$line" | grep -q "^\[..*\]$" && {
-      _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
+      _section="$(echo "$line" | sed -r "s/^\[(.+)\]$/\1/")"
       continue # that's new section
     }
     [ -z "$_section" ] && continue
@@ -325,7 +324,7 @@ conf_get_section() {
 #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
 #   DIST_NATIVE = all: always return 0
 #   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
-is_dist_native()
+function is_dist_native()
 {
     if [ $# -ne 1 ]; then
         return 1
@@ -370,7 +369,7 @@ is_dist_native()
 }
 
 # return list of all dist native packages according to is_dist_native()
-get_dist_native_list() {
+function get_dist_native_list() {
   while read line; do
     pkg=$(echo $line | cut -d " " -f1 )
     is_dist_native $pkg >/dev/null && echo $pkg
@@ -378,7 +377,7 @@ get_dist_native_list() {
 }
 
 # here is parsed PA configuration
-load_pa_configuration() {
+function load_pa_configuration() {
   # this is main function for parsing
   [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
@@ -414,7 +413,7 @@ load_pa_configuration() {
 # items from main configuration file is printed
 # returns 0 on SUCCESS, otherwise 1 and logs warning
 # shouldn't be used before load_config_parser
-print_home_dirs() {
+function print_home_dirs() {
   [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
     conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
     return 0

@@ -16,6 +16,7 @@ from preup import settings
 from preup.utils import write_to_file, get_file_content
 from preup.kickstart_packages import YumGroupGenerator, PackagesHandling
 from preup.kickstart_partitioning import PartitionGenerator
+from preup import utils
 
 
 class KickstartGenerator(object):
@@ -33,6 +34,7 @@ class KickstartGenerator(object):
         self.temp_file = '/tmp/part-include'
 
     def collect_data(self):
+        self._remove_obsolete_data()
         collected_data = True
         self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name))
         if self.ks is None:
@@ -41,6 +43,12 @@ class KickstartGenerator(object):
         self.users = KickstartGenerator.get_kickstart_users('Users')
         self.latest_tarball = self.get_latest_tarball()
         return collected_data
+
+    def _remove_obsolete_data(self):
+        if os.path.exists(KickstartGenerator.get_kickstart_path(self.dir_name)):
+            lines = get_file_content(KickstartGenerator.get_kickstart_path(self.dir_name), "r", method=True)
+            lines = [x for x in lines if not x.startswith('key')]
+            write_to_file(KickstartGenerator.get_kickstart_path(self.dir_name), "w", lines)
 
     @staticmethod
     def get_kickstart_path(dir_name):
@@ -53,13 +61,13 @@ class KickstartGenerator(object):
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
-            log_message("Can't read system kickstart at %s" % system_ks_path)
+            log_message("Can't read system kickstart at %s" % (system_ks_path))
             try:
-                ksparser.readKickstart(settings.KS_TEMPLATE)
+                ksparser.readKickstart(os.path.join(KickstartGenerator.dir_name, settings.KS_TEMPLATE))
             except AttributeError:
                 log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
-            except IOError:
-                log_message("Can't read kickstart template %s" % settings.KS_TEMPLATE)
+            except IOError, ioe:
+                log_message("Can't read kickstart template %s %s" % (settings.KS_TEMPLATE, ioe))
                 return None
         return ksparser
 

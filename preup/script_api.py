@@ -31,7 +31,7 @@ import sys
 import datetime
 import re
 import shutil
-from ConfigParser import ConfigParser
+import ConfigParser
 from preup import utils
 from preup.utils import get_file_content, write_to_file
 from preup import settings
@@ -65,6 +65,8 @@ __all__ = (
     'switch_to_content',
     'service_is_enabled',
     'is_dist_native',
+    'print_home_dirs',
+    'load_pa_configuration',
     'get_dist_native_list',
 
     'PREUPGRADE_CACHE',
@@ -417,6 +419,7 @@ def config_file_changed(config_file_name):
         pass
     return config_changed
 
+
 def backup_config_file(config_file_name):
     """
     Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure
@@ -490,6 +493,7 @@ def get_dist_native_list():
             native_pkgs.append(pkg)
     return native_pkgs
 
+
 def load_pa_configuration():
     """ Loads preupgrade-assistant configuration file """
     global HOME_DIRECTORY_FILE
@@ -500,7 +504,7 @@ def load_pa_configuration():
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config = ConfigParser.RawConfigParser()
     config.read(PREUPGRADE_CONFIG)
     section = 'preupgrade-assistant'
     home_option = 'home_directory_file'
@@ -518,17 +522,19 @@ def print_home_dirs(user_name=""):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
-    home_option = 'home-dirs'
+    config = ConfigParser.RawConfigParser()
+    home_section = 'home-dirs'
     try:
         if USER_CONFIG_FILE == 'enabled' and user_name == "":
             config.read(PREUPGRADE_CONFIG)
-            return config.options(home_option)
+            return config.get(home_section, "dirs")
         user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
         if not os.path.exists(user_home_dir):
             return 0
         config.read(user_home_dir)
-        return config.options(home_option)
+        if config.has_option(home_section, 'dirs'):
+            return config.get(home_section, 'dirs')
+        return None
     except ConfigParser.NoSectionError:
         pass
     except ConfigParser.NoOptionError:

@@ -165,6 +165,7 @@ KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
 PREUPGRADE_KS = os.path.join(result_dir, 'preupgrade.ks')
 KS_FILES = ['default_grouplist-el5', 'default_grouplist-el7',
             'default-optional_grouplist-el5', 'default-optional_grouplist-el7']
+KS_SCRIPTS = "kickstart_scripts.txt"
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
 REPORTS = ['admin', 'user']
