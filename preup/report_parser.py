@@ -328,7 +328,7 @@ class ReportParser(object):
         Function marks choice a specific rules based on the content generation
         :return:
         """
-        for select in self.self.get_select_rules():
+        for select in self.get_select_rules():
             idref = select.get('idref', None)
             if idref in list_rules:
                 select.set('selected', 'true')
