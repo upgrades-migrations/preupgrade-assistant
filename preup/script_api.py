@@ -516,5 +516,9 @@ def load_pa_configuration():
             USER_CONFIG_FILE = config.get(section, user_file)
 
 
+def print_home_dirs(user_name=""):
+    """ It's here just due to API compatibility with RHEL-6 """
+    return 0
+
 load_pa_configuration()
 shorten_envs()
