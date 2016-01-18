@@ -31,7 +31,7 @@ import sys
 import datetime
 import re
 import shutil
-import ConfigParser
+import preup.ConfigParser
 from preup import utils
 from preup.utils import get_file_content, write_to_file
 from preup import settings
@@ -504,7 +504,7 @@ def load_pa_configuration():
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
-    config = ConfigParser.RawConfigParser()
+    config = preup.ConfigParser.RawConfigParser(allow_no_value=True)
     config.read(PREUPGRADE_CONFIG)
     section = 'preupgrade-assistant'
     home_option = 'home_directory_file'
@@ -514,31 +514,6 @@ def load_pa_configuration():
             HOME_DIRECTORY_FILE = config.get(section, home_option)
         if config.has_option(section, user_file):
             USER_CONFIG_FILE = config.get(section, user_file)
-
-
-def print_home_dirs(user_name=""):
-    """ Loads preupgrade-assistant configuration file """
-    if not os.path.exists(PREUPGRADE_CONFIG):
-        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
-        exit_error()
-
-    config = ConfigParser.RawConfigParser()
-    home_section = 'home-dirs'
-    try:
-        if USER_CONFIG_FILE == 'enabled' and user_name == "":
-            config.read(PREUPGRADE_CONFIG)
-            return config.get(home_section, "dirs")
-        user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
-        if not os.path.exists(user_home_dir):
-            return 0
-        config.read(user_home_dir)
-        if config.has_option(home_section, 'dirs'):
-            return config.get(home_section, 'dirs')
-        return None
-    except ConfigParser.NoSectionError:
-        pass
-    except ConfigParser.NoOptionError:
-        pass
 
 
 load_pa_configuration()
