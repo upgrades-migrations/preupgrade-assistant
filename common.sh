@@ -188,6 +188,12 @@ check_applies_to()
     fi
 }
 
+is_pkg_installed()
+{
+    grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
+    return 0
+}
+
 check_rpm_to()
 {
     local RPM=1

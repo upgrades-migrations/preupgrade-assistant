@@ -333,6 +333,15 @@ def switch_to_content():
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
 
+def is_pkg_installed(pkg_name):
+    lines = get_file_content(VALUE_RPM_QA, "rb", True)
+    found = [x for x in lines if x.startswith(pkg_name)]
+    if found:
+        return True
+    else:
+        return False
+
+
 def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
