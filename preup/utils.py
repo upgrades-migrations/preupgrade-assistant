@@ -5,7 +5,7 @@ import subprocess
 import fnmatch
 from preup.logger import *
 import shutil
-import ConfigParser
+import preup.ConfigParser
 from os import path, access, W_OK, R_OK, X_OK
 
 
@@ -453,7 +453,7 @@ def get_preupg_config_file(path, key, section="preupgrade"):
     if not os.path.exists(path):
         return None
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config = preupg.ConfigParser.RawConfigParser(allow_no_value=True)
     config.read(path)
     section = 'preupgrade-assistant'
     if config.has_section(section):
