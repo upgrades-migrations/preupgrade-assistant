@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 import re
 import os
 import six
+import copy
 
 from preup.xml_manager import html_escape_string
 from preup.utils import get_assessment_version, get_file_content, write_to_file
@@ -32,6 +33,22 @@ class XmlUtils(object):
         self.rule = []
         self.dirname = dir_name
         self.ini_files = ini_files
+        self._test_init_file()
+
+    def _test_init_file(self):
+        test_dict = copy.deepcopy(self.ini_files)
+        allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
+                        'author', 'binary_req', 'solution', 'bugzilla', 'config_file']
+        for ini, content in six.iteritems(test_dict):
+            content_dict = content[0]
+            for tag in allowed_tags:
+                if tag in content_dict:
+                    del content_dict[tag]
+            if content_dict:
+                tags = ','. join(six.iterkeys(content_dict))
+                print_error_msg(title="The tag '%s' is not allowed in INI file %s." % (tags, ini),
+                                msg="\nAllowed tags for contents are %s" % ','.join(allowed_tags),
+                                level=' WARNING ')
 
     def update_files(self, file_name, content):
         """Function updates file_name <migrate or update> according to INI file."""
