@@ -7,6 +7,7 @@ import mimetypes
 
 from preup.utils import get_file_content, write_to_file, print_error_msg
 from preup import settings
+from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError
 
 
 def get_full_path(dir_name, script_name):
@@ -24,7 +25,7 @@ def check_scripts(type_name, dir_name, script_name=None):
         print ("List of directory (", dir_name, ") is:")
         for file_name in os.listdir(dir_name):
             print (file_name)
-        sys.exit(1)
+        raise MissingFileInContentError
     if type_name != 'solution':
         check_executable(dir_name, script_name)
 
@@ -118,8 +119,8 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
     full_path_script = get_full_path(dir_name, script_name)
     lines = get_file_content(full_path_script, "rb", method=True)
     if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-        print_error_msg("#END GENERATED SECTION is missing in check_script {0}".
-                                  format(full_path_script))
+        print_error_msg("#END GENERATED SECTION is missing in check_script {0}".format(full_path_script))
+        raise MissingHeaderCheckScriptError
     for func in functions:
         lines = [x for x in lines if func not in x.strip()]
     output_text = ""
@@ -182,7 +183,7 @@ def check_inplace_risk(dir_name, prefix="", script_name="", check_func=None):
     The function checks inplace risks
     in check_script and informs user in case of wrong usage
     """
-    if(check_func is None):
+    if check_func is None:
         check_func = []
     lines = get_file_content(get_full_path(dir_name, script_name), "rb")
     compile_req = re.compile(r'^#', re.M|re.I)

@@ -62,7 +62,8 @@ class XCCDFCompose(object):
             write_to_file(report_filename, "wb",
                           ElementTree.tostring(target_tree, "utf-8"),
                           False)
-            #print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
+            if generate_from_ini:
+                print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
         except IOError as e:
             print ("Problem with writing file ", report_filename)
             raise

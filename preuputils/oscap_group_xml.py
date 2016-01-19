@@ -45,18 +45,18 @@ class OscapGroupXml(object):
         directory
         """
         # solve python 2 & 3 compatibility
-        if(sys.version_info[0] == 2):
-            config_load = lambda x,y: x.read(y)
+        if sys.version_info[0] == 2:
+            config_load = lambda x, y: x.read(y)
             config_decode = lambda x: x.decode(settings.defenc)
         else:
-            config_load = lambda x,y: x.read(y, settings.defenc)
+            config_load = lambda x, y: x.read(y, settings.defenc)
             config_decode = lambda x: x
 
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
         for file_name in self.lists:
-            if(check_file(file_name, "r") is False):
+            if check_file(file_name, "r") is False:
                 continue
             try:
                 config = configparser.ConfigParser()
@@ -79,7 +79,7 @@ class OscapGroupXml(object):
 
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
-        # load content withoud decoding to unicode - ElementTree requests this
+        # load content without decoding to unicode - ElementTree requests this
         try:
             self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
         except ParseError as par_err:

@@ -2,7 +2,12 @@
 from __future__ import print_function
 import sys
 import optparse
+import os
+import shutil
+
 from preuputils.compose import XCCDFCompose
+from preup.exception import MissingHeaderCheckScriptError, MissingFileInContentError, MissingTagsIniFileError
+from preuputils import variables
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:
@@ -17,8 +22,21 @@ def main():
         parser.print_help()
         sys.exit(0)
 
+    if args[0].endswith('/'):
+        args[0] = args[0][:-1]
+    result_dir_name = args[0] + variables.result_prefix
+    if os.path.exists(result_dir_name):
+        shutil.rmtree(result_dir_name)
     xccdf_compose = XCCDFCompose(args[0])
-    xccdf_compose.generate_xml()
+    try:
+        xccdf_compose.generate_xml(generate_from_ini=True)
+    except MissingHeaderCheckScriptError:
+        sys.exit(1)
+    except MissingFileInContentError:
+        sys.exit(1)
+    except MissingTagsIniFileError:
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
