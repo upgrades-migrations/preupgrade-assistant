@@ -81,16 +81,13 @@ content_file = "all-xccdf.xml"
 # prefix of tag in fccdf files
 xccdf_tag = "xccdf_preupg_rule_"
 
-#name of the hash file
+# name of the hash file
 base_hashed_file = "hashed_file"
 
 # path to file with definitions of common scripts
 post_script = os.path.join(common_dir, "post_scripts.txt")
 
-# name for directory with static data
-static_data = os.path.join(source_dir, 'staticdata')
-
-#kickstart and postupgrade.d directories
+# kickstart and postupgrade.d directories
 preupgrade_dirs = ['etc', dirty_conf_dir, clean_conf_dir, 'kickstart', postupgrade_dir, 'common']
 
 

@@ -474,12 +474,9 @@ class Application(object):
         """Function generates report"""
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
-        static_data_path = os.path.join(settings.static_data, scenario)
         assessment_dir = os.path.join(self.conf.result_dir,
                                       self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, assessment_dir)
-        common_path = os.path.join(assessment_dir, 'common')
-        dir_util.copy_tree(static_data_path, common_path)
         # Try copy directory with contents to /root/preupgrade
         # Call xccdf_compose API for generating all-xccdf.xml
         if not self.conf.contents:
