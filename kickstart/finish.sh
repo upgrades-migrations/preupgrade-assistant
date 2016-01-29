@@ -28,7 +28,7 @@ do
 done
 cd ${PWD}
 KS_SCRIPTS="kickstart/scripts"
-cd KS_SCRIPTS
+cd $KS_SCRIPTS
 for file in $(find . -type f -executable)
 do
     echo "Running script ${file} ..." >> ${PREUPGRADE_LOG}
