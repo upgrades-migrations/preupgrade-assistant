@@ -308,7 +308,7 @@ class KickstartGenerator(object):
         packages = self.output_packages()
         if packages:
             self.ks.handler.packages.add(packages)
-            self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
+        self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.update_repositories(self.repos)
         self.update_users(self.filter_kickstart_users())
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
