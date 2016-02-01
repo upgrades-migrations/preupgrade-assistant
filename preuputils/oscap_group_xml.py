@@ -5,7 +5,9 @@ So no change is needed from maintainer point of view
 """
 
 from __future__ import print_function, unicode_literals
-import os, sys
+import os
+import sys
+import six
 
 try:
     import configparser
@@ -13,7 +15,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import print_error_msg, XmlUtils
-from preup.utils import write_to_file, check_file
+from preup.utils import write_to_file, check_file, get_file_content
 from xml.etree import ElementTree
 from preup import settings
 
@@ -89,6 +91,7 @@ class OscapGroupXml(object):
     def write_xml(self):
         """The function is used for storing a group.xml file"""
         self.find_all_ini()
+        self.write_list_rules()
         xml_utils = XmlUtils(self.dirname, self.loaded)
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
@@ -108,4 +111,19 @@ class OscapGroupXml(object):
             write_to_file(file_name, "wb", data, False)
         except IOError as ioe:
             print ('Problem with writing to file ', file_name, ioe.message)
+
+    def write_list_rules(self):
+        rule_name = '_'.join(self.dirname.split('/')[1:])
+        file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
+        lines = []
+        if os.path.exists(file_list_rules):
+            lines = get_file_content(file_list_rules, "rb", method=True)
+        else:
+            lines = []
+        for values in six.itervalues(self.loaded):
+            check_script = [v for k, v in six.iteritems(values[0]) if k == 'check_script']
+            if check_script:
+                check_script = os.path.splitext(''.join(check_script))[0]
+                lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
+        write_to_file(file_list_rules, "wb", lines)
 

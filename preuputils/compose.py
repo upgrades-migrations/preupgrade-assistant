@@ -303,6 +303,8 @@ class ComposeXML(object):
     @classmethod
     def run_compose(cls, target_tree, dir_name, content=None, generate_from_ini=True):
         settings.UPGRADE_PATH = dir_name
+        if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
+            os.unlink(os.path.join(dir_name, settings.file_list_rules))
         group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0, generate_from_ini=generate_from_ini)
         cls.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name

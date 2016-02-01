@@ -480,3 +480,10 @@ def get_preupg_config_file(path, key, section="preupgrade"):
     if config.has_section(section):
         if config.has_option(section, key):
             return config.get(section, key)
+
+
+def get_list_rules(scenario):
+    main_dir = os.path.join(settings.source_dir, scenario)
+    rules = get_file_content(os.path.join(main_dir, settings.file_list_rules), "rb", method=True)
+    rules = [x.strip() for x in rules]
+    return rules

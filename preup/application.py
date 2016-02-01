@@ -522,9 +522,6 @@ class Application(object):
                             level=logging.ERROR)
                 sys.exit(1)
             self.report_parser.modify_platform_tag(version[0])
-        if self.conf.list_rules:
-            log_message(settings.list_rules % '\n'.join(self.report_parser.list_rules()))
-            sys.exit(0)
         if self.conf.mode:
             try:
                 lines = [i.rstrip() for i in get_file_content(os.path.join(os.path.dirname(self.path),
@@ -613,9 +610,32 @@ class Application(object):
         if self.conf.version:
             print ("Preupgrade Assistant version: %s" % VERSION)
             return 0
+
+        if not self.conf.scan and not self.conf.contents:
+            cnt = 0
+            is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
+            dirs = os.listdir(self.conf.source_dir)
+            for dir_name in filter(is_dir, dirs):
+                if utils.get_assessment_version(dir_name):
+                    self.conf.scan = dir_name
+                    cnt += 1
+
+            if int(cnt) < 1:
+                log_message("There were no contents found in directory %s. \
+If you would like to use this tool, you have to install some." % settings.source_dir)
+                return 1
+            if int(cnt) > 1:
+                log_message("Preupgrade assistant detects more then 1 set of contents in directory%s. \
+If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
+                return 1
+
         if self.conf.list_contents_set:
             for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
                 log_message("{0}".format(dir_name))
+            return 0
+
+        if self.conf.list_rules:
+            log_message(settings.list_rules % '\n'.join(utils.get_list_rules(self.conf.scan)))
             return 0
 
         if self.conf.upload and self.conf.results:
@@ -667,24 +687,6 @@ class Application(object):
             if dummy_ks:
                 log_message(settings.kickstart_text % self.get_preupgrade_kickstart())
             return 0
-
-        if not self.conf.scan and not self.conf.contents:
-            cnt = 0
-            is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
-            dirs = os.listdir(self.conf.source_dir)
-            for dir_name in filter(is_dir, dirs):
-                if utils.get_assessment_version(dir_name):
-                    self.conf.scan = dir_name
-                    cnt += 1
-
-            if int(cnt) < 1:
-                log_message("There were no contents found in directory %s. \
-If you would like to use this tool, you have to install some." % settings.source_dir)
-                return 1
-            if int(cnt) > 1:
-                log_message("There only 1 set of contents is allowed directory %s. \
-If you would like to use this tool, you have to have only one." % settings.source_dir)
-                return 1
 
         if self.conf.scan:
             self.content = os.path.join(self.conf.source_dir,

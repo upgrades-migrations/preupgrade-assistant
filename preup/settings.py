@@ -84,6 +84,9 @@ xccdf_tag = "xccdf_preupg_rule_"
 # name of the hash file
 base_hashed_file = "hashed_file"
 
+# name of the file which contains a list of rules
+file_list_rules = "list_rules"
+
 # path to file with definitions of common scripts
 post_script = os.path.join(common_dir, "post_scripts.txt")
 
