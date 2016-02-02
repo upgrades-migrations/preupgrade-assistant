@@ -87,6 +87,12 @@ class ComposeXML(object):
             if not os.path.isdir(new_dir):
                 continue
             ini_files = filter(lambda x: x.endswith(".ini"), os.listdir(new_dir))
+            if not ini_files and generate_from_ini:
+                # Check if directory contains only subdirectories.
+                # Report to user that group.ini file could be missing
+                directories = [x for x in os.listdir(new_dir) if not os.path.isdir(os.path.join(new_dir, x))]
+                if not directories and 'postupgrade.d' not in dirname:
+                    print ("WARNING: It seems that group.ini file is missing %s. Please check if it is really missing." % new_dir)
             if ini_files and generate_from_ini:
                 oscap_group = OscapGroupXml(new_dir)
                 oscap_group.write_xml()
