@@ -38,7 +38,8 @@ class XmlUtils(object):
     def _test_init_file(self):
         test_dict = copy.deepcopy(self.ini_files)
         allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
-                        'author', 'binary_req', 'solution', 'bugzilla', 'config_file']
+                        'author', 'binary_req', 'solution', 'bugzilla', 'config_file',
+                        'group_title', 'mode', 'requires', 'solution_type']
         for ini, content in six.iteritems(test_dict):
             content_dict = content[0]
             for tag in allowed_tags:
