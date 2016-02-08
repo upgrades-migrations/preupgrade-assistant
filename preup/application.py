@@ -21,17 +21,12 @@ from preup.common import Common
 from preup.scanning import ScanProgress, format_rules_to_table
 from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
 from preup.utils import run_subprocess, get_assessment_version, get_message
-from preup.utils import tarball_result_dir, get_system
+from preup.utils import tarball_result_dir
 from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
 from preup.kickstart import KickstartGenerator
 from preuputils.compose import XCCDFCompose
 from preup.version import VERSION
-
-
-def get_xsl_stylesheet():
-    """Return full XSL stylesheet path"""
-    return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
 
 
 def fault_repr(self):
@@ -100,10 +95,7 @@ class Application(object):
             set_level(logging.DEBUG)
 
     def get_command_generate(self):
-        if not get_system():
-            command_generate = ['xccdf', 'generate', 'custom']
-        else:
-            command_generate = ['xccdf', 'generate', 'report']
+        command_generate = ['xccdf', 'generate', 'report']
         return command_generate
 
     def get_third_party_name(self):
@@ -161,8 +153,6 @@ class Application(object):
         """Function builds a command for generating results"""
         command = self.get_binary()
         command.extend(self.get_command_generate())
-        if not get_system():
-            command.extend(("--stylesheet", get_xsl_stylesheet()))
         command.extend(("--output", html_file))
         command.append(check_xml(xml_file))
         return command
