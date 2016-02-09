@@ -164,16 +164,12 @@ switch_to_content()
 check_applies_to()
 {
     local RPM=1
-    if [ -z "$1" ]
-    then
-        RPM=0
-    else
-        RPM_NAME=$1
-    fi
+    local RPM_NAME="$1"
+    [ -z "$1" ] && RPM=0
 
     local NOT_APPLICABLE=0
     if [ $RPM -eq 1 ]; then
-        RPM_NAME=`echo "$RPM_NAME" | tr "," " "`
+        RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME
         do
             grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
@@ -198,24 +194,16 @@ check_rpm_to()
 {
     local RPM=1
     local BINARY=1
-    if [ -z "$1" ]
-    then
-        RPM=0
-    else
-        RPM_NAME=$1
-    fi
-
-    if [ -z "$2" ]
-    then
-        BINARY=0
-    else
-        BINARY_NAME=$2
-    fi
-
-
+    local RPM_NAME=$1
+    local BINARY_NAME=$2
     local NOT_APPLICABLE=0
+
+    if [ -z "$1" ] && RPM=0
+    if [ -z "$2" ] && BINARY=0
+
+
     if [ $RPM -eq 1 ]; then
-        RPM_NAME=`echo "$RPM_NAME" | tr "," " "`
+        RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME
         do
             grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
@@ -227,7 +215,7 @@ check_rpm_to()
     fi
 
     if [ $BINARY -eq 1 ]; then
-        BINARY_NAME=`echo "$BINARY_NAME" | tr "," " "`
+        BINARY_NAME=$(echo "$BINARY_NAME" | tr "," " ")
         for bin in $BINARY_NAME
         do
             which $bin > /dev/null 2>&1
@@ -275,7 +263,7 @@ service_is_enabled() {
 # 1 if config file doesn't exist
 # 2 if config file was not changed and thus is not necessary to back-up
 backup_config_file() {
-    CONFIG_FILE=$1
+    local CONFIG_FILE=$1
 
     # config file exists?
     if [ ! -f "$CONFIG_FILE" ] ; then
@@ -310,7 +298,8 @@ conf_get_sections() {
 conf_get_section() {
   [ $# -eq 2 ] || return 1
   [ -f "$1" ] || return 1
-  _section=""
+  local _section=""
+
   while read line; do
     [ -z "$line" ] && continue
     echo "$line" | grep -q "^\[..*\]$" && {
@@ -338,7 +327,8 @@ is_dist_native()
     if [ $# -ne 1 ]; then
         return 1
     fi
-    pkg=$1
+    local pkg=$1
+
     grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
     if [ $? -ne 0 ]; then
         log_warning "Package $pkg is not installed on Red Hat Enterprise Linux system."
@@ -379,6 +369,7 @@ is_dist_native()
 
 # return list of all dist native packages according to is_dist_native()
 get_dist_native_list() {
+  local pkg
   while read line; do
     pkg=$(echo $line | cut -d " " -f1 )
     is_dist_native $pkg >/dev/null && echo $pkg
@@ -392,7 +383,10 @@ load_pa_configuration() {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
     exit_error
   }
-  _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
+  local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
+  local tmp_option
+  local tmp_val
+
   [ -z "$_pa_conf" ] && {
     log_error "Can't load any configuration from section preupgrade-assistant!"
     exit_error
@@ -410,7 +404,7 @@ load_pa_configuration() {
         USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
         ;;
       dist_native)
-        temp="$tmp_val"
+        local temp="$tmp_val"
         ;;
       *) log_error "Unknown option $tmp_option"; exit_error
     esac
@@ -428,7 +422,7 @@ print_home_dirs() {
     return 0
   }
 
-  _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
+  local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
   [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
   conf_get_section "$_uconf_file" "home-dirs"
 }
