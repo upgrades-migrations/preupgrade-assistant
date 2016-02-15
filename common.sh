@@ -367,7 +367,7 @@ function get_dist_native_list {
   while read line; do
     pkg=$(echo $line | cut -d " " -f1 )
     is_dist_native $pkg >/dev/null && echo $pkg
-  done < "$VALUE_RPM_RHSIGNED"
+  done < "$VALUE_RPM_QA"
 }
 
 # here is parsed PA configuration
