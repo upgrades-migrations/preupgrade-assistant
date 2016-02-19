@@ -207,7 +207,7 @@ check_rpm_to()
         do
             grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
             if [ $? -ne 0 ]; then
-                log_high_risk "Package $pkg is not installed"
+                log_high_risk "Package $pkg is not installed."
                 NOT_APPLICABLE=1
             fi
         done
@@ -219,7 +219,7 @@ check_rpm_to()
         do
             which $bin > /dev/null 2>&1
             if [ $? -ne 0 ]; then
-                log_high_risk "Binary $bin is not installed"
+                log_high_risk "Binary $bin is not installed."
                 NOT_APPLICABLE=1
             fi
         done
@@ -227,6 +227,7 @@ check_rpm_to()
 
 
     if [ $NOT_APPLICABLE -eq 1 ]; then
+        log_high_risk "Please, install all required packages (and binaries) and run preupg again to process check properly."
         exit_fail
     fi
 }
