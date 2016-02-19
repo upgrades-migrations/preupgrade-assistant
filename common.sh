@@ -172,11 +172,10 @@ check_applies_to()
         RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME
         do
-            grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
-            if [ $? -ne 0 ]; then
-                log_info "Package $pkg is not installed"
+            is_pkg_installed "$pkg" && is_dist_native "$pkg" || {
+                log_info "Package $pkg is not installed or it is not signed by Red Hat."
                 NOT_APPLICABLE=1
-            fi
+            }
         done
     fi
     if [ $NOT_APPLICABLE -eq 1 ]; then
