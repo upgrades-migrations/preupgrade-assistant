@@ -278,6 +278,24 @@ class KickstartGenerator(object):
             tarball = os.path.join(directories, preupg_files[-1])
         return tarball
 
+    def comment_kickstart_issues(self):
+        list_issues = ['user', 'repo', 'url', 'rootpw']
+        kickstart_data = []
+        try:
+            kickstart_data = get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
+                                              'rb',
+                                              method=True,
+                                              decode_flag=False)
+        except IOError:
+            log_message("File %s is missing. Partitioning layout has not to be complete." % self.kick_start_name,
+                        level=logging.WARNING)
+            return None
+        for index, row in enumerate(kickstart_data):
+            tag = [com for com in list_issues if row.startswith(com)]
+            if tag:
+                kickstart_data[index] = "#" + row
+        write_to_file(self.kick_start_name, 'wb', kickstart_data)
+
     def filter_kickstart_users(self):
         kickstart_users = {}
         if not self.users:
@@ -311,6 +329,7 @@ class KickstartGenerator(object):
         self.embed_script(self.latest_tarball)
         self.delete_obsolete_issues()
         self.save_kickstart()
+        self.comment_kickstart_issues()
         return True
 
     @staticmethod
