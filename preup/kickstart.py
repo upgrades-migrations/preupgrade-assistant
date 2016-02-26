@@ -301,6 +301,24 @@ class KickstartGenerator(object):
             return None
         return kickstart_users
 
+    def comment_kickstart_issues(self):
+        list_issues = ['user', 'repo', 'url', 'rootpw']
+        kickstart_data = []
+        try:
+            kickstart_data = get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
+                                              'rb',
+                                              method=True,
+                                              decode_flag=False)
+        except IOError:
+            log_message("File %s is missing. Partitioning layout has not to be complete." % self.kick_start_name,
+                        level=logging.WARNING)
+            return None
+        for index, row in enumerate(kickstart_data):
+            tag = [com for com in list_issues if row.startswith(com)]
+            if tag:
+                kickstart_data[index] = "#" + row
+        write_to_file(self.kick_start_name, 'wb', kickstart_data)
+
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
@@ -309,6 +327,7 @@ class KickstartGenerator(object):
         if packages:
             self.ks.handler.packages.add(packages)
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
+        self.ks.handler.keyboard.keyboard = 'us'
         self.update_repositories(self.repos)
         self.update_users(self.filter_kickstart_users())
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
@@ -316,6 +335,7 @@ class KickstartGenerator(object):
         self.embed_script(self.latest_tarball)
         self.delete_obsolete_issues()
         self.save_kickstart()
+        self.comment_kickstart_issues()
         return True
 
     @staticmethod

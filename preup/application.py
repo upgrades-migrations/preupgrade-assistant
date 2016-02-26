@@ -339,15 +339,18 @@ class Application(object):
         Function cleans files created by preupgrade-assistant
         :return:
         """
-        clean_directories = [os.path.join(settings.cache_dir, settings.common_name),
-                             settings.log_dir]
+        force_directories = [self.conf.result_dir]
         delete_directories = [self.conf.result_dir,
-                              settings.tarball_result_dir]
-        for dir_name in clean_directories:
-            utils.clean_directory(dir_name, '*.log')
+                              settings.tarball_result_dir,
+                              settings.log_dir]
+        for dir_name in force_directories:
+            shutil.rmtree(dir_name)
         for dir_name in delete_directories:
-            if os.path.isdir(dir_name):
-                shutil.rmtree(dir_name)
+            for root, dirs, files in os.walk(dir_name, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    shutil.rmtree(os.path.join(root, name))
 
     def clean_scan(self):
         """

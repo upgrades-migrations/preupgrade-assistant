@@ -172,16 +172,21 @@ function check_applies_to
         RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME
         do
-            grep "^$pkg[[:space:]]" $VALUE_RPM_RHSIGNED > /dev/null
-            if [ $? -ne 0 ]; then
-                log_info "Package $pkg is not installed"
+            is_pkg_installed "$pkg" && is_dist_native "$pkg" || {
+                log_info "Package $pkg is not installed or it is not signed by Red Hat."
                 NOT_APPLICABLE=1
-            fi
+            }
         done
     fi
     if [ $NOT_APPLICABLE -eq 1 ]; then
         exit_not_applicable
     fi
+}
+
+is_pkg_installed()
+{
+    grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
+    return 0
 }
 
 function check_rpm_to
@@ -202,7 +207,7 @@ function check_rpm_to
         do
             grep "^$pkg[[:space:]]" $VALUE_RPM_QA > /dev/null
             if [ $? -ne 0 ]; then
-                log_high_risk "Package $pkg is not installed"
+                log_high_risk "Package $pkg is not installed."
                 NOT_APPLICABLE=1
             fi
         done
@@ -214,13 +219,14 @@ function check_rpm_to
         do
             which $bin > /dev/null 2>&1
             if [ $? -ne 0 ]; then
-                log_high_risk "Binary $bin is not installed"
+                log_high_risk "Binary $bin is not installed."
                 NOT_APPLICABLE=1
             fi
         done
     fi
 
     if [ $NOT_APPLICABLE -eq 1 ]; then
+        log_high_risk "Please, install all required packages (and binaries) and run preupg again to process check properly."
         exit_fail
     fi
 }
@@ -229,8 +235,8 @@ function check_rpm_to
 function check_root
 {
     if [ "$(id -u)" != "0" ]; then
-        log_error "This script must be run as root"
-        log_slight_risk "The script must be run as root"
+        log_error "This script must be run as root."
+        log_slight_risk "The script must be run as root."
         exit_error
     fi
 }
@@ -244,7 +250,7 @@ function solution_file
 # returns true if service in $1 is enabled in any runlevel
 function service_is_enabled {
     if [ $# -ne 1 ] ; then
-        echo "Usage: service_is_enabled servicename"
+        echo "Usage: service_is_enabled servicename."
         return 2
     fi
     grep -qe "^${1}.*:on" "$VALUE_CHKCONFIG" && return 0

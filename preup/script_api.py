@@ -348,15 +348,22 @@ def switch_to_content():
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
 
+def is_pkg_installed(pkg_name):
+    lines = get_file_content(VALUE_RPM_QA, "rb", True)
+    found = [x for x in lines if x.startswith(pkg_name)]
+    if found:
+        return True
+    else:
+        return False
+
+
 def check_applies_to(check_applies=""):
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
-            lst = filter(lambda x: rpm == x.split('\t')[0], lines)
-            if not lst:
-                log_info("Package %s is not installed" % rpm)
+            if is_pkg_installed(rpm) and is_dist_native(rpm):
+                log_info("Package %s is not installed or it is not signed by Red Hat." % rpm)
                 not_applicable = 1
     if not_applicable:
         exit_not_applicable()
@@ -371,7 +378,7 @@ def check_rpm_to(check_rpm="", check_bin=""):
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
-                log_info("Package %s is not installed" % rpm)
+                log_info("Package %s is not installed." % rpm)
                 not_applicable = 1
 
     if check_bin != "":
@@ -379,9 +386,11 @@ def check_rpm_to(check_rpm="", check_bin=""):
         for binary in binaries:
             cmd = "which %s" % binary
             if utils.run_subprocess(cmd, print_output=False, shell=True) != 0:
+                log_info("Binary %s is not installed." % binary)
                 not_applicable = 1
 
     if not_applicable:
+        log_high_risk("Please, install all required packages (and binaries) and run preupg again to process check properly.")
         exit_fail()
 
 
