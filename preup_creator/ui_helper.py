@@ -14,6 +14,7 @@ from distutils.util import strtobool
 from preup import utils
 from preup.utils import get_valid_scenario
 from preup_creator import settings
+from preup.settings import content_file as ALL_XCCDF_XML
 
 section = 'preupgrade'
 
@@ -232,6 +233,7 @@ class UIHelper(object):
         print (settings.summary_ini % os.path.join(content_path, self.get_content_ini_file()))
         print (settings.summary_check % os.path.join(content_path, self.get_check_script()))
         print (settings.summary_solution % os.path.join(content_path, self.get_solution_file()))
+        print (settings.text_for_testing % (content_path, os.path.join(content_path, ALL_XCCDF_XML)))
 
     def take_manadatory_info(self):
         if self.specify_upgrade_path() is None:
