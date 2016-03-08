@@ -236,13 +236,17 @@ class UIHelper(object):
         print (settings.text_for_testing % (content_path, os.path.join(content_path, ALL_XCCDF_XML)))
 
     def take_manadatory_info(self):
-        if self.specify_upgrade_path() is None:
-            return 1
-        self.get_content_info()
-        if self.refresh_content:
+        try:
+            if self.specify_upgrade_path() is None:
+                return 1
+            self.get_content_info()
+            if self.refresh_content:
+                shutil.rmtree(self.get_content_path())
+                os.makedirs(self.get_content_path())
+            if self.create_final_content() is None:
+                return 1
+            self._brief_summary()
+        except KeyboardInterrupt:
+            print ('\nContent creation was interrupted by user.\n')
             shutil.rmtree(self.get_content_path())
-            os.makedirs(self.get_content_path())
-        if self.create_final_content() is None:
-            return 1
-        self._brief_summary()
 
