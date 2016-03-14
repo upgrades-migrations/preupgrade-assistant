@@ -22,3 +22,7 @@ summary_ini = '- ini file which defines a content is %s.'
 summary_check = '- check script which does an assessment is %s. Update it before an usage'
 summary_solution = '- solution text which informs about incompatilibies is %s. Update it before an usage'
 check_path = "File %s already exists. Do you want to replace the file?"
+
+text_for_testing = "\nFor testing content run these two commands:\n" \
+                   "- preupg-create-group-xml %s to create XML file\n" \
+                   "- preupg -c %s"

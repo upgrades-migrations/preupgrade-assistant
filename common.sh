@@ -167,7 +167,7 @@ function check_applies_to
 
     [ -z "$1" ] && RPM=0
 
-    NOT_APPLICABLE=0
+    local NOT_APPLICABLE=0
     if [ $RPM -eq 1 ]; then
         RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME
@@ -195,12 +195,12 @@ function check_rpm_to
     local BINARY=1
     local RPM_NAME=$1
     local BINARY_NAME=$2
+    local NOT_APPLICABLE=0
 
     [ -z "$1" ] && RPM=0
     [ -z "$2" ] && BINARY=0
 
 
-    NOT_APPLICABLE=0
     if [ $RPM -eq 1 ]; then
         RPM_NAME=$(echo "$RPM_NAME" | tr "," " ")
         for pkg in $RPM_NAME

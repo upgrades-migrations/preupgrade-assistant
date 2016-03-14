@@ -14,6 +14,7 @@ from preup import utils
 from preup.utils import get_valid_scenario
 from preup_creator import settings
 
+from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
 
 
@@ -226,20 +227,28 @@ class UIHelper(object):
 
     def _brief_summary(self):
         content_path = os.path.join(self.upgrade_path, self.get_group_name(), self.get_content_name())
+        result_content_path = os.path.join(self.upgrade_path + '-results',
+                                           self.get_group_name(),
+                                           self.get_content_name())
         print (settings.summary_title)
         print (settings.summary_directory % self.get_content_path())
         print (settings.summary_ini % os.path.join(content_path, self.get_content_ini_file()))
         print (settings.summary_check % os.path.join(content_path, self.get_check_script()))
         print (settings.summary_solution % os.path.join(content_path, self.get_solution_file()))
+        print (settings.text_for_testing % (content_path, os.path.join(result_content_path, ALL_XCCDF_XML)))
 
     def take_manadatory_info(self):
-        if self.specify_upgrade_path() is None:
-            return 1
-        self.get_content_info()
-        if self.refresh_content:
-            shutil.rmtree(self.get_content_path())
-            os.makedirs(self.get_content_path())
+        try:
+            if self.specify_upgrade_path() is None:
+                return 1
+            self.get_content_info()
+            if self.refresh_content:
+                shutil.rmtree(self.get_content_path())
+                os.makedirs(self.get_content_path())
 
-        if self.create_final_content() is None:
-            return 1
-        self._brief_summary()
+            if self.create_final_content() is None:
+                return 1
+            self._brief_summary()
+        except KeyboardInterrupt:
+            print ('\n Content creation was interrupted by user.\n')
+            shutil.rmtree(self.get_content_path())
