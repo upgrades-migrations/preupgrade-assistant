@@ -347,7 +347,7 @@ def check_applies_to(check_applies=""):
     if check_applies != "":
         rpms = check_applies.split(',')
         for rpm in rpms:
-            if is_pkg_installed(rpm) and is_dist_native(rpm):
+            if not (is_pkg_installed(rpm) and is_dist_native(rpm)):
                 log_info("Package %s is not installed or it is not signed by Red Hat." % rpm)
                 not_applicable = 1
     if not_applicable:
