@@ -453,7 +453,7 @@ def get_preupg_config_file(path, key, section="preupgrade"):
     if not os.path.exists(path):
         return None
 
-    config = preupg.ConfigParser.RawConfigParser(allow_no_value=True)
+    config = preup.ConfigParser.RawConfigParser(allow_no_value=True)
     config.read(path)
     section = 'preupgrade-assistant'
     if config.has_section(section):
