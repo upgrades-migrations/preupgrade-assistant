@@ -108,6 +108,8 @@ class KickstartGenerator(object):
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
+        # We would like to add only users with valid shell.
+        lines = [x for x in lines if x.endswith("sh")]
         user_dict = {}
         for line in lines:
             fields = line.split(splitter)
