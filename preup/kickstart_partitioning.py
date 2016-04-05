@@ -7,10 +7,12 @@ Class creates a kickstart for migration scenario
 from __future__ import print_function, unicode_literals
 import six
 
+from pykickstart.constants import CLEARPART_TYPE_ALL
+
 
 class PartitionGenerator(object):
     """Generate partition layout"""
-    def __init__(self, layout, vg_info, lvdisplay):
+    def __init__(self, handler, layout, vg_info, lvdisplay):
         self.layout = layout
         self.vg_info = vg_info
         self.lvdisplay = lvdisplay
@@ -18,7 +20,11 @@ class PartitionGenerator(object):
         self.vol_group = {}
         self.logvol = {}
         self.part_dict = {}
-        self.parts = {}
+        self.handler = handler
+        self.parts = []
+        self.vg_list = []
+        self.lv_list = []
+        self.raid_list = []
 
     def generate_partitioning(self):
         """
@@ -119,54 +125,45 @@ class PartitionGenerator(object):
                 self.logvol[mount]['lv_name'] = lv_name
 
     def _get_part_devices(self):
-        layout = []
         for key, value in sorted(six.iteritems(self.part_dict)):
-            crypt = value['crypt']
-            try:
-                device = " --ondisk=%s" % value['device']
-            except KeyError:
-                device = ""
-            if crypt == "":
-                layout.append('part %s --size=%s%s' % (key, value['size'], device))
+            if value['crypt'] == "":
+                try:
+                    self.parts.append(self.handler.PartData(size=value['size'], mountpoint=key, disk=value['device']))
+                except KeyError:
+                    self.parts.append(self.handler.PartData(size=value['size'], mountpoint=key))
             else:
-                layout.append('part %s --size=%s%s' % (key, value['size'], crypt))
-        return layout
+                self.parts.append(self.handler.PartData(size=value['size'], mountpoint=key, encrypted=value['crypt']))
 
     def _get_logvol_device(self):
-        layout = []
         for key, value in sorted(six.iteritems(self.logvol)):
-            layout.append('logvol %s --vgname=%s --size=%s --name=%s' % (key,
-                                                                         value['vgname'],
-                                                                         value['size'],
-                                                                         value['lv_name']))
-        return layout
+            self.lv_list.append(self.handler.LogVolData(name=value['lv_name'], vgname=value['vgname'],
+                                                        size=value['size'], mountpoint=key))
 
     def _get_vg_device(self):
-        vg_layout = []
         for key, value in six.iteritems(self.vol_group):
-            pesize = value['pesize']
             pv_name = value['pv_name']
-            vg_layout.append('volgroup %s %s --pesize=%s' % (key, pv_name, pesize))
-        return vg_layout
+            self.vg_list.append(self.handler.VolGroupData(vgname=key, physvols=[pv_name], pesize=value['pesize']))
 
     def _get_raid_devices(self):
-        layout = []
         for key, value in six.iteritems(self.raid_devices):
             level = value['level']
-            crypt = value['crypt']
-            raid_vol = ""
+            members = []
             for index in value['raid_devices']:
-                raid = ' raid.%.2d' % int(index)
-                layout.append('part%s --grow --size=2048' % raid)
-                raid_vol += raid
-            layout.append('raid %s --level=%s --device=md%s%s%s' % (key, level, level, raid_vol, crypt))
-        return layout
+                member = "raid.%.5d" % int(index)
+                members.append(member)
+                self.parts.append(self.handler.PartData(grow=True, size=2048, mountpoint=member))
+            device = "md%s" % level
+            self.raid_list.append(self.handler.RaidData(level=level, mountpoint=key, device=device,
+                                                        members=members, encrypted=value['crypt']))
 
     def get_partitioning(self):
-        layout = []
-        layout.extend(self._get_part_devices())
-        layout.extend(self._get_vg_device())
-        layout.extend(self._get_logvol_device())
-        layout.extend(self._get_raid_devices())
-        return layout
+        self.handler.clearpart.type = CLEARPART_TYPE_ALL
+        self._get_part_devices()
+        self._get_vg_device()
+        self._get_logvol_device()
+        self._get_raid_devices()
+        self.handler.partition(partitions=self.parts)
+        self.handler.logvol(lvList=self.lv_list)
+        self.handler.volgroup(vgList=self.vg_list)
+        self.handler.raid(raidList=self.raid_list)
 
