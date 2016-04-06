@@ -23,6 +23,7 @@ KICKSTART_README=$KICKSTART_DIR/README
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
 DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
+SPECIAL_PKG_LIST=$KICKSTART_DIR/special_pkg_list
 
 RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
@@ -427,6 +428,18 @@ print_home_dirs() {
   conf_get_section "$_uconf_file" "home-dirs"
 }
 
+#Function adds a package to special_pkg_list
+add_pkg_to_kickstart() {
+  [ $# -eq 0  ] && {
+    log_debug "Missing parameters! Any package will be added." >&2
+    return 1
+  }
 
+  while [ $# -ne 0 ]; do
+    echo $1 >> SPECIAL_PKG_LIST
+    shift
+  done
+  return 0
+}
 load_pa_configuration
 switch_to_content

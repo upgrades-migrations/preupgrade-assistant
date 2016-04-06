@@ -127,7 +127,7 @@ POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
 KICKSTART_README = os.path.join(KICKSTART_DIR, "README")
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
-
+SPECIAL_PKG_LIST = os.path.join(KICKSTART_DIR, 'special_pkg_list')
 
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
@@ -530,6 +530,27 @@ def print_home_dirs(user_name=""):
         pass
     except ConfigParser.NoOptionError:
         pass
+
+
+def add_pkg_to_kickstart(pkg_name):
+    empty = False
+    if isinstance(pkg_name, list):
+        # list of packages
+        if len(pkg_name) == 0:
+            empty = True
+    else:
+        # string - pkg_name delimited by whitespace
+        if len(pkg_name.strip()) == 0:
+            empty = True
+        else:
+            # make list from string
+            pkg_name = pkg_name.strip().split()
+    if empty is True:
+        log_debug("Missing parameters! Any package will be added.")
+        return 1
+    for pkg in pkg_name.split():
+        write_to_file(SPECIAL_PKG_LIST, "a+b", pkg)
+    return 0
 
 
 load_pa_configuration()
