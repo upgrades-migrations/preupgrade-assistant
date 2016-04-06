@@ -84,6 +84,7 @@ __all__ = (
     'COMMON_DIR',
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
+    'KICKSTART_DIR',
     'KICKSTART_README',
     'MIGRATE',
     'UPGRADE',
@@ -124,6 +125,7 @@ try:
 except KeyError:
     DIST_NATIVE = 0
 POSTUPGRADE_DIR=os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+KICKSTART_DIR=os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
 KICKSTART_README=os.path.join(VALUE_TMP_PREUPGRADE, "kickstart", "README")
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
 
