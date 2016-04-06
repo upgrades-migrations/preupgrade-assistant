@@ -342,7 +342,8 @@ class Application(object):
                               settings.cache_dir,
                               settings.log_dir]
         for dir_name in force_directories:
-            shutil.rmtree(dir_name)
+            if os.path.isdir(dir_name):
+                shutil.rmtree(dir_name)
         for dir_name in delete_directories:
             for root, dirs, files in os.walk(dir_name, topdown=False):
                 for name in files:
