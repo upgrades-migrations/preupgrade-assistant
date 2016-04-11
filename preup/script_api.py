@@ -335,7 +335,7 @@ def switch_to_content():
 
 def is_pkg_installed(pkg_name):
     lines = get_file_content(VALUE_RPM_QA, "rb", True)
-    found = [x for x in lines if x.startswith(pkg_name)]
+    found = [x for x in lines if x.split()[0] == pkg_name]
     if found:
         return True
     else:
@@ -445,14 +445,14 @@ def is_dist_native(pkg):
     """
 
     rpm_qa = get_file_content(VALUE_RPM_QA, "rb", True)
-    found = [x for x in rpm_qa if x.startswith(pkg)]
+    found = [x for x in rpm_qa if x.split()[0] == pkg]
     if not found:
         log_warning("Package %s is not installed on Red Hat Enterprise Linux system.")
         return False
 
     rpm_signed = get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
+    found = [x for x in rpm_signed if x.split()[0] == pkg]
     if int(DEVEL_MODE) == 0:
-        found = [x for x in rpm_signed if x.startswith(pkg)]
         if found:
             return True
         else:
@@ -461,7 +461,6 @@ def is_dist_native(pkg):
         if DIST_NATIVE == "all":
             return True
         if DIST_NATIVE == "sign":
-            found = [x for x in rpm_signed if x.startswith(pkg)]
             if found:
                 return True
             else:
