@@ -3,9 +3,9 @@
 
 
 import sys
-from preup_creator.cli import CLICreator
-from preup_creator.conf import ConfCreator
-from preup_creator.application import Application
+from preup.creator.cli import CLICreator
+from preup.creator.conf import ConfCreator
+from preup.creator.application import Application
 from preup import settings
 
 
@@ -19,8 +19,6 @@ def main():
     except KeyboardInterrupt:
         print ('\nContent creation was interrupted by user.\n')
         return 1
-    #except Exception as ex:
-    #    cli_creator.parser.error(str(ex))
     return ret
 
 

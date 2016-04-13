@@ -4,10 +4,7 @@
 Class creates a set of packages for migration scenario
 """
 
-from __future__ import print_function, unicode_literals
 import os
-import six
-
 from preup.utils import get_file_content
 
 
@@ -22,7 +19,7 @@ class YumGroupManager(object):
     def find_match(self, packages):
         """is there a group whose packages are subset of argument 'packages'?"""
         groups = []
-        for group in six.itervalues(self.groups):
+        for group in self.groups.itervalues():
             if len(group.required) != 0:
                 if group.match(packages):
                     groups.append(group)
@@ -51,7 +48,12 @@ class YumGroup(object):
         return self.required.issubset(packages)
 
     def exclude_mandatory(self, packages):
+        # New set with elements in packages but not in self.required
         return packages.difference(self.required)
+
+    def exclude_optional(self, packages):
+        # New set with elements in packages but not in self.optional
+        return packages.difference(self.optional)
 
 
 class YumGroupGenerator(object):
@@ -93,24 +95,24 @@ class YumGroupGenerator(object):
                     yg = YumGroup(name, mandatory, default, optional)
                     self.gm.add(yg)
 
-    def remove_packages(self, package_list):
+    def remove_packages(self):
         for pkg in self.removed_packages:
-            if pkg in package_list:
-                package_list.remove(pkg)
-        return package_list
+            if pkg in self.packages:
+                self.packages.remove(pkg)
 
     def get_list(self):
         groups = self.gm.find_match(self.packages)
-        output = []
+        output_groups = []
         output_packages = self.packages
         for group in groups:
             if len(group.required) != 0:
-                output.append('@' + group.name)
+                output_groups.append('@'+group.name)
                 output_packages = group.exclude_mandatory(output_packages)
-        output.sort()
+                output_packages = group.exclude_optional(output_packages)
+        output_groups.sort()
         output_packages = list(output_packages)
         output_packages.sort()
-        return output + output_packages
+        return output_groups, output_packages
 
 
 class PackagesHandling(object):
@@ -133,7 +135,9 @@ class PackagesHandling(object):
             fields = pkg.split()
             old_pkg = fields[0]
             new_pkg = fields[len(fields) - 1]
-            self.packages = [new_pkg if x == old_pkg else x for x in self.packages]
+            found = [p for p in self.packages if p == old_pkg]
+            if found:
+                self.packages.append(new_pkg)
 
     def get_packages(self):
         return self.packages

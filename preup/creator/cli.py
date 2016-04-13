@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals
-#import argparse
 import optparse
 from optparse import OptionValueError
 
@@ -46,4 +42,4 @@ class CLICreator(object):
 
 if __name__ == '__main__':
     x = CLICreator()
-
+    print (x.args.id)

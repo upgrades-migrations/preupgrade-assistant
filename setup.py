@@ -9,17 +9,18 @@ from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
 from preup.version import VERSION
 
-project_name            = "preupgrade-assistant"
-project_url             = "https://github.com/phracek/preupgrade-assistant/"
-project_author          = "Red Hat, Inc."
-project_author_email    = "phracek@redhat.com"
-project_description     = "Preupgrade assistant"
-package_name            = "%s" % project_name
-package_module_name     = project_name
-package_version         = VERSION
+project_name = "preupgrade-assistant"
+project_url = "https://github.com/phracek/preupgrade-assistant/"
+project_author = "Red Hat, Inc."
+project_author_email = "phracek@redhat.com"
+project_description = "Preupgrade assistant"
+package_name = "%s" % project_name
+package_module_name = project_name
+package_version = VERSION
 
 script_files = ['preupg', 'premigrate', 'preup_ui_manage',
-                'preupg-xccdf-compose', 'preupg-create-group-xml', 'preupg-content-creator']
+                'preupg-xccdf-compose', 'preupg-create-group-xml',
+                'preupg-content-creator', 'preupg-kickstart-generator']
 
 data_files = {
     'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
@@ -50,14 +51,14 @@ for scheme in INSTALL_SCHEMES.values():
     scheme["data"] = scheme["purelib"]
 
 setup(
-        name            = package_name,
-        version         = package_version,
-        url             = project_url,
-        author          = project_author,
-        author_email    = project_author_email,
-        description     = project_description,
-        packages        = packages,
-        data_files      = data_files.items(),
-        scripts         = script_files,
-        test_suite      = 'tests.suite',
+        name=package_name,
+        version=package_version,
+        url=project_url,
+        author=project_author,
+        author_email=project_author_email,
+        description=project_description,
+        packages=packages,
+        data_files=data_files.items(),
+        scripts=script_files,
+        test_suite='tests.suite',
 )

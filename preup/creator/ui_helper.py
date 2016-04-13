@@ -4,7 +4,6 @@
 This module serves for handling user interactions
 """
 
-from __future__ import print_function
 import os
 import ConfigParser
 import shutil
@@ -14,8 +13,8 @@ from distutils.util import strtobool
 from preup import utils
 from preup.utils import get_valid_scenario
 from preup_creator import settings
-from preup.settings import content_file as ALL_XCCDF_XML
 
+from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
 
 
@@ -183,6 +182,15 @@ class UIHelper(object):
             print ('We have a problem with writing content file %s to disc' % ini_path)
             raise
 
+    def _create_check_script(self):
+        if self.check_script:
+            utils.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
+            os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
+
+    def _create_solution_file(self):
+        if self.solution_file:
+            utils.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
+
     def _create_group_ini(self):
         """
         INI file should look like
@@ -205,15 +213,6 @@ class UIHelper(object):
         except IOError:
             print ('We have a problem with writing %s file to disc' % group_ini)
             raise
-
-    def _create_check_script(self):
-        if self.check_script:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
-            os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
-
-    def _create_solution_file(self):
-        if self.solution_file:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
 
     def create_final_content(self):
         try:
@@ -246,10 +245,10 @@ class UIHelper(object):
             if self.refresh_content:
                 shutil.rmtree(self.get_content_path())
                 os.makedirs(self.get_content_path())
+
             if self.create_final_content() is None:
                 return 1
             self._brief_summary()
         except KeyboardInterrupt:
-            print ('\nContent creation was interrupted by user.\n')
+            print ('\n Content creation was interrupted by user.\n')
             shutil.rmtree(self.get_content_path())
-

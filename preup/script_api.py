@@ -84,6 +84,8 @@ __all__ = (
     'POSTUPGRADE_DIR',
     'KICKSTART_DIR',
     'KICKSTART_README',
+    'KICKSTART_SCRIPTS',
+    'KICKSTART_POSTUPGRADE',
     'MIGRATE',
     'UPGRADE',
     'HOME_DIRECTORY_FILE',
@@ -126,6 +128,8 @@ except KeyError:
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
 KICKSTART_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
 KICKSTART_README = os.path.join(KICKSTART_DIR, "README")
+KICKSTART_SCRIPTS = os.path.join(KICKSTART_DIR, "scripts")
+KICKSTART_POSTUPGRADE = KICKSTART_SCRIPTS
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
 
 

@@ -4,26 +4,24 @@
 Class creates a kickstart for migration scenario
 """
 
-from __future__ import print_function, unicode_literals
 import base64
 import shutil
-import os
-import six
 
-from pykickstart.parser import KickstartError, KickstartParser, Script
-from pykickstart.version import makeVersion
-from pykickstart.constants import KS_SCRIPT_POST, KS_SCRIPT_PRE, KS_MISSING_IGNORE
-from preup.logger import log_message, logging
-from preup import settings
-from preup.utils import write_to_file, get_file_content
+from pykickstart.constants import *
+from pykickstart.parser import *
+from pykickstart.version import *
+
 from preup import utils
-from preup.kickstart_packages import YumGroupGenerator, PackagesHandling
-from preup.kickstart_partitioning import PartitionGenerator
+from preup.kickstart.kickstart_packages import YumGroupGenerator, PackagesHandling
+from preup.kickstart.kickstart_partitioning import PartitionGenerator
+from preup.logger import *
+from preup.utils import write_to_file, get_file_content
 
 
 class KickstartGenerator(object):
     """Generate kickstart using data from provided result"""
-    def __init__(self, dir_name, kick_start_name):
+
+    def __init__(self, conf, dir_name, kick_start_name):
         self.dir_name = dir_name
         self.ks = None
         self.kick_start_name = kick_start_name
@@ -32,8 +30,13 @@ class KickstartGenerator(object):
         self.users = None
         self.latest_tarball = ""
         self.temp_file = '/tmp/part-include'
+        self.conf = conf
+        self.groups = []
+        self.packages = []
+        self.part_layout = None
 
     def collect_data(self):
+        self._remove_obsolete_data()
         collected_data = True
         self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name))
         if self.ks is None:
@@ -43,24 +46,30 @@ class KickstartGenerator(object):
         self.latest_tarball = self.get_latest_tarball()
         return collected_data
 
+    def _remove_obsolete_data(self):
+        if os.path.exists(KickstartGenerator.get_kickstart_path(self.dir_name)):
+            lines = get_file_content(KickstartGenerator.get_kickstart_path(self.dir_name), "r", method=True)
+            lines = [x for x in lines if not x.startswith('key')]
+            write_to_file(KickstartGenerator.get_kickstart_path(self.dir_name), "w", lines)
+
     @staticmethod
     def get_kickstart_path(dir_name):
         return os.path.join(dir_name, 'anaconda-ks.cfg')
 
     @staticmethod
     def load_or_default(system_ks_path):
-        """load system ks or default ks"""
+        """ load system ks or default ks """
         ksparser = KickstartParser(makeVersion())
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
-            log_message("Can't read system kickstart at {0}".format(system_ks_path))
+            log_message("Can't read system kickstart at %s" % (system_ks_path))
             try:
-                ksparser.readKickstart(settings.KS_TEMPLATE)
+                ksparser.readKickstart(os.path.join(KickstartGenerator.dir_name, settings.KS_TEMPLATE))
             except AttributeError:
                 log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
-            except IOError:
-                log_message("Can't read kickstart template {0}".format(settings.KS_TEMPLATE))
+            except IOError, ioe:
+                log_message("Can't read kickstart template %s %s" % (settings.KS_TEMPLATE, ioe))
                 return None
         return ksparser
 
@@ -71,7 +80,10 @@ class KickstartGenerator(object):
         replaced/obsoleted/removed between releases. It produces a file with a list
         of packages which should be installed.
         """
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        full_path_name = os.path.join(settings.KS_DIR, filename)
+        if not os.path.exists(full_path_name):
+            return []
+        lines = get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
         # Remove newline character from list
         lines = [line.strip() for line in lines]
         return lines
@@ -108,8 +120,6 @@ class KickstartGenerator(object):
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
-        # We would like to add only users with valid shell.
-        lines = [x for x in lines if x.endswith("sh")]
         user_dict = {}
         for line in lines:
             fields = line.split(splitter)
@@ -134,13 +144,24 @@ class KickstartGenerator(object):
             part_sizes[part_name] = size
         return part_sizes
 
+    @staticmethod
+    def get_installed_packages():
+        prefix = 'RHRHEL7rpmlist_'
+        result_list = []
+        list_files = ['kept', 'optional', 'notbase',
+                      'replaced', 'replaced-notbase']
+        for l in list_files:
+            try:
+                result_list.extend(KickstartGenerator.get_package_list(prefix + l))
+            except IOError:
+                log_message("File '%s' was not found. Skipping package generation.", (prefix + l))
+                return None
+        return result_list
+
     def output_packages(self):
-        """outputs %packages section"""
-        try:
-            installed_packages = KickstartGenerator.get_package_list('PA_RHRHEL7rpmlist')
-            # We need only package names
-            installed_packages = [i.split()[0] for i in installed_packages]
-        except IOError:
+        """ outputs %packages section """
+        installed_packages = KickstartGenerator.get_installed_packages()
+        if installed_packages is None:
             return None
         try:
             obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted-required')
@@ -160,9 +181,8 @@ class KickstartGenerator(object):
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(ph.get_packages(), removed_packages, *abs_fps)
-        display_package_names = ygg.get_list()
-        display_package_names = ygg.remove_packages(display_package_names)
-        return display_package_names
+        self.groups, self.packages = ygg.get_list()
+        ygg.remove_packages()
 
     def delete_obsolete_issues(self):
         """ Remove obsolete items which does not exist on RHEL-7 anymore"""
@@ -184,7 +204,7 @@ class KickstartGenerator(object):
 
         script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
         script_str = script_str.replace('{RESULT_NAME}', tarball_name)
-
+        script_str = script_str.replace('{TEMPORARY_PREUPG_DIR}', '/var/tmp/preupgrade')
         script = Script(script_str, type=KS_SCRIPT_POST, inChroot=True)
         self.ks.handler.scripts.append(script)
 
@@ -206,7 +226,6 @@ class KickstartGenerator(object):
                 try:
                     shutil.copy(source_name, target_name)
                 except IOError:
-                    log_message("Copying %s to %s failed" % (source_name, target_name))
                     pass
 
     @staticmethod
@@ -224,7 +243,7 @@ class KickstartGenerator(object):
 
     def update_repositories(self, repositories):
         if repositories:
-            for key, value in six.iteritems(repositories):
+            for key, value in repositories.iteritems():
                 self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
 
     def update_users(self, users):
@@ -245,6 +264,7 @@ class KickstartGenerator(object):
             layout = get_file_content(lsblk_filename, 'rb', method=True, decode_flag=False)
         except IOError:
             log_message("File %s was not generated by a content. Kickstart does not contain partitioning layout" % lsblk_filename)
+            self.part_layout = None
             return None
         vg_info = []
         lv_info = []
@@ -267,6 +287,24 @@ class KickstartGenerator(object):
             tarball = os.path.join(directories, preupg_files[-1])
         return tarball
 
+    def filter_kickstart_users(self):
+        kickstart_users = {}
+        if not self.users:
+            return None
+        setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
+        uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
+        for user, ids in self.users.iteritems():
+            if setup_passwd:
+                if [x for x in setup_passwd.iterkeys() if user in x]:
+                    continue
+            if uidgid:
+                if [x for x in uidgid.iterkeys() if user in x]:
+                    continue
+            kickstart_users[user] = ids.split(':')
+        if not kickstart_users:
+            return None
+        return kickstart_users
+
     def comment_kickstart_issues(self):
         list_issues = ['user', 'repo', 'url', 'rootpw']
         kickstart_data = []
@@ -285,31 +323,14 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
-    def filter_kickstart_users(self):
-        kickstart_users = {}
-        if not self.users:
-            return None
-        setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
-        uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in six.iteritems(self.users):
-            if setup_passwd:
-                if [x for x in six.iterkeys(setup_passwd) if user in x]:
-                    continue
-            if uidgid:
-                if [x for x in six.iterkeys(uidgid) if user in x]:
-                    continue
-            kickstart_users[user] = ids.split(':')
-        if not kickstart_users:
-            return None
-        return kickstart_users
-
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
             return None
-        packages = self.output_packages()
-        if packages:
-            self.ks.handler.packages.add(packages)
+        self.output_packages()
+        if self.packages or self.groups:
+            self.ks.handler.packages.packageList = self.packages
+            self.ks.handler.packages.groupList = self.groups
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.ks.handler.keyboard.keyboard = 'us'
         self.update_repositories(self.repos)
@@ -320,6 +341,17 @@ class KickstartGenerator(object):
         self.save_kickstart()
         self.comment_kickstart_issues()
         return True
+
+    def main(self):
+        if not os.path.exists(os.path.join(settings.result_dir, settings.xml_result_name)):
+            log_message("'preupg' command was not run yet. Run them before kickstart generation.")
+            return 1
+
+        KickstartGenerator.copy_kickstart_templates()
+        dummy_ks = self.generate()
+        if dummy_ks:
+            log_message(settings.kickstart_text % settings.PREUPGRADE_KS)
+        KickstartGenerator.kickstart_scripts()
 
     @staticmethod
     def kickstart_scripts():
@@ -341,13 +373,10 @@ class KickstartGenerator(object):
             pass
 
 
-def main():
+def run():
     kg = KickstartGenerator()
     #print kg.generate()
 
     # group.packages() -> ['package', ...]
     #import ipdb ; ipdb.set_trace()
     return
-
-if __name__ == '__main__':
-    main()

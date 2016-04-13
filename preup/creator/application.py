@@ -3,8 +3,6 @@
 The application module serves for creating a content
 """
 
-from __future__ import unicode_literals, print_function
-
 from preup.logger import log_message, logging, set_level
 from preup_creator.ui_helper import UIHelper
 
@@ -24,5 +22,4 @@ class Application(object):
 
     def run(self):
         self.ui_helper.take_manadatory_info()
-
 

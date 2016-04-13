@@ -131,18 +131,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
                "and does not perform the actual upgrade.\n"
 assessment_text = "Assessment of the system, running checks / SCE scripts"
-result_text = "Result table with checks and their results for {0}:"
+result_text = "Result table with checks and their results for '{0}':"
 message = "We found some potential in-place upgrade risks.\n" \
-          "Read the full report file {0} for more details."
+          "Read the full report file '{0}' for more details."
 converter_message = "At least one of these converters ({0}) needs to be installed."
-kickstart_text = "The Preupgrade Assistant generates a kickstart file in %s.\n" \
+kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
                  "The Kickstart file contains:\n" \
                  "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
                  "- the partitioning layout which was used on this system\n" \
                  "- the package set which was installed on this system.\n" \
                  "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
                  "installation of Red Hat Enterprise Linux 7.\n" \
-                 "The Kickstart file needs to be modified by administator.\n"
+                 "The Kickstart file needs to be modified by administator.\n" \
+                 "The directory contains:\n" \
+                 "- cleanconf - configuration files which can be used on migrated system direcotry.\n" \
+                 "- dirtyconf - configuration files which needs to be clarified by administrator.\n"
+
 options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
 list_rules = "List of all available rules:\n%s\n"
 unknown_rules = "These rules does not exist:\n%s\n"

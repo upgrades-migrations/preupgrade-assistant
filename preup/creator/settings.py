@@ -10,7 +10,7 @@ temp_check_script = """#!/bin/bash
 
 group_name = 'Specify a group name which content belongs to (like database):'
 content_name = 'Specify a module name which will be created (like mysql):'
-check_script = "Specify a script name which will be used for assessment : (check.sh)"
+check_script = "Specify a script name which will be used for assessment: (check.sh)"
 solution_text = "Specify a solution file which will be shown in report: (solution.txt)"
 content_title = "Specify a content title:"
 content_desc = "Would you like to specify a content description?"

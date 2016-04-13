@@ -24,7 +24,7 @@ from preup.utils import run_subprocess, get_assessment_version, get_message
 from preup.utils import tarball_result_dir
 from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
-from preup.kickstart import KickstartGenerator
+from preup.kickstart.application import KickstartGenerator
 from preuputils.compose import XCCDFCompose
 from preup.version import VERSION
 
@@ -548,8 +548,8 @@ class Application(object):
             format_rules_to_table(report, "3rdparty content " + target)
 
         tar_ball_name = tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
-        log_message("Tarball with results is stored here %s ." % tar_ball_name)
-        log_message("The latest assessment is stored in directory %s ." % self.conf.result_dir)
+        log_message("Tarball with results is stored here '%s' ." % tar_ball_name)
+        log_message("The latest assessment is stored in directory '%s' ." % self.conf.result_dir)
         # pack all configuration files to tarball
         return tar_ball_name
 
@@ -675,11 +675,8 @@ If you would like to use this tool, you have to specify correct upgrade path par
             if not os.path.exists(self.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before kickstart generation.")
                 return 1
-            kg = KickstartGenerator(settings.KS_DIR, self.get_preupgrade_kickstart())
-            KickstartGenerator.copy_kickstart_templates()
-            dummy_ks = kg.generate()
-            if dummy_ks:
-                log_message(settings.kickstart_text % self.get_preupgrade_kickstart())
+            kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
+            kg.main()
             return 0
 
         if self.conf.scan:
