@@ -488,7 +488,7 @@ def get_dist_native_list():
     tmp = get_file_content(VALUE_RPM_QA, "rb", True)
     pkgs = [i.split("\t")[0] for i in tmp]
     for pkg in pkgs:
-        if(is_dist_native(pkg) is True):
+        if is_dist_native(pkg) is True:
             native_pkgs.append(pkg)
     return native_pkgs
 

@@ -35,7 +35,7 @@ def get_user_input(message, any_input=False):
         msg = '{0} {1}? '.format(message, choice)
 
     while True:
-        if(sys.version_info[0] == 2):
+        if int(sys.version_info[0]) == 2:
             user_input = raw_input(msg)
         else:
             user_input = input(msg)

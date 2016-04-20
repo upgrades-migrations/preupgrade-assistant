@@ -26,18 +26,18 @@ def check_file(fp, mode):
     with open mode)
     """
     intern_mode = 0
-    if(isinstance(mode, six.text_type)):
-        if('w' in mode or 'a' in mode):
+    if isinstance(mode, six.text_type):
+        if 'w' in mode or 'a' in mode:
             intern_mode += W_OK
-        if('r' in mode):
+        if 'r' in mode:
             intern_mode += R_OK
-        if('x' in mode):
+        if 'x' in mode:
             intern_mode += X_OK
     else:
         intern_mode = mode
-    if(path.exists(fp)):
-        if(path.isfile(fp)):
-            if(access(fp, intern_mode)):
+    if path.exists(fp):
+        if path.isfile(fp):
+            if access(fp, intern_mode):
                 return True
             else:
                 return False
@@ -355,7 +355,7 @@ def get_message(title="", message="Do you want to continue?", prompt=None):
         print (message)
     while True:
         try:
-            if(sys.version_info[0] == 2):
+            if int(sys.version_info[0]) == 2:
                 choice = raw_input()
             else:
                 choice = input()

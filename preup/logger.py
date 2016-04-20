@@ -18,10 +18,12 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
 
+
 def set_level(level):
     logger.setLevel(level)
 
-if(sys.version_info[0] == 2):
+
+if int(sys.version_info[0]) == 2:
     def log_message(message, print_output=1, new_line=True, level=logging.INFO, log=True):
         """ if verbose, log `msg % args` to stdout """
         if int(print_output) > 0:
