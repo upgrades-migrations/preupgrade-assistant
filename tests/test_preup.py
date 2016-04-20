@@ -12,6 +12,7 @@ from preup.report_parser import ReportParser
 
 import base
 
+
 class TestPreupg(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
@@ -69,11 +70,11 @@ class TestPreupg(base.TestCase):
         found_migrate = 0
         found_upgrade = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id").endswith("_preupg_state_migrate"):
+            if values.get("id") == "xccdf_preupg_value_migrate":
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 1:
+                    if int(value.text) == 0:
                         found_migrate = 1
-            if values.get("id").endswith("_preupg_state_upgrade"):
+            if values.get("id") == "xccdf_preupg_value_upgrade":
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 0:
                         found_upgrade = 1
@@ -107,13 +108,13 @@ class TestPreupg(base.TestCase):
         found_migrate = 0
         found_upgrade = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id").endswith("_preupg_state_migrate"):
+            if values.get("id") == "xccdf_preupg_value_upgrade":
                 for value in rp.get_nodes(values, "value"):
                     if int(value.text) == 0:
                         found_migrate = 1
-            if values.get("id").endswith("_preupg_state_upgrade"):
+            if values.get("id") == "xccdf_preupg_value_upgrade":
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 1:
+                    if int(value.text) == 0:
                         found_upgrade = 1
         self.assertEquals(found_migrate, 1)
         self.assertEquals(found_upgrade, 1)
@@ -146,7 +147,7 @@ class TestXMLUpdates(base.TestCase):
         found_tmp = 0
 
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id").endswith("_preupg_state_tmp_preupgrade"):
+            if values.get("id") == "xccdf_preupg_value_tmp_preupgrade":
                 for value in rp.get_nodes(values, "value"):
                     if value.text == result_path:
                         found_tmp = 1
@@ -175,31 +176,39 @@ class TestCLI(base.TestCase):
         """ basic test of several options """
         conf = {
             "scan": "FOOBAR6_7",
-            "temp_dir": 'd',
             "skip_common": False,
-            "contents": "content/FOOBAR6_7",
             "id": 1,
-            "list": True,
+            "list_contents_set": True,
             "verbose": 1,
             "text": True,
+            "contents": "content/FOOBAR6_7",
             "cleanup": True,
             "mode": 'upgrade',
+            "select_rules": "abc",
+            "list_rules": True,
+            "version": True,
+            "force": True,
+            "riskcheck": True,
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list",
-                   "--verbose", "--text",
-                   "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade"])
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list-contents-set", "--verbose", "--text",
+                   "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade",
+                   "--select-rules", "abc", "--list-rules", "--version", "--force",
+                   "--riskcheck"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
         self.assertEqual(a.conf.contents, "content/FOOBAR6_7")
-        self.assertTrue(a.conf.list)
+        self.assertTrue(a.conf.list_contents_set)
+        self.assertTrue(a.conf.list_rules)
+        self.assertTrue(a.conf.force)
         self.assertTrue(a.conf.text)
         self.assertTrue(a.conf.cleanup)
         self.assertEqual(int(a.conf.verbose), 1)
-        self.assertEqual(a.conf.temp_dir, "d")
         self.assertEqual(a.conf.scan, "FOOBAR6_7")
         self.assertEqual(a.conf.mode, "upgrade")
+        self.assertEqual(a.conf.select_rules, "abc")
+        self.assertTrue(a.conf.riskcheck)
 
 
 class TestHashes(base.TestCase):

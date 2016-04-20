@@ -9,10 +9,12 @@ from preuputils import variables
 from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
-from preup import settings, utils, xccdf
+from preup import settings, utils, xccdf, xml_manager
 from preup.report_parser import ReportParser
 from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
+from preup.utils import get_file_content
+from preup.common import Common
 
 import base
 
@@ -40,9 +42,9 @@ def prepare_xml(path_name):
                                   os.path.dirname(path_name),
                                   content=os.path.basename(path_name))
     try:
-        file = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
-        file.write(ElementTree.tostring(tree, encoding="utf-8").decode('utf-8'))
-        file.close()
+        f = open(os.path.join(path_name, 'all-xccdf.xml'), "w")
+        f.write(ElementTree.tostring(tree, encoding="utf-8").decode('utf-8'))
+        f.close()
     except IOError as e:
         raise
 
@@ -57,13 +59,18 @@ def prepare_cli(temp_dir, path_name):
         "id": None,
         "quiet": True,
         "debug": True,  # so root check won't fail
+        "list_rules": False,
+        "force": True,
     }
     dc = DummyConf(**conf)
     cli = CLI(["--contents", path_name + "/" + settings.xml_result_name])
     a = Application(Conf(dc, settings, cli))
     # Prepare all variables for test
-    a.conf.source_dir = os.getcwd()
+    a.conf.source_dir = 'tests'
     a.content = a.conf.contents
+    a.common = Common(a.conf)
+    a.conf.results_dir = temp_dir
+    a.report_parser = ReportParser(a.content)
     a.basename = os.path.basename(a.content)
     return a
 
@@ -136,12 +143,17 @@ class TestOSCAPPass(base.TestCase):
         generate_test_xml(self.result_name, self.name)
         # Delete platform tags
         test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        return_string = utils.run_subprocess(' '.join(a.build_command()), shell=True, output=test_log)
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
         self.assertEqual(return_string, 0)
         lines = utils.get_file_content(test_log, perms='rb')
         os.unlink(test_log)
-        self.assertEqual(a.run_scan(), 0)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "pass")
@@ -165,8 +177,19 @@ class TestOSCAPFail(base.TestCase):
         Basic test for FAIL SCE
         """
         generate_test_xml(self.result_name, self.name)
+        # Delete platform tags
+        test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        self.assertEqual(a.run_scan(), 2)
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
+        self.assertEqual(return_string, 2)
+        lines = utils.get_file_content(test_log, perms='rb')
+        os.unlink(test_log)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "fail")
@@ -182,18 +205,29 @@ class TestOSCAPNeedsInspection(base.TestCase):
         shutil.copytree(self.path_name, self.result_name)
 
     def tearDown(self):
-        shutil.rmtree(self.temp_dir)
-        delete_tmp_xml(FOOBAR6_results)
+        #shutil.rmtree(self.temp_dir)
+        #delete_tmp_xml(FOOBAR6_results)
+        pass
 
     def test_needs_inspection(self):
         """
         Basic test for FAIL SCE
         """
         generate_test_xml(self.result_name, self.name)
+        # Delete platform tags
+        test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        self.assertEqual(a.run_scan(), 2)
-        report_parser = ReportParser(os.path.join(self.temp_dir, settings.xml_result_name))
-        report_parser.replace_inplace_risk()
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
+        self.assertEqual(return_string, 2)
+        a.report_parser.reload_xml(os.path.join(self.temp_dir, 'result.xml'))
+        a.report_parser.replace_inplace_risk()
+        os.unlink(test_log)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "needs_inspection")
@@ -217,10 +251,20 @@ class TestOSCAPNeedsAction(base.TestCase):
         Basic test for FAIL SCE
         """
         generate_test_xml(self.result_name, self.name)
+        # Delete platform tags
+        test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        self.assertEqual(a.run_scan(), 2)
-        report_parser = ReportParser(os.path.join(self.temp_dir, settings.xml_result_name))
-        report_parser.replace_inplace_risk()
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
+        self.assertEqual(return_string, 2)
+        a.report_parser.reload_xml(os.path.join(self.temp_dir, 'result.xml'))
+        a.report_parser.replace_inplace_risk()
+        os.unlink(test_log)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "needs_action")
@@ -244,8 +288,20 @@ class TestOSCAPNotApplicable(base.TestCase):
         Basic test for NOT_APPLICABLE SCE
         """
         generate_test_xml(self.result_name, self.name)
+        # Delete platform tags
+        test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        self.assertEqual(a.run_scan(), 0)
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
+        self.assertEqual(return_string, 0)
+        a.report_parser.reload_xml(os.path.join(self.temp_dir, 'result.xml'))
+        a.report_parser.replace_inplace_risk()
+        os.unlink(test_log)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "notapplicable")
@@ -269,8 +325,20 @@ class TestOSCAPFixed(base.TestCase):
         Basic test for FIXED SCE
         """
         generate_test_xml(self.result_name, self.name)
+        # Delete platform tags
+        test_log = 'test_log'
+        if os.path.exists(test_log):
+            os.unlink(test_log)
         a = prepare_cli(self.temp_dir, self.result_name)
-        self.assertEqual(a.run_scan(), 0)
+        a.generate_report()
+        a.report_parser.add_global_tags(a.conf.results_dir,
+                                        a.get_proper_scenario(a.get_scenario()),
+                                        a.conf.mode, 0, "all")
+        return_string = utils.run_subprocess(a.build_command(), print_output=False, output=test_log)
+        self.assertEqual(return_string, 0)
+        a.report_parser.reload_xml(os.path.join(self.temp_dir, 'result.xml'))
+        a.report_parser.replace_inplace_risk()
+        os.unlink(test_log)
         value = get_result_tag(self.temp_dir)
         self.assertTrue(value)
         self.assertEqual(value, "fixed")

@@ -20,6 +20,8 @@ from preuputils.xml_utils import XmlUtils
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup.utils import write_to_file, get_file_content
 from preup.xml_manager import html_escape, html_escape_string
+from preuputils.xml_utils import MissingTagsIniFileError
+from preup.exception import MissingFileInContentError
 
 import base
 
@@ -191,7 +193,7 @@ A solution text for test suite"
 
     def test_xml_check_export_tmp_preupgrade(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_export = filter(lambda x: '<check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_test_check_script_state_tmp_preupgrade" />' in x, self.rule)
+        check_export = filter(lambda x: '<check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />' in x, self.rule)
         self.assertTrue(check_export)
 
     def test_xml_current_directory(self):
@@ -334,10 +336,6 @@ A solution text for test suite"
 
     def test_values_id(self):
         self.rule = self.xml_utils.prepare_sections()
-        value_tmp_preupgrade = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_tmp_preupgrade" operator="equals" type="string">' in x, self.rule)
-        self.assertTrue(value_tmp_preupgrade)
-        value_tmp_preupgrade_set = filter(lambda x: '<value>SCENARIO</value>' in x, self.rule)
-        self.assertTrue(value_tmp_preupgrade_set)
         value_current_dir = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x, self.rule)
         self.assertTrue(value_current_dir)
         value_current_dir_set = filter(lambda x: '<value>SCENARIO/test</value>' in x, self.rule)
@@ -379,12 +377,13 @@ class TestIncorrectINI(base.TestCase):
         self.loaded_ini = {}
         self.loaded_ini[self.filename] = []
         self.test_ini = {'content_title': 'Testing content title',
-                    'content_description': 'Some content description',
-                    'author': 'test <test@redhat.com>',
-                    'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
-                    'applies_to': 'test'}
+                         'content_description': 'Some content description',
+                         'author': 'test <test@redhat.com>',
+                         'config_file': '/etc/named.conf',
+                         'check_script': self.check_script,
+                         'solution': self.test_solution,
+                         'applies_to': 'test'
+                         }
         solution_text = """
 A solution text for test suite"
 """
@@ -405,28 +404,28 @@ A solution text for test suite"
         self.test_ini.pop('check_script', None)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_tag_solution_script(self):
         """Test of missing tag 'solution' - SystemExit should be raised"""
         self.test_ini.pop('solution', None)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_solution_not_exists(self):
         """Test of missing 'solution' file - SystemExit should be raised"""
         self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_check_script_not_exists(self):
         """Test of missing 'check_script' file"""
         self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_check_script_is_directory(self):
         """
@@ -436,7 +435,7 @@ A solution text for test suite"
         self.test_ini['check_script'] = '.'
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_incorrect_tag(self):
         """
@@ -457,7 +456,7 @@ A solution text for test suite"
         write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
 
 class TestGroupXML(base.TestCase):

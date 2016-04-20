@@ -165,3 +165,4 @@ will used -- http://127.0.0.1:8099/submit/)"
 
 if __name__ == '__main__':
     x = CLI()
+    print(x.args.id)
