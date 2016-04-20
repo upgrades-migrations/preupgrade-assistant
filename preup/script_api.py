@@ -94,6 +94,7 @@ __all__ = (
     'DEVEL_MODE',
     'DIST_NATIVE',
     'SPECIAL_PKG_LIST',
+    'NOAUTO_POSTUPGRADE_D',
 )
 
 CACHE = "/var/cache/preupgrade"
@@ -133,6 +134,7 @@ KICKSTART_SCRIPTS = os.path.join(KICKSTART_DIR, "scripts")
 KICKSTART_POSTUPGRADE = KICKSTART_SCRIPTS
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
 SPECIAL_PKG_LIST = os.path.join(KICKSTART_DIR, 'special_pkg_list')
+NOAUTO_POSTUPGRADE_D = os.path.join(VALUE_TMP_PREUPGRADE, 'noauto_postupgrade.d')
 
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
