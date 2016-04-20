@@ -93,6 +93,7 @@ __all__ = (
     'PREUPG_API_VERSION',
     'DEVEL_MODE',
     'DIST_NATIVE',
+    'SPECIAL_PKG_LIST',
 )
 
 CACHE = "/var/cache/preupgrade"
