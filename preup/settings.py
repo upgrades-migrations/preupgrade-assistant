@@ -93,7 +93,7 @@ post_script = os.path.join(common_dir, "post_scripts.txt")
 # kickstart and postupgrade.d directories
 preupgrade_dirs = ['etc', dirty_conf_dir, clean_conf_dir,
                    'kickstart', postupgrade_dir, 'common',
-                   'preupgrade-scripts']
+                   'preupgrade-scripts', 'noauto_postupgrade.d']
 
 
 readme_files = {'README': 'README',
