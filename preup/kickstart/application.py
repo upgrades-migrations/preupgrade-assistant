@@ -182,7 +182,7 @@ class KickstartGenerator(object):
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(ph.get_packages(), removed_packages, *abs_fps)
         self.groups, self.packages = ygg.get_list()
-        ygg.remove_packages()
+        self.packages = ygg.remove_packages(self.packages)
 
     def delete_obsolete_issues(self):
         """ Remove obsolete items which does not exist on RHEL-7 anymore"""

@@ -4,48 +4,51 @@ import os
 from preup.logger import settings, logging, log_message
 
 
-def compare_data(row):
-    """Function sorts a data output"""
-    test_cases = {'error': '01',
-                  'fail': '02',
-                  'needs_action': '03',
-                  'needs_inspection': '04',
-                  'fixed': '05',
-                  'informational': '06',
-                  'pass': '07',
-                  'notapplicable': '08',
-                  'notchecked': '09'}
-    try:
-        dummy_title, dummy_rule_id, result = row.split(':')
-    except ValueError:
-        return '99'
-    else:
-        try:
-            return test_cases[result]
-        except KeyError:
-            return '99'
+class ScanningHelper(object):
 
-
-def format_rules_to_table(output_data, content):
-    """Function format output_data to table"""
-    if not output_data:
-        # If output_data does not contain anything then do not print nothing
-        return
-    max_title_length = max(x for x in [len(l.split(':')[0]) for l in output_data]) + 5
-    max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
-    log_message(settings.result_text.format(content))
-    message = '-' * (max_title_length + max_result_length + 4)
-    log_message(message)
-    for data in sorted(output_data, key=compare_data, reverse=True):
+    @staticmethod
+    def compare_data(row):
+        """Function sorts a data output"""
+        test_cases = {'error': '01',
+                      'fail': '02',
+                      'needs_action': '03',
+                      'needs_inspection': '04',
+                      'fixed': '05',
+                      'informational': '06',
+                      'pass': '07',
+                      'notapplicable': '08',
+                      'notchecked': '09'}
         try:
-            title, dummy_rule_id, result = data.split(':')
+            dummy_title, dummy_rule_id, result = row.split(':')
         except ValueError:
-            # data is not an information about processed test; let's log it as an error
-            log_message(data, level=logging.ERROR)
+            return '99'
         else:
-            log_message(u"|%s |%s|" % (title.ljust(max_title_length),
-                                      result.strip().ljust(max_result_length)))
-    log_message(message)
+            try:
+                return test_cases[result]
+            except KeyError:
+                return '99'
+
+    @staticmethod
+    def format_rules_to_table(output_data, content):
+        """Function format output_data to table"""
+        if not output_data:
+            # If output_data does not contain anything then do not print nothing
+            return
+        max_title_length = max(x for x in [len(l.split(':')[0]) for l in output_data]) + 5
+        max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
+        log_message(settings.result_text.format(content))
+        message = '-' * (max_title_length + max_result_length + 4)
+        log_message(message)
+        for data in sorted(output_data, key=ScanningHelper.compare_data, reverse=True):
+            try:
+                title, dummy_rule_id, result = data.split(':')
+            except ValueError:
+                # data is not an information about processed test; let's log it as an error
+                log_message(data, level=logging.ERROR)
+            else:
+                log_message(u"|%s |%s|" % (title.ljust(max_title_length),
+                                          result.strip().ljust(max_result_length)))
+        log_message(message)
 
 
 class ScanProgress(object):

@@ -95,10 +95,11 @@ class YumGroupGenerator(object):
                     yg = YumGroup(name, mandatory, default, optional)
                     self.gm.add(yg)
 
-    def remove_packages(self):
+    def remove_packages(self, packages):
         for pkg in self.removed_packages:
-            if pkg in self.packages:
-                self.packages.remove(pkg)
+            if pkg in packages:
+                packages.remove(pkg)
+        return packages
 
     def get_list(self):
         groups = self.gm.find_match(self.packages)
