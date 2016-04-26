@@ -4,7 +4,7 @@ The application module serves for creating a content
 """
 
 from preup.logger import log_message, logging, set_level
-from preup_creator.ui_helper import UIHelper
+from preup.creator.ui_helper import UIHelper
 
 
 class Application(object):

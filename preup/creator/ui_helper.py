@@ -12,7 +12,7 @@ import sys
 from distutils.util import strtobool
 from preup import utils
 from preup.utils import get_valid_scenario
-from preup_creator import settings
+from preup.creator import settings
 
 from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
