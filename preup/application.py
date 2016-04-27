@@ -519,7 +519,7 @@ class Application(object):
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             try:
-                lines = [i.rstrip() for i in get_file_content(os.path.join(os.path.dirname(self.path),
+                lines = [i.rstrip() for i in get_file_content(os.path.join(assessment_dir,
                                                                            self.conf.mode),
                                                               'rb',
                                                               method=True)]
