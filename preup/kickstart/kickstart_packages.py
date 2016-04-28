@@ -47,6 +47,8 @@ class YumGroup(object):
 
     def match(self, packages):
         found = self.required.issubset(packages)
+        if self.name == 'core':
+            return True
         if not found:
             if len(self.required) == 1:
                 return False
@@ -121,7 +123,7 @@ class YumGroupGenerator(object):
         for group in groups:
             if len(group.required) != 0:
                 output_groups.append('@'+group.name)
-                missing_installed.extend([x + ' group ' + group.name for x in group.missing_installed])
+                missing_installed.extend([x + ' # group ' + group.name for x in group.missing_installed])
                 output_packages = group.exclude_mandatory(output_packages)
                 output_packages = group.exclude_optional(output_packages)
         output_groups.sort()
