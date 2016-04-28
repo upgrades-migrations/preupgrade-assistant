@@ -34,6 +34,7 @@ class KickstartGenerator(object):
         self.groups = []
         self.packages = []
         self.part_layout = None
+        self.missing_installed = []
 
     def collect_data(self):
         self._remove_obsolete_data()
@@ -74,7 +75,7 @@ class KickstartGenerator(object):
         return ksparser
 
     @staticmethod
-    def get_package_list(filename):
+    def get_package_list(filename, field=None):
         """
         content packages/ReplacedPackages is taking care of packages, which were
         replaced/obsoleted/removed between releases. It produces a file with a list
@@ -85,8 +86,24 @@ class KickstartGenerator(object):
             return []
         lines = get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
         # Remove newline character from list
-        lines = [line.strip() for line in lines]
-        return lines
+        package_list = []
+        for line in lines:
+            # We have to go over all lines and remove all commented.
+            if line.startswith('#'):
+                continue
+            if field is None:
+                package_list.append(line.strip())
+            else:
+                try:
+                    # Format of file is like
+                    # old-package|required-by-pkgs|replaced-by-pkgs|repoid
+                    pkg_field = line.split('|')
+                    if pkg_field[field] is not None:
+                        package_list.append(pkg_field[field])
+                except ValueError:
+                    # Line seems to be wrong, go to the next one
+                    pass
+        return package_list
 
     @staticmethod
     def get_kickstart_repo(filename):
@@ -148,11 +165,11 @@ class KickstartGenerator(object):
     def get_installed_packages():
         prefix = 'RHRHEL7rpmlist_'
         result_list = []
-        list_files = ['kept', 'optional', 'notbase',
+        list_files = ['kept', 'kept-notbase',
                       'replaced', 'replaced-notbase']
         for l in list_files:
             try:
-                result_list.extend(KickstartGenerator.get_package_list(prefix + l))
+                result_list.extend(KickstartGenerator.get_package_list(prefix + l, 2))
             except IOError:
                 log_message("File '%s' was not found. Skipping package generation.", (prefix + l))
                 return None
@@ -164,16 +181,17 @@ class KickstartGenerator(object):
         if installed_packages is None:
             return None
         try:
-            obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted-required')
+            obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
             obsoleted = []
         ph = PackagesHandling(installed_packages, obsoleted)
         # remove files which are replaced by another package
         ph.replace_obsolete()
 
-        if os.path.exists(os.path.join(settings.KS_DIR, 'RemovedPkg-optional')):
+        remove_pkg_optional = os.path.join(settings.KS_DIR, 'RemovedPkg-optional')
+        if os.path.exists(remove_pkg_optional):
             try:
-                removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
+                removed_packages = get_file_content(remove_pkg_optional, 'r', method=True)
             except IOError:
                 return None
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
@@ -181,7 +199,7 @@ class KickstartGenerator(object):
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(ph.get_packages(), removed_packages, *abs_fps)
-        self.groups, self.packages = ygg.get_list()
+        self.groups, self.packages, self.missing_installed = ygg.get_list()
         ygg.remove_packages()
 
     def delete_obsolete_issues(self):
@@ -306,7 +324,7 @@ class KickstartGenerator(object):
         return kickstart_users
 
     def comment_kickstart_issues(self):
-        list_issues = ['user', 'repo', 'url', 'rootpw']
+        list_issues = ['user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
             kickstart_data = get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
@@ -331,6 +349,8 @@ class KickstartGenerator(object):
         if self.packages or self.groups:
             self.ks.handler.packages.packageList = self.packages
             self.ks.handler.packages.groupList = self.groups
+            if self.missing_installed:
+                self.ks.handler.packages.excludedList = self.missing_installed
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.ks.handler.keyboard.keyboard = 'us'
         self.update_repositories(self.repos)

@@ -37,6 +37,7 @@ class YumGroup(object):
         self.default = default
         self.optional = optional
         self.required = set(mandatory + default)
+        self.missing_installed = []
 
     def __str__(self):
         return "%s (%d required packages)" % (self.name, len(self.required))
@@ -45,7 +46,19 @@ class YumGroup(object):
         return "<%s: M:%s D:%s O:%s>" % (self.name, self.mandatory, self.default, self.optional)
 
     def match(self, packages):
-        return self.required.issubset(packages)
+        found = self.required.issubset(packages)
+        if not found:
+            if len(self.required) == 1:
+                return False
+            cnt_pkgs = 0
+            for pkg in self.required:
+                if pkg not in packages:
+                    cnt_pkgs += 1
+                self.missing_installed.append(pkg)
+            if len(self.required) == int(cnt_pkgs):
+                return False
+            found = True
+        return found
 
     def exclude_mandatory(self, packages):
         # New set with elements in packages but not in self.required
@@ -104,15 +117,17 @@ class YumGroupGenerator(object):
         groups = self.gm.find_match(self.packages)
         output_groups = []
         output_packages = self.packages
+        missing_installed = []
         for group in groups:
             if len(group.required) != 0:
                 output_groups.append('@'+group.name)
+                missing_installed.extend([x + ' group ' + group.name for x in group.missing_installed])
                 output_packages = group.exclude_mandatory(output_packages)
                 output_packages = group.exclude_optional(output_packages)
         output_groups.sort()
         output_packages = list(output_packages)
         output_packages.sort()
-        return output_groups, output_packages
+        return output_groups, output_packages, missing_installed
 
 
 class PackagesHandling(object):
@@ -131,13 +146,11 @@ class PackagesHandling(object):
         self.obsoleted = obsoleted
 
     def replace_obsolete(self):
+        # obsolete list has format like
+        # old_pkg|required-by-pkg|obsoleted-by-pkgs|repo-id
         for pkg in self.obsoleted:
-            fields = pkg.split()
-            old_pkg = fields[0]
-            new_pkg = fields[len(fields) - 1]
-            found = [p for p in self.packages if p == old_pkg]
-            if found:
-                self.packages.append(new_pkg)
+            fields = pkg.split('|')
+            self.packages.append(fields[2])
 
     def get_packages(self):
         return self.packages
