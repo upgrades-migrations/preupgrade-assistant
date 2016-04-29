@@ -1,10 +1,10 @@
 import unittest
-import test_preup
-import test_xml
-import test_oscap
-import test_generation
-import test_api
-import test_kickstart
+from tests import test_preup
+from tests import test_xml
+from tests import test_oscap
+from tests import test_generation
+from tests import test_api
+from tests import test_kickstart
 
 
 def suite():
