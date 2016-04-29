@@ -3,8 +3,6 @@
 
 import os
 import distutils.command.sdist
-import re
-import subprocess
 from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
 from preup.version import VERSION
