@@ -470,13 +470,12 @@ def update_platform(full_path):
     write_to_file(full_path, 'wb', file_lines)
 
 
-def get_preupg_config_file(path, key, section="preupgrade"):
+def get_preupg_config_file(path, key, section="preupgrade-assistant"):
     if not os.path.exists(path):
         return None
 
     config = ConfigParser.RawConfigParser(allow_no_value=True)
     config.read(path)
-    section = 'preupgrade-assistant'
     if config.has_section(section):
         if config.has_option(section, key):
             return config.get(section, key)
