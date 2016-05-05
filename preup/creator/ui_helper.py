@@ -10,9 +10,8 @@ import shutil
 import sys
 
 from distutils.util import strtobool
-from preup import utils
-from preup.utils import get_valid_scenario
-from preup_creator import settings
+from preup.utils import FileHelper, SystemIdentification
+from preup.creator import settings
 
 from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
@@ -107,7 +106,7 @@ class UIHelper(object):
         if self.upgrade_path is None:
             self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
 
-        if not get_valid_scenario(self.upgrade_path):
+        if not SystemIdentification.get_valid_scenario(self.upgrade_path):
             print ("Scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
             return None
 
@@ -184,12 +183,12 @@ class UIHelper(object):
 
     def _create_check_script(self):
         if self.check_script:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
+            FileHelper.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
             os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
 
     def _create_solution_file(self):
         if self.solution_file:
-            utils.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
+            FileHelper.write_to_file(os.path.join(self.get_content_path(), self.get_solution_file()), 'wb', '')
 
     def _create_group_ini(self):
         """

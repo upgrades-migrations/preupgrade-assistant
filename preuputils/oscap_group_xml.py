@@ -14,8 +14,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from preuputils.xml_utils import print_error_msg, XmlUtils
-from preup.utils import write_to_file, check_file, get_file_content
+from preuputils.xml_utils import XmlUtils
+from preup.utils import MessageHelper, FileHelper
 from xml.etree import ElementTree
 from preup import settings
 
@@ -58,7 +58,7 @@ class OscapGroupXml(object):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
         for file_name in self.lists:
-            if check_file(file_name, "r") is False:
+            if FileHelper.check_file(file_name, "r") is False:
                 continue
             try:
                 config = configparser.ConfigParser()
@@ -72,11 +72,11 @@ class OscapGroupXml(object):
                     fields[option] = config_decode(config.get(section, option))
                 self.loaded[file_name] = [fields]
             except configparser.MissingSectionHeaderError:
-                print_error_msg(title="Missing section header")
+                MessageHelper.print_error_msg(title="Missing section header")
             except configparser.NoSectionError:
-                print_error_msg(title="Missing section header")
+                MessageHelper.print_error_msg(title="Missing section header")
             except configparser.ParsingError:
-                print_error_msg(title="Incorrect INI file\n", msg=file_name)
+                MessageHelper.print_error_msg(title="Incorrect INI file\n", msg=file_name)
                 os.sys.exit(1)
 
     def collect_group_xmls(self):
@@ -96,7 +96,7 @@ class OscapGroupXml(object):
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
-            write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
+            FileHelper.write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
         except IOError as ior:
             print ('Problem with write data to the file ', file_name, ior.message)
 
@@ -108,7 +108,7 @@ class OscapGroupXml(object):
             # encoding must be set! otherwise ElementTree return non-ascii characters
             # as html entities instead, which are unsusable for us
             data = ElementTree.tostring(target_tree, "utf-8")
-            write_to_file(file_name, "wb", data, False)
+            FileHelper.write_to_file(file_name, "wb", data, False)
         except IOError as ioe:
             print ('Problem with writing to file ', file_name, ioe.message)
 
@@ -117,7 +117,7 @@ class OscapGroupXml(object):
         file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
         lines = []
         if os.path.exists(file_list_rules):
-            lines = get_file_content(file_list_rules, "rb", method=True)
+            lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
         else:
             lines = []
         for values in six.itervalues(self.loaded):
@@ -125,5 +125,5 @@ class OscapGroupXml(object):
             if check_script:
                 check_script = os.path.splitext(''.join(check_script))[0]
                 lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
-        write_to_file(file_list_rules, "wb", lines)
+        FileHelper.write_to_file(file_list_rules, "wb", lines)
 

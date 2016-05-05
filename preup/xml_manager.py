@@ -5,7 +5,7 @@ import os
 import re
 import rpm
 import six
-from preup.utils import get_file_content, write_to_file
+from preup.utils import FileHelper
 from preup import settings
 
 
@@ -168,7 +168,7 @@ def clean_html(report_path):
     """
     Function cleans a report
     """
-    file_content = get_file_content(report_path, 'rb')
+    file_content = FileHelper.get_file_content(report_path, 'rb')
 
     s_testres = ('[\t ]*<div id="intro">[\t ]*\n[\t ]*<h2>Introduction</h2>[\t ]*\n', False)
     e_testres = ('[\t ]*</table>[\t ]*\n[\t ]*</div>[\t ]*\n[\t ]*</div>[\t ]*\n', False)
@@ -185,7 +185,7 @@ def clean_html(report_path):
     # add preupg nvr
     nl = re.sub('[\t ]*<h2>Introduction</h2>[\t ]*\n', add_preupg_scanner_info(), nl)
 
-    write_to_file(report_path, 'wb', nl)
+    FileHelper.write_to_file(report_path, 'wb', nl)
 
 
 class XmlManager(object):
@@ -253,7 +253,7 @@ class XmlManager(object):
         """
         orig_file = os.path.join(self.dirname,
                                  result_name + "." + extension)
-        lines = get_file_content(orig_file, "rb", method=True)
+        lines = FileHelper.get_file_content(orig_file, "rb", method=True)
         for dir_name, files in six.iteritems(solution_files):
             section = dir_name.replace(os.path.join(self.dirname, self.scenario),
                                        "").replace("/", "_")
@@ -263,7 +263,7 @@ class XmlManager(object):
             if not file_name or file_name is None:
                 continue
             else:
-                text = get_file_content(os.path.join(dir_name, file_name),
+                text = FileHelper.get_file_content(os.path.join(dir_name, file_name),
                                         "rb",
                                         method=True)
             for cnt, line in enumerate(lines):
@@ -286,7 +286,7 @@ class XmlManager(object):
                 if 'SOLUTION_MSG' in line.strip():
                     lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<', '><', line.strip())
 
-        write_to_file(orig_file, "wb", lines)
+        FileHelper.write_to_file(orig_file, "wb", lines)
 
     def find_solution_files(self, result_name, xml_solution_files):
         """
@@ -305,7 +305,7 @@ class XmlManager(object):
 
     def remove_html_information(self):
         report_path = os.path.join(self.dirname, self.result_base + ".html")
-        file_content = get_file_content(report_path, 'rb', method=True)
+        file_content = FileHelper.get_file_content(report_path, 'rb', method=True)
         detail_start = '<br /><br /><strong class="bold">Details:</strong><br />'
         detail_end = '[\t ]*<div class="xccdf-fixtext">'
 
@@ -320,4 +320,4 @@ class XmlManager(object):
             if not found_section:
                 new_content.append(line)
 
-        write_to_file(report_path, 'wb', new_content)
+        FileHelper.write_to_file(report_path, 'wb', new_content)

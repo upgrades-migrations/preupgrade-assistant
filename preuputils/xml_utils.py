@@ -6,8 +6,7 @@ import six
 import copy
 
 from preup.xml_manager import html_escape_string
-from preup.utils import get_assessment_version, get_file_content, write_to_file
-from preup.utils import print_error_msg
+from preup.utils import SystemIdentification, FileHelper, MessageHelper
 from preup import settings
 from preuputils import xml_tags
 from preuputils import script_utils
@@ -47,7 +46,7 @@ class XmlUtils(object):
                     del content_dict[tag]
             if content_dict:
                 tags = ','. join(six.iterkeys(content_dict))
-                print_error_msg(title="The tag '%s' is not allowed in INI file %s." % (tags, ini),
+                MessageHelper.print_error_msg(title="The tag '%s' is not allowed in INI file %s." % (tags, ini),
                                 msg="\nAllowed tags for contents are %s" % ','.join(allowed_tags),
                                 level=' WARNING ')
 
@@ -62,15 +61,15 @@ class XmlUtils(object):
         path_name = os.path.join(settings.UPGRADE_PATH, file_name)
         lines = []
         if os.path.exists(path_name):
-            lines = get_file_content(path_name, 'rb', method=True)
+            lines = FileHelper.get_file_content(path_name, 'rb', method=True)
         test_content = [x.strip() for x in lines if content in x.strip()]
         if not test_content:
             lines.append(content + '\n')
-            write_to_file(path_name, 'wb', lines)
+            FileHelper.write_to_file(path_name, 'wb', lines)
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = get_file_content(os.patch.join(self.dirname, filename), "rb", True)
+        lines = FileHelper.get_file_content(os.patch.join(self.dirname, filename), "rb", True)
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'
@@ -114,7 +113,7 @@ class XmlUtils(object):
                 new_text = new_text+"<xhtml:li>"+lines.strip()+"</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
-            new_text = get_file_content(os.path.join(self.dirname, replace_exp), "rb", True)
+            new_text = FileHelper.get_file_content(os.path.join(self.dirname, replace_exp), "rb", True)
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
@@ -123,7 +122,7 @@ class XmlUtils(object):
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
         if replace_exp == '' and search_exp in forbidden_empty:
-            print_error_msg(title="Disapproved empty replacement for tag '%s'" % search_exp)
+            MessageHelper.print_error_msg(title="Disapproved empty replacement for tag '%s'" % search_exp)
             raise EmptyTagIniFileError
 
         for cnt, line in enumerate(section):
@@ -144,15 +143,13 @@ class XmlUtils(object):
         if unused:
             title = 'Following tags are missing in INI file %s\n' % script_name
             if 'applies_to' not in unused:
-                print_error_msg(title=title, msg=' '.join(unused))
+                MessageHelper.print_error_msg(title=title, msg=' '.join(unused))
                 raise MissingTagsIniFileError
         if 'solution_type' in keys:
             if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
                 pass
             else:
-                print_error_msg(
-                    title="Wrong solution_type. Allowed are 'html' or 'text' %s" % script_name
-                )
+                MessageHelper.print_error_msg(title="Wrong solution_type. Allowed are 'html' or 'text' %s" % script_name)
                 os.sys.exit(0)
 
     def add_value_tag(self):
@@ -279,7 +276,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{fix}", xml_tags.FIX_TEXT)
             self.update_values_list(self.rule, "{solution_text}", "text")
             self.update_values_list(self.rule, "{platform_id}",
-                                    get_assessment_version(self.dirname)[1])
+                                    SystemIdentification.get_assessment_version(self.dirname)[1])
 
     def fnc_update_mode(self, key, name):
 
@@ -361,11 +358,11 @@ class XmlUtils(object):
                     except IOError as e:
                         e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
                         e_msg = "'%s': %s" % (key[k], e.strerror)
-                        print_error_msg(title=e_title, msg=e_msg)
+                        MessageHelper.print_error_msg(title=e_title, msg=e_msg)
                         raise MissingTagsIniFileError
             except MissingTagsIniFileError:
                 title = "Following tag '%s' is missing in INI File %s\n" % (k, main)
-                print_error_msg(title=title)
+                MessageHelper.print_error_msg(title=title)
                 raise MissingTagsIniFileError
 
             self.update_values_list(self.rule, '{group_title}', html_escape_string(key['content_title']))

@@ -5,7 +5,7 @@ import os
 import re
 import mimetypes
 
-from preup.utils import get_file_content, write_to_file, print_error_msg
+from preup.utils import FileHelper, MessageHelper
 from preup import settings
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError
 
@@ -117,9 +117,9 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
                                                          updates,
                                                          script_type)
     full_path_script = get_full_path(dir_name, script_name)
-    lines = get_file_content(full_path_script, "rb", method=True)
+    lines = FileHelper.get_file_content(full_path_script, "rb", method=True)
     if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-        print_error_msg("#END GENERATED SECTION is missing in check_script {0}".format(full_path_script))
+        MessageHelper.print_error_msg("#END GENERATED SECTION is missing in check_script {0}".format(full_path_script))
         raise MissingHeaderCheckScriptError
     for func in functions:
         lines = [x for x in lines if func not in x.strip()]
@@ -138,7 +138,7 @@ def update_check_script(dir_name, updates, script_name=None, author=""):
             else:
                 output_text += 'set_component("'+component+'")\n'
         output_text += line
-    write_to_file(full_path_script, "wb", output_text)
+    FileHelper.write_to_file(full_path_script, "wb", output_text)
 
 
 def check_executable(dir_name, script_name=""):
@@ -147,7 +147,7 @@ def check_executable(dir_name, script_name=""):
     If not then ERROR message arise
     """
     if not os.access(get_full_path(dir_name, script_name), os.X_OK):
-        print_error_msg(title="The file %s is not executable" % os.path.join(dir_name, script_name))
+        MessageHelper.print_error_msg(title="The file %s is not executable" % os.path.join(dir_name, script_name))
 
 
 def get_script_type(dir_name, script_name=""):
@@ -158,7 +158,7 @@ def get_script_type(dir_name, script_name=""):
     mime_type = mimetypes.guess_type(get_full_path(dir_name, script_name))[0]
     if mime_type is None:
         # try get mime type with shebang
-        line = get_file_content(get_full_path(dir_name, script_name), "rb", True)[0]
+        line = FileHelper.get_file_content(get_full_path(dir_name, script_name), "rb", True)[0]
         if line.startswith("#!"):
             if re.search(r"\bpython[0-9.-]*\b", line):
                 return 'python'
@@ -185,7 +185,7 @@ def check_inplace_risk(dir_name, prefix="", script_name="", check_func=None):
     """
     if check_func is None:
         check_func = []
-    lines = get_file_content(get_full_path(dir_name, script_name), "rb")
+    lines = FileHelper.get_file_content(get_full_path(dir_name, script_name), "rb")
     compile_req = re.compile(r'^#', re.M|re.I)
     lines = [x for x in lines if not compile_req.search(x.strip())]
     inplace_lines = [x for x in lines if prefix in x]

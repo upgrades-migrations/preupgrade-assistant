@@ -16,12 +16,13 @@ try:
 except ImportError:
     from xmlrpc.client import Fault
 
-from preup import xccdf, xml_manager, remediate, utils, settings
+from preup import xml_manager, settings
 from preup.common import Common
-from preup.scanning import ScanProgress, format_rules_to_table
-from preup.utils import check_xml, get_file_content, check_or_create_temp_dir
-from preup.utils import run_subprocess, get_assessment_version, get_message
-from preup.utils import tarball_result_dir
+from preup.scanning import ScanProgress, ScanningHelper
+from preup.utils import FileHelper, ProcessHelper, DirHelper
+from preup.utils import MessageHelper, TarballHelper, SystemIdentification
+from preup.utils import PostupgradeHelper, ConfigHelper
+from preup.xccdf import XccdfHelper
 from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
@@ -59,7 +60,7 @@ def show_message(message):
     Return True on accept (y/yes). Otherwise returns False
     """
     accept = ['y', 'yes']
-    choice = get_message(title=message, prompt=' y/n')
+    choice = MessageHelper.get_message(title=message, prompt=' y/n')
     if choice in accept:
         return True
     else:
@@ -154,7 +155,7 @@ class Application(object):
         command = self.get_binary()
         command.extend(self.get_command_generate())
         command.extend(("--output", html_file))
-        command.append(check_xml(xml_file))
+        command.append(FileHelper.check_xml(xml_file))
         return command
 
     def build_command(self):
@@ -169,7 +170,7 @@ class Application(object):
         # take name of content and create report: <content_name>.html
         #command.extend(('--report', report))
         command.extend(("--results", self.result_file))
-        command.append(check_xml(self.content))
+        command.append(FileHelper.check_xml(self.content))
         return command
 
     def upload_results(self, tarball_path=None):
@@ -193,7 +194,7 @@ class Application(object):
                 'to allow connections on port 8099.' % url)
 
         tarball_results = self.conf.results or tarball_path
-        file_content = get_file_content(tarball_results, 'rb', False, False)
+        file_content = FileHelper.get_file_content(tarball_results, 'rb', False, False)
 
         binary = xmlrpclib.Binary(file_content)
         host = socket.gethostname()
@@ -223,36 +224,20 @@ class Application(object):
                     log_message('Report not submitted. Server returned status: ', status)
                     log_message("Report submit: %s" % status, level=logging.ERROR)
 
-    def apply_scan(self):
-        """Extract tar ball for remediation"""
-        self.prepare_apply_directories()
-        tarball_result_dir(self.conf.apply,
-                           self.conf.result_dir,
-                           self.conf.verbose,
-                           direction=False)
-        if remediate.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir(), check=True):
-            remediate.postupgrade_scripts(self.conf.verbose, self.get_postupgrade_dir())
-
     def prepare_scan_directories(self):
         """Used for prepartion of directories used during scan functionality"""
         self.basename = os.path.basename(self.content)
-        #today = datetime.datetime.today()
-        if not self.conf.temp_dir:
-            check_or_create_temp_dir(self.conf.result_dir)
-        check_or_create_temp_dir(self.conf.result_dir)
-        check_or_create_temp_dir(settings.tarball_result_dir)
-        for dir_name in settings.preupgrade_dirs:
-            check_or_create_temp_dir(os.path.join(self.conf.result_dir, dir_name))
+        dirs = [self.conf.result_dir, settings.tarball_result_dir]
+        dirs.extend(os.path.join(self.conf.result_dir, x) for x in settings.preupgrade_dirs)
+        if self.conf.temp_dir:
+            dirs.append(self.conf.temp_dir)
+        for dir_name in dirs:
+            DirHelper.check_or_create_temp_dir(dir_name)
 
         # Copy README files into proper directories
         for key, val in six.iteritems(settings.readme_files):
             shutil.copyfile(os.path.join(settings.share_dir, "preupgrade", key),
                             os.path.join(self.conf.result_dir, val))
-
-    def prepare_apply_directories(self):
-        """Used for preparation of directories during remedation"""
-
-        check_or_create_temp_dir(self.conf.result_dir)
 
     def get_total_check(self):
         """Returns a total check"""
@@ -304,7 +289,7 @@ class Application(object):
         cmd = self.build_command()
         #log(self.conf.verbose, "running command:\n%s", ' '.join(cmd))
         # fail if openscap wasn't successful; if debug, continue
-        return run_subprocess(cmd, print_output=False, function=function)
+        return ProcessHelper.run_subprocess(cmd, print_output=False, function=function)
 
     def run_generate(self, xml_file, html_file):
         """
@@ -312,7 +297,7 @@ class Application(object):
         which was modified by preupgrade assistant
         """
         cmd = self.build_generate_command(xml_file, html_file)
-        return run_subprocess(cmd, print_output=True)
+        return ProcessHelper.run_subprocess(cmd, print_output=True)
 
     def get_scenario(self):
         """The function returns scenario"""
@@ -320,7 +305,7 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
-                dir_name = utils.get_valid_scenario(self.content)
+                dir_name = SystemIdentification.get_valid_scenario(self.content)
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -386,7 +371,7 @@ class Application(object):
         # This function finalize XML operations
         self.finalize_xml_files()
         if self.conf.text:
-            run_subprocess(self.get_cmd_convertor(),
+            ProcessHelper.run_subprocess(self.get_cmd_convertor(),
                            print_output=False,
                            shell=True)
 
@@ -407,13 +392,12 @@ class Application(object):
         It finds solution files and update XML file.
         """
         # Copy postupgrade.d special files
-        remediate.special_postupgrade_scripts(self.conf.result_dir)
-        remediate.hash_postupgrade_file(self.conf.verbose,
+        PostupgradeHelper.special_postupgrade_scripts(self.conf.result_dir)
+        PostupgradeHelper.hash_postupgrade_file(self.conf.verbose,
                                         self.get_postupgrade_dir())
         solution_files = self.report_parser.get_solution_files()
         for report in self._get_reports():
             self.xml_mgr.find_solution_files(report.split('.')[0], solution_files)
-        remediate.copy_modified_config_files(self.conf.result_dir)
 
     def run_third_party_modules(self, dir_name):
         """
@@ -483,9 +467,9 @@ class Application(object):
         self.common.prep_symlinks(assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         if not self.conf.contents:
-            utils.update_platform(os.path.join(assessment_dir, settings.content_file))
+            XccdfHelper.update_platform(os.path.join(assessment_dir, settings.content_file))
         else:
-            utils.update_platform(self.content)
+            XccdfHelper.update_platform(self.content)
             assessment_dir = os.path.dirname(self.content)
         return assessment_dir
 
@@ -508,7 +492,7 @@ class Application(object):
             log_message("Content {0} does not exist".format(self.content))
             sys.exit(1)
         if not self.conf.contents:
-            version = get_assessment_version(self.conf.scan)
+            version = SystemIdentification.get_assessment_version(self.conf.scan)
             if version is None:
                 log_message("Your scan have wrong format",
                             level=logging.ERROR)
@@ -518,7 +502,7 @@ class Application(object):
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             try:
-                lines = [i.rstrip() for i in get_file_content(os.path.join(os.path.dirname(self.path),
+                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(os.path.dirname(self.path),
                                                                            self.conf.mode),
                                                               'rb',
                                                               method=True)]
@@ -543,11 +527,11 @@ class Application(object):
         self.copy_preupgrade_scripts(assessment_dir)
 
         # It prints out result in table format
-        format_rules_to_table(main_report, "main contents")
+        ScanningHelper.format_rules_to_table(main_report, "main contents")
         for target, report in six.iteritems(self.report_data):
-            format_rules_to_table(report, "3rdparty content " + target)
+            ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
-        tar_ball_name = tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
+        tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
         log_message("Tarball with results is stored here '%s' ." % tar_ball_name)
         log_message("The latest assessment is stored in directory '%s' ." % self.conf.result_dir)
         # pack all configuration files to tarball
@@ -568,7 +552,7 @@ class Application(object):
             "Read the file {0} for more details.".
             format(path)
         }
-        return_value = xccdf.check_inplace_risk(self.get_default_xml_result_path(), 0)
+        return_value = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), 0)
         try:
             if report_dict[int(return_value)]:
                 log_message('Summary information:')
@@ -593,7 +577,7 @@ class Application(object):
         # Check for devel_mode
         if os.path.exists(settings.DEVEL_MODE):
             self._devel_mode = 1
-            self._dist_mode = utils.get_preupg_config_file(settings.PREUPG_CONFIG_FILE,
+            self._dist_mode = ConfigHelper.get_preupg_config_file(settings.PREUPG_CONFIG_FILE,
                                                            'dist_mode',
                                                            section="devel-mode")
         else:
@@ -610,7 +594,7 @@ class Application(object):
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
             for dir_name in filter(is_dir, dirs):
-                if utils.get_assessment_version(dir_name):
+                if SystemIdentification.get_assessment_version(dir_name):
                     self.conf.scan = dir_name
                     cnt += 1
 
@@ -629,7 +613,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             return 0
 
         if self.conf.list_rules:
-            log_message(settings.list_rules % '\n'.join(utils.get_list_rules(self.conf.scan)))
+            log_message(settings.list_rules % '\n'.join(XccdfHelper.get_list_rules(self.conf.scan)))
             return 0
 
         if self.conf.upload and self.conf.results:
@@ -649,13 +633,13 @@ If you would like to use this tool, you have to specify correct upgrade path par
         if self.conf.text:
             # Test whether w3m, lynx and elinks packages are installed
             found = False
-            for pkg in utils.get_convertors():
+            for pkg in SystemIdentification.get_convertors():
                 if xml_manager.get_package_version(pkg):
                     self.text_convertor = pkg
                     found = True
                     break
             if not found:
-                log_message(settings.converter_message.format(' '.join(utils.get_convertors())))
+                log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
                 return 0
 
         if os.geteuid() != 0:
@@ -668,7 +652,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             sys.exit(0)
 
         if self.conf.riskcheck:
-            return_val = xccdf.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
+            return_val = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
             return return_val
 
         if self.conf.kickstart:
@@ -718,7 +702,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             self.summary_report(tarball_path)
             self.common.copy_common_files()
             KickstartGenerator.kickstart_scripts()
-            utils.remove_home_issues()
+            FileHelper.remove_home_issues()
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)

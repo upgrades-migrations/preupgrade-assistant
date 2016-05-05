@@ -33,8 +33,8 @@ import re
 import shutil
 import ConfigParser
 
-from preup import utils, settings
-from preup.utils import get_file_content, write_to_file
+from preup import settings
+from preup.utils import FileHelper, ProcessHelper
 
 __all__ = (
     'log_debug',
@@ -341,7 +341,7 @@ def switch_to_content():
 
 
 def is_pkg_installed(pkg_name):
-    lines = get_file_content(VALUE_RPM_QA, "rb", True)
+    lines = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
     found = [x for x in lines if x.split()[0] == pkg_name]
     if found:
         return True
@@ -366,7 +366,7 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
     if check_rpm != "":
         rpms = check_rpm.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "rb", True)
+        lines = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
             lst = filter(lambda x: rpm == x.split('\t')[0], lines)
             if not lst:
@@ -377,7 +377,7 @@ def check_rpm_to(check_rpm="", check_bin=""):
         binaries = check_bin.split(',')
         for binary in binaries:
             cmd = "which %s" % binary
-            if utils.run_subprocess(cmd, print_output=False, shell=True) != 0:
+            if ProcessHelper.run_subprocess(cmd, print_output=False, shell=True) != 0:
                 log_info("Binary %s is not installed." % binary)
                 not_applicable = 1
 
@@ -387,13 +387,13 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
 
 def solution_file(message):
-    write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
+    FileHelper.write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
 
 
 def service_is_enabled(service_name):
     """Returns true if given service is enabled on any runlevel"""
     return_value = False
-    lines = get_file_content(VALUE_CHKCONFIG, "rb", True)
+    lines = FileHelper.get_file_content(VALUE_CHKCONFIG, "rb", True)
     for line in lines:
         if re.match('^%s.*:on' % service_name, line):
             return_value = True
@@ -411,7 +411,7 @@ def config_file_changed(config_file_name):
     """
     config_changed = False
     try:
-        lines = get_file_content(VALUE_CONFIGCHANGED, "rb", True)
+        lines = FileHelper.get_file_content(VALUE_CONFIGCHANGED, "rb", True)
         for line in lines:
             if line.find(config_file_name) != -1:
                 config_changed = True
@@ -451,13 +451,13 @@ def is_dist_native(pkg):
     DIST_NATIVE = path_to_file: return True if package is in file else return False
     """
 
-    rpm_qa = get_file_content(VALUE_RPM_QA, "rb", True)
+    rpm_qa = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
     found = [x for x in rpm_qa if x.split()[0] == pkg]
     if not found:
         log_warning("Package %s is not installed on Red Hat Enterprise Linux system.")
         return False
 
-    rpm_signed = get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
+    rpm_signed = FileHelper.get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
     found = [x for x in rpm_signed if x.split()[0] == pkg]
     if int(DEVEL_MODE) == 0:
         if found:
@@ -473,7 +473,7 @@ def is_dist_native(pkg):
             else:
                 return False
         if os.path.exists(DIST_NATIVE):
-            list_native = get_file_content(DIST_NATIVE)
+            list_native = FileHelper.get_file_content(DIST_NATIVE)
             if pkg in list_native:
                 return True
         return False
@@ -485,7 +485,7 @@ def get_dist_native_list():
     """
 
     native_pkgs = []
-    tmp = get_file_content(VALUE_RPM_QA, "rb", True)
+    tmp = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
     pkgs = [i.split("\t")[0] for i in tmp]
     for pkg in pkgs:
         if is_dist_native(pkg) is True:
@@ -555,7 +555,7 @@ def add_pkg_to_kickstart(pkg_name):
         log_debug("Missing parameters! Any package will be added.")
         return 1
     for pkg in pkg_name.split():
-        write_to_file(SPECIAL_PKG_LIST, "a+b", pkg)
+        FileHelper.write_to_file(SPECIAL_PKG_LIST, "a+b", pkg)
     return 0
 
 

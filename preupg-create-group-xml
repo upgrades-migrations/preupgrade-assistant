@@ -9,8 +9,8 @@ from xml.etree import ElementTree
 from distutils import dir_util
 from preuputils import variables
 from preuputils.compose import ComposeXML
-from preup import settings, utils
-from preup.utils import get_file_content, write_to_file
+from preup import settings
+from preup.utils import FileHelper, SystemIdentification
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
 
 try:
@@ -46,7 +46,7 @@ def main():
         print ('In directory %s was not found any INI file.' % args[0])
         sys.exit(1)
 
-    dir_name = utils.get_valid_scenario(args[0])
+    dir_name = SystemIdentification.get_valid_scenario(args[0])
     if dir_name is None:
         print ('Dir does not contain proper scenario.')
         sys.exit(1)
@@ -82,7 +82,7 @@ def main():
     try:
         # must be encoded by ElementTree!
         data = ElementTree.tostring(target_tree, "utf-8")
-        write_to_file(os.path.join(dir_name, filename), "wb", data, False)
+        FileHelper.write_to_file(os.path.join(dir_name, filename), "wb", data, False)
         print ('Generated report file for preupgrade-assistant is: %s' % ''.join(os.path.join(dir_name, filename)))
     except IOError:
         print ("Problem with writing file %s." % filename)

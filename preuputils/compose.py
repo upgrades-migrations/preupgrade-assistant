@@ -8,7 +8,7 @@ import shutil
 import six
 from distutils import dir_util
 
-from preup.utils import get_valid_scenario, write_to_file
+from preup.utils import FileHelper, SystemIdentification
 from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
@@ -42,7 +42,7 @@ class XCCDFCompose(object):
         if os.path.exists(self.dir_name):
             shutil.rmtree(self.dir_name)
 
-        if get_valid_scenario(self.dir_name) is None:
+        if SystemIdentification.get_valid_scenario(self.dir_name) is None:
             print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
             sys.exit(1)
 
@@ -59,7 +59,7 @@ class XCCDFCompose(object):
 
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
-            write_to_file(report_filename, "wb",
+            FileHelper.write_to_file(report_filename, "wb",
                           ElementTree.tostring(target_tree, "utf-8"),
                           False)
             if generate_from_ini:

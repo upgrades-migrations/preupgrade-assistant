@@ -5,7 +5,7 @@ Class creates a set of packages for migration scenario
 """
 
 import os
-from preup.utils import get_file_content
+from preup.utils import FileHelper
 
 
 class YumGroupManager(object):
@@ -83,7 +83,7 @@ class YumGroupGenerator(object):
             return [x for x in s.strip().split(',') if x]
 
         for fp in self.group_def_fp:
-            lines = get_file_content(fp, 'r', True)
+            lines = FileHelper.get_file_content(fp, 'r', True)
             for line in lines:
                 stuff = line.split('|')
                 name = stuff[0].strip()

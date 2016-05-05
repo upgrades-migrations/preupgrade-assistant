@@ -5,7 +5,7 @@ import os
 
 import base
 
-from preup.kickstart import KickstartGenerator
+from preup.kickstart.application import KickstartGenerator
 
 PREUPGRADE_KS = 'preupgrade.ks'
 
