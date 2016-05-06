@@ -60,8 +60,8 @@ class XCCDFCompose(object):
         report_filename = os.path.join(result_dirname, settings.content_file)
         try:
             FileHelper.write_to_file(report_filename, "wb",
-                          ElementTree.tostring(target_tree, "utf-8"),
-                          False)
+                                     ElementTree.tostring(target_tree, "utf-8"),
+                                     False)
             if generate_from_ini:
                 print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
         except IOError as e:

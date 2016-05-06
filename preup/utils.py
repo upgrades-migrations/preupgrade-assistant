@@ -9,6 +9,8 @@ import os
 import sys
 import shutil
 import ConfigParser
+import mimetypes
+
 
 from preup import settings
 from preup.logger import log_message, logging
@@ -228,6 +230,43 @@ class FileHelper(object):
                 FileHelper.write_to_file(f, 'wb', lines)
             except IOError:
                 pass
+
+    @staticmethod
+    def check_executable(file_name):
+        """
+        The function checks whether script is executable.
+        If not then ERROR message arise
+        """
+        if not os.access(file_name, os.X_OK):
+            MessageHelper.print_error_msg(title="The file %s is not executable" % file_name)
+
+    @staticmethod
+    def get_script_type(file_name):
+        """
+        The function returns type of check_script.
+        If it's not any script then return just txt
+        """
+        mime_type = mimetypes.guess_type(file_name)[0]
+        if mime_type is None:
+            # try get mime type with shebang
+            line = FileHelper.get_file_content(file_name, "rb", True)[0]
+            if line.startswith("#!"):
+                if re.search(r"\bpython[0-9.-]*\b", line):
+                    return 'python'
+                if re.search(r"\bperl[0-9.-]*\b", line):
+                    return 'perl'
+                if re.search(r"\bcsh\b", line):
+                    return 'csh'
+                if re.search(r"\b(bash|sh)\b", line):
+                    return 'sh'
+        file_types = {'text/x-python': 'python',
+                      'application/x-csh': 'csh',
+                      'application/x-sh': 'sh',
+                      'application/x-perl': 'perl',
+                      'text/plain': 'txt',
+                      None: 'txt',
+                      }
+        return file_types[mime_type]
 
 
 class DirHelper(object):

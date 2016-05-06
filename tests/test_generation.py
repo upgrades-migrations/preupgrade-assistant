@@ -8,7 +8,7 @@ import os
 
 from preuputils.compose import XCCDFCompose, ComposeXML
 from preuputils import variables
-from preup import utils
+from preup.utils import FileHelper
 from preup import settings
 
 import base
@@ -23,13 +23,18 @@ class TestContentGenerate(base.TestCase):
         self.result_dir = os.path.join(os.getcwd(), 'tests', FOO_RESULTS, 'dummy')
 
     def tearDown(self):
-        shutil.rmtree(os.path.join('tests', FOO_RESULTS))
+        if os.path.exists(os.path.join('tests', FOO_RESULTS)):
+            shutil.rmtree(os.path.join('tests', FOO_RESULTS))
+        for d, subd, file_name in os.walk(self.dir_name):
+            group_xml = [x for x in file_name if x == 'group.xml']
+            if group_xml:
+                os.unlink(os.path.join(d, group_xml[0]))
 
     def test_compose(self):
         expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
         for content in expected_contents:
             compose_xml = ComposeXML()
-            result_dir = os.path.join(self.result_dir, content)
+            result_dir = os.path.join(self.dir_name, content)
             compose_xml.collect_group_xmls(self.dir_name, content=content)
             self.assertTrue(os.path.exists(os.path.join(result_dir, 'group.xml')))
             self.assertFalse(os.path.exists(os.path.join(result_dir, 'all-xccdf.xml')))
@@ -57,7 +62,7 @@ class TestGlobalContent(base.TestCase):
         xccdf_compose.generate_xml()
         all_xccdf = os.path.join(self.result_dir, settings.content_file)
         self.assertTrue(os.path.exists(all_xccdf))
-        dummy_lines = utils.get_file_content(all_xccdf, 'rb')
+        dummy_lines = FileHelper.get_file_content(all_xccdf, 'rb')
 
 
 def suite():

@@ -18,8 +18,9 @@ from preup import settings
 from preuputils import variables
 from preuputils.xml_utils import XmlUtils
 from preuputils.oscap_group_xml import OscapGroupXml
-from preup.utils import write_to_file, get_file_content
+from preup.utils import FileHelper
 from preup.xml_manager import html_escape, html_escape_string
+from preup.exception import MissingFileInContentError, MissingTagsIniFileError, EmptyTagIniFileError
 
 import base
 
@@ -70,7 +71,7 @@ class TestXMLCompose(base.TestCase):
         uni_xml = os.path.join(self.result_dir, "unicode", "group.xml")
         try:
             # XML files should be always in utf-8!
-            lines = [x.decode('utf-8') for x in get_file_content(uni_xml, "rb", True, False)]
+            lines = [x.decode('utf-8') for x in FileHelper.get_file_content(uni_xml, "rb", True, False)]
         except IOError:
             assert False
         title = filter(lambda x: u_title in x, lines)
@@ -86,7 +87,7 @@ class TestXMLCompose(base.TestCase):
         self.target_tree = ComposeXML.run_compose(self.tree, self.result_dir)
         self.assertTrue(self.target_tree)
         try:
-            lines = get_file_content(script_file, "rb", True)
+            lines = FileHelper.get_file_content(script_file, "rb", True)
         except IOError:
             assert False
         author = filter(lambda x: u_author in x, lines)
@@ -125,14 +126,14 @@ class TestXML(base.TestCase):
 #This is testing check script
  """
         check_name = os.path.join(self.dirname, self.check_script)
-        write_to_file(check_name, "wb", self.check_sh)
+        FileHelper.write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
         test_solution_name = os.path.join(self.dirname, self.test_solution)
-        write_to_file(test_solution_name, "wb", self.solution_text)
+        FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
@@ -184,14 +185,15 @@ A solution text for test suite"
         self.assertTrue(fix_text)
 
     def test_check_script_author(self):
+        settings.autocomplete = True
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         author = filter(lambda x: "test <test@redhat.com>" in x, lines)
         self.assertTrue(author)
 
     def test_xml_check_export_tmp_preupgrade(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_export = filter(lambda x: '<check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_test_check_script_state_tmp_preupgrade" />' in x, self.rule)
+        check_export = filter(lambda x: 'xccdf_preupg_value_tmp_preupgrade' in x, self.rule)
         self.assertTrue(check_export)
 
     def test_xml_current_directory(self):
@@ -234,11 +236,11 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'rb', method=True)
+        migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         try:
-            upgrade_file = get_file_content(upgrade, 'rb', method=True)
+            upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
         except IOError:
             upgrade_file = None
         self.assertIsNone(upgrade_file)
@@ -263,11 +265,11 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        upgrade_file = get_file_content(upgrade, 'rb', method=True)
+        upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         try:
-            migrate_file = get_file_content(migrate, 'rb', method=True)
+            migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         except IOError:
             migrate_file = None
         self.assertIsNone(migrate_file)
@@ -292,10 +294,10 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'rb', method=True)
+        migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
-        upgrade_file = get_file_content(upgrade, 'rb', method=True)
+        upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         self._delete_temporary_dir(migrate, upgrade)
@@ -318,10 +320,10 @@ A solution text for test suite"
         ini[self.filename].append(test_ini)
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
-        migrate_file = get_file_content(migrate, 'rb', method=True)
+        migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
-        upgrade_file = get_file_content(upgrade, 'rb', method=True)
+        upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
         self.assertIsNotNone(tag)
         self._delete_temporary_dir(migrate, upgrade)
@@ -334,10 +336,6 @@ A solution text for test suite"
 
     def test_values_id(self):
         self.rule = self.xml_utils.prepare_sections()
-        value_tmp_preupgrade = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_tmp_preupgrade" operator="equals" type="string">' in x, self.rule)
-        self.assertTrue(value_tmp_preupgrade)
-        value_tmp_preupgrade_set = filter(lambda x: '<value>SCENARIO</value>' in x, self.rule)
-        self.assertTrue(value_tmp_preupgrade_set)
         value_current_dir = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x, self.rule)
         self.assertTrue(value_current_dir)
         value_current_dir_set = filter(lambda x: '<value>SCENARIO/test</value>' in x, self.rule)
@@ -345,19 +343,19 @@ A solution text for test suite"
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         applies = filter(lambda x: 'check_applies_to "test"' in x, lines)
         self.assertTrue(applies)
 
     def test_check_script_common(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         common = filter(lambda x: '. /usr/share/preupgrade/common.sh' in x, lines)
         self.assertTrue(common)
 
     def test_check_script_requires(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
         check_rpm_to = filter(lambda x: 'check_rpm_to "bash" "sed"' in x, lines)
         self.assertTrue(check_rpm_to)
 
@@ -394,8 +392,8 @@ A solution text for test suite"
 
 #This is testing check script
  """
-        write_to_file(os.path.join(self.dir_name, self.test_solution), "wb", solution_text)
-        write_to_file(os.path.join(self.dir_name, self.check_script), "wb", check_sh)
+        FileHelper.write_to_file(os.path.join(self.dir_name, self.test_solution), "wb", solution_text)
+        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", check_sh)
 
     def tearDown(self):
         shutil.rmtree(self.dir_name)
@@ -405,28 +403,28 @@ A solution text for test suite"
         self.test_ini.pop('check_script', None)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_tag_solution_script(self):
         """Test of missing tag 'solution' - SystemExit should be raised"""
         self.test_ini.pop('solution', None)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_solution_not_exists(self):
         """Test of missing 'solution' file - SystemExit should be raised"""
         self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_check_script_not_exists(self):
         """Test of missing 'check_script' file"""
         self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_check_script_is_directory(self):
         """
@@ -436,7 +434,7 @@ A solution text for test suite"
         self.test_ini['check_script'] = '.'
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_incorrect_tag(self):
         """
@@ -446,7 +444,7 @@ A solution text for test suite"
         text_ini = '[preupgrade]\n'
         text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
         text_ini += '\n[]\neliskk\n'
-        write_to_file(self.filename, "wb", text_ini)
+        FileHelper.write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.dir_name)
         self.assertRaises(SystemExit, oscap.find_all_ini)
 
@@ -454,10 +452,10 @@ A solution text for test suite"
         """Check occurrence of secret file for check script"""
         self.test_ini['check_script'] = '.minicheck'
         text = """#!/usr/bin/sh\necho 'ahojky'\n"""
-        write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
+        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(SystemExit, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
 
 class TestGroupXML(base.TestCase):
@@ -527,6 +525,7 @@ class ComposeTest(base.TestCase):
 
     def setUp(self):
         pass
+
 
 def suite():
     """Add classes which should be included in testing"""

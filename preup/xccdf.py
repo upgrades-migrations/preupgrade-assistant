@@ -7,7 +7,7 @@ import six
 from operator import itemgetter
 from xml.etree import ElementTree
 
-from preup import utils, settings
+from preup import settings
 from preup.logger import log_message
 from preup.utils import FileHelper, SystemIdentification
 

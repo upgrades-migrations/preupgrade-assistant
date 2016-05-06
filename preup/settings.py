@@ -113,7 +113,7 @@ needs_action = "needs_action"
 license = u"""Preupgrade assistant performs system upgradability assessment
 and gathers information required for successful operating system upgrade.
 Copyright (C) 2013 Red Hat Inc.
-{0}
+%s
 <new_line>
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
