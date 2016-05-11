@@ -263,9 +263,9 @@ class XmlManager(object):
             if not file_name or file_name is None:
                 continue
             else:
-                text = FileHelper.get_file_content(os.path.join(dir_name, file_name),
-                                        "rb",
-                                        method=True)
+                text = FileHelper.get_file_content(os.path.join(dir_name, file_name), "rb", method=True)
+            if 'databases' in dir_name:
+                print(text)
             for cnt, line in enumerate(lines):
                 # If in INPLACERISK: is a [link] then update them
                 # to /root/pre{migrate,upgrade}/...
@@ -273,6 +273,8 @@ class XmlManager(object):
                     lines[cnt] = tag_formating([line], extension)[0]
                     continue
                 # Find correct block
+                if 'databases' in dir_name:
+                    print(line)
                 if solution_text not in line.strip():
                     continue
                 # Get updated text if it is HTML or TEXT
