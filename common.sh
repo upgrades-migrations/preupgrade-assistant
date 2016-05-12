@@ -1,31 +1,59 @@
 
 CACHE=/var/cache/preupgrade
+# Directory with logs gathered by preupgrade-assistant
 PREUPGRADE_CACHE=/var/cache/preupgrade/common
+# Preupgrade-assistant configuration file
 PREUPGRADE_CONFIG=/etc/preupgrade-assistant.conf
+# Full path log file with to all installed packages
 VALUE_RPM_QA=$PREUPGRADE_CACHE/rpm_qa.log
+# Full path log file with to all changed files
 VALUE_ALL_CHANGED=$PREUPGRADE_CACHE/rpm_Va.log
+# Full path to log file with all /etc changed configuration files
 VALUE_CONFIGCHANGED=$PREUPGRADE_CACHE/rpm_etc_Va.log
+# Full path to log file with all users gathered by getent
 VALUE_PASSWD=$PREUPGRADE_CACHE/passwd.log
+# Full path to log file with all services enabled/disabled on system.
 VALUE_CHKCONFIG=$PREUPGRADE_CACHE/chkconfig.log
+# Full path to log file with all groups gathered by getent
 VALUE_GROUP=$PREUPGRADE_CACHE/group.log
+# Full path to log file with all installed files
 VALUE_RPMTRACKEDFILES=$PREUPGRADE_CACHE/rpmtrackedfiles.log
+# Full path to log file with all Red Hat signed packages
 VALUE_RPM_RHSIGNED=$PREUPGRADE_CACHE/rpm_rhsigned.log
+# Full path to log file with all local files
 VALUE_ALLMYFILES=$PREUPGRADE_CACHE/allmyfiles.log
+# Full path to log file with all executable files
 VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
+# Variable which referes to temporary directory directory provided by module
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
+# postupgrade directory used by in-place upgrades.
+# Scripts mentioned there are executed automatically by redhat-upgrade-tool
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
 CURRENT_DIRECTORY=$XCCDF_VALUE_CURRENT_DIRECTORY
+# MIGRATE means if preupg binary was used with `--mode migrate` parameter
+# UPGRADE means if preupg binary was used with `--mode upgrade` parameter
+# These modes are used if `--mode` is not used
 MIGRATE=$XCCDF_VALUE_MIGRATE
 UPGRADE=$XCCDF_VALUE_UPGRADE
+# Variable which referes to solution file provided by module
 SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
+# Directory which is used for kickstart generation
 KICKSTART_DIR=$VALUE_TMP_PREUPGRADE/kickstart
+# README file which contains description about all files in kickstart directory
 KICKSTART_README=$KICKSTART_DIR/README
+# Directory with scripts which can be executed after installation by administrator
 KICKSTART_SCRIPTS=$KICKSTART_DIR/scripts
+# The same as above
 KICKSTART_POSTUPGRADE=$KICKSTART_SCRIPTS
+# Variable which refers to static data used by preupgrade-assistant and modules
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
+# Variable which indicates DEVEL mode.
 DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
+# Variable which contains file with packages add to the kickstart anyway
 SPECIAL_PKG_LIST=$KICKSTART_DIR/special_pkg_list
+# Postupgrade directory which is not executed automatically
+# after an upgrade or migration
 NOAUTO_POSTUPGRADE_D=$VALUE_TMP_PREUPGRADE/noauto_postupgrade.d
 RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
@@ -55,7 +83,7 @@ export LC_ALL=C
 #
 # Note that if env variable $COMPONENT is defined, it may be omitted from
 # parameters.
-log()
+_log()
 {
     SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
@@ -74,96 +102,162 @@ log()
     echo "$SEVERITY $COMPONENT: $1"
 }
 
+#log_debug(message, component_arg=None) -> None
+#
+#log message to stdout with severity debug
+#if you would like to change component temporary, you may pass it as argument
+#
+#verbose information, may help with script debugging
 log_debug()
 {
-    log "DEBUG" "$@"
+    _log "DEBUG" "$@"
 }
 
+#log_info(message, component_arg=None) -> None
+#
+#log message to stdout with severity info
+#if you would like to change component temporary, you may pass it as argument
+#
+#informational message
 log_info()
 {
-    log "INFO" "$@"
+    _log "INFO" "$@"
 }
 
+#log_error(message, component=None) -> None
+
+##log message to stdout with severity error
+#if you would like to change component temporary, you may pass it as argument
+#use this severity if your script found something severe
+#
+#which may cause malfunction on new system
 log_error()
 {
-    log "ERROR" "$@"
+    _log "ERROR" "$@"
 }
 
+#log_warning(message, component_arg=None) -> None
+#
+#log message to stdout with severity warning
+#if you would like to change component temporary, you may pass it as argument
+#
+#important finding, administrator of system should be aware of this
 log_warning()
 {
-    log "WARNING" "$@"
+    _log "WARNING" "$@"
 }
 
-log_risk()
+#log risk level to stderr
+_log_risk()
 {
     echo "INPLACERISK: $1: $2" >&2
 }
 
-log_none_risk()
-{
-    log_risk "NONE" "$1"
-}
-
+#log_slight_risk(message)
+#
+#no issues found; although there are some unexplored areas
 log_slight_risk()
 {
-    log_risk "SLIGHT" "$1"
+    _log_risk "SLIGHT" "$1"
 }
 
+#log_medium_risk(message)
+#
+#inplace upgrade is possible; system after upgrade may be unstable
 log_medium_risk()
 {
-    log_risk "MEDIUM" "$1"
+    _log_risk "MEDIUM" "$1"
 }
 
+#log_high_risk(message)
+#
+#Administrator has to inspect and correct upgraded system so
+#inplace upgrade can be used.
 log_high_risk()
 {
-    log_risk "HIGH" "$1"
+    _log_risk "HIGH" "$1"
 }
 
+#log_extreme_risk(message)
+#
+#Inplace upgrade is impossible.
 log_extreme_risk()
 {
-    log_risk "EXTREME" "$1"
+    _log_risk "EXTREME" "$1"
 }
 
+#Could not tell what happened.
 exit_unknown()
 {
     exit $RESULT_UNKNOWN
 }
 
+#Test passed.
 exit_pass()
 {
     exit $RESULT_PASS
 }
 
+#The test failed.
+#Moving to new release with this configuration will result in malfunction.
 exit_fail()
 {
     exit $RESULT_FAIL
 }
 
+#The test failed.
+#Moving to new release with this configuration will result in malfunction.
+exit_failed()
+{
+    exit $RESULT_FAIL
+}
+
+#An error occurred and test could not complete.
+#
+#(script failed while doing its job)
 exit_error()
 {
     exit $RESULT_ERROR
 }
 
+#Rule did not apply to test target. (e.g. package is not installed)
 exit_not_applicable()
 {
     exit $RESULT_NOT_APPLICABLE
 }
 
+#Rule has only informational output.
 exit_informational()
 {
     exit $RESULT_INFORMATIONAL
 }
 
+#Rule failed, but was later fixed.
 exit_fixed()
 {
     exit $RESULT_FIXED
 }
 
-switch_to_content()
+#Function for switch to the content directory
+_switch_to_content()
 {
     cd $CURRENT_DIRECTORY
 }
 
+# Function checks if package is installed.
+# Parameter is a package name which will be checked.
+# Return: 0 - package is installed
+#         1 - package is NOT installed
+is_pkg_installed()
+{
+    grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
+    return 0
+}
+
+#Function checks is package is installed and signed by Red Hat
+# Parameter list of packages which will be checked. Module requires them.
+#:return: 0 - package is installed and signed by Red Hat
+#         exit_not_applicable - module will not be executed
 check_applies_to()
 {
     local RPM=1
@@ -186,12 +280,12 @@ check_applies_to()
     fi
 }
 
-is_pkg_installed()
-{
-    grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
-    return 0
-}
-
+#Function checks if relevant package is installed
+#and if relevant binary exists on the system.
+# Function is needed from module point of view.
+#:param $1: list of RPMs separated by comma
+#:param $2: list of binaries separated by comma
+#:return:
 check_rpm_to()
 {
     local RPM=1
@@ -245,6 +339,9 @@ check_root()
     fi
 }
 
+#Function appends a message to solution file.
+#solution file will be created in module directory
+#:param message: Message - string of list of strings
 solution_file()
 {
     echo "$1" >> $SOLUTION_FILE
@@ -281,7 +378,9 @@ backup_config_file() {
     return $?
 }
 
-space_trim() {
+# Function trim spaces.
+# parameter is string to trim
+_space_trim() {
   echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
@@ -380,7 +479,7 @@ get_dist_native_list() {
 }
 
 # here is parsed PA configuration
-load_pa_configuration() {
+_load_pa_configuration() {
   # this is main function for parsing
   [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
@@ -396,8 +495,8 @@ load_pa_configuration() {
   }
 
   for line in $_pa_conf; do
-    tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
-    tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
+    tmp_option=$(_space_trim "$(echo "$line" | cut -d "=" -f 1)")
+    tmp_val=$(_space_trim "$(echo "$line" | cut -d "=" -f 2-)")
     # HERE add your actions
     case $tmp_option in
       home_directory_file)
@@ -443,5 +542,5 @@ add_pkg_to_kickstart() {
   done
   return 0
 }
-load_pa_configuration
-switch_to_content
+_load_pa_configuration
+_switch_to_content
