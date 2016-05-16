@@ -27,7 +27,8 @@ class KickstartGenerator(object):
         self.kick_start_name = kick_start_name
         self.ks_list = []
         self.repos = None
-        self.users = None
+        self.user_perm = None
+        self.group_perm = None
         self.latest_tarball = ""
         self.temp_file = '/tmp/part-include'
         self.conf = conf
@@ -43,7 +44,8 @@ class KickstartGenerator(object):
         if self.ks is None:
             collected_data = False
         self.repos = KickstartGenerator.get_kickstart_repo('available-repos')
-        self.users = KickstartGenerator.get_kickstart_users('Users')
+        self.group_perm = KickstartGenerator.get_kickstart_groups('Groups')
+        self.user_perm = KickstartGenerator.get_kickstart_users('Users', groups=self.group_perm)
         self.latest_tarball = self.get_latest_tarball()
         return collected_data
 
@@ -126,10 +128,12 @@ class KickstartGenerator(object):
         return repo_dict
 
     @staticmethod
-    def get_kickstart_users(filename, splitter=":"):
+    def get_kickstart_users(filename, groups=None, splitter=":"):
         """
         returns dictionary with names and uid, gid, etc.
         :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :param groups: dictionary with groups
+        :param splitter: delimiter for parsing files
         :return: dictionary with users
         """
         try:
@@ -141,10 +145,44 @@ class KickstartGenerator(object):
         for line in lines:
             fields = line.split(splitter)
             try:
-                user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+                user_group = []
+                if groups:
+                    for key, value in groups.iteritems():
+                        found = [x for x in value.itervalues() if fields[0] in x]
+                        if found:
+                            user_group.append(key)
+
+                user_dict[fields[0]] = {}
+                user_dict[fields[0]] = {'homedir': fields[5],
+                                        'shell': fields[6],
+                                        'uid': fields[2],
+                                        'gid': fields[3],
+                                        'groups': user_group}
             except IndexError:
                 pass
         return user_dict
+
+    @staticmethod
+    def get_kickstart_groups(filename, splitter=":"):
+        """
+        returns dictionary with names and uid, gid, etc.
+        :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :return: dictionary with users
+        """
+        try:
+            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        except IOError:
+            return None
+        lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
+        group_dict = {}
+        for line in lines:
+            fields = line.split(splitter)
+            try:
+                group_dict[fields[0]] = {}
+                group_dict[fields[0]] = {fields[2]: fields[3].strip().split(',')}
+            except IndexError:
+                pass
+        return group_dict
 
     @staticmethod
     def _get_sizes(filename):
@@ -268,8 +306,19 @@ class KickstartGenerator(object):
         if not users:
             return None
         for key, value in users.iteritems():
-            uid, gid = value
-            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=int(uid), groups=[gid]))
+            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key,
+                                                                            uid=value['uid'],
+                                                                            gid=value['gid'],
+                                                                            shell=value['shell'],
+                                                                            homedir=value['homedir'],
+                                                                            groups=value['groups']))
+
+    def update_groups(self, groups):
+        if not groups:
+            return None
+        for key, value in groups.iteritems():
+            for gid, grouplist in value.iteritems():
+                self.ks.handler.group.dataList().append(self.ks.handler.GroupData(name=key, gid=gid))
 
     def get_partition_layout(self, lsblk, vgs, lvdisplay):
         """
@@ -307,24 +356,38 @@ class KickstartGenerator(object):
 
     def filter_kickstart_users(self):
         kickstart_users = {}
-        if not self.users:
+        if not self.user_perm:
             return None
         setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in self.users.iteritems():
+        for user, ids in self.user_perm.iteritems():
             if setup_passwd:
                 if [x for x in setup_passwd.iterkeys() if user in x]:
                     continue
             if uidgid:
                 if [x for x in uidgid.iterkeys() if user in x]:
                     continue
-            kickstart_users[user] = ids.split(':')
+            kickstart_users[user] = ids
         if not kickstart_users:
             return None
         return kickstart_users
 
+    def filter_kickstart_groups(self):
+        kickstart_groups = {}
+        if not self.groups:
+            return None
+        uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
+        for group, ids in self.group_perm.iteritems():
+            if uidgid:
+                if [x for x in uidgid.iterkeys() if group in x]:
+                    continue
+            kickstart_groups[group] = ids
+        if not kickstart_groups:
+            return None
+        return kickstart_groups
+
     def comment_kickstart_issues(self):
-        list_issues = ['user ', 'repo', 'url', 'rootpw']
+        list_issues = [' ', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
             kickstart_data = get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
@@ -355,6 +418,7 @@ class KickstartGenerator(object):
         self.ks.handler.keyboard.keyboard = 'us'
         self.update_repositories(self.repos)
         self.update_users(self.filter_kickstart_users())
+        self.update_groups(self.filter_kickstart_groups())
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
         self.embed_script(self.latest_tarball)
         self.delete_obsolete_issues()
