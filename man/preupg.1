@@ -8,9 +8,9 @@ preupg \- Preupgrade assistant performs assessment of the system from
 the "upgradeability" point of view
 
 .SH SYNOPSIS
-\fBpreupg used in case of one installed contents on source system
+\fBpreupg\fP used in case of one installed contents exists on source system
 
-\fBpreupg [-l, --list-contents]
+\fBpreupg [-l, --list-contents-set]
 
 \fBpreupg [-d, --debug] [--skip-common] [-s, --scan PATH] [-m, --mode MODE] [--force] [--text] [--kickstart]
 
@@ -19,6 +19,16 @@ the "upgradeability" point of view
 \fBpreupg [-c, --contents PATH]
 
 \fBpreupg [--cleanup]
+
+\fBpreupg [--kickstart]
+
+\fBpreupg [--select-rules]
+
+\fBpreupg [--list-rules]
+
+\fBpreupg [--risk-check]
+
+\fBpreupg [-u, --upload]
 
 .SH DESCRIPTION
 \fBpreupg\fP is the main binary of Preupgrade Assistant.
@@ -38,9 +48,9 @@ Clean all files created by preupg about previous state of the machine.
 Suppress user interaction.
 .TP
 .B \-\-kickstart
-Generate kickstart.
+Generates kickstart.
 .TP
-.B \-l, --list
+.B \-l, \-\-list-contents-set
 Shows list of installed contents
 .TP
 .B \-m, --mode MODE
@@ -49,10 +59,10 @@ Select one (or both) from the possible modes: \fBmigrate\fR or \fBupgrade\fR. Bo
 .B \-s, --scan PATH
 Executes selected assessment taken from list option.
 .TP
-.B --skip-common
+.B \-\-skip-common
 Skips generating common log files used during assessment.
 .TP
-.B --riskcheck
+.B \-\-riskcheck
 Returns value which depends on INPLACE RISK results.
 If verbose mode is mentioned then shows all inplace risks generated during assessment.
 Return values are 0 for NONE, SLIGHT risks or 1 for MEDIUM, HIGH risks or 2 for EXTREME risk.
@@ -60,8 +70,17 @@ Return values are 0 for NONE, SLIGHT risks or 1 for MEDIUM, HIGH risks or 2 for 
 .B \-\-text
 Convert HTML results to text form by elinks, lynx or w3m.
 .TP
-.B \-v, --verbose
+.B \-v, \-\-verbose
 Shows more information during assessment. Verbose can be repeated more times.
+.TP
+.B \-\-select-rules
+Run a set of contents given as a comma-separated list.
+.TP
+.B \-\-list-rules
+List all available contents
+.TP
+.B \-u, \-\-upload
+Upload results to preupgrade assistant WEB-UI, optionally provide URL
 
 .SH NOTES
 All common log files are stored in /var/cache/preupgrade/common directory.

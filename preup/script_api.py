@@ -62,10 +62,10 @@ __all__ = (
     'check_rpm_to',
     'check_applies_to',
     'solution_file',
-    'switch_to_content',
+    '_switch_to_content',
     'service_is_enabled',
     'is_dist_native',
-    'get_dist_native_list',
+    'get_dist_native_list'
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
@@ -98,26 +98,45 @@ __all__ = (
 )
 
 CACHE = "/var/cache/preupgrade"
+# Directory with logs gathered by preupgrade-assistant
 PREUPGRADE_CACHE = os.path.join(CACHE, "common")
+# Preupgrade-assistant configuration file
 PREUPGRADE_CONFIG = settings.PREUPG_CONFIG_FILE
+# Full path log file with to all installed packages
 VALUE_RPM_QA = os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
+# Full path log file with to all changed files
 VALUE_ALLCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
+# Full path to log file with all /etc changed configuration files
 VALUE_CONFIGCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
+# Full path to log file with all users gathered by getent
 VALUE_PASSWD = os.path.join(PREUPGRADE_CACHE, "passwd.log")
+# Full path to log file with all services enabled/disabled on system.
 VALUE_CHKCONFIG = os.path.join(PREUPGRADE_CACHE, "chkconfig.log")
+# Full path to log file with all groups gathered by getent
 VALUE_GROUP = os.path.join(PREUPGRADE_CACHE, "group.log")
+# Full path to log file with all installed files
 VALUE_RPMTRACKEDFILES = os.path.join(PREUPGRADE_CACHE, "rpmtrackedfiles.log")
+# Full path to log file with all local files
 VALUE_ALLMYFILES = os.path.join(PREUPGRADE_CACHE, "allmyfiles.log")
+# Full path to log file with all executable files
 VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
+# Full path to log file with all Red Hat signed packages
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
+# Variable which referes to temporary directory directory provided by module
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+# Variable which referes to solution file provided by module
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+
+# MIGRATE means if preupg binary was used with `--mode migrate` parameter
+# UPGRADE means if preupg binary was used with `--mode upgrade` parameter
+# These modes are used if `--mode` is not used
 try:
     MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
     UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
 except KeyError:
     MIGRATE = 1
     UPGRADE = 1
+# Variable which indicates DEVEL mode.
 try:
     DEVEL_MODE = os.environ['XCCDF_VALUE_DEVEL_MODE']
 except KeyError:
@@ -127,28 +146,45 @@ try:
     DIST_NATIVE = os.environ['XCCDF_VALUE_DIST_NATIVE']
 except KeyError:
     DIST_NATIVE = 'sign'
+
+# postupgrade directory used by in-place upgrades.
+# Scripts mentioned there are executed automatically by redhat-upgrade-tool
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+
+# Directory which is used for kickstart generation
 KICKSTART_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
+
+# README file which contains description about all files in kickstart directory
 KICKSTART_README = os.path.join(KICKSTART_DIR, "README")
+
+# Directory with scripts which can be executed after installation by administrator
 KICKSTART_SCRIPTS = os.path.join(KICKSTART_DIR, "scripts")
+# The same as above
 KICKSTART_POSTUPGRADE = KICKSTART_SCRIPTS
+
+# Variable which refers to static data used by preupgrade-assistant and modules
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
+# Variable which contains file with packages add to the kickstart anyway
 SPECIAL_PKG_LIST = os.path.join(KICKSTART_DIR, 'special_pkg_list')
+# Postupgrade directory which is not executed automatically
+# after an upgrade or migration
 NOAUTO_POSTUPGRADE_D = os.path.join(VALUE_TMP_PREUPGRADE, 'noauto_postupgrade.d')
 
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
 
-PREUPG_API_VERSION=1
+# Version of preupgrade-assistant API
+PREUPG_API_VERSION = 1
 
 component = "unknown"
 
-
+RPM_QA_LIST = get_file_content(VALUE_RPM_QA, "rb", True)
 ################
 # RISK LOGGING #
 ################
 
-def log_risk(severity, message):
+
+def _log_risk(severity, message):
     """
     log risk level to stderr
     """
@@ -161,7 +197,7 @@ def log_extreme_risk(message):
 
     Inplace upgrade is impossible.
     """
-    log_risk("EXTREME", message)
+    _log_risk("EXTREME", message)
 
 
 def log_high_risk(message):
@@ -171,7 +207,7 @@ def log_high_risk(message):
     Administrator has to inspect and correct upgraded system so
     inplace upgrade can be used.
     """
-    log_risk("HIGH", message)
+    _log_risk("HIGH", message)
 
 
 def log_medium_risk(message):
@@ -180,7 +216,7 @@ def log_medium_risk(message):
 
     inplace upgrade is possible; system after upgrade may be unstable
     """
-    log_risk("MEDIUM", message)
+    _log_risk("MEDIUM", message)
 
 
 def log_slight_risk(message):
@@ -189,15 +225,21 @@ def log_slight_risk(message):
 
     no issues found; although there are some unexplored areas
     """
-    log_risk("SLIGHT", message)
+    _log_risk("SLIGHT", message)
 
 
 ##################
 # STDOUT LOGGING #
 ##################
 
-def log(severity, message, component_arg=None):
-    """log message to stdout"""
+def _log(severity, message, component_arg=None):
+    """
+    General logging function to stdout
+    :param severity: set it to one of INFO|ERROR|WARNING
+    :param message: message to be logged
+    :param component_arg: optional, relevant RHEL component
+    :return:
+    """
     global component
     comp_show = component_arg or component
     print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stdout)
@@ -213,7 +255,7 @@ def log_error(message, component_arg=None):
     use this severity if your script found something severe
     which may cause malfunction on new system
     """
-    log('ERROR', message, component_arg)
+    _log('ERROR', message, component_arg)
 
 
 def log_warning(message, component_arg=None):
@@ -225,7 +267,7 @@ def log_warning(message, component_arg=None):
 
     important finding, administrator of system should be aware of this
     """
-    log('WARNING', message, component_arg)
+    _log('WARNING', message, component_arg)
 
 
 def log_info(message, component_arg=None):
@@ -237,7 +279,7 @@ def log_info(message, component_arg=None):
 
     informational message
     """
-    log('INFO', message, component_arg)
+    _log('INFO', message, component_arg)
 
 
 def log_debug(message, component_arg=None):
@@ -249,14 +291,14 @@ def log_debug(message, component_arg=None):
 
     verbose information, may help with script debugging
     """
-    log('DEBUG', message, component_arg)
+    _log('DEBUG', message, component_arg)
 
 
 #########
 # UTILS #
 #########
 
-def get_dest_dir():
+def _get_dest_dir():
     """
     get_dest_dir()
 
@@ -265,7 +307,7 @@ def get_dest_dir():
     return os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
 
 
-def shorten_envs():
+def _shorten_envs():
     """make all the oscap's environemt variables shorter"""
     envs = os.environ
     prefixes = ('XCCDF_VALUE_', 'XCCDF_RESULT_')
@@ -331,18 +373,23 @@ def exit_fixed():
 
 
 def exit_informational():
-    """Rule failed, but was later fixed."""
+    """Rule has only informational output."""
     sys.exit(int(os.environ['XCCDF_RESULT_INFORMATIONAL']))
 
 
-def switch_to_content():
+def _switch_to_content():
     """Function for switch to the content directory"""
     os.chdir(os.environ['CURRENT_DIRECTORY'])
 
 
 def is_pkg_installed(pkg_name):
-    lines = get_file_content(VALUE_RPM_QA, "rb", True)
-    found = [x for x in lines if x.split()[0] == pkg_name]
+    """
+    Function checks if package is installed
+    :param pkg_name: package name which will be checked
+    :return: True - package is installed
+             False - package is not installed
+    """
+    found = [x for x in RPM_QA_LIST if x.split()[0] == pkg_name]
     if found:
         return True
     else:
@@ -350,6 +397,12 @@ def is_pkg_installed(pkg_name):
 
 
 def check_applies_to(check_applies=""):
+    """
+    Function checks is package is installed and signed by Red Hat
+    :param check_applies: list of packages which will be checked. Module requires them.
+    :return: 0 - package is installed and signed by Red Hat
+             exit_not_applicable - module will not be executed
+    """
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
@@ -361,21 +414,25 @@ def check_applies_to(check_applies=""):
         exit_not_applicable()
 
 
-def check_rpm_to(check_rpm="", check_bin=""):
+def check_rpm_to(check_rpm=None, check_bin=None):
+    """
+    Function checks if relevant package is installed
+    and if relevant binary exists on the system.
+    Function is needed from module point of view.
+    :param check_rpm: list of RPMs separated by comma
+    :param check_bin: list of binaries separated by comma
+    :return: not_applicable is package or binary is not installed.
+    """
     not_applicable = 0
 
-    if check_rpm != "":
-        rpms = check_rpm.split(',')
-        lines = get_file_content(VALUE_RPM_QA, "rb", True)
-        for rpm in rpms:
-            lst = filter(lambda x: rpm == x.split('\t')[0], lines)
-            if not lst:
+    if check_rpm is not None:
+        for rpm in check_rpm.split(','):
+            if not is_pkg_installed(rpm):
                 log_info("Package %s is not installed." % rpm)
                 not_applicable = 1
 
-    if check_bin != "":
-        binaries = check_bin.split(',')
-        for binary in binaries:
+    if check_bin is not None:
+        for binary in check_bin.split(','):
             cmd = "which %s" % binary
             if utils.run_subprocess(cmd, print_output=False, shell=True) != 0:
                 log_info("Binary %s is not installed." % binary)
@@ -387,11 +444,22 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
 
 def solution_file(message):
+    """
+    Function appends a message to solution file.
+    solution file will be created in module directory
+    :param message: Message - string of list of strings
+    :return:
+    """
     write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
 
 
 def service_is_enabled(service_name):
-    """Returns true if given service is enabled on any runlevel"""
+    """
+    Function checks is service is enabled on the system
+    :param service_name: service name
+    :return: True if service is enabled
+             False if service is disabled
+    """
     return_value = False
     lines = get_file_content(VALUE_CHKCONFIG, "rb", True)
     for line in lines:
@@ -412,17 +480,21 @@ def config_file_changed(config_file_name):
     config_changed = False
     try:
         lines = get_file_content(VALUE_CONFIGCHANGED, "rb", True)
-        for line in lines:
-            if line.find(config_file_name) != -1:
-                config_changed = True
-                break
-    except:
+        found = [x for x in lines if x.find(config_file_name) != -1]
+        if found:
+            config_changed = True
+    except (IOError, ValueError):
         pass
     return config_changed
 
 
 def backup_config_file(config_file_name):
-    """Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure"""
+    """
+    Function copies specific config_file_name to $VALUE_TMP_PREUPGRADE directory,
+    keeping file structure like /root/preupgrade/etc/httpd.conf
+    :param config_file_name: full config file name like /etc/httpd.conf
+    :return:
+    """
     try:
         # report error if file doesn't exist
         if not os.path.isfile(config_file_name):
@@ -451,9 +523,7 @@ def is_dist_native(pkg):
     DIST_NATIVE = path_to_file: return True if package is in file else return False
     """
 
-    rpm_qa = get_file_content(VALUE_RPM_QA, "rb", True)
-    found = [x for x in rpm_qa if x.split()[0] == pkg]
-    if not found:
+    if not is_pkg_installed(pkg):
         log_warning("Package %s is not installed on Red Hat Enterprise Linux system.")
         return False
 
@@ -485,25 +555,36 @@ def get_dist_native_list():
     """
 
     native_pkgs = []
-    tmp = get_file_content(VALUE_RPM_QA, "rb", True)
-    pkgs = [i.split("\t")[0] for i in tmp]
+    pkgs = [i.split("\t")[0] for i in RPM_QA_LIST]
     for pkg in pkgs:
         if is_dist_native(pkg) is True:
             native_pkgs.append(pkg)
     return native_pkgs
 
 
-def load_pa_configuration():
-    """ Loads preupgrade-assistant configuration file """
-    global HOME_DIRECTORY_FILE
-    global USER_CONFIG_FILE
-    global RH_SIGNED_PKGS
-
+def _check_preupgrade_config():
+    """
+    Function checks if preupgrade-assistant configuration file exists
+    :return: reference to ConfigParser
+    """
     if not os.path.exists(PREUPGRADE_CONFIG):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
     config = ConfigParser.RawConfigParser(allow_no_value=True)
+    return config
+
+
+def _load_pa_configuration():
+    """
+    Function loads preupgrade-assistant configuration file
+    stored here /etc/preupgrade-assistant.conf
+    """
+    global HOME_DIRECTORY_FILE
+    global USER_CONFIG_FILE
+    global RH_SIGNED_PKGS
+
+    config = _check_preupgrade_config()
     config.read(PREUPGRADE_CONFIG)
     section = 'preupgrade-assistant'
     home_option = 'home_directory_file'
@@ -515,30 +596,13 @@ def load_pa_configuration():
             USER_CONFIG_FILE = config.get(section, user_file)
 
 
-def print_home_dirs(user_name=""):
-    """ Loads preupgrade-assistant configuration file """
-    if not os.path.exists(PREUPGRADE_CONFIG):
-        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
-        exit_error()
-
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
-    home_option = 'home-dirs'
-    try:
-        if USER_CONFIG_FILE == 'enabled' and user_name == "":
-            config.read(PREUPGRADE_CONFIG)
-            return config.options(home_option)
-        user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
-        if not os.path.exists(user_home_dir):
-            return 0
-        config.read(user_home_dir)
-        return config.options(home_option)
-    except ConfigParser.NoSectionError:
-        pass
-    except ConfigParser.NoOptionError:
-        pass
-
-
 def add_pkg_to_kickstart(pkg_name):
+    """
+    Function appends package or list of packages to SPECIAL_PKG_LIST file.
+    :param pkg_name: package_name or list of packages
+    :return: 0 - in case of success
+             1 - Missing package name or list
+    """
     empty = False
     if isinstance(pkg_name, list):
         # list of packages
@@ -559,6 +623,6 @@ def add_pkg_to_kickstart(pkg_name):
     return 0
 
 
-load_pa_configuration()
+_load_pa_configuration()
 
-shorten_envs()
+_shorten_envs()
