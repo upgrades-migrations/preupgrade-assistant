@@ -1,0 +1,6 @@
+build:
+    script:
+        - git submodule update --init --recursive
+        - virtualenv -p python venv
+        - source venv/bin/activate
+        - rm -rf .pioenvs

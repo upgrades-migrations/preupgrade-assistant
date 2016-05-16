@@ -509,7 +509,6 @@ class TarballHelper(object):
 
 
 class ConfigHelper(object):
-
     @staticmethod
     def get_preupg_config_file(path, key, section="preupgrade"):
         if not os.path.exists(path):

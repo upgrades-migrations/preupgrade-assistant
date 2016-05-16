@@ -377,12 +377,13 @@ class TestIncorrectINI(base.TestCase):
         self.loaded_ini = {}
         self.loaded_ini[self.filename] = []
         self.test_ini = {'content_title': 'Testing content title',
-                    'content_description': 'Some content description',
-                    'author': 'test <test@redhat.com>',
-                    'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
-                    'applies_to': 'test'}
+                         'content_description': 'Some content description',
+                         'author': 'test <test@redhat.com>',
+                         'config_file': '/etc/named.conf',
+                         'check_script': self.check_script,
+                         'solution': self.test_solution,
+                         'applies_to': 'test'
+                         }
         solution_text = """
 A solution text for test suite"
 """

@@ -90,6 +90,7 @@ class Application(object):
         self.common = None
         self._devel_mode = 0
         self._dist_mode = None
+        self.report_return_value = 0
         if self.conf.debug is None:
             set_level(logging.INFO)
         else:
@@ -502,10 +503,10 @@ class Application(object):
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             try:
-                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(os.path.dirname(self.path),
-                                                                           self.conf.mode),
-                                                              'rb',
-                                                              method=True)]
+                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(assessment_dir,
+                                                                                      self.conf.mode),
+                                                                                      'rb',
+                                                                                      method=True)]
             except IOError:
                 return
             self.report_parser.select_rules(lines)
@@ -552,11 +553,11 @@ class Application(object):
             "Read the file {0} for more details.".
             format(path)
         }
-        return_value = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), 0)
+        self.report_return_value = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), 0)
         try:
-            if report_dict[int(return_value)]:
+            if report_dict[int(self.report_return_value)]:
                 log_message('Summary information:')
-                log_message(report_dict[int(return_value)])
+                log_message(report_dict[int(self.report_return_value)])
             for report_type in settings.REPORTS:
                 file_name = settings.result_name + '-' + report_type + '.html'
                 report_name = os.path.join(os.path.dirname(self.report_parser.get_path()), file_name)
@@ -706,7 +707,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             if self.conf.upload:
                 self.upload_results(tarball_path)
             os.chdir(current_dir)
-            return 0
+            return self.report_return_value
 
         log_message('Nothing to do. Give me a task, please.')
         self.conf.settings[2].parser.print_help()

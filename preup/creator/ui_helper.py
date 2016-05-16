@@ -107,6 +107,8 @@ class UIHelper(object):
             self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
 
         if not SystemIdentification.get_valid_scenario(self.upgrade_path):
+            if self.content_path is None:
+                self.content_path = self.upgrade_path
             print ("Scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
             return None
 

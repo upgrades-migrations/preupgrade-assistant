@@ -16,7 +16,8 @@ def get_full_path(file_name):
 
 class TestPartitioning(base.TestCase):
 
-    ks = None
+    kickstart = None
+    dir_name = None
 
     def setUp(self):
         kickstart_file = 'preupgrade.ks'

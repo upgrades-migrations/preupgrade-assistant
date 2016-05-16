@@ -26,13 +26,15 @@ class KickstartGenerator(object):
         self.kick_start_name = kick_start_name
         self.ks_list = []
         self.repos = None
-        self.users = None
+        self.user_perm = None
+        self.group_perm = None
         self.latest_tarball = ""
         self.temp_file = '/tmp/part-include'
         self.conf = conf
         self.groups = []
         self.packages = []
         self.part_layout = None
+        self.missing_installed = []
 
     def collect_data(self):
         self._remove_obsolete_data()
@@ -41,7 +43,8 @@ class KickstartGenerator(object):
         if self.ks is None:
             collected_data = False
         self.repos = KickstartGenerator.get_kickstart_repo('available-repos')
-        self.users = KickstartGenerator.get_kickstart_users('Users')
+        self.group_perm = KickstartGenerator.get_kickstart_groups('Groups')
+        self.user_perm = KickstartGenerator.get_kickstart_users('Users', groups=self.group_perm)
         self.latest_tarball = self.get_latest_tarball()
         return collected_data
 
@@ -73,7 +76,7 @@ class KickstartGenerator(object):
         return ksparser
 
     @staticmethod
-    def get_package_list(filename):
+    def get_package_list(filename, field=None):
         """
         content packages/ReplacedPackages is taking care of packages, which were
         replaced/obsoleted/removed between releases. It produces a file with a list
@@ -84,8 +87,24 @@ class KickstartGenerator(object):
             return []
         lines = FileHelper.get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
         # Remove newline character from list
-        lines = [line.strip() for line in lines]
-        return lines
+        package_list = []
+        for line in lines:
+            # We have to go over all lines and remove all commented.
+            if line.startswith('#'):
+                continue
+            if field is None:
+                package_list.append(line.strip())
+            else:
+                try:
+                    # Format of file is like
+                    # old-package|required-by-pkgs|replaced-by-pkgs|repoid
+                    pkg_field = line.split('|')
+                    if pkg_field[field] is not None:
+                        package_list.append(pkg_field[field])
+                except ValueError:
+                    # Line seems to be wrong, go to the next one
+                    pass
+        return package_list
 
     @staticmethod
     def get_kickstart_repo(filename):
@@ -108,10 +127,12 @@ class KickstartGenerator(object):
         return repo_dict
 
     @staticmethod
-    def get_kickstart_users(filename, splitter=":"):
+    def get_kickstart_users(filename, groups=None, splitter=":"):
         """
         returns dictionary with names and uid, gid, etc.
         :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :param groups: dictionary with groups
+        :param splitter: delimiter for parsing files
         :return: dictionary with users
         """
         try:
@@ -123,10 +144,44 @@ class KickstartGenerator(object):
         for line in lines:
             fields = line.split(splitter)
             try:
-                user_dict[fields[0]] = "%s:%s" % (fields[2], fields[3])
+                user_group = []
+                if groups:
+                    for key, value in groups.iteritems():
+                        found = [x for x in value.itervalues() if fields[0] in x]
+                        if found:
+                            user_group.append(key)
+
+                user_dict[fields[0]] = {}
+                user_dict[fields[0]] = {'homedir': fields[5],
+                                        'shell': fields[6],
+                                        'uid': fields[2],
+                                        'gid': fields[3],
+                                        'groups': user_group}
             except IndexError:
                 pass
         return user_dict
+
+    @staticmethod
+    def get_kickstart_groups(filename, splitter=":"):
+        """
+        returns dictionary with names and uid, gid, etc.
+        :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :return: dictionary with users
+        """
+        try:
+            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+        except IOError:
+            return None
+        lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
+        group_dict = {}
+        for line in lines:
+            fields = line.split(splitter)
+            try:
+                group_dict[fields[0]] = {}
+                group_dict[fields[0]] = {fields[2]: fields[3].strip().split(',')}
+            except IndexError:
+                pass
+        return group_dict
 
     @staticmethod
     def _get_sizes(filename):
@@ -147,15 +202,32 @@ class KickstartGenerator(object):
     def get_installed_packages():
         prefix = 'RHRHEL7rpmlist_'
         result_list = []
-        list_files = ['kept', 'optional', 'notbase',
+        list_files = ['kept', 'kept-notbase',
                       'replaced', 'replaced-notbase']
         for l in list_files:
             try:
-                result_list.extend(KickstartGenerator.get_package_list(prefix + l))
+                result_list.extend(KickstartGenerator.get_package_list(prefix + l, 2))
             except IOError:
                 log_message("File '%s' was not found. Skipping package generation.", (prefix + l))
                 return None
         return result_list
+
+    @staticmethod
+    def get_installed_dependencies():
+        dep_list = []
+        deps = KickstartGenerator.get_package_list('first_dependencies', field=None)
+        for pkg in deps:
+            pkg = pkg.strip()
+            if pkg.startswith('/'):
+                continue
+            if '.so' in pkg:
+                continue
+            if '(' in pkg:
+                dep_list.append(pkg.split('(')[0])
+                continue
+            dep_list.append(pkg.split()[0])
+
+        return dep_list
 
     def output_packages(self):
         """ outputs %packages section """
@@ -163,24 +235,26 @@ class KickstartGenerator(object):
         if installed_packages is None:
             return None
         try:
-            obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted-required')
+            obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
             obsoleted = []
+        installed_dependencies = KickstartGenerator.get_installed_dependencies()
         ph = PackagesHandling(installed_packages, obsoleted)
         # remove files which are replaced by another package
         ph.replace_obsolete()
 
-        if os.path.exists(os.path.join(settings.KS_DIR, 'RemovedPkg-optional')):
+        remove_pkg_optional = os.path.join(settings.KS_DIR, 'RemovedPkg-optional')
+        if os.path.exists(remove_pkg_optional):
             try:
-                removed_packages = KickstartGenerator.get_package_list('RemovedPkg-optional')
+                removed_packages = FileHelper.get_file_content(remove_pkg_optional, 'r', method=True)
             except IOError:
                 return None
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
         if not installed_packages or not removed_packages:
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
-        ygg = YumGroupGenerator(ph.get_packages(), removed_packages, *abs_fps)
-        self.groups, self.packages = ygg.get_list()
+        ygg = YumGroupGenerator(ph.get_packages(), removed_packages, installed_dependencies, *abs_fps)
+        self.groups, self.packages, self.missing_installed = ygg.get_list()
         self.packages = ygg.remove_packages(self.packages)
 
     def delete_obsolete_issues(self):
@@ -249,8 +323,19 @@ class KickstartGenerator(object):
         if not users:
             return None
         for key, value in users.iteritems():
-            uid, gid = value
-            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key, uid=int(uid), groups=[gid]))
+            self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key,
+                                                                            uid=value['uid'],
+                                                                            gid=value['gid'],
+                                                                            shell=value['shell'],
+                                                                            homedir=value['homedir'],
+                                                                            groups=value['groups']))
+
+    def update_groups(self, groups):
+        if not groups:
+            return None
+        for key, value in groups.iteritems():
+            for gid, grouplist in value.iteritems():
+                self.ks.handler.group.dataList().append(self.ks.handler.GroupData(name=key, gid=gid))
 
     def get_partition_layout(self, lsblk, vgs, lvdisplay):
         """
@@ -288,24 +373,38 @@ class KickstartGenerator(object):
 
     def filter_kickstart_users(self):
         kickstart_users = {}
-        if not self.users:
+        if not self.user_perm:
             return None
         setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in self.users.iteritems():
+        for user, ids in self.user_perm.iteritems():
             if setup_passwd:
                 if [x for x in setup_passwd.iterkeys() if user in x]:
                     continue
             if uidgid:
                 if [x for x in uidgid.iterkeys() if user in x]:
                     continue
-            kickstart_users[user] = ids.split(':')
+            kickstart_users[user] = ids
         if not kickstart_users:
             return None
         return kickstart_users
 
+    def filter_kickstart_groups(self):
+        kickstart_groups = {}
+        if not self.groups:
+            return None
+        uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
+        for group, ids in self.group_perm.iteritems():
+            if uidgid:
+                if [x for x in uidgid.iterkeys() if group in x]:
+                    continue
+            kickstart_groups[group] = ids
+        if not kickstart_groups:
+            return None
+        return kickstart_groups
+
     def comment_kickstart_issues(self):
-        list_issues = ['user', 'repo', 'url', 'rootpw']
+        list_issues = [' ', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
             kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
@@ -330,10 +429,13 @@ class KickstartGenerator(object):
         if self.packages or self.groups:
             self.ks.handler.packages.packageList = self.packages
             self.ks.handler.packages.groupList = self.groups
+            if self.missing_installed:
+                self.ks.handler.packages.excludedList = self.missing_installed
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.ks.handler.keyboard.keyboard = 'us'
         self.update_repositories(self.repos)
         self.update_users(self.filter_kickstart_users())
+        self.update_groups(self.filter_kickstart_groups())
         self.get_partition_layout('lsblk_list', 'vgs_list', 'lvdisplay')
         self.embed_script(self.latest_tarball)
         self.delete_obsolete_issues()

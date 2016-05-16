@@ -185,31 +185,39 @@ class TestCLI(base.TestCase):
         """ basic test of several options """
         conf = {
             "scan": "FOOBAR6_7",
-            "temp_dir": 'd',
             "skip_common": False,
-            "contents": "content/FOOBAR6_7",
             "id": 1,
             "list_contents_set": True,
             "verbose": 1,
             "text": True,
+            "contents": "content/FOOBAR6_7",
             "cleanup": True,
             "mode": 'upgrade',
+            "select_rules": "abc",
+            "list_rules": True,
+            "version": True,
+            "force": True,
+            "riskcheck": True,
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list-contents-set",
-                   "--verbose", "--text",
-                   "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade"])
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list-contents-set", "--verbose", "--text",
+                   "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade",
+                   "--select-rules", "abc", "--list-rules", "--version", "--force",
+                   "--riskcheck"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
         self.assertEqual(a.conf.contents, "content/FOOBAR6_7")
         self.assertTrue(a.conf.list_contents_set)
+        self.assertTrue(a.conf.list_rules)
+        self.assertTrue(a.conf.force)
         self.assertTrue(a.conf.text)
         self.assertTrue(a.conf.cleanup)
         self.assertEqual(int(a.conf.verbose), 1)
-        self.assertEqual(a.conf.temp_dir, "d")
         self.assertEqual(a.conf.scan, "FOOBAR6_7")
         self.assertEqual(a.conf.mode, "upgrade")
+        self.assertEqual(a.conf.select_rules, "abc")
+        self.assertTrue(a.conf.riskcheck)
 
 
 class TestHashes(base.TestCase):
