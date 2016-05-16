@@ -74,7 +74,7 @@ class YumGroup(object):
 class YumGroupGenerator(object):
     """class for aggregating packages into yum groups"""
 
-    def __init__(self, package_list, removed_packages, *args, **kwargs):
+    def __init__(self, package_list, removed_packages, dependency_list, *args, **kwargs):
         """
         we dont take info about groups from yum, but from dark matrix, format is:
 
@@ -85,6 +85,7 @@ class YumGroupGenerator(object):
         """
         self.packages = set(package_list)
         self.removed_packages = set(removed_packages)
+        self.dependency_list = set(dependency_list)
         self.gm = YumGroupManager()
         self.group_def_fp = []
         for p in args:
@@ -115,6 +116,11 @@ class YumGroupGenerator(object):
             if pkg in self.packages:
                 self.packages.remove(pkg)
 
+    def remove_dependencies(self, output_packages):
+        # Remove dependencies from kickstart
+        # New set with elements in output_packages but not in self.dependency_list
+        return output_packages.difference(self.dependency_list)
+
     def get_list(self):
         groups = self.gm.find_match(self.packages)
         output_groups = []
@@ -123,11 +129,12 @@ class YumGroupGenerator(object):
         for group in groups:
             if len(group.required) != 0:
                 output_groups.append('@'+group.name)
-                missing_installed.extend([x + ' # group ' + group.name for x in group.missing_installed])
+                missing = [x for x in group.missing_installed if x not in self.dependency_list]
+                missing_installed.extend([x + ' # group ' + group.name for x in missing])
                 output_packages = group.exclude_mandatory(output_packages)
                 output_packages = group.exclude_optional(output_packages)
         output_groups.sort()
-        output_packages = list(output_packages)
+        output_packages = list(self.remove_dependencies(output_packages))
         output_packages.sort()
         return output_groups, output_packages, missing_installed
 

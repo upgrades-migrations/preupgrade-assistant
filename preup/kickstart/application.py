@@ -213,6 +213,23 @@ class KickstartGenerator(object):
                 return None
         return result_list
 
+    @staticmethod
+    def get_installed_dependencies():
+        dep_list = []
+        deps = KickstartGenerator.get_package_list('first_dependencies', field=None)
+        for pkg in deps:
+            pkg = pkg.strip()
+            if pkg.startswith('/'):
+                continue
+            if '.so' in pkg:
+                continue
+            if '(' in pkg:
+                dep_list.append(pkg.split('(')[0])
+                continue
+            dep_list.append(pkg.split()[0])
+
+        return dep_list
+
     def output_packages(self):
         """ outputs %packages section """
         installed_packages = KickstartGenerator.get_installed_packages()
@@ -222,6 +239,7 @@ class KickstartGenerator(object):
             obsoleted = KickstartGenerator.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
             obsoleted = []
+        installed_dependencies = KickstartGenerator.get_installed_dependencies()
         ph = PackagesHandling(installed_packages, obsoleted)
         # remove files which are replaced by another package
         ph.replace_obsolete()
@@ -236,7 +254,7 @@ class KickstartGenerator(object):
         if not installed_packages or not removed_packages:
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
-        ygg = YumGroupGenerator(ph.get_packages(), removed_packages, *abs_fps)
+        ygg = YumGroupGenerator(ph.get_packages(), removed_packages, installed_dependencies, *abs_fps)
         self.groups, self.packages, self.missing_installed = ygg.get_list()
         ygg.remove_packages()
 
