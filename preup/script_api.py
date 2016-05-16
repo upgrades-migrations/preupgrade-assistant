@@ -65,7 +65,7 @@ __all__ = (
     '_switch_to_content',
     'service_is_enabled',
     'is_dist_native',
-    'get_dist_native_list',
+    'get_dist_native_list'
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
@@ -594,34 +594,6 @@ def _load_pa_configuration():
             HOME_DIRECTORY_FILE = config.get(section, home_option)
         if config.has_option(section, user_file):
             USER_CONFIG_FILE = config.get(section, user_file)
-
-
-def print_home_dirs(user_name=None):
-    """
-    Function loads configuration file and prints home_dirs variable.
-    :param user_name: If none, ten home_dirs is taken from /etc/preupgrade-assistant.conf file
-                      otherwise /home/$USER/$HOME_DIRECTORY_FILE
-    :return: home_dirs.
-    """
-    """ Loads preupgrade-assistant configuration file """
-    config = _check_preupgrade_config()
-    home_option = 'home-dirs'
-    try:
-        # If user config file is enabled (/etc/preupgrade-assistant.conf) and parameter
-        # user_name is None, use preupgrade-assistant configuration file
-        if USER_CONFIG_FILE == 'enabled' and user_name is None:
-            config.read(PREUPGRADE_CONFIG)
-            return config.options(home_option)
-        # Use user_name home directory file
-        user_home_dir = os.path.join('/home', user_name, HOME_DIRECTORY_FILE)
-        if not os.path.exists(user_home_dir):
-            return 0
-        config.read(user_home_dir)
-        return config.options(home_option)
-    except ConfigParser.NoSectionError:
-        pass
-    except ConfigParser.NoOptionError:
-        pass
 
 
 def add_pkg_to_kickstart(pkg_name):

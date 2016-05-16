@@ -99,7 +99,7 @@ _log()
         fi
     fi
 
-    echo "$SEVERITY $COMPONENT: $1"
+    echo "$SEVERITY $COMPONENT: $1" >&2
 }
 
 #log_debug(message, component_arg=None) -> None
@@ -387,7 +387,7 @@ _space_trim() {
 # functions for easy parsing of config files
 # returns 0 on success, otherwise 1
 # requires path
-conf_get_sections() {
+_conf_get_sections() {
   [ $# -eq 1 ] || return 1
   [ -f "$1" ] || return 1
 
@@ -397,7 +397,7 @@ conf_get_sections() {
 
 # get all items from config file $1 inside section $2
 # e.g.: conf_get_section CONFIG_FILE section-without-brackets
-conf_get_section() {
+_conf_get_section() {
   [ $# -eq 2 ] || return 1
   [ -f "$1" ] || return 1
   local _section=""
@@ -511,22 +511,6 @@ _load_pa_configuration() {
       *) log_error "Unknown option $tmp_option"; exit_error
     esac
   done
-}
-
-# print items from [home-dirs] which are relevant for given user
-# when username is not given or config file for user is not enabled,
-# items from main configuration file is printed
-# returns 0 on SUCCESS, otherwise 1 and logs warning
-# shouldn't be used before load_config_parser
-print_home_dirs() {
-  [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
-    conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
-    return 0
-  }
-
-  local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
-  [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
-  conf_get_section "$_uconf_file" "home-dirs"
 }
 
 #Function adds a package to special_pkg_list
