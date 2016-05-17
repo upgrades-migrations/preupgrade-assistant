@@ -8,6 +8,7 @@ import os
 import ConfigParser
 import shutil
 import sys
+import six
 
 from distutils.util import strtobool
 from preup.utils import FileHelper, SystemIdentification
@@ -169,7 +170,7 @@ class UIHelper(object):
         """
         config = ConfigParser.RawConfigParser()
         config.add_section(section)
-        for key, val in self.content_dict.iteritems():
+        for key, val in six.iteritems(self.content_dict):
             if val is not None:
                 config.set(section, key, val)
 
@@ -185,8 +186,13 @@ class UIHelper(object):
 
     def _create_check_script(self):
         if self.check_script:
-            FileHelper.write_to_file(os.path.join(self.get_content_path(), self.get_check_script()), 'wb', settings.temp_check_script)
-            os.chmod(os.path.join(self.get_content_path(), self.get_check_script()), 0755)
+            FileHelper.write_to_file(os.path.join(self.get_content_path(),
+                                                  self.get_check_script()),
+                                     'wb',
+                                     settings.temp_check_script)
+            os.chmod(os.path.join(self.get_content_path(),
+                                  self.get_check_script()),
+                     0755)
 
     def _create_solution_file(self):
         if self.solution_file:

@@ -5,6 +5,8 @@ Class creates a set of packages for migration scenario
 """
 
 import os
+import six
+
 from preup.utils import FileHelper
 
 
@@ -19,7 +21,7 @@ class YumGroupManager(object):
     def find_match(self, packages):
         """is there a group whose packages are subset of argument 'packages'?"""
         groups = []
-        for group in self.groups.itervalues():
+        for group in six.itervalues(self.groups):
             if len(group.required) != 0:
                 if group.match(packages):
                     groups.append(group)

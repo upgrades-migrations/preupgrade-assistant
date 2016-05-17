@@ -4,6 +4,7 @@
 Class creates a kickstart for migration scenario
 """
 
+import six
 from pykickstart.constants import CLEARPART_TYPE_ALL
 
 
@@ -106,7 +107,7 @@ class PartitionGenerator(object):
             if device_type == 'lvm':
                 if self.vg_info is None or not self.vg_info:
                     continue
-                vg_name = [x for x in self.vg_info.iterkeys() if device.startswith(x)][0]
+                vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
                 # Get volume group name
                 if not self.vol_group.has_key(vg_name):
                     self.vol_group[vg_name] = {}
@@ -114,7 +115,7 @@ class PartitionGenerator(object):
                 self.vol_group[vg_name]['pv_name'] = pv_name
                 if self.lvdisplay is None or not self.lvdisplay:
                     continue
-                lv_name = [x for x in self.lvdisplay.iterkeys() if x in device][0]
+                lv_name = [x for x in six.iterkeys(self.lvdisplay) if x in device][0]
                 if not self.logvol.has_key(mount):
                     self.logvol[mount] = {}
                 self.logvol[mount]['vgname'] = vg_name
@@ -122,7 +123,7 @@ class PartitionGenerator(object):
                 self.logvol[mount]['lv_name'] = lv_name
 
     def _get_part_devices(self):
-        for key, value in sorted(self.part_dict.iteritems()):
+        for key, value in sorted(six.iteritems(self.part_dict)):
             if value['crypt'] == "":
                 try:
                     self.parts.append(self.handler.PartData(size=value['size'], mountpoint=key, disk=value['device']))
@@ -132,17 +133,17 @@ class PartitionGenerator(object):
                 self.parts.append(self.handler.PartData(size=value['size'], mountpoint=key, encrypted=value['crypt']))
 
     def _get_logvol_device(self):
-        for key, value in sorted(self.logvol.iteritems()):
+        for key, value in sorted(six.iteritems(self.logvol)):
             self.lv_list.append(self.handler.LogVolData(name=value['lv_name'], vgname=value['vgname'],
                                                         size=value['size'], mountpoint=key))
 
     def _get_vg_device(self):
-        for key, value in self.vol_group.iteritems():
+        for key, value in six.iteritems(self.vol_group):
             pv_name = value['pv_name']
             self.vg_list.append(self.handler.VolGroupData(vgname=key, physvols=[pv_name], pesize=value['pesize']))
 
     def _get_raid_devices(self):
-        for key, value in self.raid_devices.iteritems():
+        for key, value in six.iteritems(self.raid_devices):
             level = value['level']
             members = []
             for index in value['raid_devices']:

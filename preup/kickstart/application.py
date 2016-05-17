@@ -6,6 +6,7 @@ Class creates a kickstart for migration scenario
 
 import base64
 import shutil
+import six
 
 from pykickstart.constants import *
 from pykickstart.parser import *
@@ -146,8 +147,8 @@ class KickstartGenerator(object):
             try:
                 user_group = []
                 if groups:
-                    for key, value in groups.iteritems():
-                        found = [x for x in value.itervalues() if fields[0] in x]
+                    for key, value in six.iteritems(groups):
+                        found = [x for x in six.itervalues(value) if fields[0] in x]
                         if found:
                             user_group.append(key)
 
@@ -316,13 +317,13 @@ class KickstartGenerator(object):
 
     def update_repositories(self, repositories):
         if repositories:
-            for key, value in repositories.iteritems():
+            for key, value in six.iteritems(repositories):
                 self.ks.handler.repo.dataList().append(self.ks.handler.RepoData(name=key, baseurl=value.strip()))
 
     def update_users(self, users):
         if not users:
             return None
-        for key, value in users.iteritems():
+        for key, value in six.iteritems(users):
             self.ks.handler.user.dataList().append(self.ks.handler.UserData(name=key,
                                                                             uid=value['uid'],
                                                                             gid=value['gid'],
@@ -333,8 +334,8 @@ class KickstartGenerator(object):
     def update_groups(self, groups):
         if not groups:
             return None
-        for key, value in groups.iteritems():
-            for gid, grouplist in value.iteritems():
+        for key, value in six.iteritems(groups):
+            for gid, grouplist in six.iteritems(value):
                 self.ks.handler.group.dataList().append(self.ks.handler.GroupData(name=key, gid=gid))
 
     def get_partition_layout(self, lsblk, vgs, lvdisplay):
@@ -377,12 +378,12 @@ class KickstartGenerator(object):
             return None
         setup_passwd = KickstartGenerator.get_kickstart_users('setup_passwd')
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in self.user_perm.iteritems():
+        for user, ids in six.iteritems(self.user_perm):
             if setup_passwd:
-                if [x for x in setup_passwd.iterkeys() if user in x]:
+                if [x for x in six.iterkeys(setup_passwd) if user in x]:
                     continue
             if uidgid:
-                if [x for x in uidgid.iterkeys() if user in x]:
+                if [x for x in six.iterkeys(uidgid) if user in x]:
                     continue
             kickstart_users[user] = ids
         if not kickstart_users:
@@ -394,9 +395,9 @@ class KickstartGenerator(object):
         if not self.groups:
             return None
         uidgid = KickstartGenerator.get_kickstart_users('uidgid', splitter='|')
-        for group, ids in self.group_perm.iteritems():
+        for group, ids in six.iteritems(self.group_perm):
             if uidgid:
-                if [x for x in uidgid.iterkeys() if group in x]:
+                if [x for x in six.iterkeys(uidgid) if group in x]:
                     continue
             kickstart_groups[group] = ids
         if not kickstart_groups:
@@ -408,9 +409,9 @@ class KickstartGenerator(object):
         kickstart_data = []
         try:
             kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
-                                              'rb',
-                                              method=True,
-                                              decode_flag=False)
+                                                         'rb',
+                                                         method=True,
+                                                         decode_flag=False)
         except IOError:
             log_message("File %s is missing. Partitioning layout has not to be complete." % self.kick_start_name,
                         level=logging.WARNING)
