@@ -71,13 +71,16 @@ class XccdfHelper(object):
         and finds out all INPLACERISK rows in TestResult tree.
         return value is get from function get_and_print_inplace_risk
         """
+        message = "'preupg' command was not run yet. Run 'preupg' before getting list of risks."
         try:
             content = FileHelper.get_file_content(xccdf_file, 'rb', False, False)
             if not content:
                 # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
+                log_message(message)
                 return -1
         except IOError:
             # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
+            log_message(message)
             return -1
 
         inplace_risk = []
