@@ -12,8 +12,8 @@ from pykickstart.constants import *
 from pykickstart.parser import *
 from pykickstart.version import *
 
-from preup.kickstart.kickstart_packages import YumGroupGenerator, PackagesHandling
-from preup.kickstart.kickstart_partitioning import PartitionGenerator
+from preup.kickstart.packages import YumGroupGenerator, PackagesHandling
+from preup.kickstart.partitioning import PartitionGenerator
 from preup.logger import *
 from preup.utils import FileHelper, ProcessHelper
 
