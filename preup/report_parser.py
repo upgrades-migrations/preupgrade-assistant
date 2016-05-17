@@ -4,8 +4,8 @@ import os
 import shutil
 import six
 
-from preup.utils import get_file_content, write_to_file
-from preup import xccdf, utils
+from preup.utils import FileHelper
+from preup.xccdf import XccdfHelper
 from preup import settings
 from xml.etree import ElementTree
 from preuputils import xml_tags
@@ -19,22 +19,33 @@ def remove_node(tree, tag):
     return tree.remove(tag)
 
 
-def upd_inspection(rule):
-    """
-    Function updates result to needs_action in case
-    of NONE, SLIGHT or MEDIUM risk
-    """
-    return rule.get("idref"), utils.get_needs_inspection()
+class ReportHelper(object):
 
+    @staticmethod
+    def get_needs_inspection():
+        return settings.needs_inspection
 
-def upd_action(rule):
-    """Function updates result to needs_action in caseof HIGH"""
-    return rule.get("idref"), utils.get_needs_action()
+    @staticmethod
+    def get_needs_action():
+        return settings.needs_action
 
+    @staticmethod
+    def upd_inspection(rule):
+        """
+        Function updates result to needs_action in case
+        of NONE, SLIGHT or MEDIUM risk
+        """
+        return rule.get("idref"), ReportHelper.get_needs_inspection()
 
-def upd_extreme(rule):
-    """Function does no update result for extreme risk"""
-    return None, "fail"
+    @staticmethod
+    def upd_action(rule):
+        """Function updates result to needs_action in caseof HIGH"""
+        return rule.get("idref"), ReportHelper.get_needs_action()
+
+    @staticmethod
+    def upd_extreme(rule):
+        """Function does no update result for extreme risk"""
+        return None, "fail"
 
 
 class ReportParser(object):
@@ -46,7 +57,7 @@ class ReportParser(object):
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
         try:
             # ElementTree.fromstring can't parse safely unicode string
-            content = get_file_content(report_path, 'rb', False, False)
+            content = FileHelper.get_file_content(report_path, 'rb', False, False)
         except IOError as ioerr:
             raise
         if not content:
@@ -93,7 +104,7 @@ class ReportParser(object):
         """Function updates self.target_tree with the new path"""
         self.path = path
         # ElementTree.fromstring can't parse safely unicode string
-        content = get_file_content(self.path, 'rb', False, False)
+        content = FileHelper.get_file_content(self.path, 'rb', False, False)
         if not content:
             return None
         self.target_tree = ElementTree.fromstring(content)
@@ -159,7 +170,7 @@ class ReportParser(object):
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')
         # we really must set encoding here! and suppress it in write_to_file
         data = ElementTree.tostring(self.target_tree, "utf-8")
-        write_to_file(self.path, 'wb', data, False)
+        FileHelper.write_to_file(self.path, 'wb', data, False)
         self.target_tree = ElementTree.parse(self.path).getroot()
 
     def modify_result_path(self, result_dir, scenario, mode):
@@ -182,13 +193,13 @@ class ReportParser(object):
 
     def update_inplace_risk(self, scanning_progress, rule, res):
         """Function updates inplace risk"""
-        inplace_risk = xccdf.get_check_import_inplace_risk(rule)
+        inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
         if inplace_risk:
-            return_value = xccdf.get_and_print_inplace_risk(0, inplace_risk)
+            return_value = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
             if int(return_value) < 3:
-                res.text = utils.get_needs_inspection()
+                res.text = ReportHelper.get_needs_inspection()
             elif int(return_value) == 3:
-                res.text = utils.get_needs_action()
+                res.text = ReportHelper.get_needs_action()
             for index, row in enumerate(scanning_progress.output_data):
                 if self.get_nodes_text(rule, "title") in row:
                     scanning_progress.output_data[index] = "{0}:{1}".format(
@@ -204,23 +215,23 @@ class ReportParser(object):
         changed_fields = []
         self.remove_empty_check_import()
         inplace_dict = {
-            0: upd_inspection,
-            1: upd_inspection,
-            2: upd_inspection,
-            3: upd_action,
-            4: upd_extreme,
+            0: ReportHelper.upd_inspection,
+            1: ReportHelper.upd_inspection,
+            2: ReportHelper.upd_inspection,
+            3: ReportHelper.upd_action,
+            4: ReportHelper.upd_extreme,
         }
         for rule in self.get_all_result_rules():
             result = [x for x in self.get_nodes(rule, "result") if x.text == "fail"]
             # Get all affected rules and taken their names
             for res in result:
-                inplace_risk = xccdf.get_check_import_inplace_risk(rule)
+                inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
                 # In case that report has state fail and
                 # no log_risk than it should be needs_inspection
                 if not inplace_risk:
                     changed, res.text = inplace_dict[0](rule)
                 else:
-                    inplace_num = int(xccdf.get_and_print_inplace_risk(0, inplace_risk))
+                    inplace_num = int(XccdfHelper.get_and_print_inplace_risk(0, inplace_risk))
                     changed, res.text = inplace_dict[inplace_num](rule)
                 if changed is not None:
                     changed_fields.append(changed+":"+res.text)
@@ -265,12 +276,12 @@ class ReportParser(object):
         """
         namespace_1 = 'http://checklists.nist.gov/xccdf/1.1'
         namespace_2 = 'http://checklists.nist.gov/xccdf/1.2'
-        content = get_file_content(file_name, "rb")
+        content = FileHelper.get_file_content(file_name, "rb")
         if direction:
             content = re.sub(namespace_2, namespace_1, content)
         else:
             content = re.sub(namespace_1, namespace_2, content)
-        write_to_file(file_name, 'wb', content)
+        FileHelper.write_to_file(file_name, 'wb', content)
 
     def update_check_description(self):
         for rule in self._get_all_rules():

@@ -1,0 +1,64 @@
+<ns0:Benchmark xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ns0="http://checklists.nist.gov/xccdf/1.2" id="xccdf_preupg-content_benchmark_all" xml:lang="en">
+  <ns0:status date="2013-12-16">draft</ns0:status>
+  <ns0:title>Preupgrade Assistant migration tool</ns0:title>
+  <ns0:description>
+    <html:p>
+      This is a checklist of configuration settings intended to be used as RedHat Enterprise Linux migration tool.
+    </html:p>
+    <html:p>
+      The checklist can be processed by various tools which enable users to:
+      <html:ul>
+        <html:li>define profiles with customized security policies,</html:li>
+        <html:li>audit systems to determine compliance with targeted security policy and</html:li>
+        <html:li>adjust system configuration.</html:li>
+      </html:ul>
+    </html:p>
+  </ns0:description>
+  <ns0:notice id="disclaimer">This XCCDF has been automatically generated, it should only serve as a baseline!</ns0:notice>
+  <ns0:front-matter />
+  <ns0:reference href="http://iase.disa.mil/stigs/index.html">Defense Information Systems Agency - Security Technical Implementation Guides (DISA STIG)</ns0:reference>
+  <ns0:reference href="https://www.pcisecuritystandards.org">Payment Card Industry - Data Security Standard (PCI DSS)</ns0:reference>
+  <ns0:platform idref="cpe:/o:redhat:enterprise_linux:6" />
+  <ns0:version>1.0</ns0:version>
+  <ns0:model system="urn:xccdf:scoring:flat" />
+  <ns0:Profile id="xccdf_preupg_profile_default">
+    <ns0:title>Preupgrade assistant default</ns0:title>
+    <ns0:description>
+      <html:p>
+        This profile is designed for the Preupgrade Assistant tool.
+      </html:p>
+    </ns0:description>
+  </ns0:Profile>
+  <ns0:Value id="xccdf_preupg_value_tmp_preupgrade" operator="equals" type="string">
+    <ns0:value>SCENARIO</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_state_upgrade" operator="equals" type="string">
+    <ns0:value>0</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_state_migrate" operator="equals" type="string">
+    <ns0:value>1</ns0:value>
+  </ns0:Value>
+   <ns0:Group id="xccdf_preupg_group_dummy_preupg" selected="true">
+    <ns0:title>_dummy_preupg</ns0:title>
+    <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" operator="equals" type="string">
+      <ns0:value>SCENARIO/dummy_preupg</ns0:value>
+    </ns0:Value>
+    <ns0:Rule id="xccdf_preupg_rule_dummy_preupg_dummy_preupg" selected="true">
+      <ns0:title>dumm_pass</ns0:title>
+      <ns0:description>
+        Dummy pass content
+        
+      </ns0:description>
+      <ns0:fixtext>_dummy_preupg_SOLUTION_MSG_TEXT</ns0:fixtext>
+      <ns0:check system="http://open-scap.org/page/SCE">
+          <ns0:check-import import-name="stdout">INPLACE_TAG</ns0:check-import>
+        <ns0:check-import import-name="stderr" />
+        <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />
+        <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_preupg_state_current_directory" />
+        <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_state_migrate" />
+        <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_state_upgrade" />
+        <ns0:check-content-ref href="dummy_preupg.sh" />
+      </ns0:check>
+    </ns0:Rule>
+  </ns0:Group>
+</ns0:Benchmark>

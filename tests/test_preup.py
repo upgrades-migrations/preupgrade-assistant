@@ -7,7 +7,8 @@ import os
 from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
-from preup import settings, remediate, utils, xml_manager
+from preup import settings, xml_manager
+from preup.utils import PostupgradeHelper, SystemIdentification, FileHelper
 from preup.report_parser import ReportParser
 
 import base
@@ -25,7 +26,7 @@ class TestPreupg(base.TestCase):
         """Basic test for whole program"""
 
         conf = {
-            "contents": "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_7/dummy_preupg/all-xccdf-migrate.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -35,7 +36,7 @@ class TestPreupg(base.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf-migrate.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
@@ -58,7 +59,7 @@ class TestPreupg(base.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml", "--mode", "migrate"])
+        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf-migrate.xml", "--mode", "migrate"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
@@ -70,22 +71,30 @@ class TestPreupg(base.TestCase):
         found_migrate = 0
         found_upgrade = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id") == "xccdf_preupg_value_migrate":
+            if values.get("id").endswith("_state_migrate"):
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 0:
+                    if value.text == "1":
                         found_migrate = 1
-            if values.get("id") == "xccdf_preupg_value_upgrade":
+            if values.get("id").endswith("_state_upgrade"):
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 0:
+                    if value.text == "0":
                         found_upgrade = 1
         self.assertEquals(found_migrate, 1)
         self.assertEquals(found_upgrade, 1)
+
+
+class TestPreupg(base.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
 
     def test_upgrade(self):
         """Basic test for whole program"""
 
         conf = {
-            "contents": "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml",
+            "contents": "tests/FOOBAR6_7/dummy_preupg/all-xccdf-upgrade.xml",
             "profile": "xccdf_preupg_profile_default",
             "result_dir": self.temp_dir,
             "skip_common": True,
@@ -96,7 +105,7 @@ class TestPreupg(base.TestCase):
         }
 
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml", "--mode", "upgrade"])
+        cli = CLI(["--contents", "tests/FOOBAR6_7/dummy_preupg/all-xccdf-upgrade.xml", "--mode", "upgrade"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
@@ -108,13 +117,13 @@ class TestPreupg(base.TestCase):
         found_migrate = 0
         found_upgrade = 0
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id") == "xccdf_preupg_value_upgrade":
+            if values.get("id").endswith("_state_migrate"):
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 0:
+                    if value.text == "0":
                         found_migrate = 1
-            if values.get("id") == "xccdf_preupg_value_upgrade":
+            if values.get("id").endswith("_state_upgrade"):
                 for value in rp.get_nodes(values, "value"):
-                    if int(value.text) == 0:
+                    if value.text == "1":
                         found_upgrade = 1
         self.assertEquals(found_migrate, 1)
         self.assertEquals(found_upgrade, 1)
@@ -122,7 +131,7 @@ class TestPreupg(base.TestCase):
 
 class TestXMLUpdates(base.TestCase):
     def setUp(self):
-        self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf.xml"
+        self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf-upgrade.xml"
         self.test_content = self.content+".test"
 
     def tearDown(self):
@@ -147,7 +156,7 @@ class TestXMLUpdates(base.TestCase):
         found_tmp = 0
 
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
-            if values.get("id") == "xccdf_preupg_value_tmp_preupgrade":
+            if values.get("id").endswith("_tmp_preupgrade"):
                 for value in rp.get_nodes(values, "value"):
                     if value.text == result_path:
                         found_tmp = 1
@@ -224,9 +233,9 @@ class TestHashes(base.TestCase):
         """
         self.dir_name = "tests/hashes"
         os.mkdir(self.dir_name)
-        utils.write_to_file(os.path.join(self.dir_name, "post_script"), 'wb', text_to_hash)
-        remediate.hash_postupgrade_file(False, self.dir_name)
-        return_value = remediate.hash_postupgrade_file(False, self.dir_name, check=True)
+        FileHelper.write_to_file(os.path.join(self.dir_name, "post_script"), 'wb', text_to_hash)
+        PostupgradeHelper.hash_postupgrade_file(False, self.dir_name)
+        return_value = PostupgradeHelper.hash_postupgrade_file(False, self.dir_name, check=True)
         self.assertTrue(return_value)
 
 
@@ -353,11 +362,11 @@ class TestPreupgradePrefix(base.TestCase):
         settings.prefix = 'preupgrade'
 
     def test_correct_prefix(self):
-        version = utils.get_assessment_version('FOOBAR6_7')
+        version = SystemIdentification.get_assessment_version('FOOBAR6_7')
         self.assertEqual(version, ['6', '7'])
 
     def test_wrong_prefix(self):
-        version = utils.get_assessment_version('FOOBAR6_CENTOS6')
+        version = SystemIdentification.get_assessment_version('FOOBAR6_CENTOS6')
         self.assertEqual(version, None)
 
 
@@ -366,11 +375,11 @@ class TestPremigratePrefix(base.TestCase):
         settings.prefix = 'premigrate'
 
     def test_correct_prefix(self):
-        version = utils.get_assessment_version('FOOBAR6_CENTOS6')
+        version = SystemIdentification.get_assessment_version('FOOBAR6_CENTOS6')
         self.assertEqual(version, ['6', '6'])
 
     def test_wrong_prefix(self):
-        version = utils.get_assessment_version('FOOBAR6_7')
+        version = SystemIdentification.get_assessment_version('FOOBAR6_7')
         self.assertEqual(version, None)
 
 

@@ -5,7 +5,7 @@ Class creates a set of packages for migration scenario
 """
 
 import os
-from preup.utils import get_file_content
+from preup.utils import FileHelper
 
 
 class YumGroupManager(object):
@@ -99,7 +99,7 @@ class YumGroupGenerator(object):
             return [x for x in s.strip().split(',') if x]
 
         for fp in self.group_def_fp:
-            lines = get_file_content(fp, 'r', True)
+            lines = FileHelper.get_file_content(fp, 'r', True)
             for line in lines:
                 stuff = line.split('|')
                 name = stuff[0].strip()
@@ -111,10 +111,11 @@ class YumGroupGenerator(object):
                     yg = YumGroup(name, mandatory, default, optional)
                     self.gm.add(yg)
 
-    def remove_packages(self):
+    def remove_packages(self, packages):
         for pkg in self.removed_packages:
-            if pkg in self.packages:
-                self.packages.remove(pkg)
+            if pkg in packages:
+                packages.remove(pkg)
+        return packages
 
     def remove_dependencies(self, output_packages):
         # Remove dependencies from kickstart

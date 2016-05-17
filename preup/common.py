@@ -10,7 +10,7 @@ import platform
 import datetime
 import shutil
 from distutils import dir_util
-from preup import utils
+from preup.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
 from preup.logger import log_message
 from preup import settings
 
@@ -27,7 +27,7 @@ class Common(object):
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
-        self.lines = utils.get_file_content(self.conf.common_script, "rb", method=True)
+        self.lines = FileHelper.get_file_content(self.conf.common_script, "rb", method=True)
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
@@ -42,7 +42,7 @@ class Common(object):
         """Switch to current directory"""
         com_dir = self.get_common_dir()
         if not os.path.exists(com_dir):
-            utils.check_or_create_temp_dir(com_dir)
+            DirHelper.check_or_create_temp_dir(com_dir)
         self.cwd = os.getcwd()
         os.chdir(self.get_common_dir())
 
@@ -69,7 +69,7 @@ class Common(object):
                             new_line=False, log=False)
                 start_time = datetime.datetime.now()
                 common_file_path = self.common_logfiles(log_file)
-                utils.run_subprocess(cmd, output=common_file_path, shell=True)
+                ProcessHelper.run_subprocess(cmd, output=common_file_path, shell=True)
                 end_time = datetime.datetime.now()
                 diff = end_time - start_time
                 log_message(" %sfinished (time %.2d:%.2ds)" % ('\b' * 8,
@@ -145,7 +145,7 @@ class Common(object):
 
     def prep_symlinks(self, assessment_dir, scenario=""):
         """Prepare a symlinks for relevant architecture and Server Variant"""
-        server_variant = utils.get_variant()
+        server_variant = SystemIdentification.get_variant()
         if server_variant is None:
             return
         self.common_result_dir = os.path.join(assessment_dir, settings.common_name)
@@ -163,7 +163,7 @@ class Common(object):
            and os.path.exists(os.path.join(self.common_result_dir, 'i386'))):
             os.symlink(os.path.join(self.common_result_dir, 'i386'),
                        os.path.join(self.common_result_dir, 'i686'))
-        add_ons = utils.get_addon_variant()
+        add_ons = SystemIdentification.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
         if not os.path.exists(dir_name):

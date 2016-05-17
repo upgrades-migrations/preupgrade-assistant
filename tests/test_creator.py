@@ -7,13 +7,13 @@ import shutil
 
 import base
 
-from preup_creator.ui_helper import UIHelper
-from preup import utils
+from preup.creator.ui_helper import UIHelper
+from preup.utils import FileHelper
 
 
 def load_file(filename):
     try:
-        lines = utils.get_file_content(filename, "rb", True)
+        lines = FileHelper.get_file_content(filename, "rb", True)
         lines = [x.strip() for x in lines]
     except IOError:
         assert False

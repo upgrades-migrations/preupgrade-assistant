@@ -11,11 +11,10 @@ from pykickstart.constants import *
 from pykickstart.parser import *
 from pykickstart.version import *
 
-from preup import utils
 from preup.kickstart.kickstart_packages import YumGroupGenerator, PackagesHandling
 from preup.kickstart.kickstart_partitioning import PartitionGenerator
 from preup.logger import *
-from preup.utils import write_to_file, get_file_content
+from preup.utils import FileHelper, ProcessHelper
 
 
 class KickstartGenerator(object):
@@ -51,9 +50,9 @@ class KickstartGenerator(object):
 
     def _remove_obsolete_data(self):
         if os.path.exists(KickstartGenerator.get_kickstart_path(self.dir_name)):
-            lines = get_file_content(KickstartGenerator.get_kickstart_path(self.dir_name), "r", method=True)
+            lines = FileHelper.get_file_content(KickstartGenerator.get_kickstart_path(self.dir_name), "r", method=True)
             lines = [x for x in lines if not x.startswith('key')]
-            write_to_file(KickstartGenerator.get_kickstart_path(self.dir_name), "w", lines)
+            FileHelper.write_to_file(KickstartGenerator.get_kickstart_path(self.dir_name), "w", lines)
 
     @staticmethod
     def get_kickstart_path(dir_name):
@@ -86,7 +85,7 @@ class KickstartGenerator(object):
         full_path_name = os.path.join(settings.KS_DIR, filename)
         if not os.path.exists(full_path_name):
             return []
-        lines = get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
+        lines = FileHelper.get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
         # Remove newline character from list
         package_list = []
         for line in lines:
@@ -115,7 +114,7 @@ class KickstartGenerator(object):
         :return: dictionary with enabled repolist
         """
         try:
-            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
@@ -137,7 +136,7 @@ class KickstartGenerator(object):
         :return: dictionary with users
         """
         try:
-            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
@@ -170,7 +169,7 @@ class KickstartGenerator(object):
         :return: dictionary with users
         """
         try:
-            lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
@@ -187,7 +186,7 @@ class KickstartGenerator(object):
     @staticmethod
     def _get_sizes(filename):
         part_sizes = {}
-        lines = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+        lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
         lines = [x for x in lines if x.startswith('/')]
         for line in lines:
             fields = line.strip().split(' ')
@@ -247,7 +246,7 @@ class KickstartGenerator(object):
         remove_pkg_optional = os.path.join(settings.KS_DIR, 'RemovedPkg-optional')
         if os.path.exists(remove_pkg_optional):
             try:
-                removed_packages = get_file_content(remove_pkg_optional, 'r', method=True)
+                removed_packages = FileHelper.get_file_content(remove_pkg_optional, 'r', method=True)
             except IOError:
                 return None
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
@@ -256,14 +255,14 @@ class KickstartGenerator(object):
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(ph.get_packages(), removed_packages, installed_dependencies, *abs_fps)
         self.groups, self.packages, self.missing_installed = ygg.get_list()
-        ygg.remove_packages()
+        self.packages = ygg.remove_packages(self.packages)
 
     def delete_obsolete_issues(self):
         """ Remove obsolete items which does not exist on RHEL-7 anymore"""
         self.ks.handler.bootloader.location = None
 
     def embed_script(self, tarball):
-        tarball_content = get_file_content(tarball, 'rb', decode_flag=False)
+        tarball_content = FileHelper.get_file_content(tarball, 'rb', decode_flag=False)
         tarball_name = os.path.splitext(os.path.splitext(os.path.basename(tarball))[0])[0]
         script_str = ''
         try:
@@ -271,7 +270,7 @@ class KickstartGenerator(object):
         except AttributeError:
             log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py')
             return
-        script_str = get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
+        script_str = FileHelper.get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
         if not script_str:
             log_message("Can't open script template: {0}".format(script_path))
             return
@@ -284,7 +283,7 @@ class KickstartGenerator(object):
 
     def save_kickstart(self):
         kickstart_data = self.ks.handler.__str__()
-        write_to_file(self.kick_start_name, 'wb', kickstart_data)
+        FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
     def update_kickstart(self, text, cnt):
         self.ks_list.insert(cnt, text)
@@ -305,7 +304,7 @@ class KickstartGenerator(object):
     @staticmethod
     def get_volume_info(filename, first_index, second_index):
         try:
-            volume_list = get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+            volume_list = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
         except IOError:
             log_message("File %s is missing. Partitioning layout has not to be complete." % filename, level=logging.WARNING)
             return None
@@ -346,7 +345,7 @@ class KickstartGenerator(object):
         """
         lsblk_filename = os.path.join(settings.KS_DIR, lsblk)
         try:
-            layout = get_file_content(lsblk_filename, 'rb', method=True, decode_flag=False)
+            layout = FileHelper.get_file_content(lsblk_filename, 'rb', method=True, decode_flag=False)
         except IOError:
             log_message("File %s was not generated by a content. Kickstart does not contain partitioning layout" % lsblk_filename)
             self.part_layout = None
@@ -408,7 +407,7 @@ class KickstartGenerator(object):
         list_issues = [' ', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
-            kickstart_data = get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
+            kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
                                               'rb',
                                               method=True,
                                               decode_flag=False)
@@ -420,7 +419,7 @@ class KickstartGenerator(object):
             tag = [com for com in list_issues if row.startswith(com)]
             if tag:
                 kickstart_data[index] = "#" + row
-        write_to_file(self.kick_start_name, 'wb', kickstart_data)
+        FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
     def generate(self):
         if not self.collect_data():
@@ -458,7 +457,7 @@ class KickstartGenerator(object):
     @staticmethod
     def kickstart_scripts():
         try:
-            lines = utils.get_file_content(os.path.join(settings.common_dir,
+            lines = FileHelper.get_file_content(os.path.join(settings.common_dir,
                                                         settings.KS_SCRIPTS),
                                            "rb",
                                            method=True)
@@ -470,7 +469,7 @@ class KickstartGenerator(object):
                     continue
                 cmd, name = line.split("=", 2)
                 kickstart_file = os.path.join(settings.KS_DIR, name)
-                utils.run_subprocess(cmd, output=kickstart_file, shell=True)
+                ProcessHelper.run_subprocess(cmd, output=kickstart_file, shell=True)
         except IOError:
             pass
 
