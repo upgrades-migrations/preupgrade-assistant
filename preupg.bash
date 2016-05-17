@@ -13,7 +13,8 @@ _preupg() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="-s --scan -v --verbose -d --debug --skip-common -u --upload -r --results --list-contents-set -c --contents -a --apply --riskcheck --force --text -m --mode --cleanup"
+    opts="-s --scan -v --verbose -d --debug --skip-common -u --upload -r --results --list-contents-set -c --contents
+     -a --apply --riskcheck --force --text -m --mode --cleanup --select-rules --list-rules"
 
     #echo "SS${COMP_CWORD} and ${COMP_WORDS} and ${prev} and ${cur}SS"
     if [[ ${COMP_CWORD} == 1 && ${COMP_WORDS} == "preupg" ]]; then
