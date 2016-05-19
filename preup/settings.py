@@ -30,7 +30,7 @@ xml_result_name = result_name + '.xml'
 html_result_name = result_name + '.html'
 
 # base name of custom xsl stylesheet
-xsl_sheet = "preup.xsl"
+xsl_sheet = "xccdf-report.xsl"
 
 share_dir = "/usr/share"
 # sources delivered by preupgrade assistant package

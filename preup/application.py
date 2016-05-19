@@ -30,6 +30,11 @@ from preuputils.compose import XCCDFCompose
 from preup.version import VERSION
 
 
+def get_xsl_stylesheet():
+    """Return full XSL stylesheet path"""
+    return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
+
+
 def fault_repr(self):
     """monkey patching Fault's repr method so newlines are actually interpreted"""
     log_message(self.faultString)
@@ -97,7 +102,10 @@ class Application(object):
             set_level(logging.DEBUG)
 
     def get_command_generate(self):
-        command_generate = ['xccdf', 'generate', 'report']
+        if not SystemIdentification.get_system():
+            command_generate = ['xccdf', 'generate', 'custom']
+        else:
+            command_generate = ['xccdf', 'generate', 'report']
         return command_generate
 
     def get_third_party_name(self):
@@ -155,6 +163,8 @@ class Application(object):
         """Function builds a command for generating results"""
         command = self.get_binary()
         command.extend(self.get_command_generate())
+        if not SystemIdentification.get_system():
+            command.extend(("--stylesheet", get_xsl_stylesheet()))
         command.extend(("--output", html_file))
         command.append(FileHelper.check_xml(xml_file))
         return command
@@ -168,8 +178,6 @@ class Application(object):
         command.append('--progress')
         command.extend(('--profile', self.conf.profile))
 
-        # take name of content and create report: <content_name>.html
-        #command.extend(('--report', report))
         command.extend(("--results", self.result_file))
         command.append(FileHelper.check_xml(self.content))
         return command

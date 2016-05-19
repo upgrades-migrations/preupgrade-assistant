@@ -4,10 +4,11 @@
 Class creates a set of packages for migration scenario
 """
 
-import os
 import six
 
 from preup.utils import FileHelper
+from preup.logger import *
+from preup.kickstart.application import BaseKickstart
 
 
 class YumGroupManager(object):
@@ -142,10 +143,10 @@ class YumGroupGenerator(object):
         return output_groups, output_packages, missing_installed
 
 
-class PackagesHandling(object):
+class PackagesHandling(BaseKickstart):
     """class for replacing/updating package names"""
 
-    def __init__(self, package_list, obsoleted, *args, **kwargs):
+    def __init__(self, handler):
         """
         we dont take info about groups from yum, but from dark matrix, format is:
 
@@ -154,15 +155,115 @@ class PackagesHandling(object):
         package_list is a list of packages which should aggregated into groups
         args is a list of filepaths to files where group definitions are stored
         """
-        self.packages = package_list
-        self.obsoleted = obsoleted
+        self.packages = None
+        self.obsoleted = None
+        self.handler = handler
+        self.installed_dependencies = None
+        self.groups = None
+        self.missing_installed = None
 
     def replace_obsolete(self):
         # obsolete list has format like
         # old_pkg|required-by-pkg|obsoleted-by-pkgs|repo-id
-        for pkg in self.obsoleted:
-            fields = pkg.split('|')
-            self.packages.append(fields[2])
+        if self.packages:
+            for pkg in self.obsoleted:
+                fields = pkg.split('|')
+                self.packages.append(fields[2])
 
-    def get_packages(self):
-        return self.packages
+    @staticmethod
+    def get_package_list(filename, field=None):
+        """
+        content packages/ReplacedPackages is taking care of packages, which were
+        replaced/obsoleted/removed between releases. It produces a file with a list
+        of packages which should be installed.
+        """
+        full_path_name = os.path.join(settings.KS_DIR, filename)
+        if not os.path.exists(full_path_name):
+            return []
+        lines = FileHelper.get_file_content(full_path_name, 'rb', method=True, decode_flag=True)
+        # Remove newline character from list
+        package_list = []
+        for line in lines:
+            # We have to go over all lines and remove all commented.
+            if line.startswith('#'):
+                continue
+            if field is None:
+                package_list.append(line.strip())
+            else:
+                try:
+                    # Format of file is like
+                    # old-package|required-by-pkgs|replaced-by-pkgs|repoid
+                    pkg_field = line.split('|')
+                    if pkg_field[field] is not None:
+                        package_list.append(pkg_field[field])
+                except ValueError:
+                    # Line seems to be wrong, go to the next one
+                    pass
+        return package_list
+
+    @staticmethod
+    def get_installed_packages():
+        prefix = 'RHRHEL7rpmlist_'
+        result_list = []
+        list_files = ['kept', 'kept-notbase',
+                      'replaced', 'replaced-notbase']
+        for l in list_files:
+            try:
+                result_list.extend(PackagesHandling.get_package_list(prefix + l, 2))
+            except IOError:
+                log_message("File '%s' was not found. Skipping package generation.", (prefix + l))
+                return None
+        return result_list
+
+    @staticmethod
+    def get_installed_dependencies():
+        dep_list = []
+        deps = PackagesHandling.get_package_list('first_dependencies', field=None)
+        for pkg in deps:
+            pkg = pkg.strip()
+            if pkg.startswith('/'):
+                continue
+            if '.so' in pkg:
+                continue
+            if '(' in pkg:
+                dep_list.append(pkg.split('(')[0])
+                continue
+            dep_list.append(pkg.split()[0])
+
+        return dep_list
+
+    def output_packages(self):
+        """ outputs %packages section """
+        self.packages = PackagesHandling.get_installed_packages()
+        if self.packages is None:
+            return None
+        try:
+            self.obsoleted = PackagesHandling.get_package_list('RHRHEL7rpmlist_obsoleted')
+        except IOError:
+            self.obsoleted = []
+        self.installed_dependencies = PackagesHandling.get_installed_dependencies()
+        # remove files which are replaced by another package
+        self.replace_obsolete()
+
+        remove_pkg_optional = os.path.join(settings.KS_DIR, 'RemovedPkg-optional')
+        if os.path.exists(remove_pkg_optional):
+            try:
+                removed_packages = FileHelper.get_file_content(remove_pkg_optional, 'r', method=True)
+            except IOError:
+                return None
+        # TODO We should think about if ObsoletedPkg-{required,optional} should be used
+        if not removed_packages:
+            return None
+        abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
+        ygg = YumGroupGenerator(self.packages, removed_packages, self.installed_dependencies, *abs_fps)
+        self.groups, self.packages, self.missing_installed = ygg.get_list()
+        self.packages = ygg.remove_packages(self.packages)
+
+    def run_module(self, *args, **kwargs):
+        self.output_packages()
+        if self.packages or self.groups:
+            self.handler.packages.packageList = self.packages
+            self.handler.packages.groupList = self.groups
+            if self.missing_installed:
+                self.handler.packages.excludedList = self.missing_installed
+

@@ -15,6 +15,7 @@ recursive-include postupgrade.d *
 recursive-include scripts *.sh
 recursive-include tests *
 recursive-include preup_creator *
+recursive-include openscap *
 
 include preup_ui/licenses/*
 include preup_ui/report/fixtures/initial_data.json
