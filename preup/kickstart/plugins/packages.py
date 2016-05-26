@@ -166,9 +166,11 @@ class PackagesHandling(BaseKickstart):
         # obsolete list has format like
         # old_pkg|required-by-pkg|obsoleted-by-pkgs|repo-id
         if self.packages:
-            for pkg in self.obsoleted:
-                fields = pkg.split('|')
-                self.packages.append(fields[2])
+            for cnt, pkgs in enumerate(self.packages):
+                found = [x for x in self.obsoleted if pkgs in x]
+                if found:
+                    fields = found[0].split('|')
+                    self.packages[cnt] = fields[2]
 
     @staticmethod
     def get_package_list(filename, field=None):
@@ -216,7 +218,7 @@ class PackagesHandling(BaseKickstart):
         return result_list
 
     @staticmethod
-    def get_installed_dependencies():
+    def get_installed_dependencies(obsoleted):
         dep_list = []
         deps = PackagesHandling.get_package_list('first_dependencies', field=None)
         for pkg in deps:
@@ -228,7 +230,12 @@ class PackagesHandling(BaseKickstart):
             if '(' in pkg:
                 dep_list.append(pkg.split('(')[0])
                 continue
-            dep_list.append(pkg.split()[0])
+            found = [x for x in obsoleted if pkg in x]
+            if found:
+                fields = found[0].split('|')
+                dep_list.append(fields[2])
+            else:
+                dep_list.append(pkg.split()[0])
 
         return dep_list
 
@@ -241,7 +248,9 @@ class PackagesHandling(BaseKickstart):
             self.obsoleted = PackagesHandling.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
             self.obsoleted = []
-        self.installed_dependencies = PackagesHandling.get_installed_dependencies()
+        self.installed_dependencies = PackagesHandling.get_installed_dependencies(self.obsoleted)
+        self.installed_dependencies = list(set(self.installed_dependencies))
+        self.installed_dependencies.sort()
         # remove files which are replaced by another package
         self.replace_obsolete()
 
