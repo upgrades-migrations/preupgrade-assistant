@@ -71,13 +71,16 @@ class FirewallHandling(BaseKickstart):
     def get_firewall_data(self):
         port = 'port'
         service = 'service'
-        for line in self.firewall:
-            if line.startswith(service):
-                self.services = FirewallHandling.get_services(line, service)
-            if line.startswith(port):
-                self.ports = FirewallHandling.get_ports(line, port)
+        if self.firewall:
+            for line in self.firewall:
+                if line.startswith(service):
+                    self.services = FirewallHandling.get_services(line, service)
+                if line.startswith(port):
+                    self.ports = FirewallHandling.get_ports(line, port)
 
     def update_firewall(self):
+        if self.firewall is None:
+            return
         if self.services or self.ports:
             self.handler.enabled = True
             if self.services:
