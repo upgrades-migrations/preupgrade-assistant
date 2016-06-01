@@ -380,9 +380,7 @@ class Application(object):
         # This function finalize XML operations
         self.finalize_xml_files()
         if self.conf.text:
-            ProcessHelper.run_subprocess(self.get_cmd_convertor(),
-                           print_output=False,
-                           shell=True)
+            ProcessHelper.run_subprocess(self.get_cmd_convertor(), print_output=False, shell=True)
 
     def _get_reports(self):
         reports = [self.get_default_xml_result_path()]
@@ -402,8 +400,8 @@ class Application(object):
         """
         # Copy postupgrade.d special files
         PostupgradeHelper.special_postupgrade_scripts(self.conf.result_dir)
-        PostupgradeHelper.hash_postupgrade_file(self.conf.verbose,
-                                        self.get_postupgrade_dir())
+        PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
+
         solution_files = self.report_parser.get_solution_files()
         for report in self._get_reports():
             self.xml_mgr.find_solution_files(report.split('.')[0], solution_files)
@@ -450,12 +448,12 @@ class Application(object):
         scenario = self.get_scenario()
         if scenario is None:
             log_message('Invalid scenario: %s' % self.conf.contents)
-            sys.exit(3)
+            sys.exit(10)
         scenario_path = os.path.join(self.conf.source_dir, scenario)
         if not os.path.isdir(scenario_path):
             log_message('Invalid scenario: %s' % scenario,
                         level=logging.ERROR)
-            sys.exit(3)
+            sys.exit(10)
 
     def generate_report(self):
         """Function generates report"""
@@ -610,11 +608,11 @@ class Application(object):
             if int(cnt) < 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
-                return 1
+                return 10
             if int(cnt) > 1:
                 log_message("Preupgrade assistant detects more then 1 set of contents in directory%s. \
 If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
-                return 1
+                return 10
 
         if self.conf.list_contents_set:
             for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
@@ -631,13 +629,13 @@ If you would like to use this tool, you have to specify correct upgrade path par
 
         if self.conf.mode and self.conf.select_rules:
             log_message(settings.options_not_allowed)
-            return 1
+            return 11
 
-        if not self.conf.riskcheck and not self.conf.apply and not self.conf.cleanup and not self.conf.kickstart:
+        if not self.conf.riskcheck and not self.conf.cleanup and not self.conf.kickstart:
             # If force option is not mentioned and user select NO then exits
             if not self.conf.force and not show_message(settings.warning_text):
                 # We do not want to continue
-                return 0
+                return 12
 
         if self.conf.text:
             # Test whether w3m, lynx and elinks packages are installed
@@ -649,12 +647,12 @@ If you would like to use this tool, you have to specify correct upgrade path par
                     break
             if not found:
                 log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
-                return 0
+                return 16
 
         if os.geteuid() != 0:
             print("Need to be root", end="\n")
             if not self.conf.debug:
-                return 2
+                return 13
 
         if self.conf.cleanup:
             self.clean_preupgrade_environment()
@@ -667,7 +665,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
         if self.conf.kickstart:
             if not os.path.exists(self.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before kickstart generation.")
-                return 1
+                return 14
             kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
             kg.main()
             return 0
@@ -679,11 +677,11 @@ If you would like to use this tool, you have to specify correct upgrade path par
             if self.conf.scan.startswith("/"):
                 log_message('Specify correct upgrade path parameter like -s RHEL6_7')
                 log_message('Upgrade path is provided by command preupg --list')
-                return 1
+                return 10
             if not os.path.isdir(os.path.join(self.conf.source_dir, self.conf.scan)):
                 log_message('Specify correct upgrade path parameter like -s RHEL6_7')
                 log_message('Upgrade path is provided by command preupg --list')
-                return 1
+                return 10
 
         if self.conf.contents:
             self.content = os.path.join(os.getcwd(), self.conf.contents)
@@ -695,15 +693,15 @@ If you would like to use this tool, you have to specify correct upgrade path par
         self.common = Common(self.conf)
         if not self.conf.skip_common:
             if not self.common.common_results():
-                return 1
+                return 17
 
         if self.conf.scan or self.conf.contents:
             if not os.path.exists(self.binary):
                 log_message("Oscap with SCE enabled is not installed")
-                return 1
+                return 15
             if not os.access(self.binary, os.X_OK):
                 log_message("Oscap with SCE %s is not executable" % self.binary)
-                return 1
+                return 15
 
             current_dir = os.getcwd()
             os.chdir("/tmp")

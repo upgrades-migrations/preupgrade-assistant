@@ -63,9 +63,38 @@ Convert HTML results to text form by elinks, lynx or w3m.
 .B \-v, --verbose
 Shows more information during assessment. Verbose can be repeated more times.
 
+.SH RETURN STATES
+\fBpreupg\fP command returns several return values.
+
+Possible return values are:
+\fB0\fP - preupg works properly and was successful even modules went properly.
+
+\fB1\fP - preupg works properly but modules finishes with 1. Modules exits with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
+
+\fB2\fP - preupg works properly but modules finishes with 2. Modules exits with results UNKNOWN, FAILED.
+
+\fB3\fP - preupg works properly but modules finishes with 2. Modules exits with results ERROR.
+
+\fB10\fP - preupg does not find a proper upgrade scenario.
+
+\fB11\fP - preupg is executed with parameters \fBmode\fP and \fBselect\-rules\fP. This is not allowed.
+
+\fB12\fP - preupg is executed with parameters \fBriskcheck\fP, \fBcleanup\fP and \fBkickstart\fP. This options are not allowed together.
+
+\fB13\fP - preupg has to be executed as \fBroot\fP.
+
+\fB14\fP - preupg has to be executed before kickstart generation.
+
+\fB15\fP - openscap and openscap-engine-sce are not installed on the system.
+
+\fB16\fP - you specified a text convertor which does not exist. Allowe convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
+
+\fB17\fP - File \fB/usr/share/preupgrade/common/scripts.txt\fP is missing. Preupgrade-assistant is not installed properly. Reinstall it.
+
+
 .SH NOTES
-All common log files are stored in /var/cache/preupgrade/common directory.
-Assessment results are stored in /root/preupgrade directory. Tarballs with all assessments are stored in directory /root/preupgrade-results.
+All common log files are stored in \fB/var/cache/preupgrade/common\fP directory.
+Assessment results are stored in \fB/root/preupgrade\fP directory. Tarballs with all assessments are stored in directory \fB/root/preupgrade-results\fP.
 
 .SH AUTHORS
 Petr Hracek, <phracek@redhat.com> (man page)
