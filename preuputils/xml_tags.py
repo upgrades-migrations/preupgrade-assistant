@@ -68,6 +68,7 @@ RULE_SECTION_VALUE = """\t\t<check-export export-name="{value_name_upper}" value
 DIC_VALUES = {'current_directory': '/root/preupgrade',
               'solution_file': '',
               'result_part': '',
+              'module_name': '',
               }
 
 GLOBAL_DIC_VALUES = {'tmp_preupgrade': 'SCENARIO',
