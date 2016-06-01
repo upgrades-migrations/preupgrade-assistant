@@ -71,7 +71,7 @@ log()
         fi
     fi
 
-    echo "$SEVERITY $COMPONENT: $1"
+    echo "$SEVERITY $COMPONENT: $1" >&2
 }
 
 log_debug()

@@ -200,7 +200,7 @@ def log(severity, message, component_arg=None):
     """log message to stdout"""
     global component
     comp_show = component_arg or component
-    print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stdout)
+    print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
 def log_error(message, component_arg=None):
