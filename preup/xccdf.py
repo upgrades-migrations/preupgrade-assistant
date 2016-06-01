@@ -85,6 +85,17 @@ class XccdfHelper(object):
 
         inplace_risk = []
         target_tree = ElementTree.fromstring(content)
+        # Check if report does not contain UNKNOWN or ERROR results.
+        results = []
+        for profile in target_tree.findall(XMLNS + "TestResult"):
+            for check in profile.findall(".//" + XMLNS + "result"):
+                if check.text not in results:
+                    results.append(check.text)
+        if 'error' in results:
+            return 3
+        if 'unknown' in results:
+            return 2
+
         for profile in target_tree.findall(XMLNS + "TestResult"):
             inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
 
