@@ -109,6 +109,8 @@ needs_inspection = "needs_inspection"
 # new state needs_action
 needs_action = "needs_action"
 
+openscap_binary = "/usr/bin/oscap"
+
 # The full license text
 license = u"""Preupgrade assistant performs system upgradability assessment
 and gathers information required for successful operating system upgrade.

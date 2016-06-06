@@ -136,7 +136,7 @@ class FileHelper(object):
             log_message("Provided file is not a valid XML file", level=logging.ERROR)
             raise RuntimeError("Provided file is not a valid XML file")
 
-    @classmethod
+    @staticmethod
     def get_interpreter(filename, verbose=False):
         """
         The function returns interpreter
@@ -344,6 +344,8 @@ class ProcessHelper(object):
             if function is None:
                 if print_output:
                     print (stdout_data, end="")
+                else:
+                    pass
             else:
                 # I don't know what functions can come here, however
                 # it's not common so put only unicode data here again.
@@ -507,6 +509,11 @@ class TarballHelper(object):
 
         return os.path.join(settings.tarball_result_dir, tarball_name)
 
+    @staticmethod
+    def get_default_tarball_path(result_dir, tarball_name):
+        """Returns full tarball path"""
+        return os.path.join(result_dir, tarball_name)
+
 
 class ConfigHelper(object):
     @staticmethod
@@ -645,3 +652,81 @@ class PostupgradeHelper(object):
                         os.path.join(result_dir,
                                      settings.postupgrade_dir,
                                      val))
+
+
+class OpenSCAPHelper(object):
+
+    def __init__(self, result_dir, result_name, xml_result_name, html_result_name, content, third_party=None):
+        self.binary = [settings.openscap_binary]
+        self.result_dir = result_dir
+        self.third_party = third_party
+        self.xml_result_name = xml_result_name
+        self.html_result_name = html_result_name
+        self.result_name = result_name
+        self.content = content
+
+    @staticmethod
+    def get_xsl_stylesheet():
+        """Return full XSL stylesheet path"""
+        return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
+
+    @staticmethod
+    def get_command_generate():
+        if not SystemIdentification.get_system():
+            command_generate = ['xccdf', 'generate', 'custom']
+        else:
+            command_generate = ['xccdf', 'generate', 'report']
+        return command_generate
+
+    def build_generate_command(self, xml_file, html_file):
+        """Function builds a command for generating results"""
+        command = [settings.openscap_binary]
+        command.extend(OpenSCAPHelper.get_command_generate())
+        if not SystemIdentification.get_system():
+            command.extend(("--stylesheet", OpenSCAPHelper.get_xsl_stylesheet()))
+        command.extend(("--output", html_file))
+        command.append(FileHelper.check_xml(xml_file))
+        return command
+
+    def build_command(self):
+        """create command from configuration"""
+        command_eval = ['xccdf', 'eval']
+        result_file = self.get_default_xml_result_path()
+        command = [settings.openscap_binary]
+        report = self.get_default_html_result_path()
+        command.extend(command_eval)
+        command.append('--progress')
+        command.extend(('--profile', settings.profile))
+
+        command.extend(("--results", result_file))
+        command.append(FileHelper.check_xml(self.content))
+        return command
+
+    @staticmethod
+    def get_third_party_name(third_party):
+        """Function returns correct third party name"""
+        if third_party != "" and not third_party.endswith("_"):
+            third_party += "_"
+        return third_party
+
+    def get_default_xml_result_path(self):
+        """Returns full XML result path"""
+        return os.path.join(self.result_dir,
+                            OpenSCAPHelper.get_third_party_name("") + self.xml_result_name)
+
+    def get_default_html_result_path(self):
+        """Returns full HTML result path"""
+        return os.path.join(self.result_dir,
+                            OpenSCAPHelper.get_third_party_name("") + self.html_result_name)
+
+    @staticmethod
+    def get_default_txt_result_path(self):
+        """
+        Function returns default txt result path based on result_dir
+
+        :return: default txt result path
+        """
+        return os.path.join(self.result_dir,
+                            OpenSCAPHelper.get_third_party_name("") + self.result_name + ".txt")
+
+

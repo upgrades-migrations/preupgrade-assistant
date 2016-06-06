@@ -9,6 +9,8 @@ import datetime
 import os
 import sys
 import six
+import random
+import string
 from distutils import dir_util
 
 try:
@@ -21,18 +23,13 @@ from preup.common import Common
 from preup.scanning import ScanProgress, ScanningHelper
 from preup.utils import FileHelper, ProcessHelper, DirHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
-from preup.utils import PostupgradeHelper, ConfigHelper
+from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper
 from preup.xccdf import XccdfHelper
 from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
 from preuputils.compose import XCCDFCompose
 from preup.version import VERSION
-
-
-def get_xsl_stylesheet():
-    """Return full XSL stylesheet path"""
-    return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
 
 
 def fault_repr(self):
@@ -76,10 +73,6 @@ class Application(object):
 
     """Class for oscap binary and reporting results to UI"""
 
-    binary = "/usr/bin/oscap"
-    command_eval = ['xccdf', 'eval']
-    command_remediate = ['xccdf', 'remediate']
-
     def __init__(self, conf):
         """conf is preup.conf.Conf object, contains configuration"""
         self.conf = conf
@@ -89,61 +82,18 @@ class Application(object):
         self.basename = ""
         self.scanning_progress = None
         self.report_parser = None
-        self.third_party = ""
         self.report_data = {}
         self.text_convertor = ""
         self.common = None
         self._devel_mode = 0
         self._dist_mode = None
         self.report_return_value = 0
+        settings.profile = self.conf.profile
         if self.conf.debug is None:
             set_level(logging.INFO)
         else:
             set_level(logging.DEBUG)
-
-    def get_command_generate(self):
-        if not SystemIdentification.get_system():
-            command_generate = ['xccdf', 'generate', 'custom']
-        else:
-            command_generate = ['xccdf', 'generate', 'report']
-        return command_generate
-
-    def get_third_party_name(self):
-        """Function returns correct third party name"""
-        if self.third_party != "" and not self.third_party.endswith("_"):
-            self.third_party += "_"
-        return self.third_party
-
-    def get_default_xml_result_path(self):
-        """Returns full XML result path"""
-        return os.path.join(self.conf.result_dir,
-                            self.get_third_party_name() + self.conf.xml_result_name)
-
-    def get_default_html_result_path(self):
-        """Returns full HTML result path"""
-        return os.path.join(self.conf.result_dir,
-                            self.get_third_party_name() + self.conf.html_result_name)
-
-    def get_default_tarball_path(self):
-        """Returns full tarball path"""
-        return os.path.join(self.conf.result_dir, self.conf.tarball_name)
-
-    def get_default_txt_result_path(self):
-        """
-        Function returns default txt result path based on result_dir
-
-        :return: default txt result path
-        """
-        return os.path.join(self.conf.result_dir,
-                            self.get_third_party_name() + self.conf.result_name + ".txt")
-
-    def get_binary(self):
-        """
-        Returns oscap binary
-
-        :return: list with path to oscap binary
-        """
-        return [self.binary]
+        self.openscap_helper = None
 
     def get_preupgrade_kickstart(self):
         return settings.PREUPGRADE_KS
@@ -158,29 +108,6 @@ class Application(object):
     def get_postupgrade_dir(self):
         """Function returns postupgrade dir"""
         return os.path.join(self.conf.result_dir, settings.postupgrade_dir)
-
-    def build_generate_command(self, xml_file, html_file):
-        """Function builds a command for generating results"""
-        command = self.get_binary()
-        command.extend(self.get_command_generate())
-        if not SystemIdentification.get_system():
-            command.extend(("--stylesheet", get_xsl_stylesheet()))
-        command.extend(("--output", html_file))
-        command.append(FileHelper.check_xml(xml_file))
-        return command
-
-    def build_command(self):
-        """create command from configuration"""
-        self.result_file = self.get_default_xml_result_path()
-        command = self.get_binary()
-        report = self.get_default_html_result_path()
-        command.extend(self.command_eval)
-        command.append('--progress')
-        command.extend(('--profile', self.conf.profile))
-
-        command.extend(("--results", self.result_file))
-        command.append(FileHelper.check_xml(self.content))
-        return command
 
     def upload_results(self, tarball_path=None):
         """upload tarball with results to frontend"""
@@ -295,8 +222,8 @@ class Application(object):
         The function is used for either scanning system or
         for applying changes on the target system
         """
-        cmd = self.build_command()
-        #log(self.conf.verbose, "running command:\n%s", ' '.join(cmd))
+        cmd = self.openscap_helper.build_command()
+        log_message('running_command: %s' % cmd, print_output=0, level=logging.DEBUG)
         # fail if openscap wasn't successful; if debug, continue
         return ProcessHelper.run_subprocess(cmd, print_output=False, function=function)
 
@@ -305,8 +232,13 @@ class Application(object):
         The function generates result.html file from result.xml file
         which was modified by preupgrade assistant
         """
-        cmd = self.build_generate_command(xml_file, html_file)
-        return ProcessHelper.run_subprocess(cmd, print_output=True)
+        cmd = self.openscap_helper.build_generate_command(xml_file, html_file)
+        generate_tempfile = os.path.join('/tmp', ''.join(random.SystemRandom().choice(string.ascii_letters)))
+        ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
+        if os.path.exists(generate_tempfile):
+            lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
+            log_message('%s' % '\n'.join(lines), print_output=0, level=logging.DEBUG)
+        return ret_val
 
     def get_scenario(self):
         """The function returns scenario"""
@@ -358,20 +290,17 @@ class Application(object):
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
         for report in self._get_reports():
-            ReportParser.write_xccdf_version(report, direction=True)
             self.run_generate(report, report.replace('.xml', '.html'))
-            # Switching back namespace
-            ReportParser.write_xccdf_version(report)
 
     def prepare_xml_for_html(self):
         """The function prepares a XML file for HTML creation"""
         # Reload XML file
-        self.report_parser.reload_xml(self.get_default_xml_result_path())
+        self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
         # Replace fail in case of none or slight risk with needs_inspection
         self.report_parser.replace_inplace_risk(scanning_results=self.scanning_progress)
         if not self.conf.debug:
             self.report_parser.remove_debug_info()
-        self.report_parser.reload_xml(self.get_default_xml_result_path())
+        self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
         self.report_parser.update_check_description()
         self.prepare_for_generation()
 
@@ -383,7 +312,7 @@ class Application(object):
             ProcessHelper.run_subprocess(self.get_cmd_convertor(), print_output=False, shell=True)
 
     def _get_reports(self):
-        reports = [self.get_default_xml_result_path()]
+        reports = [self.openscap_helper.get_default_xml_result_path()]
         report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
         if report_admin:
             reports.append(report_admin)
@@ -406,6 +335,9 @@ class Application(object):
         for report in self._get_reports():
             self.xml_mgr.find_solution_files(report.split('.')[0], solution_files)
 
+    def set_third_party(self, third_party):
+        self.third_party = third_party
+
     def run_third_party_modules(self, dir_name):
         """
         Functions executes a 3rd party contents
@@ -422,15 +354,14 @@ class Application(object):
             self.report_data[third_party_name] = self.scanning_progress.get_output_data()
             # This function prepare XML and generate HTML
             self.prepare_xml_for_html()
-
-        self.third_party = ""
+        self.set_third_party("")
 
     def get_cmd_convertor(self):
         """Function returns cmd with text convertor string"""
         cmd = settings.text_converters[self.text_convertor].format(
             self.text_convertor,
-            self.get_default_html_result_path(),
-            self.get_default_txt_result_path()
+            self.openscap_helper.get_default_html_result_path(),
+            self.openscap_helper.get_default_txt_result_path()
         )
         return cmd
 
@@ -493,6 +424,11 @@ class Application(object):
         assessment_dir = self.generate_report()
         # Update source XML file in temporary directory
         self.content = os.path.join(assessment_dir, settings.content_file)
+        self.openscap_helper = OpenSCAPHelper(self.conf.result_dir,
+                                              self.conf.result_name,
+                                              self.conf.xml_result_name,
+                                              self.conf.html_result_name,
+                                              self.content)
         try:
             self.report_parser = ReportParser(self.content)
         except IOError:
@@ -548,9 +484,9 @@ class Application(object):
         """Function prints a summary report"""
         command = settings.ui_command.format(tarball_path)
         if self.conf.text:
-            path = self.get_default_txt_result_path()
+            path = self.openscap_helper.get_default_txt_result_path()
         else:
-            path = self.get_default_html_result_path()
+            path = self.openscap_helper.get_default_html_result_path()
 
         report_dict = {
             0: settings.message.format(path),
@@ -559,7 +495,7 @@ class Application(object):
             "Read the file {0} for more details.".
             format(path)
         }
-        self.report_return_value = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), 0)
+        self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
         try:
             if report_dict[int(self.report_return_value)]:
                 log_message('Summary information:')
@@ -659,11 +595,11 @@ If you would like to use this tool, you have to specify correct upgrade path par
             sys.exit(0)
 
         if self.conf.riskcheck:
-            return_val = XccdfHelper.check_inplace_risk(self.get_default_xml_result_path(), self.conf.verbose)
+            return_val = XccdfHelper.check_inplace_risk(OpenSCAPHelper.get_default_xml_result_path(), self.conf.verbose)
             return return_val
 
         if self.conf.kickstart:
-            if not os.path.exists(self.get_default_xml_result_path()):
+            if not os.path.exists(OpenSCAPHelper.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before kickstart generation.")
                 return 14
             kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
@@ -696,11 +632,11 @@ If you would like to use this tool, you have to specify correct upgrade path par
                 return 17
 
         if self.conf.scan or self.conf.contents:
-            if not os.path.exists(self.binary):
+            if not os.path.exists(settings.openscap_binary):
                 log_message("Oscap with SCE enabled is not installed")
                 return 15
-            if not os.access(self.binary, os.X_OK):
-                log_message("Oscap with SCE %s is not executable" % self.binary)
+            if not os.access(settings.openscap_binary, os.X_OK):
+                log_message("Oscap with SCE %s is not executable" % settings.openscap_binary)
                 return 15
 
             current_dir = os.getcwd()

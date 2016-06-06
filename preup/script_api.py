@@ -79,6 +79,7 @@ __all__ = (
     'VALUE_EXECUTABLES',
     'VALUE_RPM_RHSIGNED',
     'VALUE_TMP_PREUPGRADE',
+    'MODULE_NAME',
     'COMMON_DIR',
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
@@ -112,6 +113,10 @@ VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+try:
+    MODULE_NAME = os.environ['XCCDF_VALUE_MODULE_NAME']
+except KeyError:
+    MODULE_NAME = "MODULE_NAME"
 try:
     MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
     UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
