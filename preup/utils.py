@@ -643,7 +643,8 @@ class PostupgradeHelper(object):
         with the corresponding names
         mentioned in postupgrade.d directory.
         """
-        postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh"}
+        postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
+                            "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
 
         for key, val in six.iteritems(postupgrade_dict):
             shutil.copy(os.path.join(settings.source_dir,
