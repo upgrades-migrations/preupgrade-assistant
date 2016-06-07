@@ -256,6 +256,7 @@ class PackagesHandling(BaseKickstart):
         # remove files which are replaced by another package
         self.replace_obsolete()
 
+        removed_packages = []
         remove_pkg_optional = os.path.join(settings.KS_DIR, 'RemovedPkg-optional')
         if os.path.exists(remove_pkg_optional):
             try:
