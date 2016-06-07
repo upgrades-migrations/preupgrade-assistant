@@ -5,10 +5,12 @@ Class creates a set of packages for migration scenario
 """
 
 import six
+import os
 
 from preup.utils import FileHelper
 from preup.logger import *
 from preup.kickstart.application import BaseKickstart
+from preup import settings
 
 
 class YumGroupManager(object):

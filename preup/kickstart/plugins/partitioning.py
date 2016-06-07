@@ -5,10 +5,13 @@ Class creates a kickstart for migration scenario
 """
 
 import six
+import os
+
 from pykickstart.constants import CLEARPART_TYPE_ALL
 from preup.kickstart.application import BaseKickstart
 from preup.utils import FileHelper
 from preup.logger import *
+from preup import settings
 
 
 class PartitionGenerator(BaseKickstart):
