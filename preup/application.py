@@ -23,7 +23,7 @@ from preup.common import Common
 from preup.scanning import ScanProgress, ScanningHelper
 from preup.utils import FileHelper, ProcessHelper, DirHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
-from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper
+from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper, ConfigFilesHelper
 from preup.xccdf import XccdfHelper
 from preup.logger import log_message, logging, set_level
 from preup.report_parser import ReportParser
@@ -468,6 +468,7 @@ class Application(object):
             self.run_third_party_modules(third_party_dir_name)
 
         self.copy_preupgrade_scripts(assessment_dir)
+        ConfigFilesHelper.copy_modified_config_files(settings.result_dir)
 
         # It prints out result in table format
         ScanningHelper.format_rules_to_table(main_report, "main contents")

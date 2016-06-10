@@ -529,6 +529,85 @@ class ConfigHelper(object):
                 return config.get(section, key)
 
 
+class ConfigFilesHelper(object):
+    @staticmethod
+    def check_cleanconf_dir(result_dir, cleanconf):
+        # Check if configuration file exists in /root/preupgrade/cleanconf directory
+        clean_conf_name = os.path.join(result_dir, cleanconf)
+        if os.path.exists(clean_conf_name):
+            message = "Configuration file '%s' exists in '%s' directory"
+            log_message(message % (clean_conf_name, os.path.dirname(clean_conf_name)),
+                        print_output=0,
+                        level=logging.INFO)
+            # Check if configuration file exists in dirtyconf
+            # If so delete them.
+            return True
+        return False
+
+    @staticmethod
+    def check_dirtyconf_dir(dirtyconf, filename):
+        # Check if configuration file exists in /root/preupgrade/dirtyconf directory
+        # If not return real path of configuration file. Not a symlink.
+        print ('Check dirtyconf')
+        print (dirtyconf, filename)
+        dirty_path = os.path.join(os.path.dirname(dirtyconf), filename)
+        full_path = filename
+        print (full_path)
+        # Copy filename to dirtyconf directory
+        # Check if file is a symlink or real path.
+        if os.path.islink(full_path):
+            full_path = os.path.realpath(full_path)
+        # Check if configuration file exists in dirtyconf directory
+        if os.path.exists(dirtyconf):
+            log_message("File '%s' already exists in dirtyconf directory" % dirtyconf,
+                        print_output=0,
+                        level=logging.INFO)
+            return False
+        # Check whether dirtyconf directory with dirname(filename) exists
+        if not os.path.exists(os.path.dirname(dirtyconf)):
+            os.makedirs(os.path.dirname(dirtyconf))
+        return full_path
+
+    @staticmethod
+    def copy_modified_config_files(result_dir):
+        """
+        Function copies all modified files to dirtyconf directory.
+
+        (files which are not mentioned in cleanconf directory)
+        """
+        etc_va_log = os.path.join(settings.cache_dir, settings.common_name, "rpm_etc_Va.log")
+        try:
+            lines = FileHelper.get_file_content(etc_va_log, "rb", method=True)
+        except IOError:
+            return
+        dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
+        clean_conf = os.path.join(result_dir, settings.clean_conf_dir)
+        # Go through all changed config files
+        for line in lines:
+            try:
+                (opts, flags, filename) = line.strip().split()
+            except ValueError:
+                return
+            log_message("File name to copy '%s'" % filename,
+                        print_output=0,
+                        level=logging.INFO)
+            new_filename = filename[1:]
+            # Check whether config file exists in cleanconf directory
+            cleanconf_file_name = os.path.join(clean_conf, new_filename)
+            dirtyconf_file_name = os.path.join(dirty_conf, new_filename)
+            # Check if config file does not exist in cleanconf directory
+            if ConfigFilesHelper.check_cleanconf_dir(result_dir, cleanconf_file_name):
+                print ('Cleanconf exists')
+                print (cleanconf_file_name)
+                if os.path.exists(dirtyconf_file_name):
+                    os.unlink(dirtyconf_file_name)
+                continue
+            # Check if config file does not exists in dirtyconf directory
+            check = ConfigFilesHelper.check_dirtyconf_dir(dirtyconf_file_name, filename)
+            if check:
+                shutil.copyfile(check, dirtyconf_file_name)
+
+
 class PostupgradeHelper(object):
 
     @staticmethod
