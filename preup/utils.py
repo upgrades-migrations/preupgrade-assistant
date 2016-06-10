@@ -548,11 +548,8 @@ class ConfigFilesHelper(object):
     def check_dirtyconf_dir(dirtyconf, filename):
         # Check if configuration file exists in /root/preupgrade/dirtyconf directory
         # If not return real path of configuration file. Not a symlink.
-        print ('Check dirtyconf')
-        print (dirtyconf, filename)
         dirty_path = os.path.join(os.path.dirname(dirtyconf), filename)
         full_path = filename
-        print (full_path)
         # Copy filename to dirtyconf directory
         # Check if file is a symlink or real path.
         if os.path.islink(full_path):
@@ -597,8 +594,6 @@ class ConfigFilesHelper(object):
             dirtyconf_file_name = os.path.join(dirty_conf, new_filename)
             # Check if config file does not exist in cleanconf directory
             if ConfigFilesHelper.check_cleanconf_dir(result_dir, cleanconf_file_name):
-                print ('Cleanconf exists')
-                print (cleanconf_file_name)
                 if os.path.exists(dirtyconf_file_name):
                     os.unlink(dirtyconf_file_name)
                 continue
