@@ -739,6 +739,14 @@ class OpenSCAPHelper(object):
         self.result_name = result_name
         self.content = content
 
+    def update_variables(self, result_dir, result_name, xml_result_name, html_result_name, content, third_party=None):
+        self.result_dir = result_dir
+        self.third_party = third_party
+        self.xml_result_name = xml_result_name
+        self.html_result_name = html_result_name
+        self.result_name = result_name
+        self.content = content
+
     @staticmethod
     def get_xsl_stylesheet():
         """Return full XSL stylesheet path"""

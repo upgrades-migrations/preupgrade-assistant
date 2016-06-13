@@ -431,7 +431,7 @@ class Application(object):
         assessment_dir = self.generate_report()
         # Update source XML file in temporary directory
         self.content = os.path.join(assessment_dir, settings.content_file)
-        self.openscap_helper = OpenSCAPHelper(self.conf.result_dir,
+        self.openscap_helper.update_variables(self.conf.result_dir,
                                               self.conf.result_name,
                                               self.conf.xml_result_name,
                                               self.conf.html_result_name,
@@ -603,8 +603,17 @@ If you would like to use this tool, you have to specify correct upgrade path par
             self.clean_preupgrade_environment()
             sys.exit(0)
 
+        self.openscap_helper = OpenSCAPHelper(self.conf.result_dir,
+                                              self.conf.result_name,
+                                              self.conf.xml_result_name,
+                                              self.conf.html_result_name,
+                                              self.content)
         if self.conf.riskcheck:
-            return_val = XccdfHelper.check_inplace_risk(OpenSCAPHelper.get_default_xml_result_path(), self.conf.verbose)
+            if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
+                log_message("'preupg' command was not run yet. Run them before checking risks.")
+                return 14
+            return_val = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(),
+                                                        self.conf.verbose)
             return return_val
 
         if self.conf.kickstart:
