@@ -113,21 +113,28 @@ class Application(object):
         """upload tarball with results to frontend"""
         import xmlrpclib
         import socket
+        url = ""
         if self.conf.upload is True:
             # lets try default configuration
-            url = "http://127.0.0.1:8099/submit/"
+            log_message('You have to specify server where to upload results.')
+            log_message(settings.ui_command.format(self.conf.results))
+            return False
         else:
             url = self.conf.upload \
                 if self.conf.upload[-1] == '/' \
                 else self.conf.upload + '/'
+        message = ""
         try:
             proxy = xmlrpclib.ServerProxy(url)
             proxy.submit.ping()
-        except Exception:
-            raise Exception('Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n'
-                'Please ensure that package preupgrade-assistant-ui '
-                'has been installed on target system and firewall is set up '
-                'to allow connections on port 8099.' % url)
+        except Exception as ex:
+            message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
+                      'Please ensure that package preupgrade-assistant-ui ' \
+                      'has been installed on target system and firewall is set up ' \
+                      'to allow connections on port 8099.' % url
+            log_message(message)
+            log_message(ex.__str__())
+            return False
 
         tarball_results = self.conf.results or tarball_path
         file_content = FileHelper.get_file_content(tarball_results, 'rb', False, False)
@@ -561,7 +568,8 @@ If you would like to use this tool, you have to specify correct upgrade path par
             return 0
 
         if self.conf.upload and self.conf.results:
-            self.upload_results()
+            if not self.upload_results():
+                return 18
             return 0
 
         if self.conf.mode and self.conf.select_rules:

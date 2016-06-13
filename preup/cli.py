@@ -68,11 +68,8 @@ class CLI(object):
             dest="upload",
             action="callback",
             callback=upload_callback,
-            #metavar="http://127.0.0.1:8000/submit/",
-            help="--upload http://127.0.0.1:8000/submit/\n\n\n\n\n\n\n\n\n\n\n\n\n\
-Upload results to preupgrade assistant WEB-UI, \
-optionally provide URL (otherwise default UI configuration \
-will used -- http://127.0.0.1:8099/submit/)"
+            help="--upload http://example.com:8099/submit/\n\n\n\n\n\n\n\n\n\n\n\n\n\
+Upload results to preupgrade assistant WEB-UI"
         )
         self.parser.add_option(
             "-r", "--results",
