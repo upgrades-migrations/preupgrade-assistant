@@ -135,7 +135,7 @@ warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
 migration_text = "Running system is 32bit. Migration is possible only to 64bit system. See help --dst-arch option.\n"
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for '{0}':"
-message = "We found some potential in-place upgrade risks.\n" \
+message = "We have found some potential in-place upgrade risks.\n" \
           "Read the full report file '{0}' for more details."
 converter_message = "At least one of these converters ({0}) needs to be installed."
 kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
