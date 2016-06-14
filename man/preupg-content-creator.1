@@ -6,18 +6,39 @@
 .SH NAME
 preupg-content-creator \- Preupgrade assistant provides this script for faster creation of content
 
-.SH AVAILABLE FUNCTIONS
-API provides a set of functions which can be used for better handling of your data.
 
-\fBcheck_applies_to\fP - Function can be used for specific RPM package detection. If the RPM package does not exists then check script exit with \fBexit_not_applicable\fP return code.
+.SH WHAT IS NEEDED FOR CONTENT
 
-\fBcheck_root\fP - Function checks whether user is root.
+Before content creation you know for what upgrade/migration path content is created. Like RHEL6_7, CENTOS7_RHEL_7, etc.
 
-\fBsolution_file\fP - Function adds a message to solution file defined in INI file.
+Each content regards to a group like database, package, system.
 
-\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory.
+Please think about the name of content which regards to.
 
-\fBservice_is_enabled\fP - Function checks if service provided by command chkconfig is enabled.
+The rest of the stuff is created automaticaly by preupg-content-creator
+
+How does it look like content creation in bash?
+
+See example:
+.nf
+\& # preupg-content-creator
+\& Specify a upgrade path (like RHEL6_7) where a content will be stored: RHEL6_7
+\& Specify a group name which content belongs to (like database): database
+\& Specify a module name which will be created (like mysql): sqlite
+\& Specify a script name which will be used for assessment: (check.sh)
+\& Specify a solution file which will be shown in report: (solution.txt)
+\& Specify a content title: Module detects usage of sqlite database
+\& Would you like to specify a content description? ([y]/n)? n
+\& preupg-content-creator generates these files which should be updated:
+\& - content was created in directory /root/RHEL6_7/database/sqlite.
+\& - ini file which defines a content is RHEL6_7/database/sqlite/sqlite.ini.
+\& - check script which does an assessment is RHEL6_7/database/sqlite/check.sh. Update it before an usage
+\& - solution text which informs about incompatilibies is RHEL6_7/database/sqlite/solution.txt. Update it before an usage
+\&
+\& For testing content run these two commands:
+\& - preupg-create-group-xml RHEL6_7/database/sqlite to create XML file
+\& - preupg -c RHEL6_7-results/database/sqlite/all-xccdf.xml
+\& #
 
 .SH HOW TO TEST CONTENT
 

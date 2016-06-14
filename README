@@ -31,6 +31,19 @@ Usage is simple, follow these steps:
         files stored at /root/preupgrade) . Especially check for inplace
         upgrade risks (described further in this document)
 
+Preupgrade assistant kickstart generation
+-----------------------------------------
+After an assessment, you have a choice to generate a kickstart file
+for migration old system to a new system. This does not mean in-place upgrade
+but real migration. We would like to migrate to new system as close as possible with
+old system.
+
+At the moment we are able to generated a kickstart with these kind of information
+ * users and groups
+ * firewall
+ * set of packages for installation
+ * repositories which were enabled on system
+
 /root/preupgrade file&directory structure
 ------------------------------------
 
@@ -44,9 +57,9 @@ result-admin.html - File with final migration assessment report in human readabl
          form (we are sorry for "listing" functionality only) for administrators
 result-admin.xml - File with final migration assessment report in machine
          readable form for administrators
-result-admin.html - File with final migration assessment report in human readable
+result-user.html - File with final migration assessment report in human readable
          form (we are sorry for "listing" functionality only) for users
-result-admin.xml - File with final migration assessment report in machine
+result-user.xml - File with final migration assessment report in machine
          readable form for users
 README - this file
 results.tar.gz - Tar ball with all files in directory /root/preupgrade
@@ -67,6 +80,11 @@ kickstart - directory which contains various files useful for generating
 postupgrade.d - contains various scripts which are supposed to be executed
           AFTER the upgrade to RHEL-7. These scripts should NEVER be used
           on RHEL-6 system.
+preupgrade-scripts - directory with scripts which are executed before an upgrade
+noauto_postupgrade.d - directory with scripts or text files which are not executed
+          after an upgrade. Administrator should look on that and execute them
+          if make sense.
+
 RHEL6_7 - just "debugging" directory - will be removed later. Ignore, unless you'll see some "Error" plugin exit status.
 
 Possible check exit codes explanation
@@ -81,6 +99,16 @@ The possible exit codes are:
  * FAIL = some incompatibility/issue that needs to be review by admin was detected.
           FAIL doesn't necessarily mean that inplace upgrade will fail, but may
           result in not 100% functional system
+ * NEEDS_ACTION = The test failed with return code exit_fail.
+          But content developer add the log_high_risk before exit_fail.
+          The inplace upgrade can't be used without the administrator's assistance.
+          This typically involves some known broken scenario, existing 3rd party packages.
+          After the administrator manually fixes the issue,
+          it may be possible to perform the inplace upgrade, but it is not recommended.
+ * NEEDS_INSPECTION = The test failed with return code exit_fail.
+          But content developer add one of these logs (log_{medium|slight}_risk before exit_fail.
+          We assessed this field and have not found any issues.
+          However, there is still some risk that not all variants have been covered.
  * FIXED = some incompatibility was detected, but preupgrade-assistant was able
           to find automated solution. Some of the fixes may require running
           postupgrade.d scripts after the upgrade. Fixed configs are available
@@ -101,8 +129,6 @@ There are several levels of inplace upgrade risks. Any level higher than
 inplace upgrade tool "rhelup" may pass.
 
 The available risk assessment levels are:
- * None - Default. It can be used as an indicator for some checks. It is not
-          necessary to enter these values.
  * Slight - We assessed this field and have not found any issues. However,
           there is still some risk that not all variants have been covered.
  * Medium - It is likely that the area causes a problem in case of the inplace

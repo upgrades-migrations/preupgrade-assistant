@@ -1,24 +1,46 @@
-.\" Copyright Petr Hracek, 2015
+.\" Copyright Petr Hracek, 2016
 .\"
 .\" This page is distributed under GPL.
 .\"
-.TH preupgrade-assistant-api 1 2015-03-01 "" "Linux User's Manual"
+.TH preupgrade-assistant-api 1 2016-05-30 "" "Linux User's Manual"
 .SH NAME
 preupgrade-assistant-api \- Preupgrade assistant API provides a set of functions
-and variables which can be used for contents writing.
+and variables which can be used for modules writing.
 
 .SH AVAILABLE FUNCTIONS
 API provides a set of functions which can be used for better handling of your data.
 
-\fBcheck_applies_to\fP - Function can be used for specific RPM package detection. If the RPM package does not exists then check script exit with \fBexit_not_applicable\fP return code.
+\fBcheck_applies_to\fP - Function can be used for specific RPM package detection. \fBapplies_to\fP can be defined in module in order to proper functionality
+in case module needs a specific package.
+ If the RPM package does not exists then check script exits with \fBexit_not_applicable\fP return code.
 
-\fBcheck_root\fP - Function checks whether user is root.
+\fBcheck_root\fP - Function checks whether user is root. Nowadays not supported from Python API.
 
 \fBsolution_file\fP - Function adds a message to solution file defined in INI file.
 
-\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory.
+\fBconfig_file_changed\fP - Function returns True if config file was changed. In opposite case False. Nowadays not supported from BASH
 
-\fBservice_is_enabled\fP - Function checks if service provided by command chkconfig is enabled.
+\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory. Like /etc/httpd.conf will be backuped
+as /root/preupgrade/etc/httpd.conf
+
+\fBservice_is_enabled\fP - Function checks if service is enabled. Service status is taken by command chkconfig.
+
+\fBget_dist_native_list\fP - Function returns a list of all native packages. Native packages are gathered by command \fBrpm -qa\fP.
+
+\fBis_dist_native\fP - Function returns True if package is installed and signed by Red Hat. False in opposite case.
+
+\fBprint_home_dirs\fP - Function prints even directories mentioned in /etc/preupgrade-assistant.conf file if user_config_file is disabled
+or specific directories which are mentioned in file home_directory_file in /etc/preupgrade-assistant.conf
+
+\fBadd_pkg_to_kickstart\fP - Function adds package or list of packages to file /root/preupgrade/kickstart/special_pkg_list
+
+\fBis_pkg_installed\fP - Function checks if package is installed on system.
+
+\fBcheck_rpm_to\fP - Function checks if relevant package is installed and if relevant binary exists on the system. This is needed from module point of view.
+
+\fBconf_get_sections\fP - Function gets all sections from config file defined as parameter \fB$1\fP. Nowadays not supported from Python API.
+
+\fBconf_get_section\fP - Function gets all items from specific section defined as first parameter in config file defined as second parameter. Nowadays not supported from Python API.
 
 .SH COMMON_DATA
 
@@ -59,7 +81,7 @@ There are several directories located in /root/preupgrade which are used by \fBp
 
 \fBpreupgrade-scripts\fP - stored scripts which are executed before an upgrade.
 
-\fBcommon\fP - the results of long term commands gathered before an assessment
+\fBnoauto-postupgrade.d\fP - stored scripts which are not executed automatically after an upgrade.
 
 .SH RETURN CODES
 \fBexit_pass\fP - The test passed. Use if nothing "broken" was detected
@@ -91,16 +113,14 @@ Your script should also tell the administrator how risky is to upgrade your comp
 
 \fBerror\fP - An error occurred and test could not complete. (script failed while doing its job). Should be used in "assert way", not as common result.
 
-\fBneeds_inspection\fP - The test failed with return code exit_fail. But content developer add one of these logs (log_{medium|slight|None}_risk before exit_fail.
+\fBneeds_inspection\fP - The test failed with return code exit_fail. But content developer add one of these logs (log_{medium|slight}_risk before exit_fail.
 
 \fBneeds_action\fP - The test failed with return code exit_fail. But content developer add the log_high_risk before exit_fail.
 
 \fBfail\fP - The test failed and inplace upgrade is not recommended and marked as EXTERME risk. We do not recommend it.
 
 .SH RISK ASSESSMENT LEVELS
-The available risk assessment levels are:
-\fBNone\fP - Default. It can be used as an indicator for some checks. It is not necessary to enter these values.
-
+The available risk assessment levels are log_{slight,medium,high,extreme}_risk:
 \fBSlight\fP - We assessed this field and have not found any issues. However, there is still some risk that not all variants have been covered.
 
 \fBMedium\fP - It is likely that the area causes a problem in case of the inplace upgrade. It needs to be checked by the administrator after the inplace upgrade and after the system has been monitored for some time.
@@ -109,7 +129,7 @@ The available risk assessment levels are:
 
 \fBExtreme\fP - We found an incompatibility which makes the inplace upgrade impossible. It is recommended to install a new system with the help of preupgrade-assistant remediations.
 
-Levels None, Slight and Medium change return code exit_fail to exit_needs_inspection. Level High change exit_fail to exit_needs_action.
+Levels Slight and Medium change return code exit_fail to exit_needs_inspection. Level High change exit_fail to exit_needs_action.
 
 .SH LOGGING
 
