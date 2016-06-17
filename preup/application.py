@@ -618,7 +618,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             return return_val
 
         if self.conf.kickstart:
-            if not os.path.exists(OpenSCAPHelper.get_default_xml_result_path()):
+            if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before kickstart generation.")
                 return 14
             kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
