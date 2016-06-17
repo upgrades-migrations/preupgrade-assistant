@@ -13,7 +13,10 @@ from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 try:
     from xml.etree.ElementTree import ParseError
 except ImportError:

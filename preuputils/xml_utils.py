@@ -164,9 +164,11 @@ class XmlUtils(object):
                 fix_tag.append(xml_tags.FIX_TEXT)
             else:
                 fix_tag.append(xml_tags.FIX)
-
-            self.update_values_list(fix_tag, "{solution_text}",
-                                    key['solution_type'] if 'solution_type' in key else "text")
+            if 'solution_type' in key:
+                solution_type = key['solution_type']
+            else:
+                solution_type = "text"
+            self.update_values_list(fix_tag, "{solution_text}", solution_type)
             self.update_values_list(fix_tag, "{solution}", k.strip())
             self.update_values_list(fix_tag, "{script_type}", script_type)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
@@ -192,7 +194,11 @@ class XmlUtils(object):
         for req in requirements:
             if req in key:
                 updates[requirements[req]] = key[req]
-        self.mh.update_check_script(updates, author=key['author'] if 'author' in key else "")
+        if 'author' in key:
+            author = key['author']
+        else:
+            author = ""
+        self.mh.update_check_script(updates, author=author)
         self.update_values_list(self.rule, "{"+k+"}", key[k])
 
     def prepare_sections(self):

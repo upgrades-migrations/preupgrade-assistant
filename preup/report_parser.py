@@ -7,7 +7,10 @@ import six
 from preup.utils import FileHelper
 from preup.xccdf import XccdfHelper
 from preup import settings
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 from preuputils import xml_tags
 
 

@@ -37,7 +37,7 @@ class UsersGroupsGenerator(BaseKickstart):
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
         user_dict = {}
         for line in lines:
-            fields = line.split(splitter)
+            fields = line.strip().split(splitter)
             try:
                 user_group = []
                 if groups:

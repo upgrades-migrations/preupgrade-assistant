@@ -6,6 +6,7 @@ Class creates a kickstart for migration scenario
 
 import base64
 import shutil
+import os
 import imp
 import six
 
@@ -15,6 +16,7 @@ from pykickstart.version import *
 
 from preup.logger import *
 from preup.utils import FileHelper, ProcessHelper
+from preup import settings
 
 
 class BaseKickstart(object):
@@ -40,7 +42,6 @@ class KickstartGenerator(object):
         self.groups = []
         self.packages = []
         self.part_layout = None
-        self.missing_installed = []
         self._injector_type = 'BaseKickstart'
         self.plugin_classes = {}
 
@@ -133,7 +134,7 @@ class KickstartGenerator(object):
 
         script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
         script_str = script_str.replace('{RESULT_NAME}', tarball_name)
-        script_str = script_str.replace('{TEMPORARY_PREUPG_DIR}', '/var/tmp/preupgrade')
+        script_str = script_str.replace('{TEMPORARY_PREUPG_DIR}', '/root/preupgrade')
         script = Script(script_str, type=KS_SCRIPT_POST, inChroot=True)
         self.ks.handler.scripts.append(script)
 
@@ -169,7 +170,7 @@ class KickstartGenerator(object):
         return tarball
 
     def comment_kickstart_issues(self):
-        list_issues = [' ', 'group', 'user ', 'repo', 'url', 'rootpw']
+        list_issues = [' --', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
             kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
@@ -190,6 +191,7 @@ class KickstartGenerator(object):
         if not self.collect_data():
             log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
             return None
+        self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
         for module in six.iterkeys(self.plugin_classes):
             self.plugin_classes[module].run_module()
@@ -209,7 +211,13 @@ class KickstartGenerator(object):
         KickstartGenerator.copy_kickstart_templates()
         dummy_ks = self.generate()
         if dummy_ks:
-            log_message(settings.kickstart_text % settings.PREUPGRADE_KS)
+
+            tar_ball_dir = os.path.basename(self.latest_tarball).split('.')[0]
+            kickstart_dir = os.path.join(os.path.dirname(self.dir_name),
+                                         tar_ball_dir)
+            log_message(settings.kickstart_text % (settings.PREUPGRADE_KS,
+                                                   kickstart_dir,
+                                                   kickstart_dir))
         KickstartGenerator.kickstart_scripts()
 
     @staticmethod

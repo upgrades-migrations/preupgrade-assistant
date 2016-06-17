@@ -120,9 +120,10 @@ class Application(object):
             log_message(settings.ui_command.format(self.conf.results))
             return False
         else:
-            url = self.conf.upload \
-                if self.conf.upload[-1] == '/' \
-                else self.conf.upload + '/'
+            if self.conf.upload[-1] == '/':
+                url = self.conf.upload
+            else:
+                url = self.conf.upload + '/'
         message = ""
         try:
             proxy = xmlrpclib.ServerProxy(url)

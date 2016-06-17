@@ -1,4 +1,5 @@
 TEMP_DIR={TEMPORARY_PREUPG_DIR}
+mkdir -p ${TEMP_DIR}
 cd ${TEMP_DIR}
 PREUPGRADE_LOG=/var/log/preupgrade.log
 touch ${PREUPGRADE_LOG}

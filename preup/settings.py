@@ -143,12 +143,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
                  "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
                  "- the partitioning layout which was used on this system\n" \
                  "- the package set which was installed on this system.\n" \
+                 "- the firewall rules which were enabled on this system.\n" \
                  "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
                  "installation of Red Hat Enterprise Linux 7.\n" \
                  "The Kickstart file needs to be modified by administator.\n" \
-                 "The directory contains:\n" \
-                 "- cleanconf - configuration files which can be used on migrated system direcotry.\n" \
-                 "- dirtyconf - configuration files which needs to be clarified by administrator.\n"
+                 "These directories contains:\n" \
+                 "- %s/cleanconf - configuration files which can be used on migrated system direcotry.\n" \
+                 "- %s/dirtyconf - configuration files which needs to be clarified by administrator.\n"
 
 options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
 list_rules = "List of all available rules:\n%s\n"

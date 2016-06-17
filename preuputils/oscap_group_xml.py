@@ -16,7 +16,10 @@ except ImportError:
 
 from preuputils.xml_utils import XmlUtils
 from preup.utils import MessageHelper, FileHelper
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 from preup import settings
 
 try:

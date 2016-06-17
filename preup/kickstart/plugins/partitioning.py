@@ -5,6 +5,7 @@ Class creates a kickstart for migration scenario
 """
 
 import six
+import shutil
 import os
 
 from pykickstart.constants import CLEARPART_TYPE_ALL
@@ -20,7 +21,6 @@ class PartitionGenerator(BaseKickstart):
         self.part_layout = None
         self.layout = None
         self.vg_info = None
-        self.lv_info = None
         self.lvdisplay = None
         self.raid_devices = {}
         self.vol_group = {}
@@ -191,7 +191,7 @@ class PartitionGenerator(BaseKickstart):
         if vgs is not None:
             self.vg_info = PartitionGenerator.get_volume_info(vgs, 0, 5)
         if lvdisplay is not None:
-            self.lv_info = PartitionGenerator.get_volume_info(lvdisplay, 0, 1)
+            self.lvdisplay = PartitionGenerator.get_volume_info(lvdisplay, 0, 1)
 
     def get_partitioning(self):
         self.handler.clearpart.type = CLEARPART_TYPE_ALL

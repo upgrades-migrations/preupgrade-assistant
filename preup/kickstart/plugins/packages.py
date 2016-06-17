@@ -42,7 +42,7 @@ class YumGroup(object):
         self.default = default
         self.optional = optional
         self.required = set(mandatory + default)
-        self.missing_installed = []
+        self.missing = []
 
     def __str__(self):
         return "%s (%d required packages)" % (self.name, len(self.required))
@@ -61,7 +61,7 @@ class YumGroup(object):
             for pkg in self.required:
                 if pkg not in packages:
                     cnt_pkgs += 1
-                self.missing_installed.append(pkg)
+                self.missing.append(pkg)
             if len(self.required) == int(cnt_pkgs):
                 return False
             found = True
@@ -135,8 +135,9 @@ class YumGroupGenerator(object):
         for group in groups:
             if len(group.required) != 0:
                 output_groups.append('@'+group.name)
-                missing = [x for x in group.missing_installed if x not in self.dependency_list]
-                missing_installed.extend([x + ' # group ' + group.name for x in missing])
+                if self.dependency_list:
+                    missing = [x for x in group.missing_installed if x not in self.dependency_list]
+                    missing_installed.extend([x + ' # group ' + group.name for x in missing])
                 output_packages = group.exclude_mandatory(output_packages)
                 output_packages = group.exclude_optional(output_packages)
         output_groups.sort()
@@ -161,8 +162,6 @@ class PackagesHandling(BaseKickstart):
         self.obsoleted = None
         self.handler = handler
         self.installed_dependencies = None
-        self.groups = None
-        self.missing_installed = None
 
     def replace_obsolete(self):
         # obsolete list has format like
@@ -268,14 +267,15 @@ class PackagesHandling(BaseKickstart):
             return None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(self.packages, removed_packages, self.installed_dependencies, *abs_fps)
-        self.groups, self.packages, self.missing_installed = ygg.get_list()
+        groups, self.packages, missing_installed = ygg.get_list()
         self.packages = ygg.remove_packages(self.packages)
+        return groups, missing_installed
 
     def run_module(self, *args, **kwargs):
-        self.output_packages()
-        if self.packages or self.groups:
+        groups, missing_installed = self.output_packages()
+        if self.packages or groups:
             self.handler.packages.packageList = self.packages
-            self.handler.packages.groupList = self.groups
-            if self.missing_installed:
-                self.handler.packages.excludedList = self.missing_installed
+            self.handler.packages.groupList = groups
+            if missing_installed:
+                self.handler.packages.excludedList = missing_installed
 

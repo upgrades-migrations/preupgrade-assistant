@@ -488,7 +488,12 @@ class TarballHelper(object):
         tarball_name = tarball_dir + '.tar.gz'
         bkp_tar_dir = os.path.join('/root', tarball_dir)
         if direction:
-            shutil.copytree(dirname, bkp_tar_dir, symlinks=True)
+            if not os.path.exists(bkp_tar_dir):
+                os.makedirs(bkp_tar_dir)
+            for preupg_dir in settings.preupgrade_dirs:
+                shutil.copytree(os.path.join(dirname, preupg_dir),
+                                os.path.join(bkp_tar_dir, preupg_dir),
+                                symlinks=True)
             tarball = TarballHelper.get_tarball_result_path(dirname, tarball_name)
             cmd.append(cmd_pack)
             cmd.append(tarball)
@@ -595,6 +600,7 @@ class ConfigFilesHelper(object):
             # Check if config file does not exist in cleanconf directory
             if ConfigFilesHelper.check_cleanconf_dir(result_dir, cleanconf_file_name):
                 if os.path.exists(dirtyconf_file_name):
+                    log_message("File %s exist in %s directory" % (new_filename, dirty_conf), logging.DEBUG)
                     os.unlink(dirtyconf_file_name)
                 continue
             # Check if config file does not exists in dirtyconf directory

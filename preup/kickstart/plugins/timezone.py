@@ -37,7 +37,7 @@ class TimezoneHandling(BaseKickstart):
     def update_timezone(self):
         if self.timezone:
             for line in self.timezone:
-                fields = line.split('=')
+                fields = line.strip().split('=')
                 try:
                     self.handler.timezone.timezone = fields[1]
                     self.handler.timezone.isUtc = True
