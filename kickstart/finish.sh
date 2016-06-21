@@ -7,6 +7,8 @@ TAR_BALL=preupgrade.tar.gz
 echo "{tar_ball}" > data
 base64 --decode data > ${TAR_BALL}
 tar -xzvf ${TAR_BALL}
+ln -s {RESULT_NAME}/cleanconf cleanconf
+ln -s {RESULT_NAME}/dirtyconf dirtyconf
 ls -laR >> ${PREUPGRADE_LOG}
 cd {RESULT_NAME}
 PWD=${pwd}
