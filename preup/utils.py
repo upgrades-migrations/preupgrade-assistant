@@ -592,6 +592,8 @@ class ConfigFilesHelper(object):
         for line in lines:
             try:
                 (opts, flags, filename) = line.strip().split()
+                if opts.strip() == 'missing':
+                    continue
             except ValueError:
                 return
             log_message("File name to copy '%s'" % filename,
@@ -610,7 +612,10 @@ class ConfigFilesHelper(object):
             # Check if config file does not exists in dirtyconf directory
             check = ConfigFilesHelper.check_dirtyconf_dir(dirtyconf_file_name, filename)
             if check:
-                shutil.copyfile(check, dirtyconf_file_name)
+                try:
+                    shutil.copyfile(check, dirtyconf_file_name)
+                except IOError:
+                    pass
 
 
 class PostupgradeHelper(object):
