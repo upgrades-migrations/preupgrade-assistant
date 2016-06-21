@@ -439,7 +439,7 @@ add_pkg_to_kickstart() {
   }
 
   while [ $# -ne 0 ]; do
-    echo $1 >> SPECIAL_PKG_LIST
+    echo $1 >> $SPECIAL_PKG_LIST
     shift
   done
   return 0
