@@ -162,6 +162,7 @@ class PackagesHandling(BaseKickstart):
         self.obsoleted = None
         self.handler = handler
         self.installed_dependencies = None
+        self.special_pkg_list = None
 
     def replace_obsolete(self):
         # obsolete list has format like
@@ -249,6 +250,11 @@ class PackagesHandling(BaseKickstart):
             self.obsoleted = PackagesHandling.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
             self.obsoleted = []
+        try:
+            self.special_pkg_list = PackagesHandling.get_package_list('specifal_pkg_list')
+        except IOError:
+            self.special_pkg_list = []
+
         self.installed_dependencies = PackagesHandling.get_installed_dependencies(self.obsoleted)
         self.installed_dependencies = list(set(self.installed_dependencies))
         self.installed_dependencies.sort()
@@ -274,6 +280,8 @@ class PackagesHandling(BaseKickstart):
     def run_module(self, *args, **kwargs):
         groups, missing_installed = self.output_packages()
         if self.packages or groups:
+            if self.special_pkg_list:
+                self.packages.extend(self.special_pkg_list)
             self.handler.packages.packageList = self.packages
             self.handler.packages.groupList = groups
             if missing_installed:
