@@ -10,7 +10,7 @@ import sys
 import shutil
 import ConfigParser
 import mimetypes
-
+import platform
 
 from preup import settings
 from preup.logger import log_message, logging
@@ -377,6 +377,10 @@ class SystemIdentification(object):
         """
         lines = FileHelper.get_file_content('/etc/redhat-release', 'rb', method=True)
         return [line for line in lines if line.startswith('Fedora')]
+
+    @staticmethod
+    def get_arch():
+        return platform.machine()
 
     @staticmethod
     def get_convertors():

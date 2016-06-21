@@ -149,8 +149,8 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
                  "installation of Red Hat Enterprise Linux 7.\n" \
                  "The Kickstart file needs to be modified by administator.\n" \
                  "These directories exist on migration system:\n" \
-                 "- %s/cleanconf - configuration files which can be used on migrated system direcotry.\n" \
-                 "- %s/dirtyconf - configuration files which needs to be clarified by administrator.\n"
+                 "- %s/cleanconf - configuration files which can be used on the migrated system directory.\n" \
+                 "- %s/dirtyconf - configuration files which need to be clarified by the administrator.\n"
 
 options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
 list_rules = "List of all available rules:\n%s\n"

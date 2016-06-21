@@ -502,7 +502,10 @@ class Application(object):
             1: settings.message.format(path),
             2: 'We found some critical issues. In-place upgrade is not advised.\n' +
             "Read the file {0} for more details.".
-            format(path)
+            format(path),
+            3: 'We found some error issues. In-place upgrade is not advised.\n' +
+               "Read the file {0} for more details.".format(path)
+
         }
         self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
         try:
