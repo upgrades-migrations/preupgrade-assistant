@@ -13,19 +13,11 @@ class CLIKickstart(object):
 
         #self.parser.usage = "%%prog [-v] <content_file>"
 
-        self.add_args()
+        #self.add_args()
         if args:
             self.opts, self.args = self.parser.parse_args(args=args)
         else:
             self.opts, self.args = self.parser.parse_args()
-
-    def add_args(self):
-        self.parser.add_option(
-            "--channels",
-            metavar="CHANNELS",
-            type=str,
-            help="List of channels for RHEL packages. Base is add automatically."
-        )
 
 
 if __name__ == '__main__':
