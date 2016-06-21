@@ -159,6 +159,11 @@ Upload results to preupgrade assistant WEB-UI"
             default=False,
             help="Show Preupgrade Assistant version"
         )
+        self.parser.add_option(
+            "--dst-arch",
+            metavar="DSTARCH",
+            help="Use common files from migration common directory."
+        )
 
 if __name__ == '__main__':
     x = CLI()

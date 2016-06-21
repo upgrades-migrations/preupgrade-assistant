@@ -124,8 +124,11 @@ class Common(object):
         """
         self.remove_common_symlink(filename)
         sym_link_name = filename.replace(variant, 'default')
+        architecture = SystemIdentification.get_arch()
+        if self.conf.dst_arch:
+            architecture = self.conf.dst_arch
         os.symlink(os.path.join(self.common_result_dir,
-                                platform.machine(),
+                                architecture,
                                 filename),
                    os.path.join(self.common_result_dir, sym_link_name))
 
@@ -159,10 +162,10 @@ class Common(object):
         # We have repositories for i386 architecture but packages are built
         # sometimes as i686 architecture. That's problematic in some cases
         # so we solve this for now by this little hack ugly.
-        if (not os.path.exists(os.path.join(self.common_result_dir, 'i686'))
-           and os.path.exists(os.path.join(self.common_result_dir, 'i386'))):
-            os.symlink(os.path.join(self.common_result_dir, 'i386'),
-                       os.path.join(self.common_result_dir, 'i686'))
+        i386_dir = os.path.join(self.common_result_dir, 'i386')
+        i686_dir = os.path.join(self.common_result_dir, 'i686')
+        if not os.path.exists(i686_dir) and os.path.exists(i386_dir):
+            os.symlink(i386_dir, i686_dir)
         add_ons = SystemIdentification.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())

@@ -12,7 +12,7 @@ the "upgradeability" point of view
 
 \fBpreupg [-l, --list-contents]
 
-\fBpreupg [-d, --debug] [--skip-common] [-s, --scan PATH] [-m, --mode MODE] [--force] [--text] [--kickstart]
+\fBpreupg [-d, --debug] [--skip-common] [-s, --scan PATH] [-m, --mode MODE] [--force] [--text] [--kickstart] [--dst-arch]
 
 \fBpreupg [-v, --verbose] [--riskcheck]
 
@@ -62,6 +62,9 @@ Convert HTML results to text form by elinks, lynx or w3m.
 .TP
 .B \-v, --verbose
 Shows more information during assessment. Verbose can be repeated more times.
+.TP
+.B \-\-dst-arch
+Specify destination architecture for migrations. Allowed options are: i386-x86_64 or ppc-ppc64.
 
 .SH RETURN STATES
 \fBpreupg\fP command returns several return values.

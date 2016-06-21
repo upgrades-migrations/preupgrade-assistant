@@ -132,7 +132,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
                "and does not perform the actual upgrade.\n"
-migration_text = "Running system is 32bit. Migration is possible only to 64bit system. See help --dst-arch option.\n"
+migration_text = "Running system is 32bit. Migration is possible only to 64bit system.\nSee help --dst-arch option.\n"
+migration_options = ['i386-x86_64', 'ppc-ppc64']
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for '{0}':"
 message = "We found some potential in-place upgrade risks.\n" \

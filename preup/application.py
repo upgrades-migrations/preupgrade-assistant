@@ -579,9 +579,20 @@ If you would like to use this tool, you have to specify correct upgrade path par
 
         if not self.conf.riskcheck and not self.conf.cleanup and not self.conf.kickstart:
             # If force option is not mentioned and user select NO then exits
-            if not self.conf.force and not show_message(settings.warning_text):
-                # We do not want to continue
-                return 12
+            if not self.conf.force:
+                text = ""
+                if self.conf.dst_arch:
+                    correct_option = [x for x in settings.migration_options if self.conf.dst_arch == x]
+                    if not correct_option:
+                        log_message("Specify correct --dst-arch option.")
+                        log_message("Available are '%s' or '%s'" % (settings.migration_options[0],
+                                                                    settings.migration_options[1]))
+                        return 12
+                if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
+                    text = '\n' + settings.migration_text
+                if not show_message(settings.warning_text + text):
+                    # We do not want to continue
+                    return 12
 
         if self.conf.text:
             # Test whether w3m, lynx and elinks packages are installed
