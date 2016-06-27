@@ -25,6 +25,7 @@ VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
 PREUPG_EXECUTABLES=$VALUE_EXECUTABLES
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
 PREUPG_TMP_PREUPGRADE=$VALUE_TMP_PREUPGRADE
+CONFIG_FILES_DIR=$PREUPG_TMP_PREUPGRADE/config_files
 
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
 PREUPG_POSTUPGRADE_DIR=$POSTUPGRADE_DIR
@@ -307,6 +308,77 @@ add_to_kickstart_readme()
     echo " * $filename - $description" >> $KICKSTART_README
 }
 
+_check_config_file()
+{
+    conf_file_type=$1
+    conf_file=$2
+    full_path=${CONFIG_FILES_DIR}/${conf_file_type}/${conf_file}
+    if [ -f "$full_path" ]; then
+        log_warning "File '$conf_file' already exists in $CONFIG_FILES_DIR/$conf_file_type directory."
+        return 1
+    fi
+    return 0
+}
+add_config_file()
+{
+    # Add config file to /root/preupgrade/{clean,dirty,etc} directory
+    # First paramater is configuration directory where we want to store a file.
+    #
+    # second parameter is a file which we store
+    # Usage:    add_config_file <clean,dirty> <full_path_file_name>
+
+    config_type=$1
+    filename=$1
+    [ -z "$1" ] && {
+        log_error "Missing configuration type directory."
+        return 1
+    }
+    [ -z "$2" ] && {
+        log_error "Missing full_path_file name."
+        return 1
+    }
+    CLEAN_FILES=${CONFIG_FILES_DIR}/clean
+    DIRTY_FILES=${CONFIG_FILES_DIR}/dirty
+    UNCHECKED_FILES=${CONFIG_FILES_DIR}/unchecked
+    backup_file=${CONFIG_FILES_DIR}/${config_type}/${filename}
+    case "$config_type" in
+        "clean")
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into ${DIRTY_FILES} directory."
+            _check_config_file "clean" "$filename" && return 1
+            ;;
+        "dirty")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into ${CLEAN_FILES} directory."
+            _check_config_file "dirty" "$filename" && return 1
+            ;;
+        "unchecked")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into ${CLEAN_FILES} directory."
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into ${DIRTY_FILES} directory."
+            _check_config_file "unchecked" "$filename" && return 1
+            ;;
+        "deprecated")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into ${CLEAN_FILES} directory."
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into ${DIRTY_FILES} directory."
+            _check_config_file "unchecked" "$filename" \
+            || log_warning "You want to store the file into ${UNCHECKED_FILES} directory."
+            _check_config_file "deprecated" "$filename" && return 1
+            ;;
+        *)
+            log_error "Unknown '$config_type' option in function add_config_file."
+            log_error "Allowed options are <clean,dirty,unchecked,deprecated>."
+            return 1
+            ;;
+    esac
+    mkdir -p `dirname ${backup_file}`
+    cp -a ${filename} ${backup_file}
+    return 0
+}
+
 add_kickstart_dir()
 {
     # Add filename /root/preupgrade/kickstart directory
@@ -316,7 +388,7 @@ add_kickstart_dir()
     kickstart_name="$KICKSTART_DIR/`basename $script_name`"
     [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
     [ -f "$kickstart_name" ] && log_warning "`basename $script_name` already exists in $KICKSTART_DIR"
-    cp -af $script_name $kickstart_name
+    cp -af ${script_name} ${kickstart_name}
 }
 
 get_option()
@@ -327,12 +399,12 @@ get_option()
     # Returns:  0,1
 
     option=$1
-    case $option in
+    case ${option} in
         "migration")
-            return $MIGRATE
+            return ${MIGRATE}
             ;;
         "upgrade")
-            return $UPGRADE
+            return ${UPGRADE}
             ;;
         *)
             log_error "Supported options are 'migration', 'upgrade'."
@@ -343,7 +415,7 @@ get_option()
 
 switch_to_content()
 {
-    cd $CURRENT_DIRECTORY
+    cd ${CURRENT_DIRECTORY}
 }
 
 check_applies_to()

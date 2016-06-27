@@ -110,7 +110,8 @@ __all__ = (
     'DEVEL_MODE',
     'DIST_NATIVE',
     'SPECIAL_PKG_LIST',
-    'NOAUTO_POSTUPGRADE_D',
+    'NOAUTO_POSTUPGRADE_D'
+    'CONFID_FILES_DIR',
 )
 
 CACHE = "/var/cache/preupgrade"
@@ -137,7 +138,10 @@ PREUPG_EXECUTABLES = VALUE_EXECUTABLES
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
 PREUPG_RPM_RHSIGNED = VALUE_RPM_RHSIGNED
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+PREUPG_TMP_PREUPGRADE = VALUE_TMP_PREUPGRADE
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+CONFIG_FILES_DIR = os.path.join(PREUPG_TMP_PREUPGRADE, "config_files")
+
 try:
     MODULE_NAME = os.environ['XCCDF_VALUE_MODULE_NAME']
 except KeyError:
@@ -380,6 +384,75 @@ def add_to_kickstart_readme(filename, description):
     # Usage:    add_to_kickstart_readme (<filename>, <description>)
     line = " * %s - %s" % (filename, description)
     FileHelper.write_to_file(KICKSTART_README, "a+b", line)
+
+
+def _check_config_file(conf_file_type, conf_file):
+    full_path = os.path.join(CONFIG_FILES_DIR, conf_file_type, conf_file)
+    if os.path.exists(full_path):
+        log_warning("File '%s' already exists in %s directory." % (conf_file,
+                                                                   os.path.join(CONFIG_FILES_DIR, conf_file_type)))
+        return True
+    return False
+
+
+def add_config_file(config_type, filename):
+
+    # Add config file to /root/preupgrade/{clean,dirty,etc} directory
+    # First paramater is configuration directory where we want to store a file.
+    #
+    # second parameter is a file which we store
+    # Usage:    add_config_file <clean,dirty> <full_path_file_name>
+
+    if not config_type:
+        log_error("Missing configuration type directory.")
+        return 1
+    if not filename:
+        log_error("Missing full_path_file name.")
+    dirty_name = "dirty"
+    clean_name = "clean"
+    unchecked_name = "unchecked"
+    deprecated_name = "deprecated"
+    clean_dir = os.path.join(CONFIG_FILES_DIR, clean_name)
+    dirty_dir = os.path.join(CONFIG_FILES_DIR, dirty_name)
+    unchecked_dir = os.path.join(CONFIG_FILES_DIR, unchecked_name)
+    backup_file= os.path.join(CONFIG_FILES_DIR, config_type, filename)
+    message = "You want to store the file into %s directory."
+    if config_type == clean_name:
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == dirty_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == unchecked_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == deprecated_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(unchecked_name, filename):
+                log_warning(message % unchecked_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    else:
+        log_error("Unknown '%s' option in function add_config_file." % config_type)
+        log_error("Allowed options are <clean,dirty,unchecked,deprecated>.")
+        return 1
+
+    dir_name = os.path.dirname(backup_file)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    shutil.copy(filename, backup_file)
+    return 0
 
 
 def add_kickstart_dir(filename):
