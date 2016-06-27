@@ -444,5 +444,35 @@ add_pkg_to_kickstart() {
   done
   return 0
 }
+
+# Function which deploys script to specific location.
+# Arguments:
+# param 1: hook, like postupgrade, preupgrade, etc.
+# param 2: script name
+deploy_hook() {
+  deploy_name=$1
+  script_name=$2
+
+  [ -z $MODULE_NAME ] && return 0
+  case $deploy_name in
+    "postupgrade")
+      pwd=`pwd`
+      echo "$pwd"
+      if [ ! -f "$script_name" ] ; then
+        log_error "Script_name $script_name does not exist."
+        return 1
+      fi
+      hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+      if [ ! -d "$hook_dir" ]; then
+          mkdir -p "$hook_dir"
+      fi
+      cp $script_name "$hook_dir/run_hook"
+      ;;
+    "preupgrade")
+      ;;
+    *) log_error "Unknown option $deploy_name"; exit_error
+  esac
+}
+
 load_pa_configuration
 switch_to_content
