@@ -402,7 +402,7 @@ get_option()
 
 switch_to_content()
 {
-    cd ${CURRENT_DIRECTORY}
+    cd $CURRENT_DIRECTORY
 }
 
 check_applies_to()
