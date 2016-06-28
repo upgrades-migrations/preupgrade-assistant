@@ -250,10 +250,10 @@ add_postupgrade()
     local postupgrade_name
 
     script_name=$1
-    postupgrade_name="$PREUPG_POSTUPGRADE_DIR/`basename $script_name`"
+    postupgrade_name="$PREUPG_POSTUPGRADE_DIR/$(basename $script_name)"
     [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
     [ -f "$postupgrade_name" ] && log_warning "$script_name already exists in $PREUPG_POSTUPGRADE_DIR"
-    cp -af "$script_name" "$postupgrade_name"
+    cp -af ${script_name} ${$postupgrade_name}
 }
 
 add_manual_postupgrade()
@@ -265,10 +265,10 @@ add_manual_postupgrade()
     local script_name
     local postupgrade_name
     script_name=$1
-    postupgrade_name="$NOAUTO_POSTUPGRADE_D/`basename $script_name`"
+    postupgrade_name="$NOAUTO_POSTUPGRADE_D/$(basename $script_name)"
     [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
     [ -f "$postupgrade_name" ] && log_warning "$script_name already exists in $NOAUTO_POSTUPGRADE_D"
-    cp -af "$script_name" "$postupgrade_name"
+    cp -af ${script_name} ${postupgrade_name}
 }
 
 _check_config_file()
@@ -347,7 +347,7 @@ store_config_file_as()
             return 1
             ;;
     esac
-    mkdir -p `dirname "$backup_file"`
+    mkdir -p $(dirname "$backup_file")
     cp -a "$filename" "$backup_file"
     return 0
 }
@@ -367,7 +367,7 @@ store_for_kickstart()
     local description=$2
     local filename
 
-    filename=`basename "$script_name"`
+    filename=$(basename "$script_name")
     kickstart_name="$KICKSTART_DIR/$filename"
     [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
     [ -f "$kickstart_name" ] && log_warning "$filename already exists in $KICKSTART_DIR"
