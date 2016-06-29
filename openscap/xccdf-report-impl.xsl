@@ -196,6 +196,9 @@ Authors:
         <xsl:variable name="ignored_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'notselected' or cdf:result/text() = 'notapplicable'])"/>
         <xsl:variable name="passed_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'pass' or cdf:result/text() = 'fixed'])"/>
         <xsl:variable name="needs_action_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'needs_action'])"/>
+        <xsl:variable name="informational_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'informational'])"/>
+        <xsl:variable name="fixed_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'fixed'])"/>
+
         <xsl:variable name="needs_inspection_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'needs_inspection'])"/>
         <xsl:variable name="failed_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'fail'])"/>
         <xsl:variable name="uncertain_rules_count" select="count($testresult/cdf:rule-result[cdf:result/text() = 'error' or cdf:result/text() = 'unknown'])"/>
@@ -227,6 +230,12 @@ Authors:
         <div class="progress" title="Displays proportion of passed/fixed, failed/error, and other rules (in that order). There were {$total_rules_count - $ignored_rules_count} rules taken into account.">
             <div class="progress-bar progress-bar-success" style="width: {$passed_rules_count div ($total_rules_count - $ignored_rules_count) * 100}%">
                 <xsl:value-of select="$passed_rules_count"/> passed
+            </div>
+            <div class="progress-bar progress-bar-danger" style="width: {$informational_rules_count div ($total_rules_count - $ignored_rules_count) * 100}%">
+                <xsl:value-of select="$informational_rules_count"/> informational
+            </div>
+            <div class="progress-bar progress-bar-danger" style="width: {$fixed_rules_count div ($total_rules_count - $ignored_rules_count) * 100}%">
+                <xsl:value-of select="$fixed_rules_count"/> fixed
             </div>
             <div class="progress-bar progress-bar-danger" style="width: {$needs_action_rules_count div ($total_rules_count - $ignored_rules_count) * 100}%">
                 <xsl:value-of select="$needs_action_rules_count"/> needs_action
@@ -384,6 +393,8 @@ Authors:
     <xsl:variable name="contained_rules_fail" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'fail']/@idref])"/>
     <xsl:variable name="contained_rules_needs_action" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'needs_action']/@idref])"/>
     <xsl:variable name="contained_rules_needs_inspection" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'needs_inspection']/@idref])"/>
+    <xsl:variable name="contained_rules_fixed" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'fixed']/@idref])"/>
+    <xsl:variable name="contained_rules_informational" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'informational']/@idref])"/>
     <xsl:variable name="contained_rules_error" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'error']/@idref])"/>
     <xsl:variable name="contained_rules_unknown" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'unknown']/@idref])"/>
     <xsl:variable name="contained_rules_notchecked" select="count($item/descendant::cdf:Rule[@id = $testresult/cdf:rule-result[cdf:result/text() = 'notchecked']/@idref])"/>
@@ -409,6 +420,8 @@ Authors:
                     <xsl:if test="$contained_rules_fail > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_fail"/>x fail</span></xsl:if>
                     <xsl:if test="$contained_rules_needs_action > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_needs_action"/>x needs_action</span></xsl:if>
                     <xsl:if test="$contained_rules_needs_inspection > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_needs_inspection"/>x needs_inspection</span></xsl:if>
+                    <xsl:if test="$contained_rules_fixed > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_fixed"/>x fixed</span></xsl:if>
+                    <xsl:if test="$contained_rules_informational > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_informational"/>x informational</span></xsl:if>
                     <xsl:if test="$contained_rules_error > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_error"/>x error</span></xsl:if>
                     <xsl:if test="$contained_rules_unknown > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_unknown"/>x unknown</span></xsl:if>
                     <xsl:if test="$contained_rules_notchecked > 0">&#160;<span class="badge"><xsl:value-of select="$contained_rules_notchecked"/>x notchecked</span></xsl:if>
@@ -832,7 +845,7 @@ Authors:
                             </div>
                         </div></td></tr>
                     </xsl:if>
-                    <xsl:if test="$result = 'fail' or $result = 'error' or $result = 'unknown' or $result = 'needs_action' or $result = 'needs_inspection'">
+                    <xsl:if test="$result = 'fail' or $result = 'error' or $result = 'unknown' or $result = 'fixed' or $result = 'informational' or $result = 'needs_action' or $result = 'needs_inspection'">
                         <xsl:for-each select="$item/cdf:fixtext">
                             <tr><td colspan="2"><div class="remediation-description">
                                 <span class="label label-success">Remediation description:</span>
