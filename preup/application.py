@@ -535,7 +535,7 @@ class Application(object):
             print ("Preupgrade Assistant version: %s" % VERSION)
             return 0
 
-        if not self.conf.scan and not self.conf.contents:
+        if not self.conf.scan and not self.conf.contents and not self.conf.list_rules:
             cnt = 0
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
             dirs = os.listdir(self.conf.source_dir)
@@ -549,7 +549,7 @@ class Application(object):
 If you would like to use this tool, you have to install some." % settings.source_dir)
                 return 10
             if int(cnt) > 1:
-                log_message("Preupgrade assistant detects more then 1 set of contents in directory%s. \
+                log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
 If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
                 return 10
 
@@ -559,7 +559,21 @@ If you would like to use this tool, you have to specify correct upgrade path par
             return 0
 
         if self.conf.list_rules:
-            log_message(settings.list_rules % '\n'.join(XccdfHelper.get_list_rules(self.conf.scan)))
+            list_scans = []
+            is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
+            dirs = os.listdir(self.conf.source_dir)
+            for dir_name in filter(is_dir, dirs):
+                if SystemIdentification.get_assessment_version(dir_name):
+                    list_scans.append(dir_name)
+
+            if not list_scans:
+                log_message("There were no contents found in directory %s. \
+            If you would like to use this tool, you have to install some." % settings.source_dir)
+                return 10
+            rules = []
+            for scans in list_scans:
+                rules.extend([scans + ': ' + x for x in XccdfHelper.get_list_rules(scans)])
+            log_message(settings.list_rules % '\n'.join(rules))
             return 0
 
         if self.conf.upload and self.conf.results:
