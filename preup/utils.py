@@ -11,6 +11,9 @@ import shutil
 import ConfigParser
 import mimetypes
 import platform
+import random
+import string
+
 
 from preup import settings
 from preup.logger import log_message, logging
@@ -736,12 +739,12 @@ class PostupgradeHelper(object):
                             "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
 
         for key, val in six.iteritems(postupgrade_dict):
-            shutil.copy(os.path.join(settings.source_dir,
-                                     settings.postupgrade_dir,
-                                     key),
-                        os.path.join(result_dir,
-                                     settings.postupgrade_dir,
-                                     val))
+            source_file = os.path.join(settings.source_dir, settings.postupgrade_dir, key)
+            if os.path.exists(source_file):
+                shutil.copy(source_file,
+                            os.path.join(result_dir,
+                                         settings.postupgrade_dir,
+                                         val))
 
 
 class OpenSCAPHelper(object):
@@ -764,9 +767,12 @@ class OpenSCAPHelper(object):
         self.content = content
 
     @staticmethod
-    def get_xsl_stylesheet():
+    def get_xsl_stylesheet(old_style=False):
         """Return full XSL stylesheet path"""
-        return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
+        if old_style:
+            return os.path.join(settings.share_dir, "preupgrade", "xsl", "old_style", settings.old_xsl_sheet)
+        else:
+            return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
 
     @staticmethod
     def get_command_generate():
@@ -776,12 +782,12 @@ class OpenSCAPHelper(object):
             command_generate = ['xccdf', 'generate', 'report']
         return command_generate
 
-    def build_generate_command(self, xml_file, html_file):
+    def build_generate_command(self, xml_file, html_file, old_style=False):
         """Function builds a command for generating results"""
         command = [settings.openscap_binary]
         command.extend(OpenSCAPHelper.get_command_generate())
         if not SystemIdentification.get_system():
-            command.extend(("--stylesheet", OpenSCAPHelper.get_xsl_stylesheet()))
+            command.extend(("--stylesheet", OpenSCAPHelper.get_xsl_stylesheet(old_style=old_style)))
         command.extend(("--output", html_file))
         command.append(FileHelper.check_xml(xml_file))
         return command
@@ -826,5 +832,18 @@ class OpenSCAPHelper(object):
         """
         return os.path.join(self.result_dir,
                             OpenSCAPHelper.get_third_party_name("") + self.result_name + ".txt")
+
+    def run_generate(self, xml_file, html_file, old_style=False):
+        """
+        The function generates result.html file from result.xml file
+        which was modified by preupgrade assistant
+        """
+        cmd = self.build_generate_command(xml_file, html_file, old_style=old_style)
+        generate_tempfile = os.path.join('/tmp', ''.join(random.SystemRandom().choice(string.ascii_letters)))
+        ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
+        if os.path.exists(generate_tempfile):
+            lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
+            log_message('%s' % '\n'.join(lines), print_output=0, level=logging.DEBUG)
+        return ret_val
 
 

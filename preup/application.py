@@ -9,8 +9,6 @@ import datetime
 import os
 import sys
 import six
-import random
-import string
 from distutils import dir_util
 
 try:
@@ -235,19 +233,6 @@ class Application(object):
         # fail if openscap wasn't successful; if debug, continue
         return ProcessHelper.run_subprocess(cmd, print_output=False, function=function)
 
-    def run_generate(self, xml_file, html_file):
-        """
-        The function generates result.html file from result.xml file
-        which was modified by preupgrade assistant
-        """
-        cmd = self.openscap_helper.build_generate_command(xml_file, html_file)
-        generate_tempfile = os.path.join('/tmp', ''.join(random.SystemRandom().choice(string.ascii_letters)))
-        ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
-        if os.path.exists(generate_tempfile):
-            lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
-            log_message('%s' % '\n'.join(lines), print_output=0, level=logging.DEBUG)
-        return ret_val
-
     def get_scenario(self):
         """The function returns scenario"""
         scenario = None
@@ -298,7 +283,13 @@ class Application(object):
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
         for report in self._get_reports():
-            self.run_generate(report, report.replace('.xml', '.html'))
+            if self.conf.old_report_style:
+                ReportParser.write_xccdf_version(report, direction=True)
+            self.openscap_helper.run_generate(report,
+                                              report.replace('.xml', '.html'),
+                                              old_style=self.conf.old_report_style)
+            if self.conf.old_report_style:
+                ReportParser.write_xccdf_version(report)
 
     def prepare_xml_for_html(self):
         """The function prepares a XML file for HTML creation"""

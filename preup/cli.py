@@ -164,6 +164,12 @@ Upload results to preupgrade assistant WEB-UI"
             metavar="DSTARCH",
             help="Use common files from migration common directory."
         )
+        self.parser.add_option(
+            "--old-report-style",
+            action="store_true",
+            metavar="OLDREPORTSTYLE",
+            help="Use old report style without CSS issues."
+        )
 
 if __name__ == '__main__':
     x = CLI()
