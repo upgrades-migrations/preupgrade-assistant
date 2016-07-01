@@ -41,19 +41,20 @@ class MessageHelper(object):
         print(title, ''.join(msg))
 
     @staticmethod
-    def get_message(title="", message="Do you want to continue?", prompt=None):
+    def get_message(title="", default_yes=True, message="Do you want to continue?", prompt=None):
         """
         Function asks for input from user
 
         :param title: Title of the message
         :param message: Message text
+        :param default_yes: If the deafult values is YES
         :return: y or n
         """
         yes = ['yes', 'y', 'Y', 'Yes']
         yesno = yes + ['no', 'n', 'N', 'No']
         print (title)
         if prompt is not None:
-            print (message + prompt)
+            print (message + ' ' + prompt)
         else:
             print (message)
         while True:
@@ -64,6 +65,9 @@ class MessageHelper(object):
                     choice = input()
             except KeyboardInterrupt:
                 raise
+            if not choice:
+                if default_yes:
+                    return "yes"
             if prompt and choice not in yesno:
                 print ('You have to choose one of y/n.')
             else:

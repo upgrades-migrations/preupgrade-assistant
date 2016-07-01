@@ -18,7 +18,7 @@ from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
 
 
-def get_user_input(message, any_input=False):
+def get_user_input(message, default_yes=True, any_input=False):
     """
     Function for command line messages
 
@@ -27,7 +27,7 @@ def get_user_input(message, any_input=False):
     :param any_input: if True, return input without checking it first
     :return: True or False, based on user's input
     """
-    choice = '([y]/n)'
+    choice = '[Y/n]'
 
     if any_input:
         msg = '{0} '.format(message)
@@ -40,6 +40,11 @@ def get_user_input(message, any_input=False):
         else:
             user_input = input(msg)
 
+        if not user_input:
+            if default_yes:
+                return True
+            else:
+                return False
         if not any_input:
             try:
                 user_input = strtobool(user_input)
