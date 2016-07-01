@@ -66,19 +66,34 @@ __all__ = (
     'service_is_enabled',
     'is_dist_native',
     'get_dist_native_list',
+    'get_cached',
+    'add_pkg_to_kickstart',
+    'add_postupgrade',
+    'add_manual_postupgrade',
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
+    'PREUPG_RPM_QA',
     'VALUE_ALLCHANGED',
+    'PREUPG_ALLCHANGED'
     'VALUE_CONFIGCHANGED',
+    'PREUPG_CONFIGCHANGED',
     'VALUE_PASSWD',
+    'PREUPG_PASSWD',
     'VALUE_CHKCONFIG',
+    'PREUPG_CHKCONFIG',
     'VALUE_GROUP',
+    'PREUPG_GROUP',
     'VALUE_RPMTRACKEDFILES',
+    'PREUPG_RPMTRACKEDFILES',
     'VALUE_ALLMYFILES',
+    'PREUPG_ALLMYFILES',
     'VALUE_EXECUTABLES',
+    'PREUPG_EXECUTABLES',
     'VALUE_RPM_RHSIGNED',
+    'PREUPG_RPM_RHSIGNED',
     'VALUE_TMP_PREUPGRADE',
+    'PREUPG_TMP_PREUPGRADE',
     'MODULE_NAME',
     'COMMON_DIR',
     'SOLUTION_FILE',
@@ -95,24 +110,38 @@ __all__ = (
     'DEVEL_MODE',
     'DIST_NATIVE',
     'SPECIAL_PKG_LIST',
-    'NOAUTO_POSTUPGRADE_D',
+    'NOAUTO_POSTUPGRADE_D'
+    'CONFID_FILES_DIR',
 )
 
 CACHE = "/var/cache/preupgrade"
 PREUPGRADE_CACHE = os.path.join(CACHE, "common")
 PREUPGRADE_CONFIG = settings.PREUPG_CONFIG_FILE
 VALUE_RPM_QA = os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
+PREUPG_RPM_QA = VALUE_RPM_QA
 VALUE_ALLCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
+PREUPG_ALLCHANGED = VALUE_ALLCHANGED
 VALUE_CONFIGCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
+PREUPG_CONFIGCHANGED = VALUE_CONFIGCHANGED
 VALUE_PASSWD = os.path.join(PREUPGRADE_CACHE, "passwd.log")
+PREUPG_PASSWD = VALUE_PASSWD
 VALUE_CHKCONFIG = os.path.join(PREUPGRADE_CACHE, "chkconfig.log")
+PREUPG_CHKCONFIG = VALUE_CHKCONFIG
 VALUE_GROUP = os.path.join(PREUPGRADE_CACHE, "group.log")
+PREUPG_GROUP = VALUE_GROUP
 VALUE_RPMTRACKEDFILES = os.path.join(PREUPGRADE_CACHE, "rpmtrackedfiles.log")
+PREUPG_RPMTRACKEDFILES = VALUE_RPMTRACKEDFILES
 VALUE_ALLMYFILES = os.path.join(PREUPGRADE_CACHE, "allmyfiles.log")
+PREUPG_ALLMYFILES = VALUE_ALLMYFILES
 VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
+PREUPG_EXECUTABLES = VALUE_EXECUTABLES
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
+PREUPG_RPM_RHSIGNED = VALUE_RPM_RHSIGNED
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+PREUPG_TMP_PREUPGRADE = VALUE_TMP_PREUPGRADE
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+CONFIG_FILES_DIR = os.path.join(PREUPG_TMP_PREUPGRADE, "config_files")
+
 try:
     MODULE_NAME = os.environ['XCCDF_VALUE_MODULE_NAME']
 except KeyError:
@@ -133,6 +162,7 @@ try:
 except KeyError:
     DIST_NATIVE = 'sign'
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+PREUPG_POSTUPGRADE_DIR = POSTUPGRADE_DIR
 KICKSTART_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
 KICKSTART_README = os.path.join(KICKSTART_DIR, "README")
 KICKSTART_SCRIPTS = os.path.join(KICKSTART_DIR, "scripts")
@@ -148,10 +178,10 @@ PREUPG_API_VERSION=1
 
 component = "unknown"
 
-
 ################
 # RISK LOGGING #
 ################
+
 
 def log_risk(severity, message):
     """
@@ -257,9 +287,203 @@ def log_debug(message, component_arg=None):
     log('DEBUG', message, component_arg)
 
 
+def _get_cached_command(command):
+    # Function gets a cached command
+    # input parameter is command provided by get_cached function
+    lines = []
+    if not os.path.exists(command):
+        log_error("File $command does not exist. It is mandatory.")
+    else:
+        lines = FileHelper.get_file_content(command)
+    return lines
+
+
+def get_cached(command, key):
+    # Get general system information from cache
+    # Usage:    get_cached (file,<passwd,group>)
+    #           get_cached (command, <rpm_qa, rpm_Va, rpm_etc_Va, chconfig>)
+    #           get_cached (filelist, <executable, allmyfiles, rpmrhsignedfiles, rpmtrackedfiles>)
+    if command == "file":
+        if key == "passwd":
+            if not os.path.exists(PREUPG_PASSWD):
+                log_error("File %s does not exist. It is mandatory." % PREUPG_PASSWD )
+                return 1
+            else:
+                return FileHelper.get_file_content(PREUPG_PASSWD)
+        if key == "group":
+            if not os.path.exists(PREUPG_GROUP):
+                log_error("File %s does not exist. It is mandatory." % PREUPG_GROUP)
+                return 1
+            else:
+                return FileHelper.get_file_content(PREUPG_GROUP)
+        log_error("Unknown %s for %s . Supported are 'passwd', 'group'." % (key, command))
+        return 1
+    if command == "command":
+        if key == "rpm_qa":
+            return _get_cached_command(PREUPG_RPM_QA)
+        if key == "rpm_Va":
+            return _get_cached_command (PREUPG_ALLCHANGED)
+        if key == "rpm_etc_Va":
+            return _get_cached_command (PREUPG_CONFIGCHANGED)
+        if key == "chconfig":
+            return _get_cached_command (PREUPG_CHKCONFIG)
+        log_error("Unknown $key for $command. Supported are 'rpm_qa', 'rpm_Va', 'rpm_etc_Va', 'chkconfig'.")
+        return 1
+    if command == "filelist":
+        if key == "allmyfiles":
+            return _get_cached_command (PREUPG_ALLMYFILES)
+        if key == "executables":
+            return _get_cached_command (PREUPG_EXECUTABLES)
+        if key == "rpmtrackedfiles":
+            return _get_cached_command (PREUPG_RPMTRACKEDFILES)
+        if key == "rpmrhsignedfiles":
+            return _get_cached_command (PREUPG_RPM_RHSIGNED)
+        log_error("Unknown %s for %s. Supported are 'executable', 'allmyfiles','rpmtrackedfiles','rpmrhsignedfiles'." %(key, command))
+        return 1
+    if command == "info":
+        log_error("This is not implemented yet")
+        return 1
+    log_error("Unknown command %s. Supported are 'file', 'command', filelist', 'info'." % command)
+    return 1
+
+
+def add_postupgrade(filename):
+    # Add postupgrade script to /root/preupgrade/postupgrade.d directory
+    # File as first parameter has to exists in modules directory
+    # Usage:    add_postupgrade (file)
+
+    postupgrade_name = os.path.join(PREUPG_POSTUPGRADE_DIR, os.path.basename(filename))
+    if not os.path.exists(filename):
+        log_error("%s does not exist" % filename )
+        exit_error()
+    if os.path.exists(postupgrade_name):
+        log_warning("%s already exists in %s" % (os.path.basename(filename), PREUPG_POSTUPGRADE_DIR))
+    shutil.copyfile(filename, postupgrade_name)
+
+
+def add_manual_postupgrade(filename):
+    # Add postupgrade script to /root/preupgrade/noauto_postupgrade.d directory
+    # File as first parameter has to exists in modules directory
+    # Usage:    add_manual_postupgrade (file)
+
+    postupgrade_name = os.path.join(NOAUTO_POSTUPGRADE_D, os.path.basename(filename))
+    if not os.path.exists(filename):
+        log_error("%s does not exist" % filename )
+        exit_error()
+    if os.path.exists(postupgrade_name):
+        log_warning("%s already exists in %s" % (os.path.basename(filename), NOAUTO_POSTUPGRADE_D))
+    shutil.copyfile(filename, postupgrade_name)
+
+
+def add_to_kickstart_readme(filename, description):
+    # Add filename and description to /root/preupgrade/kickstart/README file
+    # Filename as first parameter which will be inserted into README file
+    # Description of filename as second parameter which will be inserted into README file.
+    # Format in README file is:
+    # * <filename> - <description>
+    # Usage:    add_to_kickstart_readme (<filename>, <description>)
+    line = " * %s - %s" % (filename, description)
+    FileHelper.write_to_file(KICKSTART_README, "a+b", line)
+
+
+def _check_config_file(conf_file_type, conf_file):
+    full_path = os.path.join(CONFIG_FILES_DIR, conf_file_type, conf_file)
+    if os.path.exists(full_path):
+        log_warning("File '%s' already exists in %s directory." % (conf_file,
+                                                                   os.path.join(CONFIG_FILES_DIR, conf_file_type)))
+        return True
+    return False
+
+
+def add_config_file(config_type, filename):
+
+    # Add config file to /root/preupgrade/{clean,dirty,etc} directory
+    # First paramater is configuration directory where we want to store a file.
+    #
+    # second parameter is a file which we store
+    # Usage:    add_config_file <clean,dirty> <full_path_file_name>
+
+    if not config_type:
+        log_error("Missing configuration type directory.")
+        return 1
+    if not filename:
+        log_error("Missing full_path_file name.")
+    dirty_name = "dirty"
+    clean_name = "clean"
+    unchecked_name = "unchecked"
+    deprecated_name = "deprecated"
+    clean_dir = os.path.join(CONFIG_FILES_DIR, clean_name)
+    dirty_dir = os.path.join(CONFIG_FILES_DIR, dirty_name)
+    unchecked_dir = os.path.join(CONFIG_FILES_DIR, unchecked_name)
+    backup_file= os.path.join(CONFIG_FILES_DIR, config_type, filename)
+    message = "You want to store the file into %s directory."
+    if config_type == clean_name:
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == dirty_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == unchecked_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    elif config_type == deprecated_name:
+            if _check_config_file(clean_name, filename):
+                log_warning(message % clean_dir)
+            if _check_config_file(dirty_name, filename):
+                log_warning(message % dirty_dir)
+            if _check_config_file(unchecked_name, filename):
+                log_warning(message % unchecked_dir)
+            if _check_config_file(config_type, filename):
+                return 1
+    else:
+        log_error("Unknown '%s' option in function add_config_file." % config_type)
+        log_error("Allowed options are <clean,dirty,unchecked,deprecated>.")
+        return 1
+
+    dir_name = os.path.dirname(backup_file)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    shutil.copy(filename, backup_file)
+    return 0
+
+
+def add_kickstart_dir(filename):
+    # Add filename /root/preupgrade/kickstart directory
+    # File as first parameter has to exists in modules directory
+    # Usage:    add_to_kickstart_dir (filename, description)
+    kickstart_name = os.path.join(KICKSTART_DIR, os.path.basename(filename))
+    if not os.path.exists(filename):
+        log_error("%s does not exist" % filename )
+        exit_error()
+    if os.path.exists(kickstart_name):
+        log_warning("%s already exists in %s" % (os.path.basename(filename), KICKSTART_DIR))
+    shutil.copyfile(filename, kickstart_name)
+
+
+def get_option(option):
+    # Get option set up by preupgrade-assistant
+    # Available options are <migration, upgrade>
+    # Usage:    get_option (option)
+    # Returns:  0,1
+
+    if option == "migration":
+        return MIGRATE
+    if option == "upgrade":
+        return UPGRADE
+    log_error("Supported options are 'migration', 'upgrade'.")
+
 #########
 # UTILS #
 #########
+
 
 def get_dest_dir():
     """

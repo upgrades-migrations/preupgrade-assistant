@@ -2,6 +2,7 @@
 CACHE=/var/cache/preupgrade
 PREUPGRADE_CACHE=/var/cache/preupgrade/common
 PREUPGRADE_CONFIG=/etc/preupgrade-assistant.conf
+
 VALUE_RPM_QA=$PREUPGRADE_CACHE/rpm_qa.log
 VALUE_ALL_CHANGED=$PREUPGRADE_CACHE/rpm_Va.log
 VALUE_CONFIGCHANGED=$PREUPGRADE_CACHE/rpm_etc_Va.log
@@ -13,6 +14,8 @@ VALUE_RPM_RHSIGNED=$PREUPGRADE_CACHE/rpm_rhsigned.log
 VALUE_ALLMYFILES=$PREUPGRADE_CACHE/allmyfiles.log
 VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
+CONFIG_FILES_DIR=$PREUPG_TMP_PREUPGRADE/config_files
+
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
 CURRENT_DIRECTORY=$XCCDF_VALUE_CURRENT_DIRECTORY
 MIGRATE=$XCCDF_VALUE_MIGRATE
@@ -158,6 +161,243 @@ exit_informational()
 exit_fixed()
 {
     exit $RESULT_FIXED
+}
+
+_get_cached_command()
+{
+    # Function gets a cached command
+    # input parameter is command provided by get_cached function
+    local command
+    command=$1
+    if [ ! -f "$command" ]; then
+        log_error "File $command does not exist. It is mandatory."
+    else
+        cat $command
+    fi
+}
+
+get_cached()
+{
+    # Get general system information from cache
+    # Usage:    get_cached file <passwd,group>
+    #           get_cached command <rpm_qa, rpm_Va, rpm_etc_Va, chconfig>
+    #           get_cached filelist <executable, allmyfiles, rpmrhsignedfiles, rpmtrackedfiles>
+    local command
+    local key
+    command=$1
+    key=$2
+    case $command in
+        "file")
+            case $key in
+                "passwd")
+                    ;;
+                "group")
+                    ;;
+                *)
+                    log_error "Unknown $key for $command. Supported are 'passwd', 'group'."
+                    return 1
+                    ;;
+            esac
+            _get_cached_command "$PREUPGRADE_CACHE/$key.log"
+            ;;
+        "command")
+            case $key in
+                "rpm_qa")
+                    ;;
+                "rpm_Va")
+                    ;;
+                "rpm_etc_Va")
+                    ;;
+                "chconfig")
+                    ;;
+                *)
+                    log_error "Unknown $key for $command. Supported are 'rpm_qa', 'rpm_Va', 'rpm_etc_Va', 'chkconfig'".
+                    return 1
+                    ;;
+            esac
+            _get_cached_command "$PREUPGRADE_CACHE/$key.log"
+            ;;
+        "filelist")
+            case $key in
+                "allmyfiles")
+                    ;;
+                "executable")
+                    ;;
+                "rpmtrackedfiles")
+                    ;;
+                "rpm_rhsigned")
+                    ;;
+                *)
+                    log_error "Unknown $key for $command. Supported are 'executable', 'allmyfiles', 'rpmtrackedfiles', 'rpm_rhsigned'."
+                    return 1
+            esac
+            _get_cached_command "$PREUPGRADE_CACHE/$key.log"
+            ;;
+        *)
+            log_error "Unknown command $command. Supported are 'file', 'command', filelist'."
+            return 1
+            ;;
+    esac
+
+}
+
+add_postupgrade()
+{
+    # Add postupgrade script to /root/preupgrade/postupgrade.d directory
+    # File as first parameter has to exists in modules directory
+    # Usage:    add_postupgrade file
+    local script_name
+    local postupgrade_name
+
+    script_name=$1
+    postupgrade_name="$PREUPG_POSTUPGRADE_DIR/$(basename $script_name)"
+    [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
+    [ -f "$postupgrade_name" ] && log_warning "$script_name already exists in $PREUPG_POSTUPGRADE_DIR"
+    cp -af ${script_name} ${$postupgrade_name}
+}
+
+add_manual_postupgrade()
+{
+    # Add postupgrade script to /root/preupgrade/noauto_postupgrade.d directory
+    # File as first parameter has to exists in modules directory
+    # Usage:    add_manual_postupgrade file
+
+    local script_name
+    local postupgrade_name
+    script_name=$1
+    postupgrade_name="$NOAUTO_POSTUPGRADE_D/$(basename $script_name)"
+    [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
+    [ -f "$postupgrade_name" ] && log_warning "$script_name already exists in $NOAUTO_POSTUPGRADE_D"
+    cp -af ${script_name} ${postupgrade_name}
+}
+
+_check_config_file()
+{
+    local conf_file_type
+    local conf_file
+    local full_path
+
+    conf_file_type=$1
+    conf_file=$2
+    full_path="$CONFIG_FILES_DIR/$conf_file_type/$conf_file"
+    if [ -f "$full_path" ]; then
+        log_warning "File '$conf_file' already exists in $CONFIG_FILES_DIR/$conf_file_type directory."
+        return 1
+    fi
+    return 0
+}
+store_config_file_as()
+{
+    # Add config file to /root/preupgrade/{clean,dirty,etc} directory
+    # First paramater is configuration directory where we want to store a file.
+    #
+    # second parameter is a file which we store
+    # Usage:    add_config_file <clean,dirty> <full_path_file_name>
+
+    local config_type
+    local filename
+    local CLEAN_FILES
+    local UNCHECKED_FILES
+    local backup_file
+
+    config_type=$1
+    filename=$2
+    [ -z "$1" ] && {
+        log_error "Missing configuration type directory."
+        return 1
+    }
+    [ -z "$2" ] && {
+        log_error "Missing full_path_file name."
+        return 1
+    }
+    CLEAN_FILES="$CONFIG_FILES_DIR/clean"
+    DIRTY_FILES="$CONFIG_FILES_DIR/dirty"
+    UNCHECKED_FILES="$CONFIG_FILES_DIR/unchecked"
+    backup_file="$CONFIG_FILES_DIR/$config_type/$filename"
+    case "$config_type" in
+        "clean")
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into $DIRTY_FILES directory."
+            _check_config_file "clean" "$filename" && return 1
+            ;;
+        "dirty")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into $CLEAN_FILES directory."
+            _check_config_file "dirty" "$filename" && return 1
+            ;;
+        "unchecked")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into $CLEAN_FILES directory."
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into $DIRTY_FILES directory."
+            _check_config_file "unchecked" "$filename" && return 1
+            ;;
+        "deprecated")
+            _check_config_file "clean" "$filename" \
+            || log_warning "You want to store the file into $CLEAN_FILES directory."
+            _check_config_file "dirty" "$filename" \
+            || log_warning "You want to store the file into $DIRTY_FILES directory."
+            _check_config_file "unchecked" "$filename" \
+            || log_warning "You want to store the file into $UNCHECKED_FILES directory."
+            _check_config_file "deprecated" "$filename" && return 1
+            ;;
+        *)
+            log_error "Unknown '$config_type' option in function add_config_file."
+            log_error "Allowed options are <clean,dirty,unchecked,deprecated>."
+            return 1
+            ;;
+    esac
+    mkdir -p $(dirname "$backup_file")
+    cp -a "$filename" "$backup_file"
+    return 0
+}
+
+store_for_kickstart()
+{
+    # Add file to /root/preupgrade/kickstart directory
+    # and update description in README file
+    # File as first parameter has to exists
+    # Description of filename as second parameter which will be inserted into README file.
+    # Usage:    store_for_kickstart <filename> <description>
+    # Format in README file is:
+    # * <filename> - <description>
+    [ -z "$1" ] && log_error "Missing filename parameter."
+
+    local script_name=$1
+    local description=$2
+    local filename
+
+    filename=$(basename "$script_name")
+    kickstart_name="$KICKSTART_DIR/$filename"
+    [ ! -f "$script_name" ] && log_error "$script_name does not exist." && exit_error
+    [ -f "$kickstart_name" ] && log_warning "$filename already exists in $KICKSTART_DIR"
+    cp -af "$script_name" "$kickstart_name"
+    [ -z "$description" ] && return 0
+    echo " * $filename - $description" >> $KICKSTART_README
+}
+
+get_option()
+{
+    # Get option set up by preupgrade-assistant
+    # Available options are <migration, upgrade>
+    # Usage:    get_option option
+    # Returns:  0,1
+
+    local option
+
+    option=$1
+    case "$option" in
+        "migration")
+            return "$MIGRATE"
+            ;;
+        "upgrade")
+            return "$UPGRADE"
+            ;;
+        *)
+            log_error "Supported options are 'migration', 'upgrade'."
+            ;;
+    esac
+
 }
 
 switch_to_content()
