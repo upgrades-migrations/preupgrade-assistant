@@ -66,6 +66,7 @@ __all__ = (
     'service_is_enabled',
     'is_dist_native',
     'get_dist_native_list',
+    'is_pkg_installed',
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
@@ -364,6 +365,7 @@ def check_applies_to(check_applies=""):
                 not_applicable = 1
     if not_applicable:
         exit_not_applicable()
+    return not_applicable
 
 
 def check_rpm_to(check_rpm="", check_bin=""):
@@ -387,12 +389,20 @@ def check_rpm_to(check_rpm="", check_bin=""):
                 not_applicable = 1
 
     if not_applicable:
-        log_high_risk("Please, install all required packages (and binaries) and run preupg again to process check properly.")
+        log_high_risk("Please, install all required packages (and binaries)"
+                      " and run preupg again to process check properly.")
         exit_fail()
+    return not_applicable
 
 
 def solution_file(message):
-    FileHelper.write_to_file(os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE), "a+b", message)
+    solution_filename = os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE)
+    if os.path.exists(solution_filename):
+        mod = "a+b"
+    else:
+        mod = "wb"
+    print (mod, solution_filename)
+    FileHelper.write_to_file(solution_filename, mod, message)
 
 
 def service_is_enabled(service_name):
@@ -464,6 +474,7 @@ def is_dist_native(pkg):
 
     rpm_signed = FileHelper.get_file_content(VALUE_RPM_RHSIGNED, "rb", True)
     found = [x for x in rpm_signed if x.split()[0] == pkg]
+
     if int(DEVEL_MODE) == 0:
         if found:
             return True

@@ -4,101 +4,90 @@ import tempfile
 import shutil
 import os
 
-from preup.xccdf import XccdfHelper
-from preup.utils import FileHelper
-from preup.conf import Conf, DummyConf
-from preup.cli import CLI
-from preup.application import Application
+from preup import script_api
 from preup import settings
+from preup.utils import FileHelper
 
 import base
 
 
-class TestRiskCheck(base.TestCase):
+class TestAPICheck(base.TestCase):
 
-    def _generate_result(self, content_temp):
-        conf = {
-            "contents": content_temp,
-            "profile": "xccdf_preupg_profile_default",
-            "result_dir": os.path.dirname(content_temp),
-            "skip_common": True,
-            "temp_dir": os.path.dirname(content_temp),
-            "id": None,
-            "debug": True,  # so root check won't fail
-        }
+    dirname = os.path.join(os.path.dirname(__file__), 'tmp')
+    solution_txt = 'solution.txt'
+    api_files = "api_files"
+    dist_native = 'dist_native'
 
-        dc = DummyConf(**conf)
-        cli = CLI(["--contents", content_temp])
-        a = Application(Conf(dc, settings, cli))
-        # Prepare all variables for test
-        a.conf.source_dir = os.getcwd()
-        a.content = a.conf.contents
-        a.basename = os.path.basename(a.content)
-        self.assertEqual(a.run_scan(), 0)
+    def setUp(self):
+        if os.path.isdir(self.dirname):
+            shutil.rmtree(self.dirname)
+        os.makedirs(self.dirname)
+        script_api.VALUE_RPM_RHSIGNED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_rhsigned.log')
+        script_api.VALUE_RPM_QA = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_qa.log')
+        script_api.VALUE_CHKCONFIG = os.path.join(os.path.dirname(__file__), self.api_files, 'chkconfig.log')
+        script_api.VALUE_CONFIGCHANGED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_etc_Va.log')
+        script_api.PREUPGRADE_CACHE = self.dirname
+        script_api.SOLUTION_FILE = self.solution_txt
 
-    def _copy_xccdf_file(self, update_text):
-        temp_dir = tempfile.mkdtemp()
-        xccdf_file = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7', 'dummy_preupg', 'all-xccdf-upgrade.xml')
-        temp_file = os.path.join(temp_dir, 'all_xccdf.xml')
-        shutil.copyfile(xccdf_file, temp_file)
-        content = FileHelper.get_file_content(temp_file, 'rb', decode_flag=False)
-        content = content.replace(b'INPLACE_TAG', update_text)
-        FileHelper.write_to_file(temp_file, 'wb', content)
-        return temp_file
+    def test_solution_file(self):
+        expected_output = ["Testing message"]
+        script_api.solution_file('\n'.join(expected_output))
+        output = FileHelper.get_file_content(os.path.join(self.dirname, self.solution_txt), "r", method=True)
+        self.assertEqual(expected_output, output)
 
-    def test_check_inplace_risk_high(self):
+    def test_is_pkg_installed(self):
+        expected_installed_pkg = "preupgrade-assistant"
+        self.assertFalse(script_api.is_pkg_installed("preupgrade-assistant-modules"))
+        self.assertTrue(script_api.is_pkg_installed(expected_installed_pkg))
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: HIGH: Test High Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 1)
+    def test_check_applies_to(self):
+        expected_rpms = "foobar,testbar"
+        self.assertEqual(script_api.check_applies_to(expected_rpms), 0)
 
-    def test_check_inplace_risk_medium(self):
+    def test_check_rpm_to(self):
+        expected_rpms = "foobar,testbar"
+        expected_binaries = "/usr/bin/evince,/usr/bin/expr"
+        self.assertEqual(script_api.check_rpm_to(expected_rpms, expected_binaries), 0)
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: MEDIUM: Test Medium Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 1)
+    def test_service_is_enabled(self):
+        expected_service_enabled = "foo"
+        expected_service_disabled = "foonetwork"
+        self.assertTrue(script_api.service_is_enabled(expected_service_enabled))
+        self.assertFalse(script_api.service_is_enabled(expected_service_disabled))
 
-    def test_check_inplace_risk_slight(self):
+    def test_config_file_changed(self):
+        self.assertTrue(script_api.config_file_changed("/etc/foo/test.conf"))
+        self.assertFalse(script_api.config_file_changed("/etc/foobar/test.conf"))
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: SLIGHT: Test Slight Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 0)
+    def test_is_dist_native(self):
+        self.assertTrue(script_api.is_dist_native('foobar'))
+        script_api.DEVEL_MODE = 1
+        script_api.DIST_NATIVE = "all"
+        self.assertTrue(script_api.is_dist_native("preupgrade-assistant"))
+        script_api.DIST_NATIVE = "sign"
+        self.assertFalse(script_api.is_dist_native("preupgrade-assistant"))
+        script_api.DIST_NATIVE = os.path.join(os.path.dirname(__file__), self.api_files, self.dist_native)
+        self.assertFalse(script_api.is_dist_native("non-sense"))
 
-    def test_check_inplace_risk_none(self):
+    def test_get_dist_native_list(self):
+        expected_list = ['foobar',
+                         'barfoo',
+                         'testbar',
+                         'footest']
+        self.assertEqual(script_api.get_dist_native_list(), expected_list)
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: NONE: Test None Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 0)
+    def test_add_pkg_to_kickstart(self):
+        pass
 
-    def test_check_inplace_risk_extreme(self):
-
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: EXTREME: Test Extreme Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 2)
-
-    def test_check_inplace_risk_unknown(self):
-
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: UNKNOWN: Test Extreme Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, -1)
+    def tearDown(self):
+        if os.path.isdir(self.dirname):
+            shutil.rmtree(self.dirname)
 
 
 def suite():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    suite.addTest(loader.loadTestsFromTestCase(TestRiskCheck))
+    suite.addTest(loader.loadTestsFromTestCase(TestAPICheck))
     return suite
 
 if __name__ == '__main__':
