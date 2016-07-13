@@ -81,7 +81,9 @@ class KickstartGenerator(object):
     def collect_data(self):
         self._remove_obsolete_data()
         collected_data = True
-        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name))
+        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name),
+                                                     os.path.join(self.dir_name,
+                                                                  settings.KS_TEMPLATE))
         if self.ks is None:
             collected_data = False
         self.latest_tarball = self.get_latest_tarball()
@@ -98,19 +100,19 @@ class KickstartGenerator(object):
         return os.path.join(dir_name, 'anaconda-ks.cfg')
 
     @staticmethod
-    def load_or_default(system_ks_path):
+    def load_or_default(system_ks_path, ks_template):
         """ load system ks or default ks """
         ksparser = KickstartParser(makeVersion())
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
-            log_message("Can't read system kickstart at %s" % (system_ks_path))
+            log_message("Can't read system kickstart at %s" % system_ks_path)
             try:
-                ksparser.readKickstart(os.path.join(KickstartGenerator.dir_name, settings.KS_TEMPLATE))
+                ksparser.readKickstart(ks_template)
             except AttributeError:
-                log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py")
-            except IOError, ioe:
-                log_message("Can't read kickstart template %s %s" % (settings.KS_TEMPLATE, ioe))
+                log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py", level=logging.DEBUG)
+            except IOError:
+                log_message("Can't read kickstart template %s" % settings.KS_TEMPLATE)
                 return None
         return ksparser
 
@@ -119,8 +121,12 @@ class KickstartGenerator(object):
         self.ks.handler.bootloader.location = None
 
     def embed_script(self, tarball):
-        tarball_content = FileHelper.get_file_content(tarball, 'rb', decode_flag=False)
-        tarball_name = os.path.splitext(os.path.splitext(os.path.basename(tarball))[0])[0]
+        if tarball is None:
+            return
+        tarball_content = None
+        if os.path.exists(tarball):
+            tarball_content = FileHelper.get_file_content(tarball, 'rb', decode_flag=False)
+            tarball_name = os.path.splitext(os.path.splitext(os.path.basename(tarball))[0])[0]
         script_str = ''
         try:
             script_path = settings.KS_TEMPLATE_POSTSCRIPT
@@ -131,12 +137,12 @@ class KickstartGenerator(object):
         if not script_str:
             log_message("Can't open script template: {0}".format(script_path))
             return
-
-        script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
-        script_str = script_str.replace('{RESULT_NAME}', tarball_name)
-        script_str = script_str.replace('{TEMPORARY_PREUPG_DIR}', '/root/preupgrade')
-        script = Script(script_str, type=KS_SCRIPT_POST, inChroot=True)
-        self.ks.handler.scripts.append(script)
+        if tarball_content is not None:
+            script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
+            script_str = script_str.replace('{RESULT_NAME}', tarball_name)
+            script_str = script_str.replace('{TEMPORARY_PREUPG_DIR}', '/root/preupgrade')
+            script = Script(script_str, type=KS_SCRIPT_POST, inChroot=True)
+            self.ks.handler.scripts.append(script)
 
     def save_kickstart(self):
         kickstart_data = self.ks.handler.__str__()

@@ -401,7 +401,6 @@ def solution_file(message):
         mod = "a+b"
     else:
         mod = "wb"
-    print (mod, solution_filename)
     FileHelper.write_to_file(solution_filename, mod, message)
 
 

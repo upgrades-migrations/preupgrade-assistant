@@ -245,7 +245,7 @@ class PackagesHandling(BaseKickstart):
         """ outputs %packages section """
         self.packages = PackagesHandling.get_installed_packages()
         if self.packages is None:
-            return None
+            return None, None
         try:
             self.obsoleted = PackagesHandling.get_package_list('RHRHEL7rpmlist_obsoleted')
         except IOError:
@@ -267,10 +267,10 @@ class PackagesHandling(BaseKickstart):
             try:
                 removed_packages = FileHelper.get_file_content(remove_pkg_optional, 'r', method=True)
             except IOError:
-                return None
+                return None, None
         # TODO We should think about if ObsoletedPkg-{required,optional} should be used
         if not removed_packages:
-            return None
+            return None, None
         abs_fps = [os.path.join(settings.KS_DIR, fp) for fp in settings.KS_FILES]
         ygg = YumGroupGenerator(self.packages, removed_packages, self.installed_dependencies, *abs_fps)
         groups, self.packages, missing_installed = ygg.get_list()
@@ -278,7 +278,7 @@ class PackagesHandling(BaseKickstart):
         return groups, missing_installed
 
     def run_module(self, *args, **kwargs):
-        groups, missing_installed = self.output_packages()
+        (groups, missing_installed) = self.output_packages()
         if self.packages or groups:
             if self.special_pkg_list:
                 self.packages.extend(self.special_pkg_list)

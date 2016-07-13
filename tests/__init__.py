@@ -20,16 +20,14 @@ def suite():
     os.environ['XCCDF_RESULT_NOT_APPLICABLE'] = "10"
     from tests import test_preup
     from tests import test_xml
-    # from tests import test_oscap
     from tests import test_generation
     from tests import test_api
     from tests import test_kickstart
     from tests import test_inplace_risks
-    #suite.addTests(test_preup.suite())
-    #suite.addTests(test_xml.suite())
-    #suite.addTests(test_oscap.suite())
-    #suite.addTests(test_kickstart.suite())
-    #suite.addTests(test_inplace_risks.suite())
+    suite.addTests(test_preup.suite())
+    suite.addTests(test_xml.suite())
+    suite.addTests(test_kickstart.suite())
+    suite.addTests(test_inplace_risks.suite())
     suite.addTests(test_api.suite())
     return suite
 

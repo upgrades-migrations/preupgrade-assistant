@@ -1,0 +1,3 @@
+foobar:x:500:
+preupg:x:501:bin,daemon
+testfoo:x:506:

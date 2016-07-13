@@ -8,7 +8,7 @@ from preup.application import Application
 from preup.conf import Conf, DummyConf
 from preup.cli import CLI
 from preup import settings, xml_manager
-from preup.utils import PostupgradeHelper, SystemIdentification, FileHelper
+from preup.utils import PostupgradeHelper, SystemIdentification, FileHelper, OpenSCAPHelper
 from preup.report_parser import ReportParser
 
 import base
@@ -42,6 +42,11 @@ class TestPreupg(base.TestCase):
         a.conf.source_dir = os.getcwd()
         a.content = a.conf.contents
         a.basename = os.path.basename(a.content)
+        a.openscap_helper = OpenSCAPHelper(a.conf.result_dir,
+                                           a.conf.result_name,
+                                           a.conf.xml_result_name,
+                                           a.conf.html_result_name,
+                                           a.content)
         self.assertEqual(a.run_scan(), 0)
 
     def test_migrate(self):
@@ -111,6 +116,11 @@ class TestPreupg(base.TestCase):
         a.conf.source_dir = os.getcwd()
         a.content = a.conf.contents
         a.basename = os.path.basename(a.content)
+        a.openscap_helper = OpenSCAPHelper(a.conf.result_dir,
+                                           a.conf.result_name,
+                                           a.conf.xml_result_name,
+                                           a.conf.html_result_name,
+                                           a.content)
         self.assertEqual(a.run_scan(), 0)
         rp = ReportParser(os.path.join(self.temp_dir, "result.xml"))
         rp.modify_result_path(self.temp_dir, "FOOBAR6_7", 'upgrade')

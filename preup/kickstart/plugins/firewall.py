@@ -20,9 +20,9 @@ class FirewallHandling(BaseKickstart):
         """
         """
         self.handler = handler
-        self.firewall = FirewallHandling.get_kickstart_firewall('firewall-cmd')
         self.ports = []
         self.services = []
+        self.firewall = FirewallHandling.get_kickstart_firewall(os.path.join(settings.KS_DIR, 'firewall-cmd'))
 
     @staticmethod
     def get_kickstart_firewall(filename):
@@ -38,7 +38,7 @@ class FirewallHandling(BaseKickstart):
         :return: dictionary with enabled repolist
         """
         try:
-            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+            lines = FileHelper.get_file_content(filename, 'rb', method=True)
         except IOError:
             return None
         lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]

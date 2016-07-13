@@ -41,6 +41,8 @@ class PartitionGenerator(BaseKickstart):
         pv_name = ""
         index_pv = 1
         crypt = ""
+        if self.layout is None:
+            return None
         for index, row in enumerate(self.layout):
             fields = row.strip().split(' ')
             device = fields[0]
@@ -165,7 +167,7 @@ class PartitionGenerator(BaseKickstart):
     @staticmethod
     def get_volume_info(filename, first_index, second_index):
         try:
-            volume_list = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True, decode_flag=False)
+            volume_list = FileHelper.get_file_content(filename, 'rb', method=True, decode_flag=False)
         except IOError:
             log_message("File %s is missing. Partitioning layout has not to be complete." % filename, level=logging.WARNING)
             return None
@@ -189,9 +191,9 @@ class PartitionGenerator(BaseKickstart):
             self.part_layout = None
             return None
         if vgs is not None:
-            self.vg_info = PartitionGenerator.get_volume_info(vgs, 0, 5)
+            self.vg_info = PartitionGenerator.get_volume_info(os.path.join(settings.KS_DIR, vgs), 0, 5)
         if lvdisplay is not None:
-            self.lvdisplay = PartitionGenerator.get_volume_info(lvdisplay, 0, 1)
+            self.lvdisplay = PartitionGenerator.get_volume_info(os.path.join(settings.KS_DIR, lvdisplay), 0, 1)
 
     def get_partitioning(self):
         self.handler.clearpart.type = CLEARPART_TYPE_ALL

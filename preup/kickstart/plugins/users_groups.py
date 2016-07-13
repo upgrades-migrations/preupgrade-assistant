@@ -45,12 +45,11 @@ class UsersGroupsGenerator(BaseKickstart):
                         found = [x for x in six.itervalues(value) if fields[0] in x]
                         if found:
                             user_group.append(key)
-
                 user_dict[fields[0]] = {}
                 user_dict[fields[0]] = {'homedir': fields[5],
                                         'shell': fields[6],
-                                        'uid': fields[2],
-                                        'gid': fields[3],
+                                        'uid': int(fields[2]),
+                                        'gid': int(fields[3]),
                                         'groups': user_group}
             except IndexError:
                 pass
@@ -61,6 +60,7 @@ class UsersGroupsGenerator(BaseKickstart):
         """
         returns dictionary with names and uid, gid, etc.
         :param filename: filename with Users in /root/preupgrade/kickstart directory
+        :param splitter: delimiter for parsing files
         :return: dictionary with users
         """
         try:
@@ -87,11 +87,11 @@ class UsersGroupsGenerator(BaseKickstart):
             return None
         for key, value in six.iteritems(users):
             self.handler.user.dataList().append(self.handler.UserData(name=key,
-                                                                            uid=value['uid'],
-                                                                            gid=value['gid'],
-                                                                            shell=value['shell'],
-                                                                            homedir=value['homedir'],
-                                                                            groups=value['groups']))
+                                                                      uid=int(value['uid']),
+                                                                      gid=int(value['gid']),
+                                                                      shell=value['shell'],
+                                                                      homedir=value['homedir'],
+                                                                      groups=value['groups']))
 
     def update_groups(self, groups):
         if not groups:
