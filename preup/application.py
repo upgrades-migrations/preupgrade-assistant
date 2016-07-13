@@ -61,7 +61,7 @@ def show_message(message):
     """
     accept = ['y', 'yes']
     choice = MessageHelper.get_message(title=message, prompt='[Y/n]')
-    if choice in accept:
+    if choice.lower() in accept:
         return True
     else:
         return False
