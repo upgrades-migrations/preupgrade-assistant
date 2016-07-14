@@ -3,7 +3,4 @@ coverage
 pytest-cov
 pytest
 pytest-pylint
-openscap
-openscap-engine-sce
-openscap-utils
 
