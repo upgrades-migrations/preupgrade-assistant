@@ -517,9 +517,13 @@ class HTMLEscapeTest(base.TestCase):
     def test_amp_expand(self):
         """Test whether ampersand is not being expanded multiple times"""
         input_char = ['asd<>&']
-        output = html_escape(input_char)
         expected_output = ['asd&lt;&gt;&amp;']
+        output = html_escape(input_char)
         self.assertEqual(output, expected_output)
+        input_multi_char = ['asd<><>&&']
+        expected_multi_output = ['asd&lt;&gt;&lt;&gt;&amp;&amp;']
+        output_multi = html_escape(input_multi_char)
+        self.assertEqual(output_multi, expected_multi_output)
 
 
 class ComposeTest(base.TestCase):
