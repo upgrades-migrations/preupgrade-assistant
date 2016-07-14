@@ -22,6 +22,7 @@ class TestAPICheck(base.TestCase):
         if os.path.isdir(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
+        os.makedirs(os.path.join(self.dirname, 'kickstart'))
         script_api.VALUE_RPM_RHSIGNED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_rhsigned.log')
         script_api.VALUE_RPM_QA = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_qa.log')
         script_api.VALUE_CHKCONFIG = os.path.join(os.path.dirname(__file__), self.api_files, 'chkconfig.log')
@@ -77,7 +78,13 @@ class TestAPICheck(base.TestCase):
         self.assertEqual(script_api.get_dist_native_list(), expected_list)
 
     def test_add_pkg_to_kickstart(self):
-        pass
+        expected_list = ['my_foo_pkg', 'my_bar_pkg']
+        script_api.add_pkg_to_kickstart(['my_foo_pkg', 'my_bar_pkg'])
+        for pkg in FileHelper.get_file_content(script_api.SPECIAL_PKG_LIST, 'rb', method=True):
+            self.assertTrue(pkg.strip() in expected_list)
+        script_api.add_pkg_to_kickstart('my_foo_pkg my_bar_pkg')
+        for pkg in FileHelper.get_file_content(script_api.SPECIAL_PKG_LIST,'rb', method=True):
+            self.assertTrue(pkg.strip() in expected_list)
 
     def tearDown(self):
         if os.path.isdir(self.dirname):

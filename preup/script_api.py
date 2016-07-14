@@ -569,8 +569,8 @@ def add_pkg_to_kickstart(pkg_name):
     if empty is True:
         log_debug("Missing parameters! Any package will be added.")
         return 1
-    for pkg in pkg_name.split():
-        FileHelper.write_to_file(SPECIAL_PKG_LIST, "a+b", pkg)
+    for pkg in pkg_name:
+        FileHelper.write_to_file(SPECIAL_PKG_LIST, "a+b", pkg.strip() + '\n')
     return 0
 
 
