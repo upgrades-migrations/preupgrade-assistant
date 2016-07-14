@@ -1,0 +1,7 @@
+# This can not be installed from pip, on Fedora you need to install
+six
+pykickstart
+rpm-python
+openscap
+openscap-engine-sce
+openscap-utils
