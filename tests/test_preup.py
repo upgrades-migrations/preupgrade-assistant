@@ -11,10 +11,14 @@ from preup import settings, xml_manager
 from preup.utils import PostupgradeHelper, SystemIdentification, FileHelper, OpenSCAPHelper
 from preup.report_parser import ReportParser
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 
 class TestPreupg(base.TestCase):
+
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 

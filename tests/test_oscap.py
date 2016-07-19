@@ -17,7 +17,10 @@ from xml.etree import ElementTree
 from preuputils.compose import ComposeXML
 from preup.common import Common
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 FOOBAR6_dummy = os.path.join('tests', 'FOOBAR6_7', 'dummy')
 FOOBAR6_results = os.path.join('tests', 'FOOBAR6_7' + variables.result_prefix)

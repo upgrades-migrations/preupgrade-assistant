@@ -8,7 +8,10 @@ from preup import script_api
 from preup import settings
 from preup.utils import FileHelper
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 
 class TestAPICheck(base.TestCase):

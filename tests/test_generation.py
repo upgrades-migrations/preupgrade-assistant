@@ -11,7 +11,10 @@ from preuputils import variables
 from preup.utils import FileHelper
 from preup import settings
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 FOO_DIR = 'FOOBAR6_7'
 FOO_RESULTS = FOO_DIR + variables.result_prefix

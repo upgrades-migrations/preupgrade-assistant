@@ -3,11 +3,15 @@ from __future__ import unicode_literals, print_function
 import unittest
 import os
 import tempfile
-import base
 import shutil
 
 from preup.kickstart.application import KickstartGenerator
 from preup import settings
+
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 PREUPGRADE_KS = 'preupgrade.ks'
 

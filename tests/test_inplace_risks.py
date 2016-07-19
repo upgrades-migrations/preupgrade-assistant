@@ -12,7 +12,10 @@ from preup.application import Application
 from preup import settings
 from preup.utils import OpenSCAPHelper
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 
 class TestRiskCheck(base.TestCase):

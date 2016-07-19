@@ -70,7 +70,7 @@ class KickstartGenerator(object):
                         obj = i(self.ks.handler)
                         plugin_checkers[modname] = obj
                 except AttributeError as ae:
-                    print ae
+                    print (ae)
                     print ("Module '%s' does not implement `register(context)`" % modname)
         return plugin_checkers
 

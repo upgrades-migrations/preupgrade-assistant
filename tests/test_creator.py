@@ -5,7 +5,10 @@ import tempfile
 import os
 import shutil
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 from preup.creator.ui_helper import UIHelper
 from preup.utils import FileHelper

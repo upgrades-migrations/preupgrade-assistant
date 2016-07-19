@@ -22,7 +22,10 @@ from preup.utils import FileHelper
 from preup.xml_manager import html_escape, html_escape_string
 from preup.exception import MissingFileInContentError, MissingTagsIniFileError, EmptyTagIniFileError
 
-import base
+try:
+    import base
+except ImportError:
+    import tests.base as base
 
 
 class TestXMLCompose(base.TestCase):

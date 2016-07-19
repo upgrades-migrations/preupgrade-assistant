@@ -31,7 +31,10 @@ import os
 import sys
 import re
 import shutil
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 from preup import settings
 from preup.utils import FileHelper, ProcessHelper
@@ -518,7 +521,7 @@ def load_pa_configuration():
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config = configparser.RawConfigParser(allow_no_value=True)
     config.read(PREUPGRADE_CONFIG)
     section = 'preupgrade-assistant'
     home_option = 'home_directory_file'
@@ -536,7 +539,7 @@ def print_home_dirs(user_name=""):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config = configparser.RawConfigParser(allow_no_value=True)
     home_option = 'home-dirs'
     try:
         if USER_CONFIG_FILE == 'enabled' and user_name == "":
@@ -547,9 +550,9 @@ def print_home_dirs(user_name=""):
             return 0
         config.read(user_home_dir)
         return config.options(home_option)
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         pass
-    except ConfigParser.NoOptionError:
+    except configparser.NoOptionError:
         pass
 
 

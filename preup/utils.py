@@ -8,12 +8,15 @@ import fnmatch
 import os
 import sys
 import shutil
-import ConfigParser
 import mimetypes
 import platform
 import random
 import string
 
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 from preup import settings
 from preup.logger import log_message, logging, logger
@@ -537,7 +540,7 @@ class ConfigHelper(object):
         if not os.path.exists(path):
             return None
 
-        config = ConfigParser.RawConfigParser(allow_no_value=True)
+        config = configparser.ConfigParser.RawConfigParser(allow_no_value=True)
         config.read(path)
         section = 'preupgrade-assistant'
         if config.has_section(section):
