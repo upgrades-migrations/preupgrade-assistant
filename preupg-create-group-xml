@@ -12,6 +12,7 @@ from preuputils.compose import ComposeXML
 from preup import settings
 from preup.utils import FileHelper, SystemIdentification
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preup.logger import logger_debug, LoggerHelper, logging
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -26,6 +27,7 @@ def main():
                       action='store_true'
                       )
     opts, args = parser.parse_args()
+
     if len(args) > 1 or len(args) == 0:
         print('Specify just one directory with INI file.')
         parser.print_help()
@@ -34,6 +36,16 @@ def main():
     if not os.path.exists(args[0]):
         print('Dir %s does not exists.' % args[0])
         sys.exit(1)
+
+    try:
+        LoggerHelper.add_file_handler(logger_debug,
+                                      settings.preupg_report_log,
+                                      None,
+                                      logging.DEBUG)
+    except (IOError, OSError):
+        print ("Can not create report log '%s'" % settings.preupg_report_log)
+    else:
+        report_log_file = settings.preupg_report_log
 
     if args[0].endswith('/'):
         args[0] = args[0][:-1]
@@ -56,7 +68,9 @@ def main():
             index = i
             break
     dir_name = '/'.join(args[0].split(os.path.sep)[:index+1])
+    logger_debug(dir_name)
     result_dirname = dir_name + variables.result_prefix
+    logger_debug("Result dir_name '%s'", result_dirname)
     if os.path.exists(result_dirname):
         shutil.rmtree(result_dirname)
     dir_util.copy_tree(dir_name, result_dirname)

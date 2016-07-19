@@ -8,7 +8,7 @@ from operator import itemgetter
 from xml.etree import ElementTree
 
 from preup import settings
-from preup.logger import log_message
+from preup.logger import log_message, logger_report
 from preup.utils import FileHelper, SystemIdentification
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
@@ -35,15 +35,16 @@ class XccdfHelper(object):
         return_value = -1
         for key, val in sorted(six.iteritems(risks), key=itemgetter(1), reverse=False):
             matched = [x for x in inplace_risk if key in x]
+            logger_report.debug(matched)
             if matched:
                 # if matched and return_value the remember her
                 if return_value < val:
                     return_value = val
                 # If verbose mode is used and value is bigger then 0 then prints out
                 if int(verbose) > 1:
-                    log_message('\n'.join(matched), print_output=verbose)
+                    log_message('\n'.join(matched))
                 elif int(verbose) == 1 and val > 0:
-                    log_message('\n'.join(matched), print_output=verbose)
+                    log_message('\n'.join(matched))
 
         return return_value
 
@@ -61,6 +62,7 @@ class XccdfHelper(object):
             for line in lines:
                 match = re.match(risk_regex, line)
                 if match:
+                    logger_report.debug(line)
                     inplace_risk.append(line)
         return inplace_risk
 
@@ -89,8 +91,10 @@ class XccdfHelper(object):
         results = []
         for profile in target_tree.findall(XMLNS + "TestResult"):
             for check in profile.findall(".//" + XMLNS + "result"):
+                logger_report.debug(check)
                 if check.text not in results:
                     results.append(check.text)
+        logger_report.debug(results)
         if 'error' in results:
             return 3
         if 'unknown' in results:
@@ -100,6 +104,7 @@ class XccdfHelper(object):
             inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
 
         result = XccdfHelper.get_and_print_inplace_risk(verbose, inplace_risk)
+        logger_report.debug(result)
         # different behaviour of division between py2 & 3
         if int(result) == -1:
             return -1

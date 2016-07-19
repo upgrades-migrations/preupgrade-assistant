@@ -16,7 +16,7 @@ import string
 
 
 from preup import settings
-from preup.logger import log_message, logging
+from preup.logger import log_message, logging, logger
 
 from os import path, access, W_OK, R_OK, X_OK
 
@@ -520,7 +520,7 @@ class TarballHelper(object):
             try:
                 shutil.copy(tarball, os.path.join(settings.tarball_result_dir+"/"))
             except IOError:
-                log_message("Problem with copying tarball {0} to /root/preupgrade-results".format(tarball))
+                log_message("Problem with copying tarball '%s' to /root/preupgrade-results", tarball)
         os.chdir(current_dir)
 
         return os.path.join(settings.tarball_result_dir, tarball_name)
@@ -552,9 +552,7 @@ class ConfigFilesHelper(object):
         clean_conf_name = os.path.join(result_dir, cleanconf)
         if os.path.exists(clean_conf_name):
             message = "Configuration file '%s' exists in '%s' directory"
-            log_message(message % (clean_conf_name, os.path.dirname(clean_conf_name)),
-                        print_output=0,
-                        level=logging.INFO)
+            logger.info(message % (clean_conf_name, os.path.dirname(clean_conf_name)))
             # Check if configuration file exists in dirtyconf
             # If so delete them.
             return True
@@ -572,9 +570,7 @@ class ConfigFilesHelper(object):
             full_path = os.path.realpath(full_path)
         # Check if configuration file exists in dirtyconf directory
         if os.path.exists(dirtyconf):
-            log_message("File '%s' already exists in dirtyconf directory" % dirtyconf,
-                        print_output=0,
-                        level=logging.INFO)
+            logger.info("File '%s' already exists in dirtyconf directory", dirtyconf)
             return False
         # Check whether dirtyconf directory with dirname(filename) exists
         if not os.path.exists(os.path.dirname(dirtyconf)):
@@ -603,9 +599,7 @@ class ConfigFilesHelper(object):
                     continue
             except ValueError:
                 return
-            log_message("File name to copy '%s'" % filename,
-                        print_output=0,
-                        level=logging.INFO)
+            logger.info("File name to copy '%s'", filename)
             new_filename = filename[1:]
             # Check whether config file exists in cleanconf directory
             cleanconf_file_name = os.path.join(clean_conf, new_filename)
@@ -847,7 +841,7 @@ class OpenSCAPHelper(object):
         ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
         if os.path.exists(generate_tempfile):
             lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
-            log_message('%s' % '\n'.join(lines), print_output=0, level=logging.DEBUG)
+            logger.debug('%s' % '\n'.join(lines))
         return ret_val
 
 

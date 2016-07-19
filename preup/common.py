@@ -66,7 +66,7 @@ class Common(object):
                 log_message("%s : %.2d/%d ...running" % (name.ljust(max_length),
                                                          counter+1,
                                                          len(self.lines)),
-                            new_line=False, log=False)
+                            new_line=False)
                 start_time = datetime.datetime.now()
                 common_file_path = self.common_logfiles(log_file)
                 ProcessHelper.run_subprocess(cmd, output=common_file_path, shell=True)
@@ -74,8 +74,7 @@ class Common(object):
                 diff = end_time - start_time
                 log_message(" %sfinished (time %.2d:%.2ds)" % ('\b' * 8,
                                                                diff.seconds / 60,
-                                                               diff.seconds % 60),
-                            log=False)
+                                                               diff.seconds % 60))
                 # os.chmod(common_file_path, 0640)
             self.switch_back_dir()
         except IOError:

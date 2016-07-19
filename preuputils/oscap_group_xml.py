@@ -51,11 +51,11 @@ class OscapGroupXml(object):
         """
         # solve python 2 & 3 compatibility
         if sys.version_info[0] == 2:
-            config_load = lambda x, y: x.read(y)
-            config_decode = lambda x: x
-        else:
             config_load = lambda x, y: x.read(y, settings.defenc)
             config_decode = lambda x: x.decode(settings.defenc)
+        else:
+            config_load = lambda x, y: x.read(y)
+            config_decode = lambda x: x
 
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):

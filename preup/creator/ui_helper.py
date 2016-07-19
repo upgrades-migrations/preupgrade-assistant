@@ -112,6 +112,10 @@ class UIHelper(object):
         if self.upgrade_path is None:
             self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
 
+        if self.upgrade_path is True or self.upgrade_path == "":
+            print ("Scenario is mandatory. You have to specify it.")
+            return None
+
         if not SystemIdentification.get_valid_scenario(self.upgrade_path):
             if self.content_path is None:
                 self.content_path = self.upgrade_path
@@ -129,7 +133,11 @@ class UIHelper(object):
 
     def get_content_info(self):
         self._group_name = get_user_input(settings.group_name, any_input=True)
+        if self._group_name is True:
+            self._group_name = settings.default_group
         self._content_name = get_user_input(settings.content_name, any_input=True)
+        if self._content_name is True:
+            self._content_name = settings.default_module
         self.prepare_content_env()
         if os.path.exists(self.get_content_path()):
             message = "Content %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
@@ -140,15 +148,15 @@ class UIHelper(object):
         else:
             os.makedirs(self.get_content_path())
         checkscript = get_user_input(settings.check_script, any_input=True)
-        if checkscript == "":
-            checkscript = "check.sh"
+        if checkscript is True:
+            checkscript = settings.default_script_name
         if UIHelper.check_path(os.path.join(self.get_content_path(), checkscript),
                                settings.check_path % checkscript) is None:
             self.check_script = False
         self.content_dict['check_script'] = checkscript
         solution = get_user_input(settings.solution_text, any_input=True)
-        if solution == "":
-            solution = "solution.txt"
+        if solution is True:
+            solution = settings.default_solution_name
         if UIHelper.check_path(os.path.join(self.get_content_path(), solution),
                                settings.check_path % solution) is None:
             self.solution_file = False

@@ -9,6 +9,7 @@ import datetime
 import os
 import sys
 import six
+import logging
 from distutils import dir_util
 
 try:
@@ -23,7 +24,7 @@ from preup.utils import FileHelper, ProcessHelper, DirHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
 from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper, ConfigFilesHelper
 from preup.xccdf import XccdfHelper
-from preup.logger import log_message, logging, set_level
+from preup.logger import log_message, log_report_message, LoggerHelper, logger, logger_report, logger_debug
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
 from preuputils.compose import XCCDFCompose
@@ -46,7 +47,7 @@ def list_contents(source_dir):
     for dir_name in filter(is_dir, dirs):
         full_dir_name = os.path.join(source_dir, dir_name, settings.content_file)
         if os.path.exists(full_dir_name):
-            log_message('%s' % dir_name, print_output=False)
+            logger.info('%s' % dir_name)
             content_dict[dir_name] = full_dir_name
 
     return content_dict
@@ -86,12 +87,48 @@ class Application(object):
         self._devel_mode = 0
         self._dist_mode = None
         self.report_return_value = 0
+        self.report_log_file = None
+        self.debug_log_file = None
         settings.profile = self.conf.profile
         if self.conf.debug is None:
-            set_level(logging.INFO)
+            LoggerHelper.add_stream_handler(logger, logging.INFO)
         else:
-            set_level(logging.DEBUG)
+            LoggerHelper.add_stream_handler(logger, logging.DEBUG)
         self.openscap_helper = None
+        self._add_report_log_file()
+        self._add_debug_log_file()
+
+    def _add_report_log_file(self):
+        """
+        Add the special report log file
+        :return:
+        """
+        try:
+            LoggerHelper.add_file_handler(logger_report,
+                                          settings.preupg_report_log,
+                                          formatter=logging.Formatter("%(asctime)s %(filename)s"
+                                                                      ":%(lineno)s %(funcName)s: %(message)s"),
+                                          level=logging.DEBUG)
+        except (IOError, OSError):
+            logger.warning("Can not create report log '%s'" % settings.preupg_report_log)
+        else:
+            self.report_log_file = settings.preupg_report_log
+
+    def _add_debug_log_file(self):
+        """
+        Add the special report log file
+        :return:
+        """
+        try:
+            LoggerHelper.add_file_handler(logger_debug,
+                                          settings.preupg_log,
+                                          formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+                                                            ":%(lineno)s %(funcName)s: %(message)s"),
+                                          level=logging.DEBUG)
+        except (IOError, OSError):
+            logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+        else:
+            self.debug_log_file = settings.preupg_log
 
     def get_preupgrade_kickstart(self):
         return settings.PREUPGRADE_KS
@@ -204,23 +241,20 @@ class Application(object):
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
         self.scanning_progress.set_names(self.report_parser.get_name_of_checks())
-        log_message('%s:' % settings.assessment_text,
-                    new_line=True,
-                    log=False)
+        log_message('%s:' % settings.assessment_text, new_line=True)
         log_message('%.3d/%.3d ...running (%s)' % (
                     1,
                     self.get_total_check(),
                     self.scanning_progress.get_full_name(0)),
-                    new_line=False,
-                    log=False)
+                    new_line=False
+                    )
         start_time = datetime.datetime.now()
         self.run_scan(function=self.scanning_progress.show_progress)
         end_time = datetime.datetime.now()
         diff = end_time - start_time
         log_message(
-            "Assessment finished (time %.2d:%.2ds)" % (diff.seconds/60,
-                                                       diff.seconds%60),
-            log=False
+            "Assessment finished (time %.2d:%.2ds)" % (diff.seconds / 60,
+                                                       diff.seconds % 60)
         )
 
     def run_scan(self, function=None):
@@ -229,7 +263,7 @@ class Application(object):
         for applying changes on the target system
         """
         cmd = self.openscap_helper.build_command()
-        log_message('running_command: %s' % cmd, print_output=0, level=logging.DEBUG)
+        logger_debug.debug('running_command: %s' % cmd)
         # fail if openscap wasn't successful; if debug, continue
         return ProcessHelper.run_subprocess(cmd, print_output=False, function=function)
 
@@ -531,10 +565,12 @@ class Application(object):
 
     def run(self):
         """run analysis"""
+        version_msg = "Preupgrade Assistant version: %s" % VERSION
         if self.conf.version:
-            print ("Preupgrade Assistant version: %s" % VERSION)
+            print (version_msg)
             return 0
 
+        logger_debug.debug(version_msg)
         if not self.conf.scan and not self.conf.contents and not self.conf.list_rules:
             cnt = 0
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
@@ -542,6 +578,7 @@ class Application(object):
             for dir_name in filter(is_dir, dirs):
                 if SystemIdentification.get_assessment_version(dir_name):
                     self.conf.scan = dir_name
+                    logger_debug.debug("Scan directory '%s'", self.conf.scan)
                     cnt += 1
 
             if int(cnt) < 1:
@@ -555,7 +592,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
 
         if self.conf.list_contents_set:
             for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
-                log_message("{0}".format(dir_name))
+                log_message("%s" % dir_name)
             return 0
 
         if self.conf.list_rules:
@@ -598,6 +635,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
                         return 12
                 if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
                     text = '\n' + settings.migration_text
+                logger_debug.debug("Architecture '%s'. Text '%s'.", SystemIdentification.get_arch(), text)
                 if not show_message(settings.warning_text + text):
                     # We do not want to continue
                     return 12

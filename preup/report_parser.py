@@ -7,6 +7,7 @@ import six
 from preup.utils import FileHelper
 from preup.xccdf import XccdfHelper
 from preup import settings
+from preup.logger import logger_report
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -164,8 +165,10 @@ class ReportParser(object):
             if not value_id.endswith("_state_solution_file"):
                 continue
             for value in self.get_nodes(values, "value"):
+                logger_report.debug(value_id)
                 value_id = value_id.replace('xccdf_preupg_value_', '').replace("_state_solution_file", '')
                 dict_solution[value_id] = value.text
+        logger_report.debug(dict_solution)
         return dict_solution
 
     def write_xml(self):
@@ -182,6 +185,7 @@ class ReportParser(object):
             if '_current_dir' not in values.get('id'):
                 continue
             for value in self.get_nodes(values, "value"):
+                logger_report.debug("Replace '%s' with '%s'", value.text, os.path.join(result_dir, scenario))
                 value.text = value.text.replace("SCENARIO", os.path.join(result_dir, scenario))
 
         self.write_xml()
@@ -190,6 +194,7 @@ class ReportParser(object):
         """The function updates platform tag to the assessment system tag"""
         for platform in self.filter_children(self.target_tree, "platform"):
             if "cpe:/o:redhat:enterprise_linux:" in platform.get("idref"):
+                logger_report.debug("Update platform tag to '%s'", platform_tag)
                 platform.set("idref", "cpe:/o:redhat:enterprise_linux:"+platform_tag)
 
         self.write_xml()
@@ -198,7 +203,9 @@ class ReportParser(object):
         """Function updates inplace risk"""
         inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
         if inplace_risk:
+            logger_report.debug("Update_inplace_risk '%s'", inplace_risk)
             return_value = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
+            logger_report.debug("Get and print inplace risk return value '%s'", return_value)
             if int(return_value) < 3:
                 res.text = ReportHelper.get_needs_inspection()
             elif int(return_value) == 3:
@@ -229,13 +236,16 @@ class ReportParser(object):
             # Get all affected rules and taken their names
             for res in result:
                 inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
+                logger_report.debug(inplace_risk)
                 # In case that report has state fail and
                 # no log_risk than it should be needs_inspection
                 if not inplace_risk:
                     changed, res.text = inplace_dict[0](rule)
                 else:
                     inplace_num = int(XccdfHelper.get_and_print_inplace_risk(0, inplace_risk))
+                    logger_report.debug("Call function '%s'", inplace_dict[inplace_num])
                     changed, res.text = inplace_dict[inplace_num](rule)
+                    logger_report.debug("Replace text '%s:%s'", changed, res.text)
                 if changed is not None:
                     changed_fields.append(changed+":"+res.text)
 
@@ -287,6 +297,7 @@ class ReportParser(object):
         FileHelper.write_to_file(file_name, 'wb', content)
 
     def update_check_description(self):
+        logger_report.debug("Update check description")
         for rule in self._get_all_rules():
             for description in self.filter_children(rule, 'description'):
                 lines = description.text.split('\n')
@@ -319,6 +330,8 @@ class ReportParser(object):
         """
         for select in self.get_select_rules():
             idref = select.get('idref', None)
+            logger_report.debug(select)
+            logger_report.debug(idref)
             if idref in list_rules:
                 select.set('selected', 'true')
             else:
@@ -375,16 +388,6 @@ class ReportParser(object):
             self.reload_xml(orig_name)
             os.unlink(new_report_name)
             return None
-        # Remove all reports from main Group node
-        search = '%sRule' % self.element_prefix
-        search_group = './/%sGroup' % self.element_prefix
-        """for parent in self.target_tree.findall(search_group):
-            for rule in parent.findall(search):
-                rule_id = rule.get('id').replace('xccdf_preupg_rule_', '')
-                parent_id = parent.get('id').replace('xccdf_preupg_group_', '')
-                if parent_id not in list_dict.keys():
-                    parent.remove(rule)
-        """
 
         # Remove all reports from TestResult node
         for test_result in self.get_nodes(self.target_tree, 'TestResult'):
@@ -425,6 +428,7 @@ class ReportParser(object):
                         val = "sign"
                     else:
                         val = dist_native
+                logger_report.debug("'%s:%s'", key, val)
                 new_child = ElementTree.Element(self.element_prefix + 'Value',
                                                 {'id': xml_tags.TAG_VALUE + key,
                                                  'type': 'string'

@@ -3,7 +3,7 @@
 The application module serves for creating a content
 """
 
-from preup.logger import log_message, logging, set_level
+from preup.logger import logging, LoggerHelper, logger
 from preup.creator.ui_helper import UIHelper
 
 
@@ -15,9 +15,9 @@ class Application(object):
         """conf is preup.conf.Conf object, contains configuration"""
         self.conf = conf
         if self.conf.debug is None:
-            set_level(logging.INFO)
+            LoggerHelper.add_stream_handler(logger, logging.INFO)
         else:
-            set_level(logging.DEBUG)
+            LoggerHelper.add_stream_handler(logger, logging.DEBUG)
         self.ui_helper = UIHelper(self.conf.maindir)
 
     def run(self):

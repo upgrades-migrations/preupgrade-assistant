@@ -47,6 +47,12 @@ lock_file = "/var/run/preupgrade.pid"
 # dir with log files"
 log_dir = "/var/log/preupgrade"
 
+# preupg log file
+preupg_log = os.path.join(log_dir, "preupg.log")
+
+# preupg report log file
+preupg_report_log = os.path.join(log_dir, "preupg-report.log")
+
 # dir where the postupgrade scripts are placed
 postupgrade_dir = "postupgrade.d"
 

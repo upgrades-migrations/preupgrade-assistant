@@ -1,7 +1,7 @@
 
 from __future__ import unicode_literals
 import os
-from preup.logger import settings, logging, log_message
+from preup.logger import settings, logger_report, log_message, logging
 
 
 class ScanningHelper(object):
@@ -101,17 +101,13 @@ class ScanProgress(object):
         cur_msg = self._return_correct_msg(self.get_full_name(self.current_count))
         cnt_back = 7 + len(prev_msg) + 3
         msg = u'%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
-        log_message(msg,
-                    new_line=True,
-                    log=False)
+        log_message(msg, new_line=True)
         if self.total_count > self.current_count:
             msg = self._return_correct_msg(u'%.3d/%.3d ...running (%s)' % (self.current_count + 1,
                                                                            self.total_count,
                                                                            cur_msg))
-            log_message(msg,
-                        new_line=False,
-                        log=False)
-        log_message(stdout_data.strip(), print_output=0)
+            log_message(msg, new_line=False)
+        logger_report.debug(stdout_data.strip())
 
     def set_names(self, names):
         """
@@ -133,6 +129,7 @@ class ScanProgress(object):
         for index, row in enumerate(self.output_data):
             try:
                 title, rule_id, dummy_result = row.split(':')
+                logger_report.info(row)
             except ValueError:
                 continue
             else:

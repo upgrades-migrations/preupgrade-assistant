@@ -13,6 +13,8 @@ from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
+from preup.logger import logger_debug
+
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -315,6 +317,7 @@ class ComposeXML(object):
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
         group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0, generate_from_ini=generate_from_ini)
+        logger_debug.debug("Group xmls '%s'", group_xmls)
         cls.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name
         cls.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)

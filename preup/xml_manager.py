@@ -7,6 +7,7 @@ import rpm
 import six
 from preup.utils import FileHelper
 from preup import settings
+from preup.logger import logger_report
 
 
 def html_escape_string(pattern):
@@ -237,13 +238,16 @@ class XmlManager(object):
             section_name = section[1:] + "_"
             if section_name not in key:
                 continue
-            found = True
             # This will return only
             try:
+                logger_report.debug(value)
                 file_name = [txt for txt in files if txt == value][0]
+                logger_report.debug(file_name)
                 break
             except IndexError:
+                logger_report.debug("Value '%s'", value)
                 pass
+        logger_report.debug("Found text file '%s'.", file_name)
         return file_name
 
     def update_html(self, result_name, solution_files, extension="html"):
@@ -263,16 +267,19 @@ class XmlManager(object):
             if not file_name or file_name is None:
                 continue
             else:
+                logger_report.debug("Solution text '%s' name '%s'", solution_text, file_name)
                 text = FileHelper.get_file_content(os.path.join(dir_name, file_name), "rb", method=True)
             for cnt, line in enumerate(lines):
                 # If in INPLACERISK: is a [link] then update them
                 # to /root/pre{migrate,upgrade}/...
                 if 'INPLACERISK:' in line.strip():
+                    logger_report.debug(line.strip())
                     lines[cnt] = tag_formating([line], extension)[0]
                     continue
                 # Find correct block
                 if solution_text not in line.strip():
                     continue
+
                 # Get updated text if it is HTML or TEXT
                 lines[cnt] = self.get_updated_text(solution_text,
                                                    text,
@@ -296,6 +303,7 @@ class XmlManager(object):
         for dir_name, sub_dir, file_name in os.walk(self.dirname):
             files = [x for x in file_name if x.endswith(".txt")]
             if files:
+                logger_report.debug(files)
                 solution_files[dir_name] = files
         self.update_html(result_name, solution_files)
         self.update_html(result_name, solution_files, extension="xml")

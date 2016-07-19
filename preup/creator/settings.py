@@ -8,10 +8,14 @@ temp_check_script = """#!/bin/bash
 
 """
 
-group_name = 'Specify a group name which content belongs to (like database):'
-content_name = 'Specify a module name which will be created (like mysql):'
-check_script = "Specify a script name which will be used for assessment: (check.sh)"
-solution_text = "Specify a solution file which will be shown in report: (solution.txt)"
+default_group = 'system'
+default_module = 'packages'
+default_script_name = 'check.sh'
+default_solution_name = 'solution.txt'
+group_name = 'Specify a group name which content belongs to [%s]:' % default_group
+content_name = 'Specify a module name which will be created [%s]:' % default_module
+check_script = "Specify a script name which will be used for assessment: [%s]" % default_script_name
+solution_text = "Specify a solution file which will be shown in report: [%s]" % default_solution_name
 content_title = "Specify a content title:"
 content_desc = "Would you like to specify a content description?"
 content_desc_text = "Write down a content description:"
