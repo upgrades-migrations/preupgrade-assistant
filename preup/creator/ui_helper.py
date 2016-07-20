@@ -101,9 +101,13 @@ class UIHelper(object):
         return self.content_ini
 
     def get_content_path(self):
+        if self.content_path is None:
+            return None
         return os.path.join(self.get_upgrade_path(), self.content_path)
 
     def get_upgrade_path(self):
+        if self.upgrade_path is None:
+            return None
         if self.upgrade_path.startswith("/"):
             return self.upgrade_path
         return os.path.join(os.getcwd(), self.upgrade_path)
@@ -270,5 +274,6 @@ class UIHelper(object):
                 return 1
             self._brief_summary()
         except KeyboardInterrupt:
+            if self.get_content_path() is not None:
+                shutil.rmtree(self.get_content_path())
             print ('\n Content creation was interrupted by user.\n')
-            shutil.rmtree(self.get_content_path())
