@@ -1,9 +1,7 @@
-The kickstart directory contains various files useful for generating kickstart for cloning this system.
-Some of the files in this directory may give administrator the guidance what was not handled
-by rhelup (and will need some additional actions).
+The kickstart directory contains various files needed for generating Kickstart used to clone the system.
 
- * RHEL6_All_installed_packages ... All packages signed and installed by RedHat
- * All_changed_file ... All changed files installed by RPM
- * Users ... All users found on system
- * Groups ... All groups found on system
- * All_installed_files ... All installed files by RPM
+ * RHEL6_All_installed_packages ... All the packages signed and installed by Red Hat
+ * All_changed_file ... All the changed files installed by RPM
+ * Users ... All the users found on the system
+ * Groups ... All the groups found on the system
+ * All_installed_files ... All the files installed by RPM
