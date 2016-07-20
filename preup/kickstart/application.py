@@ -44,6 +44,23 @@ class KickstartGenerator(object):
         self.part_layout = None
         self._injector_type = 'BaseKickstart'
         self.plugin_classes = {}
+        self._add_debug_log_file()
+
+    def _add_debug_log_file(self):
+        """
+        Add the special report log file
+        :return:
+        """
+        try:
+            LoggerHelper.add_file_handler(logger_debug,
+                                          settings.preupg_log,
+                                          formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+                                                            ":%(lineno)s %(funcName)s: %(message)s"),
+                                          level=logging.DEBUG)
+        except (IOError, OSError):
+            logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+        else:
+            self.debug_log_file = settings.preupg_log
 
     def checker_find_injector(self, module):
         injectors = []
