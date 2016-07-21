@@ -22,14 +22,6 @@ class ReposHandling(BaseKickstart):
         self.handler = handler
         self.repos = ReposHandling.get_kickstart_repo('available-repos')
 
-    def replace_obsolete(self):
-        # obsolete list has format like
-        # old_pkg|required-by-pkg|obsoleted-by-pkgs|repo-id
-        if self.packages:
-            for pkg in self.obsoleted:
-                fields = pkg.split('|')
-                self.packages.append(fields[2])
-
     @staticmethod
     def get_kickstart_repo(filename):
         """

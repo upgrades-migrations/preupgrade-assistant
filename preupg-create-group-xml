@@ -12,7 +12,7 @@ from preuputils.compose import ComposeXML
 from preup import settings
 from preup.utils import FileHelper, SystemIdentification
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
-from preup.logger import logger_debug, LoggerHelper, logging
+from preup.logger import *
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -39,13 +39,12 @@ def main():
 
     try:
         LoggerHelper.add_file_handler(logger_debug,
-                                      settings.preupg_report_log,
-                                      None,
-                                      logging.DEBUG)
+                                      settings.preupg_log,
+                                      formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+                                                                  ":%(lineno)s %(funcName)s: %(message)s"),
+                                      level=logging.DEBUG)
     except (IOError, OSError):
-        print ("Can not create report log '%s'" % settings.preupg_report_log)
-    else:
-        report_log_file = settings.preupg_report_log
+        logger.warning("Can not create debug log '%s'" % settings.preupg_log)
 
     if args[0].endswith('/'):
         args[0] = args[0][:-1]
@@ -68,9 +67,9 @@ def main():
             index = i
             break
     dir_name = '/'.join(args[0].split(os.path.sep)[:index+1])
-    logger_debug(dir_name)
+    logger_debug.debug(dir_name)
     result_dirname = dir_name + variables.result_prefix
-    logger_debug("Result dir_name '%s'", result_dirname)
+    logger_debug.debug("Result dir_name '%s'", result_dirname)
     if os.path.exists(result_dirname):
         shutil.rmtree(result_dirname)
     dir_util.copy_tree(dir_name, result_dirname)

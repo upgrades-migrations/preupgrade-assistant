@@ -70,7 +70,7 @@ class XmlUtils(object):
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = FileHelper.get_file_content(os.patch.join(self.dirname, filename), "rb", True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
 
         bold = '<xhtml:b>{0}</xhtml:b>'
         br = '<xhtml:br/>'

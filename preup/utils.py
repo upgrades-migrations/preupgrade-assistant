@@ -19,7 +19,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preup import settings
-from preup.logger import log_message, logging, logger
+from preup.logger import log_message, logging, logger, logger_debug
 
 from os import path, access, W_OK, R_OK, X_OK
 
@@ -540,7 +540,7 @@ class ConfigHelper(object):
         if not os.path.exists(path):
             return None
 
-        config = configparser.ConfigParser.RawConfigParser(allow_no_value=True)
+        config = configparser.RawConfigParser(allow_no_value=True)
         config.read(path)
         section = 'preupgrade-assistant'
         if config.has_section(section):
@@ -602,7 +602,7 @@ class ConfigFilesHelper(object):
                     continue
             except ValueError:
                 return
-            logger.info("File name to copy '%s'", filename)
+            logger_debug.debug("File name to copy '%s'", filename)
             new_filename = filename[1:]
             # Check whether config file exists in cleanconf directory
             cleanconf_file_name = os.path.join(clean_conf, new_filename)

@@ -10,8 +10,8 @@ import os
 import imp
 import six
 
-from pykickstart.constants import *
-from pykickstart.parser import *
+from pykickstart.constants import KS_MISSING_IGNORE
+from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import *
 
 from preup.logger import *
