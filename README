@@ -13,7 +13,7 @@ migration after the installation of Red Hat Enterprise Linux 7 system.
 
 As the Preupgrade Assistant does not modify the assessed system directly
 (except storing information/logs), it is safe to use on any configuration.
-As the contents are not complete yet, a successful Preupgrade Assistant analysis
+As the modules are not complete yet, a successful Preupgrade Assistant analysis
 does not necessarily mean that the in-place upgrade via redhat-upgrade-tool will succeed.
 
 Preupgrade Assistant Usage
@@ -21,11 +21,11 @@ Preupgrade Assistant Usage
 At the moment, only a CLI interface and limited functionality is available.
 
 Follow these steps to use the Preupgrade Assistant:
-1) Run "preupg -l" command - it lists all available contents for
+1) Run "preupg -l" command - it lists all available modules for
         preupgrade-assistant (as the system is based on a plug-in, there might be
         modules from different sources in the future). If nothing is shown,
-        install the preupgrade-assistant-contents package.
-2) If you have RHEL6_7 content available, run "preupg -s RHEL6_7"
+        install the preupgrade-assistant modules package.
+2) If you have RHEL6_7 modules available, run "preupg -s RHEL6_7"
 3) Wait until the analysis finishes (it can take several minutes)
 4) Review the report stored as /root/preupgrade/result.html (and possibly
        the files stored at /root/preupgrade) . Especially check for any in-place
