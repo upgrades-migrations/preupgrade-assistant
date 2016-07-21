@@ -62,7 +62,7 @@ class ReportParser(object):
         try:
             # ElementTree.fromstring can't parse safely unicode string
             content = FileHelper.get_file_content(report_path, 'rb', False, False)
-        except IOError as ioerr:
+        except IOError:
             raise
         if not content:
             return None

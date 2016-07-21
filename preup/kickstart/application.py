@@ -10,7 +10,7 @@ import os
 import imp
 import six
 
-from pykickstart.constants import KS_MISSING_IGNORE
+from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
 from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import *
 
@@ -58,7 +58,7 @@ class KickstartGenerator(object):
                                                             ":%(lineno)s %(funcName)s: %(message)s"),
                                           level=logging.DEBUG)
         except (IOError, OSError):
-            logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+            logger.warning("Can not create debug log '%s'", settings.preupg_log)
         else:
             self.debug_log_file = settings.preupg_log
 
@@ -250,7 +250,7 @@ class KickstartGenerator(object):
                                                              settings.KS_SCRIPTS),
                                                 "rb",
                                                 method=True)
-            for counter, line in enumerate(lines):
+            for line in lines:
                 line = line.strip()
                 if line.startswith("#"):
                     continue

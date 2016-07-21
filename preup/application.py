@@ -24,7 +24,7 @@ from preup.utils import FileHelper, ProcessHelper, DirHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
 from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper, ConfigFilesHelper
 from preup.xccdf import XccdfHelper
-from preup.logger import log_message, log_report_message, LoggerHelper, logger, logger_report, logger_debug
+from preup.logger import log_message, LoggerHelper, logger, logger_report, logger_debug
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
 from preuputils.compose import XCCDFCompose
@@ -47,7 +47,7 @@ def list_contents(source_dir):
     for dir_name in filter(is_dir, dirs):
         full_dir_name = os.path.join(source_dir, dir_name, settings.content_file)
         if os.path.exists(full_dir_name):
-            logger.info('%s' % dir_name)
+            logger.info('%s', dir_name)
             content_dict[dir_name] = full_dir_name
 
     return content_dict
@@ -97,6 +97,7 @@ class Application(object):
         self.openscap_helper = None
         self._add_report_log_file()
         self._add_debug_log_file()
+        self.third_party = ""
 
     def _add_report_log_file(self):
         """
@@ -110,7 +111,7 @@ class Application(object):
                                                                       ":%(lineno)s %(funcName)s: %(message)s"),
                                           level=logging.DEBUG)
         except (IOError, OSError):
-            logger.warning("Can not create report log '%s'" % settings.preupg_report_log)
+            logger.warning("Can not create report log '%s'", settings.preupg_report_log)
         else:
             self.report_log_file = settings.preupg_report_log
 
@@ -126,7 +127,7 @@ class Application(object):
                                                             ":%(lineno)s %(funcName)s: %(message)s"),
                                           level=logging.DEBUG)
         except (IOError, OSError):
-            logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+            logger.warning("Can not create debug log '%s'", settings.preupg_log)
         else:
             self.debug_log_file = settings.preupg_log
 
@@ -263,7 +264,7 @@ class Application(object):
         for applying changes on the target system
         """
         cmd = self.openscap_helper.build_command()
-        logger_debug.debug('running_command: %s' % cmd)
+        logger_debug.debug('running_command: %s', cmd)
         # fail if openscap wasn't successful; if debug, continue
         return ProcessHelper.run_subprocess(cmd, print_output=False, function=function)
 
@@ -378,9 +379,9 @@ class Application(object):
         3rd party contents are stored in
         /usr/share/preupgrade/RHEL6_7/3rdparty directory
         """
-        for self.third_party, content in six.iteritems(list_contents(dir_name)):
-            third_party_name = self.third_party
-            log_message("Execution {0} assessments:".format(self.third_party))
+        for third_party, content in six.iteritems(list_contents(dir_name)):
+            third_party_name = self.third_party = third_party
+            log_message("Execution {0} assessments:".format(third_party))
             self.report_parser.reload_xml(content)
             self.content = content
             self.run_scan_process()

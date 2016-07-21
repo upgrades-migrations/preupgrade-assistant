@@ -165,7 +165,6 @@ class Common(object):
         i686_dir = os.path.join(self.common_result_dir, 'i686')
         if not os.path.exists(i686_dir) and os.path.exists(i386_dir):
             os.symlink(i386_dir, i686_dir)
-        add_ons = SystemIdentification.get_addon_variant()
         dir_name = os.path.join(self.common_result_dir,
                                 platform.machine())
         if not os.path.exists(dir_name):

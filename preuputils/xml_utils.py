@@ -10,7 +10,7 @@ from preup.utils import SystemIdentification, FileHelper, MessageHelper
 from preup import settings
 from preuputils import xml_tags
 from preuputils.script_utils import ModuleHelper
-from preup.exception import MissingTagsIniFileError, EmptyTagIniFileError, MissingFileInContentError
+from preup.exception import MissingTagsIniFileError, EmptyTagIniFileError
 
 
 def get_full_xml_tag(dirname):
@@ -80,7 +80,7 @@ class XmlUtils(object):
         table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}</xhtml:td></xhtml:tr>'
         new_text.append(br + br + '\n' + bold.format('Details:') + br)
         results = False
-        for index, line in enumerate(lines):
+        for line in lines:
             if '=' in line:
                 if not results:
                     new_text.append(bold.format('Expected results:') + br)
@@ -203,7 +203,6 @@ class XmlUtils(object):
 
     def prepare_sections(self):
         """The function prepares all tags needed for generation group.xml file."""
-        group_ini = False
         for main, self.keys in self.ini_files.items():
             if main.endswith("group.ini"):
                 self.rule.append(xml_tags.GROUP_INI)

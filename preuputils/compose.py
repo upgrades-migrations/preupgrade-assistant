@@ -69,7 +69,7 @@ class XCCDFCompose(object):
                                      False)
             if generate_from_ini:
                 print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
-        except IOError as e:
+        except IOError:
             print ("Problem with writing file ", report_filename)
             raise
         return self.dir_name

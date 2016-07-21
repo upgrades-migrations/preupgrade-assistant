@@ -1,7 +1,6 @@
 
 from __future__ import unicode_literals, print_function
 import logging
-import os
 import sys
 from preup import settings
 
@@ -19,30 +18,32 @@ class LoggerHelper(object):
         :param level: severity level
         :return: created logger
         """
-        logger = logging.getLogger(logger_name)
-        logger.setLevel(level)
+        logger_name = logging.getLogger(logger_name)
+        logger_name.setLevel(level)
 
-        return logger
+        return logger_name
 
     @staticmethod
-    def add_stream_handler(logger, level=None):
+    def add_stream_handler(logger_name, level=None):
         """
         Adds console handler with given severity.
-        :param logger: logger object to add the handler to
+        :param logger_name: logger object to add the handler to
         :param level: severity level
         :return: None
         """
         console_handler = logging.StreamHandler(sys.stdout)
         if level:
             console_handler.setLevel(level)
-        logger.addHandler(console_handler)
+        logger_name.addHandler(console_handler)
 
     @staticmethod
-    def add_file_handler(logger, path, formatter=None, level=None):
+    def add_file_handler(logger_name, path, formatter=None, level=None):
         """
         Adds FileHandler to a given logger
-        :param logger: Logger object to which the file handler will be added
+        :param logger_name: Logger object to which the file handler will be added
         :param path: Path to file where the debug log will be written
+        :param formatter: logging format
+        :param level: severity level
         :return: None
         """
         file_handler = logging.FileHandler(path, 'w')
@@ -50,7 +51,7 @@ class LoggerHelper(object):
             file_handler.setLevel(level)
         if formatter:
             file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        logger_name.addHandler(file_handler)
 
 logger = LoggerHelper.get_basic_logger('preupgrade-assistant')
 logger_debug = LoggerHelper.get_basic_logger('preupgrade-assistant-debug')

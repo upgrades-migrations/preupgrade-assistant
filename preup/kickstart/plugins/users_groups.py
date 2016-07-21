@@ -97,7 +97,7 @@ class UsersGroupsGenerator(BaseKickstart):
         if not groups:
             return None
         for key, value in six.iteritems(groups):
-            for gid, grouplist in six.iteritems(value):
+            for gid in six.iterkeys(value):
                 self.handler.group.dataList().append(self.handler.GroupData(name=key, gid=gid))
 
     def filter_kickstart_users(self):

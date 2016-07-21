@@ -5,7 +5,6 @@ Class creates a kickstart for migration scenario
 """
 
 import six
-import shutil
 import os
 
 from pykickstart.constants import CLEARPART_TYPE_ALL

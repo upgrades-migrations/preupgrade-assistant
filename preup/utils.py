@@ -166,7 +166,7 @@ class FileHelper(object):
             return None
 
     @staticmethod
-    def get_file_content(path, perms, method=False, decode_flag=True):
+    def get_file_content(full_path, perms, method=False, decode_flag=True):
         """
         shortcut for returning content of file
 
@@ -180,7 +180,7 @@ class FileHelper(object):
         # data must be init due to possible troubles with binary data
         data = None
         try:
-            f = open(path, perms)
+            f = open(full_path, perms)
             try:
                 if decode_flag is True:
                     data = f.read().decode(settings.defenc) if not method else [line.decode(settings.defenc) for line in f.readlines()]
@@ -195,7 +195,7 @@ class FileHelper(object):
         return data
 
     @staticmethod
-    def write_to_file(path, perms, data, encode_flag=True):
+    def write_to_file(full_path, perms, data, encode_flag=True):
         """
         shortcut for write of data to file:
 
@@ -207,7 +207,7 @@ class FileHelper(object):
         set encode_flag to False to suppress second encodiding process.
         """
         try:
-            f = open(path, perms)
+            f = open(full_path, perms)
             try:
                 if isinstance(data, list):
                     if encode_flag is True:
@@ -295,13 +295,13 @@ class DirHelper(object):
         return temp_dir
 
     @staticmethod
-    def create_dest_dir(path):
+    def create_dest_dir(full_path):
         n = datetime.datetime.now()
         stamp = n.strftime("%y%m%d%H%M%S%f")
-        if path.endswith('/'):
-            destdir = path[:-1] + stamp
+        if full_path.endswith('/'):
+            destdir = full_path[:-1] + stamp
         else:
-            destdir = path + stamp
+            destdir = full_path + stamp
         os.makedirs(destdir)
         return destdir
 
@@ -536,12 +536,12 @@ class TarballHelper(object):
 
 class ConfigHelper(object):
     @staticmethod
-    def get_preupg_config_file(path, key, section="preupgrade"):
-        if not os.path.exists(path):
+    def get_preupg_config_file(full_path, key, section="preupgrade"):
+        if not os.path.exists(full_path):
             return None
 
         config = configparser.RawConfigParser(allow_no_value=True)
-        config.read(path)
+        config.read(full_path)
         section = 'preupgrade-assistant'
         if config.has_section(section):
             if config.has_option(section, key):
@@ -565,7 +565,6 @@ class ConfigFilesHelper(object):
     def check_dirtyconf_dir(dirtyconf, filename):
         # Check if configuration file exists in /root/preupgrade/dirtyconf directory
         # If not return real path of configuration file. Not a symlink.
-        dirty_path = os.path.join(os.path.dirname(dirtyconf), filename)
         full_path = filename
         # Copy filename to dirtyconf directory
         # Check if file is a symlink or real path.
@@ -798,7 +797,6 @@ class OpenSCAPHelper(object):
         command_eval = ['xccdf', 'eval']
         result_file = self.get_default_xml_result_path()
         command = [settings.openscap_binary]
-        report = self.get_default_html_result_path()
         command.extend(command_eval)
         command.append('--progress')
         command.extend(('--profile', settings.profile))
@@ -824,7 +822,6 @@ class OpenSCAPHelper(object):
         return os.path.join(self.result_dir,
                             OpenSCAPHelper.get_third_party_name("") + self.html_result_name)
 
-    @staticmethod
     def get_default_txt_result_path(self):
         """
         Function returns default txt result path based on result_dir
@@ -844,7 +841,7 @@ class OpenSCAPHelper(object):
         ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
         if os.path.exists(generate_tempfile):
             lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
-            logger.debug('%s' % '\n'.join(lines))
+            logger.debug('%s', '\n'.join(lines))
         return ret_val
 
 

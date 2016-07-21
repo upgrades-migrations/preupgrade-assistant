@@ -4,7 +4,6 @@
 Class creates a set of packages for migration scenario
 """
 
-import six
 import os
 
 from preup.utils import FileHelper

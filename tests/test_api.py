@@ -1,11 +1,9 @@
 from __future__ import unicode_literals
 import unittest
-import tempfile
 import shutil
 import os
 
 from preup import script_api
-from preup import settings
 from preup.utils import FileHelper
 
 try:

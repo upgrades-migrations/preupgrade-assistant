@@ -175,7 +175,6 @@ class ModuleHelper(object):
         field are needed by YAML file
         """
         fields = ['content_title', 'check_script', 'solution', 'applies_to']
-        optional = ['solution_type']
         unused = [x for x in fields if not keys.get(x)]
         if unused:
             title = 'Following tags are missing in INI file %s\n' % self.script_name

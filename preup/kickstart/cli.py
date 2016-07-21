@@ -1,5 +1,4 @@
 import optparse
-from optparse import OptionValueError
 
 from preup.constants import *
 

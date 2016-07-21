@@ -24,6 +24,7 @@ class BaseKickstart(object):
     WORKING_DIR = ''
     TESTS_DIR = os.path.dirname(__file__)
     TEST_FILES = []
+    TEST_FILES_DIR = ''
 
     def setup(self):
         """Setup the temporary environment and change the working directory to it."""

@@ -231,7 +231,6 @@ class XmlManager(object):
         based on section and list of txt files from content
         directory
         """
-        found = False
         file_name = None
         for key, value in self.xml_solution_files.items():
             # section is in format _<path_content>
@@ -246,7 +245,6 @@ class XmlManager(object):
                 break
             except IndexError:
                 logger_report.debug("Value '%s'", value)
-                pass
         logger_report.debug("Found text file '%s'.", file_name)
         return file_name
 
