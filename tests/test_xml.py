@@ -32,6 +32,10 @@ class TestXMLCompose(base.TestCase):
 
     """Tests of right composing of contents in groups."""
 
+    result_dir = None
+    target_tree = None
+    tree = None
+
     def setUp(self):
         dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
         self.result_dir = os.path.join(dir_name+variables.result_prefix)
@@ -77,9 +81,9 @@ class TestXMLCompose(base.TestCase):
             lines = [x.decode('utf-8') for x in FileHelper.get_file_content(uni_xml, "rb", True, False)]
         except IOError:
             assert False
-        title = filter(lambda x: u_title in x, lines)
-        descr = filter(lambda x: u_descr in x, lines)
-        self.assertTrue(title, "title is wrong ecoded or missing")
+        title = [x for x in lines if u_title in x]
+        descr = [x for x in lines if u_descr in x]
+        self.assertTrue(title, "title is wrong encoded or missing")
         self.assertTrue(descr, "description is wrong encoded or missing")
 
     def test_unicode_script_author(self):
@@ -93,13 +97,22 @@ class TestXMLCompose(base.TestCase):
             lines = FileHelper.get_file_content(script_file, "rb", True)
         except IOError:
             assert False
-        author = filter(lambda x: u_author in x, lines)
+        author = [x for x in lines if u_author in x]
         self.assertTrue(author)
 
 
 class TestXML(base.TestCase):
 
     """Main testing of right generating of XML files for OSCAP."""
+    dirname = None
+    filename = None
+    test_solution = None
+    loaded_ini = None
+    check_script = None
+    check_sh = None
+    solution_text = None
+    rule = None
+    xml_utils = None
 
     def setUp(self):
         self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
@@ -154,54 +167,54 @@ A solution text for test suite"
         self.assertTrue(self.rule)
 
     def test_xml_rule_id(self):
-        rule_id = filter(lambda x: '<Rule id="xccdf_preupg_rule_test_check_script" selected="true">' in x, self.rule)
+        rule_id = [x for x in self.rule if '<Rule id="xccdf_preupg_rule_test_check_script" selected="true">' in x]
         self.assertTrue(rule_id)
 
     def test_xml_profile_id(self):
-        profile = filter(lambda x: '<Profile id="xccdf_preupg_profile_default">' in x, self.rule)
+        profile = [x for x in self.rule if '<Profile id="xccdf_preupg_profile_default">' in x]
         self.assertTrue(profile)
 
     def test_xml_rule_title(self):
-        rule_title = filter(lambda x: "<title>Testing content title</title>" in x, self.rule)
+        rule_title = [x for x in self.rule if "<title>Testing content title</title>" in x]
         self.assertTrue(rule_title)
 
     def test_xml_config_file(self):
-        conf_file = filter(lambda x: "<xhtml:li>/etc/named.conf</xhtml:li>" in x, self.rule)
+        conf_file = [x for x in self.rule if "<xhtml:li>/etc/named.conf</xhtml:li>" in x]
         self.assertTrue(conf_file)
 
     def test_xml_fix_text(self):
-        fix_text = filter(lambda x: "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x, self.rule)
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_text(self):
         self.loaded_ini[self.filename][0]['solution_type'] = "text"
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
-        fix_text = filter(lambda x: "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x, self.rule)
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_html(self):
         self.loaded_ini[self.filename][0]['solution_type'] = "html"
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
-        fix_text = filter(lambda x: "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x, self.rule)
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_check_script_author(self):
         settings.autocomplete = True
         self.rule = self.xml_utils.prepare_sections()
         lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
-        author = filter(lambda x: "test <test@redhat.com>" in x, lines)
+        author = [x for x in lines if "test <test@redhat.com>" in x]
         self.assertTrue(author)
 
     def test_xml_check_export_tmp_preupgrade(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_export = filter(lambda x: 'xccdf_preupg_value_tmp_preupgrade' in x, self.rule)
+        check_export = [x for x in self.rule if 'xccdf_preupg_value_tmp_preupgrade' in x]
         self.assertTrue(check_export)
 
     def test_xml_current_directory(self):
         self.rule = self.xml_utils.prepare_sections()
-        cur_directory = filter(lambda x: '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x, self.rule)
+        cur_directory = [x for x in self.rule if '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x]
         self.assertTrue(cur_directory)
 
     def _create_temporary_dir(self):
@@ -334,32 +347,32 @@ A solution text for test suite"
 
     def test_xml_check_script_reference(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_script_reference = filter(lambda x: '<check-content-ref href="check_script.sh" />' in x, self.rule)
+        check_script_reference = [x for x in self.rule if '<check-content-ref href="check_script.sh" />' in x]
         self.assertTrue(check_script_reference)
 
     def test_values_id(self):
         self.rule = self.xml_utils.prepare_sections()
-        value_current_dir = filter(lambda x: '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x, self.rule)
+        value_current_dir = [x for x in self.rule if '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x]
         self.assertTrue(value_current_dir)
-        value_current_dir_set = filter(lambda x: '<value>SCENARIO/test</value>' in x, self.rule)
+        value_current_dir_set = [x for x in self.rule if '<value>SCENARIO/test</value>' in x]
         self.assertTrue(value_current_dir_set)
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
         lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
-        applies = filter(lambda x: 'check_applies_to "test"' in x, lines)
+        applies = [x for x in lines if 'check_applies_to "test"' in x]
         self.assertTrue(applies)
 
     def test_check_script_common(self):
         self.rule = self.xml_utils.prepare_sections()
         lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
-        common = filter(lambda x: '. /usr/share/preupgrade/common.sh' in x, lines)
+        common = [x for x in lines if '. /usr/share/preupgrade/common.sh' in x]
         self.assertTrue(common)
 
     def test_check_script_requires(self):
         self.rule = self.xml_utils.prepare_sections()
         lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
-        check_rpm_to = filter(lambda x: 'check_rpm_to "bash" "sed"' in x, lines)
+        check_rpm_to = [x for x in lines if 'check_rpm_to "bash" "sed"' in x]
         self.assertTrue(check_rpm_to)
 
 
@@ -369,6 +382,14 @@ class TestIncorrectINI(base.TestCase):
     Tests right processing of INI files including incorrect input which
     could make for crash with traceback.
     """
+    dir_name = None
+    filename = None
+    rule = None
+    test_solution = None
+    check_script = None
+    loaded_ini = {}
+    test_ini = None
+    xml_utils = None
 
     def setUp(self):
         self.dir_name = "tests/FOOBAR6_7/incorrect_ini"
@@ -377,7 +398,6 @@ class TestIncorrectINI(base.TestCase):
         self.rule = []
         self.test_solution = "test_solution.sh"
         self.check_script = "check_script.sh"
-        self.loaded_ini = {}
         self.loaded_ini[self.filename] = []
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
@@ -466,14 +486,16 @@ class TestGroupXML(base.TestCase):
 
     """Basic test for creating group.xml file"""
 
-    #TODO: May should be deprecated and test could be moved under class TestXMLCompose
+    dir_name = None
+    filename = None
+    rule = []
+    loaded_ini = {}
+    xml_utils = None
 
     def setUp(self):
         self.dir_name = "tests/FOOBAR6_7-results/test_group"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'group.ini')
-        self.rule = []
-        self.loaded_ini = {}
         test_ini = {'group_title': 'Testing content title'}
         self.assertTrue(test_ini)
         self.loaded_ini[self.filename] = []
@@ -486,9 +508,9 @@ class TestGroupXML(base.TestCase):
         """Basic test creation group.xml file"""
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
-        group_tag = filter(lambda x: '<Group id="xccdf_preupg_group_test_group" selected="true">' in x, self.rule)
+        group_tag = [x for x in self.rule if '<Group id="xccdf_preupg_group_test_group" selected="true">' in x]
         self.assertTrue(group_tag)
-        title_tag = filter(lambda x: '<title>Testing content title</title>' in x, self.rule)
+        title_tag = [x for x in self.rule if '<title>Testing content title</title>' in x]
         self.assertTrue(title_tag)
 
 
