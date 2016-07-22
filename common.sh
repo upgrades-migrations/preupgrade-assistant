@@ -45,18 +45,19 @@ PREUPG_API_VERSION=1
 
 export LC_ALL=C
 
-# general logging function
-# ------------------------
-#
-# log SEVERITY [COMPONENT] MESSAGE
-#
-# @SEVERITY: set it to one of INFO|ERROR|WARNING
-# @COMPONENT: optional, relevant RHEL component
-# @MESSAGE: message to be logged
-#
-# Note that if env variable $COMPONENT is defined, it may be omitted from
-# parameters.
 log() {
+    #
+    # general logging function
+    #
+    # log SEVERITY [COMPONENT] MESSAGE
+    #
+    # @SEVERITY: set it to one of INFO|ERROR|WARNING
+    # @COMPONENT: optional, relevant RHEL component
+    # @MESSAGE: message to be logged
+    #
+    # Note that if env variable $COMPONENT is defined, it may be omitted from
+    # parameters.
+    #
     SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
         # only message was passed
@@ -214,8 +215,10 @@ check_rpm_to() {
     fi
 }
 
-# This check can be used if you need root privilegues
 check_root() {
+    #
+    # This check can be used if you need root privilegues
+    #
     if [ "$(id -u)" != "0" ]; then
         log_error "This script must be run as root"
         log_slight_risk "The script must be run as root"
@@ -228,8 +231,10 @@ solution_file() {
 }
 
 
-# returns true if service in $1 is enabled in any runlevel
 service_is_enabled() {
+    #
+    # returns true if service in $1 is enabled in any runlevel
+    #
     if [ $# -ne 1 ] ; then
         echo "Usage: service_is_enabled servicename"
         return 2
@@ -238,11 +243,14 @@ service_is_enabled() {
     return 1
 }
 
-# backup the config file, returns:
-# true if cp succeeds,
-# 1 if config file doesn't exist
-# 2 if config file was not changed and thus is not necessary to back-up
 backup_config_file() {
+    #
+    # backup the config file
+    #
+    # true if cp succeeds,
+    # 1 if config file doesn't exist
+    # 2 if config file was not changed and thus is not necessary to back-up
+    #
     local CONFIG_FILE=$1
 
     # config file exists?
@@ -262,10 +270,13 @@ space_trim() {
     echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
-# functions for easy parsing of config files
-# returns 0 on success, otherwise 1
-# requires path
 conf_get_sections() {
+    #
+    # functions for easy parsing of config files
+    #
+    # returns 0 on success, otherwise 1
+    # requires path
+    #
     [ $# -eq 1 ] || return 1
     [ -f "$1" ] || return 1
 
@@ -273,9 +284,12 @@ conf_get_sections() {
     return $?
 }
 
-# get all items from config file $1 inside section $2
-# e.g.: conf_get_section CONFIG_FILE section-without-brackets
 conf_get_section() {
+    #
+    # get all items from config file $1 inside section $2
+    #
+    # e.g.: conf_get_section CONFIG_FILE section-without-brackets
+    #
     [ $# -eq 2 ] || return 1
     [ -f "$1" ] || return 1
     local _section=""
@@ -295,14 +309,18 @@ conf_get_section() {
     return 0
 }
 
-# is_dist_native function return only 0 or 1
-# return 1 if package is not installed and print warning log.
-# Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
-# Case DEVEL_MODE is turn on:
-#   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
-#   DIST_NATIVE = all: always return 0
-#   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
 is_dist_native() {
+    #
+    # return 1 if package is not installed and print warning log.
+    #
+    # is_dist_native function return only 0 or 1
+    # return 1 if package is not installed and print warning log.
+    # Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+    # Case DEVEL_MODE is turn on:
+    #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
+    #   DIST_NATIVE = all: always return 0
+    #   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
+    #
     if [ $# -ne 1 ]; then
         return 1
     fi
@@ -346,8 +364,10 @@ is_dist_native() {
     fi
 }
 
-# return list of all dist native packages according to is_dist_native()
 get_dist_native_list() {
+    #
+    # return list of all dist native packages according to is_dist_native()
+    #
     local pkg
     while read line; do
         pkg=$(echo $line | cut -d " " -f1 )
@@ -355,9 +375,14 @@ get_dist_native_list() {
     done < "$VALUE_RPM_QA"
 }
 
+
 # here is parsed PA configuration
+
 load_pa_configuration() {
-  # this is main function for parsing
+    #
+    # this is main function for parsing
+    #
+
     [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
         exit_error
@@ -390,12 +415,15 @@ load_pa_configuration() {
     done
 }
 
-# print items from [home-dirs] which are relevant for given user
-# when username is not given or config file for user is not enabled,
-# items from main configuration file is printed
-# returns 0 on SUCCESS, otherwise 1 and logs warning
-# shouldn't be used before load_config_parser
 print_home_dirs() {
+    #
+    # print items from [home-dirs] which are relevant for given user
+    #
+    # when username is not given or config file for user is not enabled,
+    # items from main configuration file is printed
+    # returns 0 on SUCCESS, otherwise 1 and logs warning
+    # shouldn't be used before load_config_parser
+    #
     [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
         conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
         return 0
@@ -406,8 +434,10 @@ print_home_dirs() {
     conf_get_section "$_uconf_file" "home-dirs"
 }
 
-#Function adds a package to special_pkg_list
 add_pkg_to_kickstart() {
+    #
+    # Function adds a package to special_pkg_list
+    #
     [ $# -eq 0  ] && {
         log_debug "Missing parameters! Any package will be added." >&2
         return 1
@@ -420,11 +450,15 @@ add_pkg_to_kickstart() {
     return 0
 }
 
-# Function which deploys script to specific location.
-# Arguments:
-# param 1: hook, like postupgrade, preupgrade, etc.
-# param 2: script name
 deploy_hook() {
+    #
+    # Function which deploys script to specific location.
+    #
+    # Arguments:
+    # param 1: hook, like postupgrade, preupgrade, etc.
+    # param 2: script name
+    #
+
     deploy_name=$1
     script_name=$2
 
