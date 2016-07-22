@@ -12,7 +12,7 @@ import six
 
 from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
 from pykickstart.parser import KickstartParser, KickstartError, Script
-from pykickstart.version import *
+from pykickstart.version import makeVersion
 
 from preup.logger import *
 from preup.utils import FileHelper, ProcessHelper
