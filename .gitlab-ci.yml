@@ -7,6 +7,10 @@ stages:
   services:
   script:
     - dnf -y install python2 python2-devel rpm-python python-tox python-pip python-setuptools gcc redhat-rpm-config git openscap openscap-engine-sce openscap-utils pykickstart python-requests python-kickstart
+    - echo "[preupgrade-assistant]" > /etc/preupgrade-assistant.conf
+    - echo "home_directory_file=.preupgrade-dirs" >> /etc/preupgrade-assistant.conf
+    - echo "user_config_file=enabled\n\n" >> /etc/preupgrade-assistant.conf
+    - echo "[home-dirs]\n.config/\n.mozilla/\n" >> /etc/preupgrade-assistant.conf
     #- pip install tox setuptools
     - tox --recreate
 
