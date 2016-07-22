@@ -1,32 +1,135 @@
 
 CACHE=/var/cache/preupgrade
+
+#
+# Directory with logs gathered by preupgrade-assistant
+#
 PREUPGRADE_CACHE=/var/cache/preupgrade/common
+
+#
+# Preupgrade-assistant configuration file
+#
 PREUPGRADE_CONFIG=/etc/preupgrade-assistant.conf
+
+#
+# Full path log file with to all installed packages
+#
 VALUE_RPM_QA=$PREUPGRADE_CACHE/rpm_qa.log
+
+#
+# Full path log file with to all changed files
+#
 VALUE_ALL_CHANGED=$PREUPGRADE_CACHE/rpm_Va.log
+
+#
+# Full path to log file with all /etc changed configuration files
+#
 VALUE_CONFIGCHANGED=$PREUPGRADE_CACHE/rpm_etc_Va.log
+
+#
+# Full path to log file with all users gathered by getent
+#
 VALUE_PASSWD=$PREUPGRADE_CACHE/passwd.log
+
+#
+# Full path to log file with all services enabled/disabled on system.
+#
 VALUE_CHKCONFIG=$PREUPGRADE_CACHE/chkconfig.log
+
+#
+# Full path to log file with all groups gathered by getent
+#
 VALUE_GROUP=$PREUPGRADE_CACHE/group.log
+
+#
+# Full path to log file with all installed files
+#
 VALUE_RPMTRACKEDFILES=$PREUPGRADE_CACHE/rpmtrackedfiles.log
+
+#
+# Full path to log file with all Red Hat signed packages
+#
 VALUE_RPM_RHSIGNED=$PREUPGRADE_CACHE/rpm_rhsigned.log
+
+#
+# Full path to log file with all local files
+#
 VALUE_ALLMYFILES=$PREUPGRADE_CACHE/allmyfiles.log
+
+#
+# Full path to log file with all executable files
+#
 VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
+
+#
+# Variable which referes to temporary directory directory provided by module
+#
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
+
+#
+# postupgrade directory used by in-place upgrades.
+#
+# Scripts mentioned there are executed automatically by redhat-upgrade-tool
+#
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
+
 CURRENT_DIRECTORY=$XCCDF_VALUE_CURRENT_DIRECTORY
+
+#
+# MIGRATE means if preupg binary was used with `--mode migrate` parameter
+# UPGRADE means if preupg binary was used with `--mode upgrade` parameter
+# These modes are used if `--mode` is not used
+#
 MIGRATE=$XCCDF_VALUE_MIGRATE
 UPGRADE=$XCCDF_VALUE_UPGRADE
+
+#
+# Variable which referes to solution file provided by module
+#
 SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
+
+#
+# Directory which is used for kickstart generation
+#
 KICKSTART_DIR=$VALUE_TMP_PREUPGRADE/kickstart
+
+#
+# README file which contains description about all files in kickstart directory
+#
 KICKSTART_README=$KICKSTART_DIR/README
+
+#
+# Directory with scripts which can be executed after installation by administrator
+#
 KICKSTART_SCRIPTS=$KICKSTART_DIR/scripts
+
+#
+# The same as $KICKSTART_SCRIPTS
+#
 KICKSTART_POSTUPGRADE=$KICKSTART_SCRIPTS
+
+#
+# Variable which refers to static data used by preupgrade-assistant and modules
+#
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
+
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
+
+#
+# Variable which indicates DEVEL mode.
+#
 DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
+
+#
+# Variable which contains file with packages add to the kickstart anyway
+#
 SPECIAL_PKG_LIST=$KICKSTART_DIR/special_pkg_list
+
+#
+# Postupgrade directory which is not executed automatically after an upgrade or migration
+#
 NOAUTO_POSTUPGRADE_D=$VALUE_TMP_PREUPGRADE/noauto_postupgrade.d
+
 RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
 RESULT_FAILED=$RESULT_FAIL
@@ -37,7 +140,9 @@ RESULT_FIXED=$XCCDF_RESULT_FIXED
 RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
 MODULE_NAME=$XCCDF_VALUE_MODULE_NAME
 
+#
 # variables set by PA config file #
+#
 HOME_DIRECTORY_FILE=""
 USER_CONFIG_FILE=0
 
@@ -76,22 +181,66 @@ log() {
 }
 
 log_debug() {
+    #
+    # log message to stdout with severity debug
+    #
+    # log_debug(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity debug
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # verbose information, may help with script debugging
+    #
     log "DEBUG" "$@"
 }
 
 log_info() {
+    #
+    # log message to stdout with severity info
+    #
+    # log_info(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity info
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # informational message
+    #
     log "INFO" "$@"
 }
 
 log_error() {
+    #
+    # log message to stdout with severity error
+    #
+    # log_error(message, component=None) -> None
+    #
+    # log message to stdout with severity error
+    # if you would like to change component temporary, you may pass it as argument
+    # use this severity if your script found something severe
+    #
+    # which may cause malfunction on new system
+    #
     log "ERROR" "$@"
 }
 
 log_warning() {
+    #
+    # log message to stdout with severity warning
+    #
+    # log_warning(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity warning
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # important finding, administrator of system should be aware of this
+    #
     log "WARNING" "$@"
 }
 
 log_risk() {
+    #
+    # log risk level to stderr
+    #
     echo "INPLACERISK: $1: $2" >&2
 }
 
@@ -100,54 +249,101 @@ log_none_risk() {
 }
 
 log_slight_risk() {
+    #
+    # no issues found; although there are some unexplored areas
+    #
     log_risk "SLIGHT" "$1"
 }
 
 log_medium_risk() {
+    #
+    # inplace upgrade is possible; system after upgrade may be unstable
+    #
     log_risk "MEDIUM" "$1"
 }
 
 log_high_risk() {
+    #
+    # Administrator has to inspect and correct upgraded system so inplace upgrade can be used.
+    #
     log_risk "HIGH" "$1"
 }
 
 log_extreme_risk() {
+    #
+    # Inplace upgrade is impossible.
+    #
     log_risk "EXTREME" "$1"
 }
 
 exit_unknown() {
+    #
+    # Could not tell what happened.
+    #
     exit $RESULT_UNKNOWN
 }
 
 exit_pass() {
+    #
+    # Test passed.
+    #
     exit $RESULT_PASS
 }
 
 exit_fail() {
+    #
+    # The test failed.
+    #
+    # Moving to new release with this configuration will result in malfunction.
+    #
     exit $RESULT_FAIL
 }
 
 exit_error() {
+    #
+    # An error occurred and test could not complete.
+    #
+    # (script failed while doing its job)
+    #
     exit $RESULT_ERROR
 }
 
 exit_not_applicable() {
+    #
+    # Rule did not apply to test target. (e.g. package is not installed)
+    #
     exit $RESULT_NOT_APPLICABLE
 }
 
 exit_informational() {
+    #
+    # Rule has only informational output.
+    #
     exit $RESULT_INFORMATIONAL
 }
 
 exit_fixed() {
+    #
+    # Rule failed, but was later fixed.
+    #
     exit $RESULT_FIXED
 }
 
 switch_to_content() {
+    #
+    # Function for switch to the content directory
+    #
     cd $CURRENT_DIRECTORY
 }
 
 check_applies_to() {
+    #
+    # Function checks is package is installed and signed by Red Hat
+    #
+    #  Parameter list of packages which will be checked. Module requires them.
+    # :return: 0 - package is installed and signed by Red Hat
+    #          exit_not_applicable - module will not be executed
+    #
     local RPM=1
     local RPM_NAME="$1"
     [ -z "$1" ] && RPM=0
@@ -169,11 +365,25 @@ check_applies_to() {
 }
 
 is_pkg_installed() {
+    #
+    # Function checks if package is installed.
+    #
+    # Parameter is a package name which will be checked.
+    # Return: 0 - package is installed
+    #         1 - package is NOT installed
     grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
     return 0
 }
 
 check_rpm_to() {
+    #
+    # Function checks if relevant package is installed and if relevant binary exists on the system.
+    #
+    # Function is needed from module point of view.
+    # :param $1: list of RPMs separated by comma
+    # :param $2: list of binaries separated by comma
+    # :return:
+    #
     local RPM=1
     local BINARY=1
     local RPM_NAME=$1
@@ -227,6 +437,12 @@ check_root() {
 }
 
 solution_file() {
+    #
+    # Function appends a message to solution file.
+    #
+    # solution file will be created in module directory
+    # :param message: Message - string of list of strings
+    #
     echo "$1" >> $SOLUTION_FILE
 }
 
@@ -267,6 +483,11 @@ backup_config_file() {
 }
 
 space_trim() {
+    #
+    # Function trim spaces.
+    #
+    # parameter is string to trim
+    #
     echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
