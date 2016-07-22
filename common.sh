@@ -113,6 +113,15 @@ KICKSTART_POSTUPGRADE=$KICKSTART_SCRIPTS
 #
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
 
+#
+# Override mode for is_dist_native() and similar
+#
+# Affects which packages are considered native:
+#
+# If set to 'sign' (default), GPG signature is consulted.  If 'all',
+# all packages are native.  If set to path to a file, packages listed
+# there are native.
+#
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
 
 #
@@ -130,14 +139,49 @@ SPECIAL_PKG_LIST=$KICKSTART_DIR/special_pkg_list
 #
 NOAUTO_POSTUPGRADE_D=$VALUE_TMP_PREUPGRADE/noauto_postupgrade.d
 
+#
+# Exit status for 'pass' result
+#
 RESULT_PASS=$XCCDF_RESULT_PASS
+
+#
+# Exit status for 'fail' result
+#
 RESULT_FAIL=$XCCDF_RESULT_FAIL
+
+#
+# Exit status for 'fail' result
+#
 RESULT_FAILED=$RESULT_FAIL
+
+#
+# Exit status for 'error' result
+#
 RESULT_ERROR=$XCCDF_RESULT_ERROR
+
+#
+# Exit status for 'unknown' result
+#
 RESULT_UNKNOWN=$XCCDF_RESULT_UNKNOWN
+
+#
+# Exit status for 'notapplicable' result
+#
 RESULT_NOT_APPLICABLE=$XCCDF_RESULT_NOT_APPLICABLE
+
+#
+# Exit status for 'fixed' result
+#
 RESULT_FIXED=$XCCDF_RESULT_FIXED
+
+#
+# Exit status for 'informational' result
+#
 RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
+
+#
+# Name of module being currently executed
+#
 MODULE_NAME=$XCCDF_VALUE_MODULE_NAME
 
 #
@@ -146,6 +190,9 @@ MODULE_NAME=$XCCDF_VALUE_MODULE_NAME
 HOME_DIRECTORY_FILE=""
 USER_CONFIG_FILE=0
 
+#
+# Version of this API
+#
 PREUPG_API_VERSION=1
 
 export LC_ALL=C
@@ -245,6 +292,9 @@ log_risk() {
 }
 
 log_none_risk() {
+    #
+    # (unused)
+    #
     log_risk "NONE" "$1"
 }
 
