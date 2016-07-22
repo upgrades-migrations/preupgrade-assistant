@@ -56,8 +56,7 @@ export LC_ALL=C
 #
 # Note that if env variable $COMPONENT is defined, it may be omitted from
 # parameters.
-log()
-{
+log() {
     SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
         # only message was passed
@@ -75,98 +74,79 @@ log()
     echo "$SEVERITY $COMPONENT: $1" >&2
 }
 
-log_debug()
-{
+log_debug() {
     log "DEBUG" "$@"
 }
 
-log_info()
-{
+log_info() {
     log "INFO" "$@"
 }
 
-log_error()
-{
+log_error() {
     log "ERROR" "$@"
 }
 
-log_warning()
-{
+log_warning() {
     log "WARNING" "$@"
 }
 
-log_risk()
-{
+log_risk() {
     echo "INPLACERISK: $1: $2" >&2
 }
 
-log_none_risk()
-{
+log_none_risk() {
     log_risk "NONE" "$1"
 }
 
-log_slight_risk()
-{
+log_slight_risk() {
     log_risk "SLIGHT" "$1"
 }
 
-log_medium_risk()
-{
+log_medium_risk() {
     log_risk "MEDIUM" "$1"
 }
 
-log_high_risk()
-{
+log_high_risk() {
     log_risk "HIGH" "$1"
 }
 
-log_extreme_risk()
-{
+log_extreme_risk() {
     log_risk "EXTREME" "$1"
 }
 
-exit_unknown()
-{
+exit_unknown() {
     exit $RESULT_UNKNOWN
 }
 
-exit_pass()
-{
+exit_pass() {
     exit $RESULT_PASS
 }
 
-exit_fail()
-{
+exit_fail() {
     exit $RESULT_FAIL
 }
 
-exit_error()
-{
+exit_error() {
     exit $RESULT_ERROR
 }
 
-exit_not_applicable()
-{
+exit_not_applicable() {
     exit $RESULT_NOT_APPLICABLE
 }
 
-exit_informational()
-{
+exit_informational() {
     exit $RESULT_INFORMATIONAL
 }
 
-exit_fixed()
-{
+exit_fixed() {
     exit $RESULT_FIXED
 }
 
-switch_to_content()
-{
+switch_to_content() {
     cd $CURRENT_DIRECTORY
 }
 
-check_applies_to()
-{
+check_applies_to() {
     local RPM=1
     local RPM_NAME="$1"
     [ -z "$1" ] && RPM=0
@@ -187,14 +167,12 @@ check_applies_to()
     fi
 }
 
-is_pkg_installed()
-{
+is_pkg_installed() {
     grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
     return 0
 }
 
-check_rpm_to()
-{
+check_rpm_to() {
     local RPM=1
     local BINARY=1
     local RPM_NAME=$1
@@ -237,8 +215,7 @@ check_rpm_to()
 }
 
 # This check can be used if you need root privilegues
-check_root()
-{
+check_root() {
     if [ "$(id -u)" != "0" ]; then
         log_error "This script must be run as root"
         log_slight_risk "The script must be run as root"
@@ -246,8 +223,7 @@ check_root()
     fi
 }
 
-solution_file()
-{
+solution_file() {
     echo "$1" >> $SOLUTION_FILE
 }
 
@@ -283,40 +259,40 @@ backup_config_file() {
 }
 
 space_trim() {
-  echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
+    echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
 # functions for easy parsing of config files
 # returns 0 on success, otherwise 1
 # requires path
 conf_get_sections() {
-  [ $# -eq 1 ] || return 1
-  [ -f "$1" ] || return 1
+    [ $# -eq 1 ] || return 1
+    [ -f "$1" ] || return 1
 
-  grep -E "^\[.+\]$" "$1" | sed -r "s/^\[(.+)\]$/\1/"
-  return $?
+    grep -E "^\[.+\]$" "$1" | sed -r "s/^\[(.+)\]$/\1/"
+    return $?
 }
 
 # get all items from config file $1 inside section $2
 # e.g.: conf_get_section CONFIG_FILE section-without-brackets
 conf_get_section() {
-  [ $# -eq 2 ] || return 1
-  [ -f "$1" ] || return 1
-  local _section=""
+    [ $# -eq 2 ] || return 1
+    [ -f "$1" ] || return 1
+    local _section=""
 
-  while read line; do
-    [ -z "$line" ] && continue
-    echo "$line" | grep -q "^\[..*\]$" && {
-      _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
-      continue # that's new section
-    }
-    [ -z "$_section" ] && continue
+    while read line; do
+        [ -z "$line" ] && continue
+        echo "$line" | grep -q "^\[..*\]$" && {
+            _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
+            continue # that's new section
+        }
+        [ -z "$_section" ] && continue
 
-    #TODO: do not print comment lines?
-    [ "$_section" == "$2" ] && echo "$line" |grep -vq "^#.*$" && echo "$line"
-  done < "$1"
+        #TODO: do not print comment lines?
+        [ "$_section" == "$2" ] && echo "$line" |grep -vq "^#.*$" && echo "$line"
+    done < "$1"
 
-  return 0
+    return 0
 }
 
 # is_dist_native function return only 0 or 1
@@ -326,8 +302,7 @@ conf_get_section() {
 #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
 #   DIST_NATIVE = all: always return 0
 #   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
-is_dist_native()
-{
+is_dist_native() {
     if [ $# -ne 1 ]; then
         return 1
     fi
@@ -373,46 +348,46 @@ is_dist_native()
 
 # return list of all dist native packages according to is_dist_native()
 get_dist_native_list() {
-  local pkg
-  while read line; do
-    pkg=$(echo $line | cut -d " " -f1 )
-    is_dist_native $pkg >/dev/null && echo $pkg
-  done < "$VALUE_RPM_QA"
+    local pkg
+    while read line; do
+        pkg=$(echo $line | cut -d " " -f1 )
+        is_dist_native $pkg >/dev/null && echo $pkg
+    done < "$VALUE_RPM_QA"
 }
 
 # here is parsed PA configuration
 load_pa_configuration() {
   # this is main function for parsing
-  [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
+    [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
-    exit_error
-  }
-  local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
-  local tmp_option
-  local tmp_val
+        exit_error
+    }
+    local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
+    local tmp_option
+    local tmp_val
 
-  [ -z "$_pa_conf" ] && {
-    log_error "Can't load any configuration from section preupgrade-assistant!"
-    exit_error
-  }
+    [ -z "$_pa_conf" ] && {
+        log_error "Can't load any configuration from section preupgrade-assistant!"
+        exit_error
+    }
 
-  for line in $_pa_conf; do
-    tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
-    tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
-    # HERE add your actions
-    case $tmp_option in
-      home_directory_file)
-        HOME_DIRECTORY_FILE="$tmp_val"
-        ;;
-      user_config_file)
-        USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
-        ;;
-      dist_native)
-        local temp="$tmp_val"
-        ;;
-      *) log_error "Unknown option $tmp_option"; exit_error
-    esac
-  done
+    for line in $_pa_conf; do
+        tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
+        tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
+        # HERE add your actions
+        case $tmp_option in
+            home_directory_file)
+                HOME_DIRECTORY_FILE="$tmp_val"
+                ;;
+            user_config_file)
+                USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
+                ;;
+            dist_native)
+                local temp="$tmp_val"
+                ;;
+            *) log_error "Unknown option $tmp_option"; exit_error
+        esac
+    done
 }
 
 # print items from [home-dirs] which are relevant for given user
@@ -421,28 +396,28 @@ load_pa_configuration() {
 # returns 0 on SUCCESS, otherwise 1 and logs warning
 # shouldn't be used before load_config_parser
 print_home_dirs() {
-  [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
-    conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
-    return 0
-  }
+    [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
+        conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
+        return 0
+    }
 
-  local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
-  [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
-  conf_get_section "$_uconf_file" "home-dirs"
+    local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
+    [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
+    conf_get_section "$_uconf_file" "home-dirs"
 }
 
 #Function adds a package to special_pkg_list
 add_pkg_to_kickstart() {
-  [ $# -eq 0  ] && {
-    log_debug "Missing parameters! Any package will be added." >&2
-    return 1
-  }
+    [ $# -eq 0  ] && {
+        log_debug "Missing parameters! Any package will be added." >&2
+        return 1
+    }
 
-  while [ $# -ne 0 ]; do
-    echo $1 >> $SPECIAL_PKG_LIST
-    shift
-  done
-  return 0
+    while [ $# -ne 0 ]; do
+        echo $1 >> $SPECIAL_PKG_LIST
+        shift
+    done
+    return 0
 }
 
 # Function which deploys script to specific location.
@@ -450,28 +425,28 @@ add_pkg_to_kickstart() {
 # param 1: hook, like postupgrade, preupgrade, etc.
 # param 2: script name
 deploy_hook() {
-  deploy_name=$1
-  script_name=$2
+    deploy_name=$1
+    script_name=$2
 
-  [ -z $MODULE_NAME ] && return 0
-  case $deploy_name in
-    "postupgrade")
-      pwd=`pwd`
-      echo "$pwd"
-      if [ ! -f "$script_name" ] ; then
-        log_error "Script_name $script_name does not exist."
-        return 1
-      fi
-      hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
-      if [ ! -d "$hook_dir" ]; then
-          mkdir -p "$hook_dir"
-      fi
-      cp $script_name "$hook_dir/run_hook"
-      ;;
-    "preupgrade")
-      ;;
-    *) log_error "Unknown option $deploy_name"; exit_error
-  esac
+    [ -z $MODULE_NAME ] && return 0
+    case $deploy_name in
+        "postupgrade")
+            pwd=`pwd`
+            echo "$pwd"
+            if [ ! -f "$script_name" ] ; then
+                log_error "Script_name $script_name does not exist."
+                return 1
+            fi
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+            if [ ! -d "$hook_dir" ]; then
+                mkdir -p "$hook_dir"
+            fi
+            cp $script_name "$hook_dir/run_hook"
+            ;;
+        "preupgrade")
+            ;;
+        *) log_error "Unknown option $deploy_name"; exit_error
+    esac
 }
 
 load_pa_configuration
