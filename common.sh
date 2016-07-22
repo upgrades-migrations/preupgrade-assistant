@@ -1,3 +1,12 @@
+#!/bin/bash
+
+#
+# preupgrade-assistant module API -- Bash port
+#
+# These variables and functions will be available
+# for Bash preupgrade-assistant modules.
+#
+
 
 CACHE=/var/cache/preupgrade
 
