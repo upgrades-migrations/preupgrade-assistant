@@ -1,63 +1,224 @@
+#!/bin/bash
+
+#
+# preupgrade-assistant module API -- Bash port
+#
+# These variables and functions will be available
+# for Bash preupgrade-assistant modules.
+#
+
 
 CACHE=/var/cache/preupgrade
+
+#
+# Directory with logs gathered by preupgrade-assistant
+#
 PREUPGRADE_CACHE=/var/cache/preupgrade/common
+
+#
+# Preupgrade-assistant configuration file
+#
 PREUPGRADE_CONFIG=/etc/preupgrade-assistant.conf
+
+#
+# Full path log file with to all installed packages
+#
 VALUE_RPM_QA=$PREUPGRADE_CACHE/rpm_qa.log
+
+#
+# Full path log file with to all changed files
+#
 VALUE_ALL_CHANGED=$PREUPGRADE_CACHE/rpm_Va.log
+
+#
+# Full path to log file with all /etc changed configuration files
+#
 VALUE_CONFIGCHANGED=$PREUPGRADE_CACHE/rpm_etc_Va.log
+
+#
+# Full path to log file with all users gathered by getent
+#
 VALUE_PASSWD=$PREUPGRADE_CACHE/passwd.log
+
+#
+# Full path to log file with all services enabled/disabled on system.
+#
 VALUE_CHKCONFIG=$PREUPGRADE_CACHE/chkconfig.log
+
+#
+# Full path to log file with all groups gathered by getent
+#
 VALUE_GROUP=$PREUPGRADE_CACHE/group.log
+
+#
+# Full path to log file with all installed files
+#
 VALUE_RPMTRACKEDFILES=$PREUPGRADE_CACHE/rpmtrackedfiles.log
+
+#
+# Full path to log file with all Red Hat signed packages
+#
 VALUE_RPM_RHSIGNED=$PREUPGRADE_CACHE/rpm_rhsigned.log
+
+#
+# Full path to log file with all local files
+#
 VALUE_ALLMYFILES=$PREUPGRADE_CACHE/allmyfiles.log
+
+#
+# Full path to log file with all executable files
+#
 VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
+
+#
+# Variable which referes to temporary directory directory provided by module
+#
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
+
+#
+# postupgrade directory used by in-place upgrades.
+#
+# Scripts mentioned there are executed automatically by redhat-upgrade-tool
+#
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
+
 CURRENT_DIRECTORY=$XCCDF_VALUE_CURRENT_DIRECTORY
+
+#
+# MIGRATE means if preupg binary was used with `--mode migrate` parameter
+# UPGRADE means if preupg binary was used with `--mode upgrade` parameter
+# These modes are used if `--mode` is not used
+#
 MIGRATE=$XCCDF_VALUE_MIGRATE
 UPGRADE=$XCCDF_VALUE_UPGRADE
+
+#
+# Variable which referes to solution file provided by module
+#
 SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
+
+#
+# Directory which is used for kickstart generation
+#
 KICKSTART_DIR=$VALUE_TMP_PREUPGRADE/kickstart
+
+#
+# README file which contains description about all files in kickstart directory
+#
 KICKSTART_README=$KICKSTART_DIR/README
+
+#
+# Directory with scripts which can be executed after installation by administrator
+#
 KICKSTART_SCRIPTS=$KICKSTART_DIR/scripts
+
+#
+# The same as $KICKSTART_SCRIPTS
+#
 KICKSTART_POSTUPGRADE=$KICKSTART_SCRIPTS
+
+#
+# Variable which refers to static data used by preupgrade-assistant and modules
+#
 COMMON_DIR=$XCCDF_VALUE_REPORT_DIR/common
+
+#
+# Override mode for is_dist_native() and similar
+#
+# Affects which packages are considered native:
+#
+# If set to 'sign' (default), GPG signature is consulted.  If 'all',
+# all packages are native.  If set to path to a file, packages listed
+# there are native.
+#
 DIST_NATIVE=$XCCDF_VALUE_DIST_NATIVE
+
+#
+# Variable which indicates DEVEL mode.
+#
 DEVEL_MODE=$XCCDF_VALUE_DEVEL_MODE
+
+#
+# Variable which contains file with packages add to the kickstart anyway
+#
 SPECIAL_PKG_LIST=$KICKSTART_DIR/special_pkg_list
+
+#
+# Postupgrade directory which is not executed automatically after an upgrade or migration
+#
 NOAUTO_POSTUPGRADE_D=$VALUE_TMP_PREUPGRADE/noauto_postupgrade.d
+
+#
+# Exit status for 'pass' result
+#
 RESULT_PASS=$XCCDF_RESULT_PASS
+
+#
+# Exit status for 'fail' result
+#
 RESULT_FAIL=$XCCDF_RESULT_FAIL
+
+#
+# Exit status for 'fail' result
+#
 RESULT_FAILED=$RESULT_FAIL
+
+#
+# Exit status for 'error' result
+#
 RESULT_ERROR=$XCCDF_RESULT_ERROR
+
+#
+# Exit status for 'unknown' result
+#
 RESULT_UNKNOWN=$XCCDF_RESULT_UNKNOWN
+
+#
+# Exit status for 'notapplicable' result
+#
 RESULT_NOT_APPLICABLE=$XCCDF_RESULT_NOT_APPLICABLE
+
+#
+# Exit status for 'fixed' result
+#
 RESULT_FIXED=$XCCDF_RESULT_FIXED
+
+#
+# Exit status for 'informational' result
+#
 RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
+
+#
+# Name of module being currently executed
+#
 MODULE_NAME=$XCCDF_VALUE_MODULE_NAME
 
+#
 # variables set by PA config file #
+#
 HOME_DIRECTORY_FILE=""
 USER_CONFIG_FILE=0
 
+#
+# Version of this API
+#
 PREUPG_API_VERSION=1
 
 export LC_ALL=C
 
-# general logging function
-# ------------------------
-#
-# log SEVERITY [COMPONENT] MESSAGE
-#
-# @SEVERITY: set it to one of INFO|ERROR|WARNING
-# @COMPONENT: optional, relevant RHEL component
-# @MESSAGE: message to be logged
-#
-# Note that if env variable $COMPONENT is defined, it may be omitted from
-# parameters.
-log()
-{
+log() {
+    #
+    # general logging function
+    #
+    # log SEVERITY [COMPONENT] MESSAGE
+    #
+    # @SEVERITY: set it to one of INFO|ERROR|WARNING
+    # @COMPONENT: optional, relevant RHEL component
+    # @MESSAGE: message to be logged
+    #
+    # Note that if env variable $COMPONENT is defined, it may be omitted from
+    # parameters.
+    #
     SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
         # only message was passed
@@ -75,98 +236,173 @@ log()
     echo "$SEVERITY $COMPONENT: $1" >&2
 }
 
-log_debug()
-{
+log_debug() {
+    #
+    # log message to stdout with severity debug
+    #
+    # log_debug(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity debug
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # verbose information, may help with script debugging
+    #
     log "DEBUG" "$@"
 }
 
-log_info()
-{
+log_info() {
+    #
+    # log message to stdout with severity info
+    #
+    # log_info(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity info
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # informational message
+    #
     log "INFO" "$@"
 }
 
-log_error()
-{
+log_error() {
+    #
+    # log message to stdout with severity error
+    #
+    # log_error(message, component=None) -> None
+    #
+    # log message to stdout with severity error
+    # if you would like to change component temporary, you may pass it as argument
+    # use this severity if your script found something severe
+    #
+    # which may cause malfunction on new system
+    #
     log "ERROR" "$@"
 }
 
-log_warning()
-{
+log_warning() {
+    #
+    # log message to stdout with severity warning
+    #
+    # log_warning(message, component_arg=None) -> None
+    #
+    # log message to stdout with severity warning
+    # if you would like to change component temporary, you may pass it as argument
+    #
+    # important finding, administrator of system should be aware of this
+    #
     log "WARNING" "$@"
 }
 
-log_risk()
-{
+log_risk() {
+    #
+    # log risk level to stderr
+    #
     echo "INPLACERISK: $1: $2" >&2
 }
 
-log_none_risk()
-{
+log_none_risk() {
+    #
+    # (unused)
+    #
     log_risk "NONE" "$1"
 }
 
-log_slight_risk()
-{
+log_slight_risk() {
+    #
+    # no issues found; although there are some unexplored areas
+    #
     log_risk "SLIGHT" "$1"
 }
 
-log_medium_risk()
-{
+log_medium_risk() {
+    #
+    # inplace upgrade is possible; system after upgrade may be unstable
+    #
     log_risk "MEDIUM" "$1"
 }
 
-log_high_risk()
-{
+log_high_risk() {
+    #
+    # Administrator has to inspect and correct upgraded system so inplace upgrade can be used.
+    #
     log_risk "HIGH" "$1"
 }
 
-log_extreme_risk()
-{
+log_extreme_risk() {
+    #
+    # Inplace upgrade is impossible.
+    #
     log_risk "EXTREME" "$1"
 }
 
-exit_unknown()
-{
+exit_unknown() {
+    #
+    # Could not tell what happened.
+    #
     exit $RESULT_UNKNOWN
 }
 
-exit_pass()
-{
+exit_pass() {
+    #
+    # Test passed.
+    #
     exit $RESULT_PASS
 }
 
-exit_fail()
-{
+exit_fail() {
+    #
+    # The test failed.
+    #
+    # Moving to new release with this configuration will result in malfunction.
+    #
     exit $RESULT_FAIL
 }
 
-exit_error()
-{
+exit_error() {
+    #
+    # An error occurred and test could not complete.
+    #
+    # (script failed while doing its job)
+    #
     exit $RESULT_ERROR
 }
 
-exit_not_applicable()
-{
+exit_not_applicable() {
+    #
+    # Rule did not apply to test target. (e.g. package is not installed)
+    #
     exit $RESULT_NOT_APPLICABLE
 }
 
-exit_informational()
-{
+exit_informational() {
+    #
+    # Rule has only informational output.
+    #
     exit $RESULT_INFORMATIONAL
 }
 
-exit_fixed()
-{
+exit_fixed() {
+    #
+    # Rule failed, but was later fixed.
+    #
     exit $RESULT_FIXED
 }
 
-switch_to_content()
-{
+switch_to_content() {
+    #
+    # Function for switch to the content directory
+    #
     cd $CURRENT_DIRECTORY
 }
 
-check_applies_to()
-{
+check_applies_to() {
+    #
+    # Function checks is package is installed and signed by Red Hat
+    #
+    #  Parameter list of packages which will be checked. Module requires them.
+    # :return: 0 - package is installed and signed by Red Hat
+    #          exit_not_applicable - module will not be executed
+    #
     local RPM=1
     local RPM_NAME="$1"
     [ -z "$1" ] && RPM=0
@@ -187,14 +423,26 @@ check_applies_to()
     fi
 }
 
-is_pkg_installed()
-{
+is_pkg_installed() {
+    #
+    # Function checks if package is installed.
+    #
+    # Parameter is a package name which will be checked.
+    # Return: 0 - package is installed
+    #         1 - package is NOT installed
     grep -q "^$1[[:space:]]" $VALUE_RPM_QA || return 1
     return 0
 }
 
-check_rpm_to()
-{
+check_rpm_to() {
+    #
+    # Function checks if relevant package is installed and if relevant binary exists on the system.
+    #
+    # Function is needed from module point of view.
+    # :param $1: list of RPMs separated by comma
+    # :param $2: list of binaries separated by comma
+    # :return:
+    #
     local RPM=1
     local BINARY=1
     local RPM_NAME=$1
@@ -236,9 +484,10 @@ check_rpm_to()
     fi
 }
 
-# This check can be used if you need root privilegues
-check_root()
-{
+check_root() {
+    #
+    # This check can be used if you need root privilegues
+    #
     if [ "$(id -u)" != "0" ]; then
         log_error "This script must be run as root"
         log_slight_risk "The script must be run as root"
@@ -246,14 +495,21 @@ check_root()
     fi
 }
 
-solution_file()
-{
+solution_file() {
+    #
+    # Function appends a message to solution file.
+    #
+    # solution file will be created in module directory
+    # :param message: Message - string of list of strings
+    #
     echo "$1" >> $SOLUTION_FILE
 }
 
 
-# returns true if service in $1 is enabled in any runlevel
 service_is_enabled() {
+    #
+    # returns true if service in $1 is enabled in any runlevel
+    #
     if [ $# -ne 1 ] ; then
         echo "Usage: service_is_enabled servicename"
         return 2
@@ -262,11 +518,14 @@ service_is_enabled() {
     return 1
 }
 
-# backup the config file, returns:
-# true if cp succeeds,
-# 1 if config file doesn't exist
-# 2 if config file was not changed and thus is not necessary to back-up
 backup_config_file() {
+    #
+    # backup the config file
+    #
+    # true if cp succeeds,
+    # 1 if config file doesn't exist
+    # 2 if config file was not changed and thus is not necessary to back-up
+    #
     local CONFIG_FILE=$1
 
     # config file exists?
@@ -283,51 +542,65 @@ backup_config_file() {
 }
 
 space_trim() {
-  echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
+    #
+    # Function trim spaces.
+    #
+    # parameter is string to trim
+    #
+    echo "$@" | sed -r "s/^\s*(.*)\s*$/\1/"
 }
 
-# functions for easy parsing of config files
-# returns 0 on success, otherwise 1
-# requires path
 conf_get_sections() {
-  [ $# -eq 1 ] || return 1
-  [ -f "$1" ] || return 1
+    #
+    # functions for easy parsing of config files
+    #
+    # returns 0 on success, otherwise 1
+    # requires path
+    #
+    [ $# -eq 1 ] || return 1
+    [ -f "$1" ] || return 1
 
-  grep -E "^\[.+\]$" "$1" | sed -r "s/^\[(.+)\]$/\1/"
-  return $?
+    grep -E "^\[.+\]$" "$1" | sed -r "s/^\[(.+)\]$/\1/"
+    return $?
 }
 
-# get all items from config file $1 inside section $2
-# e.g.: conf_get_section CONFIG_FILE section-without-brackets
 conf_get_section() {
-  [ $# -eq 2 ] || return 1
-  [ -f "$1" ] || return 1
-  local _section=""
+    #
+    # get all items from config file $1 inside section $2
+    #
+    # e.g.: conf_get_section CONFIG_FILE section-without-brackets
+    #
+    [ $# -eq 2 ] || return 1
+    [ -f "$1" ] || return 1
+    local _section=""
 
-  while read line; do
-    [ -z "$line" ] && continue
-    echo "$line" | grep -q "^\[..*\]$" && {
-      _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
-      continue # that's new section
-    }
-    [ -z "$_section" ] && continue
+    while read line; do
+        [ -z "$line" ] && continue
+        echo "$line" | grep -q "^\[..*\]$" && {
+            _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
+            continue # that's new section
+        }
+        [ -z "$_section" ] && continue
 
-    #TODO: do not print comment lines?
-    [ "$_section" == "$2" ] && echo "$line" |grep -vq "^#.*$" && echo "$line"
-  done < "$1"
+        #TODO: do not print comment lines?
+        [ "$_section" == "$2" ] && echo "$line" |grep -vq "^#.*$" && echo "$line"
+    done < "$1"
 
-  return 0
+    return 0
 }
 
-# is_dist_native function return only 0 or 1
-# return 1 if package is not installed and print warning log.
-# Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
-# Case DEVEL_MODE is turn on:
-#   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
-#   DIST_NATIVE = all: always return 0
-#   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
-is_dist_native()
-{
+is_dist_native() {
+    #
+    # return 1 if package is not installed and print warning log.
+    #
+    # is_dist_native function return only 0 or 1
+    # return 1 if package is not installed and print warning log.
+    # Case DEVEL_MODE is turn off then return 0 if package is signed or 1 if not.
+    # Case DEVEL_MODE is turn on:
+    #   DIST_NATIVE = sign: return 0 if is RH_SIGNED else return 1
+    #   DIST_NATIVE = all: always return 0
+    #   DIST_NATIVE = path_to_file: return 0 if package is in file else return 1
+    #
     if [ $# -ne 1 ]; then
         return 1
     fi
@@ -371,107 +644,123 @@ is_dist_native()
     fi
 }
 
-# return list of all dist native packages according to is_dist_native()
 get_dist_native_list() {
-  local pkg
-  while read line; do
-    pkg=$(echo $line | cut -d " " -f1 )
-    is_dist_native $pkg >/dev/null && echo $pkg
-  done < "$VALUE_RPM_QA"
+    #
+    # return list of all dist native packages according to is_dist_native()
+    #
+    local pkg
+    while read line; do
+        pkg=$(echo $line | cut -d " " -f1 )
+        is_dist_native $pkg >/dev/null && echo $pkg
+    done < "$VALUE_RPM_QA"
 }
+
 
 # here is parsed PA configuration
+
 load_pa_configuration() {
-  # this is main function for parsing
-  [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
+    #
+    # this is main function for parsing
+    #
+
+    [ -f "$PREUPGRADE_CONFIG" ] && [ -r "$PREUPGRADE_CONFIG" ] || {
     log_error "Configuration file $PREUPGRADE_CONFIG is missing or is not readable!"
-    exit_error
-  }
-  local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
-  local tmp_option
-  local tmp_val
+        exit_error
+    }
+    local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
+    local tmp_option
+    local tmp_val
 
-  [ -z "$_pa_conf" ] && {
-    log_error "Can't load any configuration from section preupgrade-assistant!"
-    exit_error
-  }
+    [ -z "$_pa_conf" ] && {
+        log_error "Can't load any configuration from section preupgrade-assistant!"
+        exit_error
+    }
 
-  for line in $_pa_conf; do
-    tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
-    tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
-    # HERE add your actions
-    case $tmp_option in
-      home_directory_file)
-        HOME_DIRECTORY_FILE="$tmp_val"
-        ;;
-      user_config_file)
-        USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
-        ;;
-      dist_native)
-        local temp="$tmp_val"
-        ;;
-      *) log_error "Unknown option $tmp_option"; exit_error
-    esac
-  done
+    for line in $_pa_conf; do
+        tmp_option=$(space_trim "$(echo "$line" | cut -d "=" -f 1)")
+        tmp_val=$(space_trim "$(echo "$line" | cut -d "=" -f 2-)")
+        # HERE add your actions
+        case $tmp_option in
+            home_directory_file)
+                HOME_DIRECTORY_FILE="$tmp_val"
+                ;;
+            user_config_file)
+                USER_CONFIG_FILE=$([ "$tmp_val" == "enabled" ] && echo 1 || echo 0)
+                ;;
+            dist_native)
+                local temp="$tmp_val"
+                ;;
+            *) log_error "Unknown option $tmp_option"; exit_error
+        esac
+    done
 }
 
-# print items from [home-dirs] which are relevant for given user
-# when username is not given or config file for user is not enabled,
-# items from main configuration file is printed
-# returns 0 on SUCCESS, otherwise 1 and logs warning
-# shouldn't be used before load_config_parser
 print_home_dirs() {
-  [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
-    conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
-    return 0
-  }
+    #
+    # print items from [home-dirs] which are relevant for given user
+    #
+    # when username is not given or config file for user is not enabled,
+    # items from main configuration file is printed
+    # returns 0 on SUCCESS, otherwise 1 and logs warning
+    # shouldn't be used before load_config_parser
+    #
+    [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
+        conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
+        return 0
+    }
 
-  local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
-  [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
-  conf_get_section "$_uconf_file" "home-dirs"
+    local _uconf_file="/home/$1/$HOME_DIRECTORY_FILE"
+    [ -f "$_uconf_file" ] || return 0 # missing file in user's home dir is OK
+    conf_get_section "$_uconf_file" "home-dirs"
 }
 
-#Function adds a package to special_pkg_list
 add_pkg_to_kickstart() {
-  [ $# -eq 0  ] && {
-    log_debug "Missing parameters! Any package will be added." >&2
-    return 1
-  }
+    #
+    # Function adds a package to special_pkg_list
+    #
+    [ $# -eq 0  ] && {
+        log_debug "Missing parameters! Any package will be added." >&2
+        return 1
+    }
 
-  while [ $# -ne 0 ]; do
-    echo $1 >> $SPECIAL_PKG_LIST
-    shift
-  done
-  return 0
+    while [ $# -ne 0 ]; do
+        echo $1 >> $SPECIAL_PKG_LIST
+        shift
+    done
+    return 0
 }
 
-# Function which deploys script to specific location.
-# Arguments:
-# param 1: hook, like postupgrade, preupgrade, etc.
-# param 2: script name
 deploy_hook() {
-  deploy_name=$1
-  script_name=$2
+    #
+    # Function which deploys script to specific location.
+    #
+    # Arguments:
+    # param 1: hook, like postupgrade, preupgrade, etc.
+    # param 2: script name
+    #
 
-  [ -z $MODULE_NAME ] && return 0
-  case $deploy_name in
-    "postupgrade")
-      pwd=`pwd`
-      echo "$pwd"
-      if [ ! -f "$script_name" ] ; then
-        log_error "Script_name $script_name does not exist."
-        return 1
-      fi
-      hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
-      if [ ! -d "$hook_dir" ]; then
-          mkdir -p "$hook_dir"
-      fi
-      cp $script_name "$hook_dir/run_hook"
-      ;;
-    "preupgrade")
-      ;;
-    *) log_error "Unknown option $deploy_name"; exit_error
-  esac
+    deploy_name=$1
+    script_name=$2
+
+    [ -z $MODULE_NAME ] && return 0
+    case $deploy_name in
+        "postupgrade")
+            pwd=`pwd`
+            echo "$pwd"
+            if [ ! -f "$script_name" ] ; then
+                log_error "Script_name $script_name does not exist."
+                return 1
+            fi
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+            if [ ! -d "$hook_dir" ]; then
+                mkdir -p "$hook_dir"
+            fi
+            cp $script_name "$hook_dir/run_hook"
+            ;;
+        "preupgrade")
+            ;;
+        *) log_error "Unknown option $deploy_name"; exit_error
+    esac
 }
 
 load_pa_configuration
