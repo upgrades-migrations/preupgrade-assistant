@@ -102,53 +102,176 @@ __all__ = (
     'NOAUTO_POSTUPGRADE_D',
 )
 
+# These variables and functions will be available
+# for Bash preupgrade-assistant modules.
+#
+
 CACHE = "/var/cache/preupgrade"
+
+#
+# Directory with logs gathered by preupgrade-assistant
+#
 PREUPGRADE_CACHE = os.path.join(CACHE, "common")
+
+#
+# Preupgrade-assistant configuration file
+#
 PREUPGRADE_CONFIG = settings.PREUPG_CONFIG_FILE
+
+#
+# Full path log file with to all installed packages
+#
 VALUE_RPM_QA = os.path.join(PREUPGRADE_CACHE, "rpm_qa.log")
+
+#
+# Full path log file with to all changed files
+#
 VALUE_ALLCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_Va.log")
+
+#
+# Full path to log file with all /etc changed configuration files
+#
 VALUE_CONFIGCHANGED = os.path.join(PREUPGRADE_CACHE, "rpm_etc_Va.log")
+
+#
+# Full path to log file with all users gathered by getent
+#
 VALUE_PASSWD = os.path.join(PREUPGRADE_CACHE, "passwd.log")
+
+#
+# Full path to log file with all services enabled/disabled on system.
+#
 VALUE_CHKCONFIG = os.path.join(PREUPGRADE_CACHE, "chkconfig.log")
+
+#
+# Full path to log file with all groups gathered by getent
+#
 VALUE_GROUP = os.path.join(PREUPGRADE_CACHE, "group.log")
+
+#
+# Full path to log file with all installed files
+#
 VALUE_RPMTRACKEDFILES = os.path.join(PREUPGRADE_CACHE, "rpmtrackedfiles.log")
+
+#
+# Full path to log file with all installed files
+#
 VALUE_ALLMYFILES = os.path.join(PREUPGRADE_CACHE, "allmyfiles.log")
+
+#
+# Full path to log file with all executable files
+#
 VALUE_EXECUTABLES = os.path.join(PREUPGRADE_CACHE, "executable.log")
+
+#
+# Full path to log file with all Red Hat signed packages
+#
 VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
+
+#
+# Variable which referes to temporary directory directory provided by module
+#
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+
+#
+# Variable which referes to solution file provided by module
+#
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+
+#
+# Name of module being currently executed
+#
 try:
     MODULE_NAME = os.environ['XCCDF_VALUE_MODULE_NAME']
 except KeyError:
     MODULE_NAME = "MODULE_NAME"
+
+#
+# MIGRATE means if preupg binary was used with `--mode migrate` parameter
+# UPGRADE means if preupg binary was used with `--mode upgrade` parameter
+# These modes are used if `--mode` is not used
+#
 try:
     MIGRATE = os.environ['XCCDF_VALUE_MIGRATE']
     UPGRADE = os.environ['XCCDF_VALUE_UPGRADE']
 except KeyError:
     MIGRATE = 1
     UPGRADE = 1
+
+#
+# Variable which indicates DEVEL mode.
+#
 try:
     DEVEL_MODE = os.environ['XCCDF_VALUE_DEVEL_MODE']
 except KeyError:
     DEVEL_MODE = 0
 
+#
+# Override mode for is_dist_native() and similar
+#
+# Affects which packages are considered native:
+#
+# If set to 'sign' (default), GPG signature is consulted.  If 'all',
+# all packages are native.  If set to path to a file, packages listed
+# there are native.
+#
 try:
     DIST_NATIVE = os.environ['XCCDF_VALUE_DIST_NATIVE']
 except KeyError:
     DIST_NATIVE = 'sign'
+
+#
+# postupgrade directory used by in-place upgrades.
+#
+# Scripts mentioned there are executed automatically by redhat-upgrade-tool
+#
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+
+#
+# Directory which is used for kickstart generation
+#
 KICKSTART_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "kickstart")
+
+#
+# README file which contains description about all files in kickstart directory
+#
 KICKSTART_README = os.path.join(KICKSTART_DIR, "README")
+
+#
+# Directory with scripts which can be executed after installation by administrator
+#
 KICKSTART_SCRIPTS = os.path.join(KICKSTART_DIR, "scripts")
+
+#
+# The same as $KICKSTART_SCRIPTS
+#
 KICKSTART_POSTUPGRADE = KICKSTART_SCRIPTS
+
+#
+# Variable which refers to static data used by preupgrade-assistant and modules
+#
 COMMON_DIR = os.path.join(os.environ['XCCDF_VALUE_REPORT_DIR'], "common")
+
+#
+# Variable which contains file with packages add to the kickstart anyway
+#
 SPECIAL_PKG_LIST = os.path.join(KICKSTART_DIR, 'special_pkg_list')
+
+#
+# Postupgrade directory which is not executed automatically after an upgrade or migration
+#
 NOAUTO_POSTUPGRADE_D = os.path.join(VALUE_TMP_PREUPGRADE, 'noauto_postupgrade.d')
 
+#
+# variables set by PA config file #
+#
 HOME_DIRECTORY_FILE = ""
 USER_CONFIG_FILE = 0
 
-PREUPG_API_VERSION=1
+#
+# Version of this API
+#
+PREUPG_API_VERSION = 1
 
 component = "unknown"
 
@@ -206,7 +329,17 @@ def log_slight_risk(message):
 ##################
 
 def log(severity, message, component_arg=None):
-    """log message to stdout"""
+    """
+    general logging function
+
+    :param severity: set it to one of INFO|ERROR|WARNING
+    :param message:message to be logged
+    :param component_arg: optional, relevant RHEL component
+    :return:
+
+    Note that if env variable $COMPONENT is defined, it may be omitted from
+    parameters.
+    """
     global component
     comp_show = component_arg or component
     print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
@@ -350,6 +483,13 @@ def switch_to_content():
 
 
 def is_pkg_installed(pkg_name):
+    """
+    Function checks if package is installed.
+
+    :param pkg_name: Parameter is a package name which will be checked.
+    :return: 0 - package is installed
+             1 - package is NOT installed
+    """
     lines = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
     found = [x for x in lines if x.split()[0] == pkg_name]
     if found:
@@ -359,6 +499,13 @@ def is_pkg_installed(pkg_name):
 
 
 def check_applies_to(check_applies=""):
+    """
+    Function checks is package is installed and signed by Red Hat
+
+    :param check_applies: Parameter list of packages which will be checked. Module requires them.
+    :return: 0 - package is installed and signed by Red Hat
+             exit_not_applicable - module will not be executed
+    """
     not_applicable = 0
     if check_applies != "":
         rpms = check_applies.split(',')
@@ -372,6 +519,15 @@ def check_applies_to(check_applies=""):
 
 
 def check_rpm_to(check_rpm="", check_bin=""):
+    """
+    Function checks if relevant package is installed and if relevant binary exists on the system.
+
+    Function is needed from module point of view.
+
+    :param check_rpm: list of RPMs separated by comma
+    :param check_bin: list of binaries separated by comma
+    :return:
+    """
     not_applicable = 0
 
     if check_rpm != "":
@@ -399,6 +555,14 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
 
 def solution_file(message):
+    """
+    Function appends a message to solution file.
+
+    solution file will be created in module directory
+
+    :param message: Message - string of list of strings
+    :return:
+    """
     solution_filename = os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE)
     if os.path.exists(solution_filename):
         mod = "a+b"
@@ -439,7 +603,15 @@ def config_file_changed(config_file_name):
 
 
 def backup_config_file(config_file_name):
-    """Copies specified file into VALUE_TMP_PREUPGRADE, keeping file structure"""
+    """
+    backup the config file
+
+    :param config_file_name:
+    :return:
+            true if cp succeeds,
+            if config file doesn't exist
+            2 if config file was not changed and thus is not necessary to back-up
+    """
     try:
         # report error if file doesn't exist
         if not os.path.isfile(config_file_name):
@@ -459,8 +631,8 @@ def backup_config_file(config_file_name):
 
 def is_dist_native(pkg):
     """
+    return 1 if package is not installed and print warning log.
     is_dist_native function return only True or False
-    return False if package is not installed and of course information log.
     Case DEVEL_MODE is turn off then return True if package is signed or False if not.
     Case DEVEL_MODE is turn on:
     DIST_NATIVE = sign: return True if is RH_SIGNED else return False
@@ -499,7 +671,7 @@ def is_dist_native(pkg):
 
 def get_dist_native_list():
     """
-    returns list of all installed native packages
+    return list of all dist native packages according to is_dist_native()
     """
 
     native_pkgs = []
@@ -512,7 +684,7 @@ def get_dist_native_list():
 
 
 def load_pa_configuration():
-    """ Loads preupgrade-assistant configuration file """
+    """ this is main function for parsing """
     global HOME_DIRECTORY_FILE
     global USER_CONFIG_FILE
     global RH_SIGNED_PKGS
@@ -534,7 +706,14 @@ def load_pa_configuration():
 
 
 def print_home_dirs(user_name=""):
-    """ Loads preupgrade-assistant configuration file """
+    """
+    print items from [home-dirs] which are relevant for given user
+
+    when username is not given or config file for user is not enabled,
+    items from main configuration file is printed
+    returns 0 on SUCCESS, otherwise 1 and logs warning
+    shouldn't be used before load_config_parser
+    """
     if not os.path.exists(PREUPGRADE_CONFIG):
         log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
         exit_error()
@@ -557,6 +736,7 @@ def print_home_dirs(user_name=""):
 
 
 def add_pkg_to_kickstart(pkg_name):
+    """ Function adds a package to special_pkg_list """
     empty = False
     if isinstance(pkg_name, list):
         # list of packages
@@ -576,6 +756,31 @@ def add_pkg_to_kickstart(pkg_name):
         FileHelper.write_to_file(SPECIAL_PKG_LIST, "a+b", pkg.strip() + '\n')
     return 0
 
+
+def deploy_hook(deploy_name, script_name):
+    """
+    Function which deploys script to specific location.
+
+    :param hook: hook, like postupgrade, preupgrade, etc.
+    :param script_name: script name
+    :return:
+    """
+
+    if MODULE_NAME == "":
+        return 0
+    if deploy_name == "postupgrade":
+        pwd = os.getcwd()
+        log(pwd)
+        if not os.path.exists(script_name):
+            log_error ("Script_name %s does not exist.", script_name)
+            return 1
+        hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+        if not os.path.isdir(hook_dir):
+            os.makedirs(hook_dir)
+        shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
+    else:
+        log_error("Unknown option %s", deploy_name)
+        exit_error()
 
 load_pa_configuration()
 
