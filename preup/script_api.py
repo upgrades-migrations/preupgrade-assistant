@@ -273,7 +273,7 @@ USER_CONFIG_FILE = 0
 #
 PREUPG_API_VERSION = 1
 
-component = "[unknown]"
+component = "[unknown-component]"
 
 
 ################

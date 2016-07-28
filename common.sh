@@ -223,7 +223,7 @@ log() {
     if test -z "$COMPONENT"; then
         # only message was passed
         if test "$#" -eq 1; then
-            COMPONENT='[unknown]'
+            COMPONENT='[unknown-component]'
         else
             COMPONENT=$1 ; shift
         fi
