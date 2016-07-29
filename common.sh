@@ -233,7 +233,7 @@ log() {
         fi
     fi
 
-    echo "$SEVERITY $COMPONENT: $1" >&2
+    echo "preupg.log.$SEVERITY: $COMPONENT: $1" >&2
 }
 
 log_debug() {
