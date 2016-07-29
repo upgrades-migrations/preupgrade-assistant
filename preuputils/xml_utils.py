@@ -197,7 +197,7 @@ class XmlUtils(object):
         if 'author' in key:
             author = key['author']
         else:
-            author = ""
+            author = None
         self.mh.update_check_script(updates, author=author)
         self.update_values_list(self.rule, "{"+k+"}", key[k])
 
