@@ -91,7 +91,13 @@ class ScanProgress(object):
         except IndexError:
             self.width_size = 80
         logger_report.debug(stdout_data.strip())
-        xccdf_rule, dummy_result = stdout_data.strip().split(':')
+        xccdf_rule = ""
+        dummy_result = ""
+        try:
+            xccdf_rule, dummy_result = stdout_data.strip().split(':')
+        except ValueError as ae:
+            print (stdout_data)
+            return
         self.output_data.append(u'{0}:{1}'.format(self.names[xccdf_rule], stdout_data.strip()))
         self.current_count += 1
         old_width = self.width_size
