@@ -297,7 +297,7 @@ log_risk() {
     #
     # log risk level to stderr
     #
-    echo "INPLACERISK: $1: $2" >&2
+    echo "preupg.risk.$1: $2" >&2
 }
 
 log_none_risk() {

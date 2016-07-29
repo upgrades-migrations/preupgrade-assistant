@@ -54,7 +54,7 @@ class XccdfHelper(object):
         Function returns implace risks
         """
         inplace_risk = []
-        risk_regex = "INPLACERISK: (?P<level>\w+): (?P<message>.+)"
+        risk_regex = "preupg\.risk\.(?P<level>\w+): (?P<message>.+)"
         for check in tree.findall(".//" + XMLNS + "check-import"):
             if not check.text:
                 continue
@@ -70,7 +70,7 @@ class XccdfHelper(object):
     def check_inplace_risk(xccdf_file, verbose):
         """
         The function read the content of the file
-        and finds out all INPLACERISK rows in TestResult tree.
+        and finds out all "preupg.risk" rows in TestResult tree.
         return value is get from function get_and_print_inplace_risk
         """
         message = "'preupg' command was not run yet. Run 'preupg' before getting list of risks."

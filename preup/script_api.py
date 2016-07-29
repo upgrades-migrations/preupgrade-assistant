@@ -284,7 +284,7 @@ def log_risk(severity, message):
     """
     log risk level to stderr
     """
-    print("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
+    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
 def log_extreme_risk(message):
