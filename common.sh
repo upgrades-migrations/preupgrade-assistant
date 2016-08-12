@@ -219,7 +219,7 @@ log() {
     # Note that if env variable $COMPONENT is defined, it may be omitted from
     # parameters.
     #
-    SEVERITY=$1 ; shift
+    local SEVERITY=$1 ; shift
     if test -z "$COMPONENT"; then
         # only message was passed
         if test "$#" -eq 1; then
@@ -405,6 +405,7 @@ check_applies_to() {
     #
     local RPM=1
     local RPM_NAME="$1"
+    local pkg
     [ -z "$1" ] && RPM=0
 
     local NOT_APPLICABLE=0
@@ -448,6 +449,7 @@ check_rpm_to() {
     local RPM_NAME=$1
     local BINARY_NAME=$2
     local NOT_APPLICABLE=0
+    local bin
 
     [ -z "$1" ] && RPM=0
     [ -z "$2" ] && BINARY=0
@@ -573,6 +575,7 @@ conf_get_section() {
     [ $# -eq 2 ] || return 1
     [ -f "$1" ] || return 1
     local _section=""
+    local line
 
     while read line; do
         [ -z "$line" ] && continue
@@ -649,6 +652,7 @@ get_dist_native_list() {
     # return list of all dist native packages according to is_dist_native()
     #
     local pkg
+    local line
     while read line; do
         pkg=$(echo $line | cut -d " " -f1 )
         is_dist_native $pkg >/dev/null && echo $pkg
@@ -670,6 +674,7 @@ load_pa_configuration() {
     local _pa_conf="$(conf_get_section "$PREUPGRADE_CONFIG" "preupgrade-assistant")"
     local tmp_option
     local tmp_val
+    local line
 
     [ -z "$_pa_conf" ] && {
         log_error "Can't load any configuration from section preupgrade-assistant!"
@@ -739,8 +744,8 @@ deploy_hook() {
     # param 2: script name
     #
 
-    deploy_name=$1
-    script_name=$2
+    local deploy_name=$1
+    local script_name=$2
 
     [ -z $MODULE_NAME ] && return 0
     case $deploy_name in
