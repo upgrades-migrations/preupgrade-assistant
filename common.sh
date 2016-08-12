@@ -206,11 +206,11 @@ PREUPG_API_VERSION=1
 
 export LC_ALL=C
 
-log() {
+_log() {
     #
     # general logging function
     #
-    # log SEVERITY [COMPONENT] MESSAGE
+    # _log SEVERITY [COMPONENT] MESSAGE
     #
     # @SEVERITY: set it to one of INFO|ERROR|WARNING
     # @COMPONENT: optional, relevant RHEL component
@@ -247,7 +247,7 @@ log_debug() {
     #
     # verbose information, may help with script debugging
     #
-    log "DEBUG" "$@"
+    _log "DEBUG" "$@"
 }
 
 log_info() {
@@ -261,7 +261,7 @@ log_info() {
     #
     # informational message
     #
-    log "INFO" "$@"
+    _log "INFO" "$@"
 }
 
 log_error() {
@@ -276,7 +276,7 @@ log_error() {
     #
     # which may cause malfunction on new system
     #
-    log "ERROR" "$@"
+    _log "ERROR" "$@"
 }
 
 log_warning() {
@@ -290,10 +290,10 @@ log_warning() {
     #
     # important finding, administrator of system should be aware of this
     #
-    log "WARNING" "$@"
+    _log "WARNING" "$@"
 }
 
-log_risk() {
+_log_risk() {
     #
     # log risk level to stderr
     #
@@ -304,35 +304,35 @@ log_none_risk() {
     #
     # (unused)
     #
-    log_risk "NONE" "$1"
+    _log_risk "NONE" "$1"
 }
 
 log_slight_risk() {
     #
     # no issues found; although there are some unexplored areas
     #
-    log_risk "SLIGHT" "$1"
+    _log_risk "SLIGHT" "$1"
 }
 
 log_medium_risk() {
     #
     # inplace upgrade is possible; system after upgrade may be unstable
     #
-    log_risk "MEDIUM" "$1"
+    _log_risk "MEDIUM" "$1"
 }
 
 log_high_risk() {
     #
     # Administrator has to inspect and correct upgraded system so inplace upgrade can be used.
     #
-    log_risk "HIGH" "$1"
+    _log_risk "HIGH" "$1"
 }
 
 log_extreme_risk() {
     #
     # Inplace upgrade is impossible.
     #
-    log_risk "EXTREME" "$1"
+    _log_risk "EXTREME" "$1"
 }
 
 exit_unknown() {
