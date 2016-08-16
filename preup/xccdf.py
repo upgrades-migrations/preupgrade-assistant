@@ -91,14 +91,14 @@ class XccdfHelper(object):
         results = []
         for profile in target_tree.findall(XMLNS + "TestResult"):
             for check in profile.findall(".//" + XMLNS + "result"):
-                logger_report.debug(check)
+                logger_report.debug(check.text)
                 if check.text not in results:
                     results.append(check.text)
         logger_report.debug(results)
         if 'error' in results:
-            return 3
+            return settings.PREUPG_RETURN_VALUES['error']
         if 'unknown' in results:
-            return 2
+            return settings.PREUPG_RETURN_VALUES['unknown']
 
         for profile in target_tree.findall(XMLNS + "TestResult"):
             inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
@@ -107,7 +107,9 @@ class XccdfHelper(object):
         logger_report.debug(result)
         # different behaviour of division between py2 & 3
         if int(result) == -1:
-            return -1
+            for key in six.iterkeys(settings.PREUPG_RETURN_VALUES):
+                if key in results:
+                    return settings.PREUPG_RETURN_VALUES[key]
         elif int(result) < 2:
             return 0
         elif int(result) < 4:

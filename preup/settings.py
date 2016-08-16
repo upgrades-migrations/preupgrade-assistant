@@ -185,3 +185,10 @@ REPORTS = ['admin', 'user']
 PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
 DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
+
+PREUPG_RETURN_VALUES = {'error': 3,
+                        'unknown': 2,
+                        'informational': 4,
+                        'not': 5,
+                        'pass': 0
+                        }
