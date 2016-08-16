@@ -82,14 +82,6 @@ class TestRiskCheck(base.TestCase):
         shutil.rmtree(os.path.dirname(temp_file))
         self.assertEqual(return_value, 0)
 
-    def test_check_inplace_risk_none(self):
-
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: NONE: Test None Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 0)
-
     def test_check_inplace_risk_extreme(self):
 
         temp_file = self._copy_xccdf_file(b'INPLACERISK: EXTREME: Test Extreme Inplace risk')
@@ -97,14 +89,6 @@ class TestRiskCheck(base.TestCase):
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
         self.assertEqual(return_value, 2)
-
-    def test_check_inplace_risk_unknown(self):
-
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: UNKNOWN: Test Extreme Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, -1)
 
 
 def suite():

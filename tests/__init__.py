@@ -1,8 +1,14 @@
 import unittest
 import os
 
+from preup import settings
+
 
 def suite():
+    settings.log_dir = os.getcwd()
+    settings.preupg_log = os.path.join(settings.log_dir, "preupg.log")
+    settings.preupg_report_log = os.path.join(settings.log_dir, "preupg-report.log")
+
     suite = unittest.TestSuite()
     dirname = os.path.join(os.path.dirname(__file__), 'tmp')
     solution_txt = 'solution.txt'
