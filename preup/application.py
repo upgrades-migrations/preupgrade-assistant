@@ -97,7 +97,9 @@ class Application(object):
         self.openscap_helper = None
         self._add_report_log_file()
         self._add_debug_log_file()
+        self.tar_ball_name = None
         self.third_party = ""
+        self.assessment_dir = None
 
     def _add_report_log_file(self):
         """
@@ -413,37 +415,38 @@ class Application(object):
         scenario = self.get_scenario()
         if scenario is None:
             log_message('Invalid scenario: %s' % self.conf.contents)
-            sys.exit(10)
+            return 10
         scenario_path = os.path.join(self.conf.source_dir, scenario)
         if not os.path.isdir(scenario_path):
             log_message('Invalid scenario: %s' % scenario,
                         level=logging.ERROR)
-            sys.exit(10)
+            return 10
+        return 0
 
     def generate_report(self):
         """Function generates report"""
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
-        assessment_dir = os.path.join(self.conf.result_dir,
-                                      self.get_proper_scenario(scenario))
-        dir_util.copy_tree(scenario_path, assessment_dir)
+        self.assessment_dir = os.path.join(self.conf.result_dir, self.get_proper_scenario(scenario))
+        dir_util.copy_tree(scenario_path, self.assessment_dir)
         # Try copy directory with contents to /root/preupgrade
         # Call xccdf_compose API for generating all-xccdf.xml
         if not self.conf.contents:
-            xccdf_compose = XCCDFCompose(assessment_dir)
-            generated_dir = xccdf_compose.generate_xml(generate_from_ini=False)
-            if os.path.isdir(assessment_dir):
-                shutil.rmtree(assessment_dir)
-            shutil.move(generated_dir, assessment_dir)
+            xccdf_compose = XCCDFCompose(self.assessment_dir)
+            if xccdf_compose.generate_xml(generate_from_ini=False) != 0:
+                return 10
+            if os.path.isdir(self.assessment_dir):
+                shutil.rmtree(self.assessment_dir)
+            shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
 
-        self.common.prep_symlinks(assessment_dir,
+        self.common.prep_symlinks(self.assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         if not self.conf.contents:
-            XccdfHelper.update_platform(os.path.join(assessment_dir, settings.content_file))
+            XccdfHelper.update_platform(os.path.join(self.assessment_dir, settings.content_file))
         else:
             XccdfHelper.update_platform(self.content)
-            assessment_dir = os.path.dirname(self.content)
-        return assessment_dir
+            self.assessment_dir = os.path.dirname(self.content)
+        return 0
 
     def copy_preupgrade_scripts(self, assessment_dir):
         # Copy preupgrade-scripts directory from scenarvirtuio
@@ -454,10 +457,12 @@ class Application(object):
     def scan_system(self):
         """The function is used for scanning system with all steps."""
         self._set_devel_mode()
-        self.prepare_scan_system()
-        assessment_dir = self.generate_report()
+        if int(self.prepare_scan_system()) != 0:
+            return 10
+        if int(self.generate_report()) != 0:
+            return 10
         # Update source XML file in temporary directory
-        self.content = os.path.join(assessment_dir, settings.content_file)
+        self.content = os.path.join(self.assessment_dir, settings.content_file)
         self.openscap_helper.update_variables(self.conf.result_dir,
                                               self.conf.result_name,
                                               self.conf.xml_result_name,
@@ -467,7 +472,7 @@ class Application(object):
             self.report_parser = ReportParser(self.content)
         except IOError:
             log_message("Content {0} does not exist".format(self.content))
-            sys.exit(1)
+            return 10
         if not self.conf.contents:
             version = SystemIdentification.get_assessment_version(self.conf.scan)
             if version is None:
@@ -475,14 +480,14 @@ class Application(object):
                             level=logging.ERROR)
                 log_message("Examples format is like RHEL6_7",
                             level=logging.ERROR)
-                sys.exit(1)
+                return 10
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             try:
-                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(assessment_dir,
+                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
                                                                                       self.conf.mode),
-                                                                                      'rb',
-                                                                                      method=True)]
+                                                                         'rb',
+                                                                         method=True)]
             except IOError:
                 return
             self.report_parser.select_rules(lines)
@@ -497,11 +502,11 @@ class Application(object):
         # This function prepare XML and generate HTML
         self.prepare_xml_for_html()
 
-        third_party_dir_name = self.get_third_party_dir(assessment_dir)
+        third_party_dir_name = self.get_third_party_dir(self.assessment_dir)
         if os.path.exists(third_party_dir_name):
             self.run_third_party_modules(third_party_dir_name)
 
-        self.copy_preupgrade_scripts(assessment_dir)
+        self.copy_preupgrade_scripts(self.assessment_dir)
         ConfigFilesHelper.copy_modified_config_files(settings.result_dir)
 
         # It prints out result in table format
@@ -509,11 +514,11 @@ class Application(object):
         for target, report in six.iteritems(self.report_data):
             ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
-        tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
-        log_message("Tarball with results is stored here '%s' ." % tar_ball_name)
+        self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
+        log_message("Tarball with results is stored here '%s' ." % self.tar_ball_name)
         log_message("The latest assessment is stored in directory '%s' ." % self.conf.result_dir)
         # pack all configuration files to tarball
-        return tar_ball_name
+        return 0
 
     def summary_report(self, tarball_path):
         """Function prints a summary report"""
@@ -660,7 +665,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
 
         if self.conf.cleanup:
             self.clean_preupgrade_environment()
-            sys.exit(0)
+            return 0
 
         self.openscap_helper = OpenSCAPHelper(self.conf.result_dir,
                                               self.conf.result_name,
@@ -718,13 +723,15 @@ If you would like to use this tool, you have to specify correct upgrade path par
 
             current_dir = os.getcwd()
             os.chdir("/tmp")
-            tarball_path = self.scan_system()
-            self.summary_report(tarball_path)
+            retval = self.scan_system()
+            if int(retval) != 0:
+                return retval
+            self.summary_report(self.tar_ball_name)
             self.common.copy_common_files()
             KickstartGenerator.kickstart_scripts()
             FileHelper.remove_home_issues()
             if self.conf.upload:
-                self.upload_results(tarball_path)
+                self.upload_results(self.tar_ball_name)
             os.chdir(current_dir)
             return self.report_return_value
 

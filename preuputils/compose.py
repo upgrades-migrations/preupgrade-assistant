@@ -47,22 +47,15 @@ class XCCDFCompose(object):
         if os.path.exists(self.dir_name):
             shutil.rmtree(self.dir_name)
 
+    def generate_xml(self, generate_from_ini=True):
         if SystemIdentification.get_valid_scenario(self.dir_name) is None:
             print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
-            sys.exit(1)
+            return 10
 
-    def generate_xml(self, generate_from_ini=True):
         dir_util.copy_tree(self.result_dir, self.dir_name)
-        result_dirname = self.dir_name
-        template_file = ComposeXML.get_template_file()
-        try:
-            target_tree = ElementTree.parse(template_file).getroot()
-        except IOError:
-            print ('Problem with reading template.xml file')
-            sys.exit(1)
-        target_tree = ComposeXML.run_compose(target_tree, self.dir_name, generate_from_ini=generate_from_ini)
+        target_tree = ComposeXML.run_compose(self.dir_name, generate_from_ini=generate_from_ini)
 
-        report_filename = os.path.join(result_dirname, settings.content_file)
+        report_filename = os.path.join(self.dir_name, settings.content_file)
         try:
             FileHelper.write_to_file(report_filename, "wb",
                                      ElementTree.tostring(target_tree, "utf-8"),
@@ -72,6 +65,9 @@ class XCCDFCompose(object):
         except IOError:
             print ("Problem with writing file ", report_filename)
             raise
+        return 0
+
+    def get_compose_dir_name(self):
         return self.dir_name
 
 
@@ -312,13 +308,25 @@ class ComposeXML(object):
         return os.path.join(os.path.dirname(__file__), "template.xml")
 
     @classmethod
-    def run_compose(cls, target_tree, dir_name, content=None, generate_from_ini=True):
+    def get_xml_tree(cls):
+        template_file = ComposeXML.get_template_file()
+        try:
+            target_tree = ElementTree.parse(template_file).getroot()
+        except IOError:
+            print('Problem with reading template.xml file')
+            return None
+        return target_tree
+
+    @classmethod
+    def run_compose(cls, dir_name, content=None, generate_from_ini=True):
+        target_tree = ComposeXML.get_xml_tree()
         settings.UPGRADE_PATH = dir_name
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
         group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0, generate_from_ini=generate_from_ini)
         logger_debug.debug("Group xmls '%s'", group_xmls)
-        cls.perform_autoqa(dir_name, group_xmls)
+        if generate_from_ini:
+            cls.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name
         cls.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
         cls.merge_trees(target_tree, target_tree, group_xmls)
