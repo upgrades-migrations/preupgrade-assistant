@@ -86,7 +86,7 @@ class TestXMLCompose(base.TestCase):
         settings.autocomplete = True
         self.target_tree = None
         try:
-            self.target_tree = ComposeXML.run_compose(self.tree, self.result_dir)
+            self.target_tree = ComposeXML.run_compose(self.result_dir)
         except UnicodeEncodeError:
             # TODO This has to be fixed for all supported Python versions like Python3.5,2.7 and 2.6
             assert True

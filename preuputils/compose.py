@@ -87,7 +87,7 @@ class ComposeXML(object):
             new_dir = os.path.join(source_dir, dirname)
             if not os.path.isdir(new_dir):
                 continue
-            ini_files = filter(lambda x: x.endswith(".ini"), os.listdir(new_dir))
+            ini_files = [x for x in os.listdir(new_dir) if x.endswith('.ini')]
             if not ini_files and generate_from_ini:
                 # Check if directory contains only subdirectories.
                 # Report to user that group.ini file could be missing

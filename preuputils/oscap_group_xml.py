@@ -8,6 +8,7 @@ from __future__ import print_function, unicode_literals
 import os
 import sys
 import six
+import codecs
 
 try:
     import configparser
@@ -49,14 +50,6 @@ class OscapGroupXml(object):
         This function is used for finding all _fix files in the user defined
         directory
         """
-        # solve python 2 & 3 compatibility
-        if sys.version_info[0] == 2:
-            config_load = lambda x, y: x.read(y)
-            config_decode = lambda x: x.decode(settings.defenc)
-        else:
-            config_load = lambda x, y: x.read(y, settings.defenc)
-            config_decode = lambda x: x
-
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):
                 self.lists.append(os.path.join(self.dirname, dir_name))
@@ -65,14 +58,15 @@ class OscapGroupXml(object):
                 continue
             try:
                 config = configparser.ConfigParser()
-                config_load(config, file_name)
+                filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
+                config.readfp(filehander)
                 fields = {}
                 if config.has_section('premigrate'):
                     section = 'premigrate'
                 else:
                     section = 'preupgrade'
                 for option in config.options(section):
-                    fields[option] = config_decode(config.get(section, option))
+                    fields[option] = config.get(section, option)
                 self.loaded[file_name] = [fields]
             except configparser.MissingSectionHeaderError:
                 MessageHelper.print_error_msg(title="Missing section header")

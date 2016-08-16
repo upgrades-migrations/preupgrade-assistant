@@ -12,6 +12,7 @@ import mimetypes
 import platform
 import random
 import string
+import codecs
 
 try:
     import configparser
@@ -180,12 +181,12 @@ class FileHelper(object):
         # data must be init due to possible troubles with binary data
         data = None
         try:
-            f = open(full_path, perms)
+            if decode_flag:
+                f = codecs.open(full_path, perms, settings.defenc)
+            else:
+                f = codecs.open(full_path, perms)
             try:
-                if decode_flag is True:
-                    data = f.read().decode(settings.defenc) if not method else [line.decode(settings.defenc) for line in f.readlines()]
-                else:
-                    data = f.read() if not method else f.readlines()
+                data = f.read() if not method else f.readlines()
             finally:
                 f.close()
         except IOError:
