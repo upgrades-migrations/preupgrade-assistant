@@ -24,10 +24,10 @@ class TestAPICheck(base.TestCase):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
         os.makedirs(os.path.join(self.dirname, 'kickstart'))
-        script_api.VALUE_RPM_RHSIGNED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_rhsigned.log')
-        script_api.VALUE_RPM_QA = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_qa.log')
-        script_api.VALUE_CHKCONFIG = os.path.join(os.path.dirname(__file__), self.api_files, 'chkconfig.log')
-        script_api.VALUE_CONFIGCHANGED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_etc_Va.log')
+        script_api.VALUE_RPM_RHSIGNED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_rhsigned')
+        script_api.VALUE_RPM_QA = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_qa')
+        script_api.VALUE_CHKCONFIG = os.path.join(os.path.dirname(__file__), self.api_files, 'chkconfig')
+        script_api.VALUE_CONFIGCHANGED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_etc_Va')
         script_api.PREUPGRADE_CACHE = self.dirname
         script_api.SOLUTION_FILE = self.solution_txt
 

@@ -1,0 +1,5 @@
+....L....  c /etc/foo/bar/bar.conf
+....L....  c /etc/foobar/foobar.conf
+....L....  c /etc/footest/footest.conf
+S.5....T.  c /etc/preupgrade-assistant.conf
+....L....  c /etc/foo/test.conf
