@@ -361,7 +361,7 @@ class HostRun(models.Model):
 
     def set_risk(self):
         risks = Risk.objects.for_hostrun(self)
-        risk = "none"
+        risk = "slight"
         if risks:
             risks_list = list(risks.values_list('level', flat=True).distinct())
             sorted_risks_list = sorted(risks_list, key=lambda x: Risk.RISK_LEVELS[x])
@@ -672,7 +672,6 @@ class RiskManager(models.Manager, RiskMixin):
 
 class Risk(models.Model):
     RISK_LEVELS = {
-        "none": 0,
         "slight": 1,
         "medium": 2,
         "high": 3,

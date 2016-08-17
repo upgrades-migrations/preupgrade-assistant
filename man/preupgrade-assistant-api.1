@@ -76,7 +76,7 @@ There are several directories located in /root/preupgrade which are used by \fBp
 
 \fBexit_fail\fP - The test failed. (moving to new release with this configuration will result in malfunction). Use when you expect some action from the user - when the migration solution was not completed automatically.
 
-Your script should also tell the administrator how risky is to upgrade your component. This can be done with api functions log_{none,slight,medium,high,extreme}_risk.
+Your script should also tell the administrator how risky is to upgrade your component. This can be done with api functions log_{slight,medium,high,extreme}_risk.
 
 .SH AVAILABLE RETURN CODES IN REPORTS
 \fBpass\fP - The same as in RETURN CODES
@@ -91,7 +91,7 @@ Your script should also tell the administrator how risky is to upgrade your comp
 
 \fBerror\fP - An error occurred and test could not complete. (script failed while doing its job). Should be used in "assert way", not as common result.
 
-\fBneeds_inspection\fP - The test failed with return code exit_fail. But content developer add one of these logs (log_{medium|slight|None}_risk before exit_fail.
+\fBneeds_inspection\fP - The test failed with return code exit_fail. But content developer add one of these logs (log_{slight|medium}_risk before exit_fail.
 
 \fBneeds_action\fP - The test failed with return code exit_fail. But content developer add the log_high_risk before exit_fail.
 
@@ -99,7 +99,6 @@ Your script should also tell the administrator how risky is to upgrade your comp
 
 .SH RISK ASSESSMENT LEVELS
 The available risk assessment levels are:
-\fBNone\fP - Default. It can be used as an indicator for some checks. It is not necessary to enter these values.
 
 \fBSlight\fP - We assessed this field and have not found any issues. However, there is still some risk that not all variants have been covered.
 

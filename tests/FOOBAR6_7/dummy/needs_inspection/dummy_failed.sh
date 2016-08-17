@@ -2,7 +2,7 @@
 
 echo "Dummy needs_inspection test"
 
-echo "INPLACERISK: NONE: This is None Risk"
+echo "INPLACERISK: SLIGHT: This is Slight Risk"
 
 
 

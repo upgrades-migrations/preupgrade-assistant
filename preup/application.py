@@ -332,7 +332,7 @@ class Application(object):
         """The function prepares a XML file for HTML creation"""
         # Reload XML file
         self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
-        # Replace fail in case of none or slight risk with needs_inspection
+        # Replace fail in case of slight and medium risks with needs_inspection
         self.report_parser.replace_inplace_risk(scanning_results=self.scanning_progress)
         if not self.conf.debug:
             self.report_parser.remove_debug_info()

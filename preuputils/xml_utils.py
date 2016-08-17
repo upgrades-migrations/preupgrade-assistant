@@ -176,7 +176,7 @@ class XmlUtils(object):
     def check_script_modification(self, key, k):
         """Function checks a check script"""
         self.mh.check_scripts(k)
-        check_func = {'log_': ['log_none_risk', 'log_slight_risk',
+        check_func = {'log_': ['log_slight_risk',
                                'log_medium_risk', 'log_high_risk',
                                'log_extreme_risk', 'log_info',
                                'log_error', 'log_warning'],

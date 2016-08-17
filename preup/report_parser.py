@@ -36,8 +36,8 @@ class ReportHelper(object):
     @staticmethod
     def upd_inspection(rule):
         """
-        Function updates result to needs_action in case
-        of NONE, SLIGHT or MEDIUM risk
+        Function updates result to needs_inspection in case
+        of SLIGHT or MEDIUM risk
         """
         return rule.get("idref"), ReportHelper.get_needs_inspection()
 
@@ -219,7 +219,7 @@ class ReportParser(object):
     def replace_inplace_risk(self, scanning_results=None):
         """
         This function has aim to replace FAILED to
-        NEEDS_INSPECTION in case that risks are NONE or SLIGHT
+        NEEDS_INSPECTION in case that risks are SLIGHT or MEDIUM
         """
         #Filter all rule-result in TestResult
         changed_fields = []

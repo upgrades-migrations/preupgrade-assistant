@@ -25,10 +25,9 @@ class XccdfHelper(object):
         all inplace risks higher then SLIGHT.
         """
         risks = {
-            'NONE:': 0,
-            'SLIGHT:': 1,
-            'MEDIUM:': 2,
-            'HIGH:': 3,
+            'SLIGHT:': 0,
+            'MEDIUM:': 1,
+            'HIGH:': 2,
             'EXTREME:': 4,
         }
 

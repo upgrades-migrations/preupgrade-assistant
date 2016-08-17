@@ -100,7 +100,7 @@ Upload results to preupgrade assistant WEB-UI"
             default=False,
             help="Checks preupgrade assessment for INPLACE RISKS." + "\n"*15 +
                  "Return values:" + "\n"*45 +
-                 "0 ... NONE, SLIGHT risks were detected." + "\n" * 20 +
+                 "0 ... SLIGHT risk was detected." + "\n" * 20 +
                  "1 ... MEDIUM, HIGH risks were detected." + "\n" * 20 +
                  "2 ... EXTREME risk was detected."
         )

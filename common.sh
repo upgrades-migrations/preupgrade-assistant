@@ -300,13 +300,6 @@ log_risk() {
     echo "INPLACERISK: $1: $2" >&2
 }
 
-log_none_risk() {
-    #
-    # (unused)
-    #
-    log_risk "NONE" "$1"
-}
-
 log_slight_risk() {
     #
     # no issues found; although there are some unexplored areas
