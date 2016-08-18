@@ -92,11 +92,11 @@ class TestRiskCheck(base.TestCase):
 
     def test_check_inplace_risk_unknown(self):
 
-        temp_file = self._copy_xccdf_file(b'preupg.risk.UNKNOWN: Test Extreme Inplace risk')
+        temp_file = self._copy_xccdf_file(b'preupg.risk.EXTREME: Test Extreme Inplace risk')
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, -1)
+        self.assertEqual(return_value, 2)
 
 
 def suite():
