@@ -233,7 +233,7 @@ _log() {
         fi
     fi
 
-    echo "$SEVERITY $COMPONENT: $1" >&2
+    echo "preupg.log.$SEVERITY: $COMPONENT: $1" >&2
 }
 
 log_debug() {
@@ -297,7 +297,7 @@ _log_risk() {
     #
     # log risk level to stderr
     #
-    echo "INPLACERISK: $1: $2" >&2
+    echo "preupg.risk.$1: $2" >&2
 }
 
 log_slight_risk() {

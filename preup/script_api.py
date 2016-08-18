@@ -284,7 +284,7 @@ def _log_risk(severity, message):
     """
     log risk level to stderr
     """
-    print("INPLACERISK: %s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
+    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
 def log_extreme_risk(message):
@@ -342,7 +342,7 @@ def _log(severity, message, component_arg=None):
     """
     global component
     comp_show = component_arg or component
-    print("%s %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
+    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
 def log_error(message, component_arg=None):

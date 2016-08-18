@@ -102,7 +102,7 @@ def tag_formating(text, extension):
             for match in string_match:
                 # update = update_dict[string_match.group("tag")](match, extension)
                 inplace = False
-                if 'INPLACERISK:' in line:
+                if 'preupg.risk.' in line:
                     inplace = True
                 update = update_dict[match[0]](match[1], extension, inplace)
                 if update != "":
@@ -268,9 +268,9 @@ class XmlManager(object):
                 logger_report.debug("Solution text '%s' name '%s'", solution_text, file_name)
                 text = FileHelper.get_file_content(os.path.join(dir_name, file_name), "rb", method=True)
             for cnt, line in enumerate(lines):
-                # If in INPLACERISK: is a [link] then update them
+                # If in preupg.risk is a [link] then update them
                 # to /root/pre{migrate,upgrade}/...
-                if 'INPLACERISK:' in line.strip():
+                if 'preupg.risk.' in line.strip():
                     logger_report.debug(line.strip())
                     lines[cnt] = tag_formating([line], extension)[0]
                     continue

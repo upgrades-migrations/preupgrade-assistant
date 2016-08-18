@@ -2,8 +2,7 @@
 
 echo "Dummy needs_inspection test"
 
-echo "INPLACERISK: SLIGHT: This is Slight Risk"
-
+echo "preupg.risk.SLIGHT: This is Slight Risk"
 
 
 . /usr/share/preupgrade/common.sh
