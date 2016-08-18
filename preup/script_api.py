@@ -280,7 +280,7 @@ component = "[unknown-component]"
 # RISK LOGGING #
 ################
 
-def log_risk(severity, message):
+def _log_risk(severity, message):
     """
     log risk level to stderr
     """
@@ -293,7 +293,7 @@ def log_extreme_risk(message):
 
     Inplace upgrade is impossible.
     """
-    log_risk("EXTREME", message)
+    _log_risk("EXTREME", message)
 
 
 def log_high_risk(message):
@@ -303,7 +303,7 @@ def log_high_risk(message):
     Administrator has to inspect and correct upgraded system so
     inplace upgrade can be used.
     """
-    log_risk("HIGH", message)
+    _log_risk("HIGH", message)
 
 
 def log_medium_risk(message):
@@ -312,7 +312,7 @@ def log_medium_risk(message):
 
     inplace upgrade is possible; system after upgrade may be unstable
     """
-    log_risk("MEDIUM", message)
+    _log_risk("MEDIUM", message)
 
 
 def log_slight_risk(message):
@@ -321,14 +321,14 @@ def log_slight_risk(message):
 
     no issues found; although there are some unexplored areas
     """
-    log_risk("SLIGHT", message)
+    _log_risk("SLIGHT", message)
 
 
 ##################
 # STDOUT LOGGING #
 ##################
 
-def log(severity, message, component_arg=None):
+def _log(severity, message, component_arg=None):
     """
     general logging function
 
@@ -355,7 +355,7 @@ def log_error(message, component_arg=None):
     use this severity if your script found something severe
     which may cause malfunction on new system
     """
-    log('ERROR', message, component_arg)
+    _log('ERROR', message, component_arg)
 
 
 def log_warning(message, component_arg=None):
@@ -367,7 +367,7 @@ def log_warning(message, component_arg=None):
 
     important finding, administrator of system should be aware of this
     """
-    log('WARNING', message, component_arg)
+    _log('WARNING', message, component_arg)
 
 
 def log_info(message, component_arg=None):
@@ -379,7 +379,7 @@ def log_info(message, component_arg=None):
 
     informational message
     """
-    log('INFO', message, component_arg)
+    _log('INFO', message, component_arg)
 
 
 def log_debug(message, component_arg=None):
@@ -391,7 +391,7 @@ def log_debug(message, component_arg=None):
 
     verbose information, may help with script debugging
     """
-    log('DEBUG', message, component_arg)
+    _log('DEBUG', message, component_arg)
 
 
 #########
@@ -770,7 +770,7 @@ def deploy_hook(deploy_name, script_name):
         return 0
     if deploy_name == "postupgrade":
         pwd = os.getcwd()
-        log(pwd)
+        _log(pwd)
         if not os.path.exists(script_name):
             log_error ("Script_name %s does not exist.", script_name)
             return 1
