@@ -60,7 +60,7 @@ class TestRiskCheck(base.TestCase):
 
     def test_check_inplace_risk_high(self):
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: HIGH: Test High Inplace risk')
+        temp_file = self._copy_xccdf_file(b'preupg.risk.HIGH: Test High Inplace risk')
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
@@ -68,7 +68,7 @@ class TestRiskCheck(base.TestCase):
 
     def test_check_inplace_risk_medium(self):
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: MEDIUM: Test Medium Inplace risk')
+        temp_file = self._copy_xccdf_file(b'preupg.risk.MEDIUM: Test Medium Inplace risk')
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
@@ -76,7 +76,7 @@ class TestRiskCheck(base.TestCase):
 
     def test_check_inplace_risk_slight(self):
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: SLIGHT: Test Slight Inplace risk')
+        temp_file = self._copy_xccdf_file(b'preupg.risk.SLIGHT: Test Slight Inplace risk')
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
@@ -84,7 +84,15 @@ class TestRiskCheck(base.TestCase):
 
     def test_check_inplace_risk_extreme(self):
 
-        temp_file = self._copy_xccdf_file(b'INPLACERISK: EXTREME: Test Extreme Inplace risk')
+        temp_file = self._copy_xccdf_file(b'preupg.risk.EXTREME: Test Extreme Inplace risk')
+        self._generate_result(temp_file)
+        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
+        shutil.rmtree(os.path.dirname(temp_file))
+        self.assertEqual(return_value, 2)
+
+    def test_check_inplace_risk_unknown(self):
+
+        temp_file = self._copy_xccdf_file(b'preupg.risk.EXTREME: Test Extreme Inplace risk')
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
