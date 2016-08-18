@@ -534,16 +534,17 @@ def check_rpm_to(check_rpm="", check_bin=""):
         rpms = check_rpm.split(',')
         lines = FileHelper.get_file_content(VALUE_RPM_QA, "rb", True)
         for rpm in rpms:
-            lst = filter(lambda x: rpm == x.split('\t')[0], lines)
+            lst = [x for x in lines if rpm == x.split('\t')[0]]
             if not lst:
                 log_info("Package %s is not installed." % rpm)
                 not_applicable = 1
 
     if check_bin != "":
         binaries = check_bin.split(',')
+        lines = FileHelper.get_file_content(VALUE_EXECUTABLES, "rb", True)
         for binary in binaries:
-            cmd = "which %s" % binary
-            if ProcessHelper.run_subprocess(cmd, print_output=False, shell=True) != 0:
+            lst = [x for x in lines if binary == x.split('\t')[0]]
+            if not lst:
                 log_info("Binary %s is not installed." % binary)
                 not_applicable = 1
 
