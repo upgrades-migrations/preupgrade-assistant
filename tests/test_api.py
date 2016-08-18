@@ -31,6 +31,8 @@ class TestAPICheck(base.TestCase):
         script_api.VALUE_EXECUTABLES = os.path.join(os.path.dirname(__file__), self.api_files, 'executable')
         script_api.PREUPGRADE_CACHE = self.dirname
         script_api.SOLUTION_FILE = self.solution_txt
+        if os.environ['XCCDF_VALUE_TMP_PREUPGRADE'] == "":
+            script_api.VALUE_TMP_PREUPGRADE = self.dirname
 
     def test_solution_file(self):
         expected_output = ["Testing message"]
@@ -49,8 +51,27 @@ class TestAPICheck(base.TestCase):
 
     def test_check_rpm_to(self):
         expected_rpms = "foobar,testbar"
-        expected_binaries = "/usr/bin/evince,/usr/bin/expr"
-        self.assertEqual(script_api.check_rpm_to(expected_rpms, expected_binaries), 0)
+        self.assertEqual(script_api.check_rpm_to(check_rpm=expected_rpms), 0)
+
+    def test_not_check_rpm_to(self):
+        expected_rpms = "ffoobar,testbar"
+        try:
+            self.assertEqual(script_api.check_rpm_to(check_rpm=expected_rpms), 0)
+            self.assertTrue(False)
+        except SystemExit:
+            self.assertTrue(True)
+
+    def test_check_rpm_to_binaries(self):
+        expected_binaries = "/usr/bin/fooupg,/sbin/preupg"
+        self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
+
+    def test_not_check_rpm_to_binaries(self):
+        expected_binaries = "/usr/bin/fooupg,/bin/preupg"
+        try:
+            self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
+            self.assertTrue(False)
+        except SystemExit:
+            self.assertTrue(True)
 
     def test_service_is_enabled(self):
         expected_service_enabled = "foo"

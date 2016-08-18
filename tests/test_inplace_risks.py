@@ -72,7 +72,7 @@ class TestRiskCheck(base.TestCase):
         self._generate_result(temp_file)
         return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 1)
+        self.assertEqual(return_value, 0)
 
     def test_check_inplace_risk_slight(self):
 

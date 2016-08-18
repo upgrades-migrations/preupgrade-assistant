@@ -543,7 +543,7 @@ def check_rpm_to(check_rpm="", check_bin=""):
         binaries = check_bin.split(',')
         lines = FileHelper.get_file_content(VALUE_EXECUTABLES, "rb", True)
         for binary in binaries:
-            lst = [x for x in lines if binary == x.split('\t')[0]]
+            lst = [x for x in lines if binary == x.strip()]
             if not lst:
                 log_info("Binary %s is not installed." % binary)
                 not_applicable = 1
