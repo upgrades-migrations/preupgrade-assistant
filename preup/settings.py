@@ -101,7 +101,8 @@ preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
                    'preupgrade-scripts', 'noauto_postupgrade.d']
 
 
-readme_files = {'README': 'README',
+PREUPG_README = 'README'
+readme_files = {'README': PREUPG_README,
                 'README.kickstart': os.path.join('kickstart', 'README'),
                 }
 

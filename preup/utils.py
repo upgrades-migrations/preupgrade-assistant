@@ -350,6 +350,7 @@ class ProcessHelper(object):
                               bufsize=1)
         stdout = six.binary_type() # FIXME should't be this bytes()?
         for stdout_data in iter(sp.stdout.readline, b''):
+            logger_debug.debug(stdout)
             # communicate() method buffers everything in memory, we will read stdout directly
             stdout += stdout_data
             if function is None:
@@ -509,6 +510,14 @@ class TarballHelper(object):
                 shutil.copytree(os.path.join(dirname, preupg_dir),
                                 os.path.join(bkp_tar_dir, preupg_dir),
                                 symlinks=True)
+            files_to_copy = [settings.PREUPG_README]
+            for root, subdirs, files in os.walk(dirname):
+                for f in files:
+                    if f.startswith("result"):
+                        files_to_copy.append(f)
+            for f in files_to_copy:
+                shutil.copyfile(os.path.join(dirname, f),
+                                os.path.join(bkp_tar_dir, f))
             tarball = TarballHelper.get_tarball_result_path(dirname, tarball_name)
             cmd.append(cmd_pack)
             cmd.append(tarball)
@@ -522,7 +531,7 @@ class TarballHelper(object):
         shutil.rmtree(bkp_tar_dir)
         if direction:
             try:
-                shutil.copy(tarball, os.path.join(settings.tarball_result_dir+"/"))
+                shutil.copy(tarball, settings.tarball_result_dir + "/")
             except IOError:
                 log_message("Problem with copying tarball '%s' to /root/preupgrade-results", tarball)
         os.chdir(current_dir)
