@@ -770,8 +770,6 @@ def deploy_hook(deploy_name, script_name):
     if MODULE_NAME == "":
         return 0
     if deploy_name == "postupgrade":
-        pwd = os.getcwd()
-        _log(pwd)
         if not os.path.exists(script_name):
             log_error ("Script_name %s does not exist.", script_name)
             return 1

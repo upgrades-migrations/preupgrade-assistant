@@ -743,8 +743,6 @@ deploy_hook() {
     [ -z $MODULE_NAME ] && return 0
     case $deploy_name in
         "postupgrade")
-            pwd=`pwd`
-            echo "$pwd"
             if [ ! -f "$script_name" ] ; then
                 log_error "Script_name $script_name does not exist."
                 return 1
