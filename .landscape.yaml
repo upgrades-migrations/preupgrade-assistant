@@ -17,4 +17,5 @@ ignore-paths:
     - preup_ui
     - setup.py
     - tests
-    - preup/script_api.py
+ignore-patterns:
+    - ^preup/script_api.py$
