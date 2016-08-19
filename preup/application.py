@@ -7,7 +7,6 @@ from __future__ import unicode_literals, print_function
 import shutil
 import datetime
 import os
-import sys
 import six
 import logging
 from distutils import dir_util

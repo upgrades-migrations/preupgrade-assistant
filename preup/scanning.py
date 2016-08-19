@@ -95,7 +95,7 @@ class ScanProgress(object):
         dummy_result = ""
         try:
             xccdf_rule, dummy_result = stdout_data.strip().split(':')
-        except ValueError as ae:
+        except ValueError:
             print (stdout_data)
             return
         self.output_data.append(u'{0}:{1}'.format(self.names[xccdf_rule], stdout_data.strip()))

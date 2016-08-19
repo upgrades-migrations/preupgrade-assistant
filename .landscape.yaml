@@ -2,7 +2,7 @@
 doc-warnings: True
 
 # Include warnings about tests?
-test-warnings: True
+test-warnings: False
 
 # tests stricktness
 strictness: medium
@@ -16,3 +16,5 @@ ignore-paths:
     - docs
     - preup_ui
     - setup.py
+    - tests
+    - preup/script_api.py

@@ -6,7 +6,6 @@ So no change is needed from maintainer point of view
 
 from __future__ import print_function, unicode_literals
 import os
-import sys
 import six
 import codecs
 

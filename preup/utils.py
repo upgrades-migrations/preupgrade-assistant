@@ -332,7 +332,7 @@ class DirHelper(object):
         is_dir = lambda x: os.path.isdir(os.path.join(dirname, x))
         dirs = os.listdir(dirname)
         for d in filter(is_dir, dirs):
-            upgrade_path = filter(lambda x: d in x, settings.preupgrade_dirs)
+            upgrade_path = [x for x in settings.preupgrade_dirs if d in x]
             if not upgrade_path:
                 return d
         return None

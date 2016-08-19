@@ -5,7 +5,6 @@ Class creates a set of packages for migration scenario
 """
 
 from preup.utils import FileHelper
-from preup.logger import *
 from preup.kickstart.application import BaseKickstart
 
 

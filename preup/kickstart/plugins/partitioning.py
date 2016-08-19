@@ -10,7 +10,7 @@ import os
 from pykickstart.constants import CLEARPART_TYPE_ALL
 from preup.kickstart.application import BaseKickstart
 from preup.utils import FileHelper
-from preup.logger import *
+from preup.logger import log_message, logging
 from preup import settings
 
 

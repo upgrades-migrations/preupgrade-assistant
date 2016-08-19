@@ -37,7 +37,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preup import settings
-from preup.utils import FileHelper, ProcessHelper
+from preup.utils import FileHelper
 
 __all__ = (
     'log_debug',

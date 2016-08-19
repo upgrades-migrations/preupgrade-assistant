@@ -14,7 +14,7 @@ from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
 from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import makeVersion
 
-from preup.logger import *
+from preup.logger import logger, logging, LoggerHelper, logger_debug, log_message
 from preup.utils import FileHelper, ProcessHelper
 from preup import settings
 
@@ -264,9 +264,5 @@ class KickstartGenerator(object):
 
 
 def run():
-    kg = KickstartGenerator()
-    #print kg.generate()
-
-    # group.packages() -> ['package', ...]
-    #import ipdb ; ipdb.set_trace()
+    KickstartGenerator()
     return
