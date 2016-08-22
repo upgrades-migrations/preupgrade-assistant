@@ -98,6 +98,8 @@ class XccdfHelper(object):
             return settings.PREUPG_RETURN_VALUES['error']
         if 'unknown' in results:
             return settings.PREUPG_RETURN_VALUES['unknown']
+        if 'failed' in results:
+            return settings.PREUPG_RETURN_VALUES['failed']
 
         for profile in target_tree.findall(XMLNS + "TestResult"):
             inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
@@ -106,8 +108,6 @@ class XccdfHelper(object):
         logger_report.debug(result)
         # different behaviour of division between py2 & 3
         if int(result) == -1:
-            if 'failed' in results:
-                return settings.PREUPG_RETURN_VALUES['failed']
             if 'fixed' in results:
                 return settings.PREUPG_RETURN_VALUES['fixed']
             if 'informational' in results:
