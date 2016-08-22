@@ -191,5 +191,6 @@ PREUPG_RETURN_VALUES = {'error': 3,
                         'unknown': 2,
                         'informational': 4,
                         'not': 5,
+                        'fixed': 1,
                         'pass': 0
                         }
