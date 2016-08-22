@@ -189,8 +189,9 @@ DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
 
 PREUPG_RETURN_VALUES = {'error': 3,
                         'unknown': 2,
+                        'failed': 2,
+                        'fixed': 1,
                         'informational': 4,
                         'not': 5,
-                        'fixed': 1,
                         'pass': 0
                         }

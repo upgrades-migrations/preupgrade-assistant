@@ -106,9 +106,16 @@ class XccdfHelper(object):
         logger_report.debug(result)
         # different behaviour of division between py2 & 3
         if int(result) == -1:
-            for key in six.iterkeys(settings.PREUPG_RETURN_VALUES):
-                if key in results:
-                    return settings.PREUPG_RETURN_VALUES[key]
+            if 'failed' in results:
+                return settings.PREUPG_RETURN_VALUES['failed']
+            if 'fixed' in results:
+                return settings.PREUPG_RETURN_VALUES['fixed']
+            if 'informational' in results:
+                return settings.PREUPG_RETURN_VALUES['informational']
+            if 'not' in results:
+                return settings.PREUPG_RETURN_VALUES['not']
+            if 'pass' in results:
+                return settings.PREUPG_RETURN_VALUES['pass']
         elif int(result) < 2:
             return 0
         elif int(result) < 4:
