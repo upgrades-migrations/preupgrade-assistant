@@ -350,7 +350,6 @@ class ProcessHelper(object):
                               bufsize=1)
         stdout = six.binary_type() # FIXME should't be this bytes()?
         for stdout_data in iter(sp.stdout.readline, b''):
-            logger_debug.debug(stdout)
             # communicate() method buffers everything in memory, we will read stdout directly
             stdout += stdout_data
             if function is None:
