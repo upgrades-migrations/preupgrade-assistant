@@ -738,25 +738,46 @@ deploy_hook() {
     #
 
     local deploy_name=$1
-    local script_name=$2
+    [ -z $deploy_name ] && {
+        log_error "Hook name is not specified. (Possible values are postupgrade, preupgrade.)"
+        return 1
+    }
+    shift
+    local script_name=$1
+    [ -z $script_name ] && {
+        log_error "Script name is not specified. It is mandatory."
+        return 1
+    }
+    shift
 
-    [ -z $MODULE_NAME ] && return 0
+    [ -z $MODULE_NAME ] && {
+        log_error "Module name is not specfied."
+        return 1
+    }
+
     case $deploy_name in
-        "postupgrade")
+        "postupgrade"|"preupgrade")
             if [ ! -f "$script_name" ] ; then
                 log_error "Script_name $script_name does not exist."
                 return 1
             fi
-            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/$deploy_name"
             if [ ! -d "$hook_dir" ]; then
+                log_debug "Dir $hook_dir does not exist."
                 mkdir -p "$hook_dir"
             fi
+            log_debug "Copy script $script_name as $hook_dir/run_hook."
             cp $script_name "$hook_dir/run_hook"
-            ;;
-        "preupgrade")
+            while [ $# -ne 0 ]; do
+                TO_COPY=$1
+                cp -r $TO_COPY $hook_dir
+                shift
+            done
             ;;
         *) log_error "Unknown option $deploy_name"; exit_error
+            ;;
     esac
+    return 0
 }
 
 load_pa_configuration

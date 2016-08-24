@@ -70,6 +70,7 @@ __all__ = (
     'is_dist_native',
     'get_dist_native_list',
     'is_pkg_installed',
+    'deploy_hook',
 
     'PREUPGRADE_CACHE',
     'VALUE_RPM_QA',
@@ -172,6 +173,11 @@ VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
 # Variable which referes to temporary directory directory provided by module
 #
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
+
+#
+# Variable which referes to current directory directory provided by module
+#
+VALUE_CURRENT_DIRECTORY = os.environ['XCCDF_VALUE_CURRENT_DIRECTORY']
 
 #
 # Variable which referes to solution file provided by module
@@ -758,7 +764,7 @@ def add_pkg_to_kickstart(pkg_name):
     return 0
 
 
-def deploy_hook(deploy_name, script_name):
+def deploy_hook(*args):
     """
     Function which deploys script to specific location.
 
@@ -769,16 +775,31 @@ def deploy_hook(deploy_name, script_name):
 
     if MODULE_NAME == "":
         return 0
-    if deploy_name == "postupgrade":
+    if args[0] == "":
+        log_error("Hook name is not specified. (Possible values are postupgrade, preupgrade.)")
+        exit_error()
+    deploy_name = args[0]
+    if args[1] == "":
+        log_error("Script name is not specified. It is mandatory.")
+        exit_error()
+    script_name = os.path.join(VALUE_CURRENT_DIRECTORY, args[1])
+    if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
-            log_error ("Script_name %s does not exist.", script_name)
+            log_error("Script_name %s does not exist.", script_name)
             return 1
-        hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/postupgrade"
+        hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_NAME, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
         shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
+        for arg in args[2:]:
+            if os.path.isdir(arg):
+                shutil.copytree(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
+                                os.path.join(hook_dir))
+            else:
+                shutil.copyfile(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
+                                os.path.join(hook_dir, arg))
     else:
-        log_error("Unknown option %s", deploy_name)
+        log_error("Unknown hook option '%s'", deploy_name)
         exit_error()
 
 load_pa_configuration()
