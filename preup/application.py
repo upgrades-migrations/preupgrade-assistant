@@ -614,7 +614,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
                 return 10
             rules = []
             for scans in list_scans:
-                rules.extend([scans + ': ' + x for x in XccdfHelper.get_list_rules(scans)])
+                rules.extend([scans.strip() + ':' + x for x in XccdfHelper.get_list_rules(scans)])
             log_message(settings.list_rules % '\n'.join(rules))
             return 0
 

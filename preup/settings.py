@@ -162,7 +162,7 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
                  "- %s/dirtyconf - configuration files which need to be clarified by the administrator.\n"
 
 options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
-list_rules = "List of all available rules:\n%s\n"
+list_rules = "List of all available rules:\n%s"
 unknown_rules = "These rules do not exist:\n%s\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
