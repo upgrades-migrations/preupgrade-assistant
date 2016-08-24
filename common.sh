@@ -191,7 +191,7 @@ RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
 #
 # Name of module being currently executed
 #
-MODULE_NAME=$XCCDF_VALUE_MODULE_NAME
+MODULE_PATH=$XCCDF_VALUE_MODULE_PATH
 
 #
 # variables set by PA config file #
@@ -750,8 +750,8 @@ deploy_hook() {
     }
     shift
 
-    [ -z $MODULE_NAME ] && {
-        log_error "Module name is not specfied."
+    [ -z $MODULE_PATH ] && {
+        log_error "Module path is not specfied."
         return 1
     }
 
@@ -761,7 +761,7 @@ deploy_hook() {
                 log_error "Script_name $script_name does not exist."
                 return 1
             fi
-            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_NAME/$deploy_name"
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf_$MODULE_PATH/$deploy_name"
             if [ ! -d "$hook_dir" ]; then
                 log_debug "Dir $hook_dir does not exist."
                 mkdir -p "$hook_dir"

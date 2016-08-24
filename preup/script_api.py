@@ -84,7 +84,7 @@ __all__ = (
     'VALUE_EXECUTABLES',
     'VALUE_RPM_RHSIGNED',
     'VALUE_TMP_PREUPGRADE',
-    'MODULE_NAME',
+    'MODULE_PATH',
     'COMMON_DIR',
     'SOLUTION_FILE',
     'POSTUPGRADE_DIR',
@@ -188,9 +188,9 @@ SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
 # Name of module being currently executed
 #
 try:
-    MODULE_NAME = os.environ['XCCDF_VALUE_MODULE_NAME']
+    MODULE_PATH = os.environ['XCCDF_VALUE_MODULE_PATH']
 except KeyError:
-    MODULE_NAME = "MODULE_NAME"
+    MODULE_PATH = "MODULE_PATH"
 
 #
 # MIGRATE means if preupg binary was used with `--mode migrate` parameter
@@ -787,7 +787,7 @@ def deploy_hook(*args):
         if not os.path.exists(script_name):
             log_error("Script_name %s does not exist.", script_name)
             return 1
-        hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_NAME, deploy_name)
+        hook_dir = "%s/hooks/%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
         shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
