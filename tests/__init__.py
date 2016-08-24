@@ -16,6 +16,7 @@ def suite():
     os.environ['CURRENT_DIRECTORY'] = dirname
     os.environ['XCCDF_VALUE_SOLUTION_FILE'] = solution_txt
     os.environ['XCCDF_VALUE_REPORT_DIR'] = dirname
+    os.environ['XCCDF_VALUE_CURRENT_DIRECTORY'] = dirname
     os.environ['XCCDF_RESULT_ERROR'] = "3"
     os.environ['XCCDF_RESULT_FAILED'] = "2"
     os.environ['XCCDF_RESULT_FAIL'] = "2"
