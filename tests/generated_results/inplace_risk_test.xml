@@ -1,0 +1,145 @@
+<ns0:Benchmark id="xccdf_preupg-content_benchmark_all" resolved="1" xmlns:xhtml="http://www.w3.org/1999/xhtml/" xml:lang="en" xmlns:ns0="http://checklists.nist.gov/xccdf/1.2">
+  <ns0:status date="2016-08-24">draft</ns0:status>
+  <ns0:title xml:lang="en">Preupgrade Assistant migration tool</ns0:title>
+  <ns0:description xml:lang="en">
+    <html:p xmlns:html="http://www.w3.org/1999/xhtml">
+      This is a checklist of configuration settings intended to be used as RedHat Enterprise Linux migration tool.
+    </html:p>
+    <html:p xmlns:html="http://www.w3.org/1999/xhtml">
+      The checklist can be processed by varius tools which enable users to:
+      <html:ul>
+        <html:li>define profiles with customized security policies,</html:li>
+        <html:li>audit systems to determine compliance with targeted security policy and</html:li>
+        <html:li>adjust system configuration.</html:li>
+      </html:ul>
+    </html:p>
+  </ns0:description>
+  <ns0:notice id="disclaimer" xml:lang="en">This XCCDF has been automatically generated, it should only serve as a baseline!</ns0:notice>
+  <ns0:front-matter xml:lang="en" />
+  <ns0:reference href="http://iase.disa.mil/stigs/index.html">Defense Information Systems Agency - Security Technical Implementation Guides (DISA STIG)</ns0:reference>
+  <ns0:reference href="https://www.pcisecuritystandards.org">Payment Card Industry - Data Security Standard (PCI DSS)</ns0:reference>
+  <ns0:platform idref="cpe:/o:PLATFORM_TAG:6" />
+  <ns0:version>1.0</ns0:version>
+  <ns0:model system="urn:xccdf:scoring:default" />
+  <ns0:model system="urn:xccdf:scoring:flat" />
+  <ns0:Profile id="xccdf_preupg_profile_default">
+    <ns0:title xml:lang="en">Preupgrade assistant default</ns0:title>
+    <ns0:description xml:lang="en">
+      <html:p xmlns:html="http://www.w3.org/1999/xhtml">
+        This profile is designed for the Preupgrade Assistant tool.
+      </html:p>
+    </ns0:description>
+    <ns0:select idref="xccdf_preupg_rule_dummy_preupg_dummy" selected="true" />
+  </ns0:Profile>
+  <ns0:Value id="xccdf_preupg_value_tmp_preupgrade" type="string">
+    <ns0:value>/root/preupgrade</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_devel_mode" type="string">
+    <ns0:value>0</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_dist_native" type="string">
+    <ns0:value>sign</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_migrate" type="string">
+    <ns0:value>1</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_upgrade" type="string">
+    <ns0:value>1</ns0:value>
+  </ns0:Value>
+  <ns0:Value id="xccdf_preupg_value_report_dir" type="string">
+    <ns0:value>/root/preupgrade/FOOBAR6_7</ns0:value>
+  </ns0:Value>
+  <ns0:Group id="xccdf_preupg_group_dummy" selected="true">
+    <ns0:title xml:lang="en">DUMMY</ns0:title>
+    <ns0:Group id="xccdf_preupg_group_dummy_preupg" selected="true">
+      <ns0:title xml:lang="en">Dummy content</ns0:title>
+      <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_state_module_name" operator="equals" type="string">
+        <ns0:value>dummy_preupg</ns0:value>
+      </ns0:Value>
+      <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_state_result_part" operator="equals" type="string">
+        <ns0:value>admin</ns0:value>
+      </ns0:Value>
+      <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_state_current_directory" operator="equals" type="string">
+        <ns0:value>/root/preupgrade/FOOBAR6_7/dummy/preupg</ns0:value>
+      </ns0:Value>
+      <ns0:Value id="xccdf_preupg_value_dummy_preupg_dummy_state_solution_file" operator="equals" type="string">
+        <ns0:value>solution.txt</ns0:value>
+      </ns0:Value>
+      <ns0:Rule id="xccdf_preupg_rule_dummy_preupg_dummy" selected="true">
+        <ns0:title xml:lang="en">Dummy content</ns0:title>
+        <ns0:description xml:lang="en">
+        Dummy content
+
+      </ns0:description>
+        <ns0:fixtext xml:lang="en">Dummy content</ns0:fixtext>
+        <ns0:check system="http://open-scap.org/page/SCE">
+          <ns0:check-import import-name="stdout">
+          </ns0:check-import>
+          <ns0:check-import import-name="stderr">
+          </ns0:check-import>
+          <ns0:check-export export-name="MODULE_NAME" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_module_name" />
+          <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_result_part" />
+          <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_current_directory" />
+          <ns0:check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_solution_file" />
+          <ns0:check-export export-name="REPORT_DIR" value-id="xccdf_preupg_value_report_dir" />
+          <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_upgrade" />
+          <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_migrate" />
+          <ns0:check-export export-name="DIST_NATIVE" value-id="xccdf_preupg_value_dist_native" />
+          <ns0:check-export export-name="DEVEL_MODE" value-id="xccdf_preupg_value_devel_mode" />
+          <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />
+          <ns0:check-content-ref href="dummy/preupg/dummy.sh" />
+        </ns0:check>
+      </ns0:Rule>
+    </ns0:Group>
+  </ns0:Group>
+  <ns0:TestResult end-time="2016-08-24T17:43:45" id="xccdf_org.open-scap_testresult_xccdf_preupg_profile_default" start-time="2016-08-24T17:39:07" version="1.0">
+    <ns0:benchmark href="/root/preupgrade/FOOBAR6_7/all-xccdf.xml" id="xccdf_preupg-content_benchmark_all" />
+    <ns0:title>OSCAP Scan Result</ns0:title>
+    <ns0:identity authenticated="false" privileged="false">root</ns0:identity>
+    <ns0:profile idref="xccdf_preupg_profile_default" />
+    <ns0:target>test.preupgrade</ns0:target>
+    <ns0:target-address>127.0.0.1</ns0:target-address>
+    <ns0:target-address>192.168.122.227</ns0:target-address>
+    <ns0:target-address>0:0:0:0:0:0:0:1</ns0:target-address>
+    <ns0:target-address>fe80:0:0:0:5054:ff:fe7a:d193</ns0:target-address>
+    <ns0:target-facts>
+      <ns0:fact name="urn:xccdf:fact:scanner:name" type="string">OpenSCAP</ns0:fact>
+      <ns0:fact name="urn:xccdf:fact:scanner:version" type="string">1.2.8</ns0:fact>
+      <ns0:fact name="urn:xccdf:fact:ethernet:MAC" type="string">00:00:00:00:00:00</ns0:fact>
+      <ns0:fact name="urn:xccdf:fact:ethernet:MAC" type="string">52:54:00:7A:D1:93</ns0:fact>
+      <ns0:fact name="urn:xccdf:fact:ethernet:MAC" type="string">00:00:00:00:00:00</ns0:fact>
+      <ns0:fact name="urn:xccdf:fact:ethernet:MAC" type="string">52:54:00:7A:D1:93</ns0:fact>
+    </ns0:target-facts>
+    <ns0:platform idref="cpe:/o:PLATFORM_TAG:6" />
+    <ns0:set-value idref="xccdf_preupg_value_tmp_preupgrade">/root/preupgrade</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_devel_mode">0</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_dist_native">sign</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_migrate">1</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_upgrade">1</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_report_dir">/root/preupgrade/FOOBAR6_7</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_dummy_preupg_dummy_state_module_name">dummy_preupg</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_dummy_preupg_dummy_state_result_part">admin</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_dummy_preupg_dummy_state_current_directory">/root/preupgrade/FOOBAR6_7/dummy/preupg</ns0:set-value>
+    <ns0:set-value idref="xccdf_preupg_value_dummy_preupg_dummy_state_solution_file">solution.txt</ns0:set-value>
+    <ns0:rule-result idref="xccdf_preupg_rule_dummy_preupg_dummy" time="2016-08-24T17:39:11" weight="1.000000">
+      <ns0:result>RESULT_VALUE</ns0:result>
+      <ns0:check system="http://open-scap.org/page/SCE">
+        <ns0:check-import import-name="stdout">INPLACE_TAG</ns0:check-import>
+        <ns0:check-import import-name="stderr">          </ns0:check-import>
+        <ns0:check-export export-name="MODULE_NAME" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_module_name" />
+        <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_result_part" />
+        <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_current_directory" />
+        <ns0:check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy_state_solution_file" />
+        <ns0:check-export export-name="REPORT_DIR" value-id="xccdf_preupg_value_report_dir" />
+        <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_upgrade" />
+        <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_migrate" />
+        <ns0:check-export export-name="DIST_NATIVE" value-id="xccdf_preupg_value_dist_native" />
+        <ns0:check-export export-name="DEVEL_MODE" value-id="xccdf_preupg_value_devel_mode" />
+        <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />
+        <ns0:check-content-ref href="dummy/preupg/dummy.sh" />
+      </ns0:check>
+    </ns0:rule-result>
+    <ns0:score maximum="100.000000" system="urn:xccdf:scoring:default">49.081196</ns0:score>
+    <ns0:score maximum="70.000000" system="urn:xccdf:scoring:flat">40.000000</ns0:score>
+  </ns0:TestResult>
+</ns0:Benchmark>

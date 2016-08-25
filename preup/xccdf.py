@@ -25,8 +25,8 @@ class XccdfHelper(object):
         all inplace risks higher then SLIGHT.
         """
         risks = {
-            'SLIGHT:': 0,
-            'MEDIUM:': 1,
+            'SLIGHT:': 2,
+            'MEDIUM:': 2,
             'HIGH:': 2,
             'EXTREME:': 4,
         }
@@ -84,44 +84,25 @@ class XccdfHelper(object):
             log_message(message)
             return -1
 
-        inplace_risk = []
         target_tree = ElementTree.fromstring(content)
-        # Check if report does not contain UNKNOWN or ERROR results.
-        results = []
+        results = {}
         for profile in target_tree.findall(XMLNS + "TestResult"):
+            # Collect all inplace risk for each return values
             for check in profile.findall(".//" + XMLNS + "result"):
-                logger_report.debug(check.text)
                 if check.text not in results:
-                    results.append(check.text)
+                    results[check.text] = []
+                inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
+                results[check.text].extend(inplace_risk)
         logger_report.debug(results)
-        if 'error' in results:
-            return settings.PREUPG_RETURN_VALUES['error']
-        if 'unknown' in results:
-            return settings.PREUPG_RETURN_VALUES['unknown']
-        if 'failed' in results:
-            return settings.PREUPG_RETURN_VALUES['failed']
-
-        for profile in target_tree.findall(XMLNS + "TestResult"):
-            inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
-
-        result = XccdfHelper.get_and_print_inplace_risk(verbose, inplace_risk)
-        logger_report.debug(result)
-        # different behaviour of division between py2 & 3
-        if int(result) == -1:
-            if 'fixed' in results:
-                return settings.PREUPG_RETURN_VALUES['fixed']
-            if 'informational' in results:
-                return settings.PREUPG_RETURN_VALUES['informational']
-            if 'not' in results:
-                return settings.PREUPG_RETURN_VALUES['not']
-            if 'pass' in results:
-                return settings.PREUPG_RETURN_VALUES['pass']
-        elif int(result) < 2:
-            return 0
-        elif int(result) < 4:
-            return 1
-        else:
-            return 2
+        for result in six.iterkeys(settings.PREUPG_RETURN_VALUES):
+            if result in results:
+                ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
+                if result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
+                    return settings.PREUPG_RETURN_VALUES['error']
+                if int(ret_val) == -1:
+                    return settings.PREUPG_RETURN_VALUES[result]
+                else:
+                    return int(ret_val)/2
 
     @staticmethod
     def get_list_rules(scenario):

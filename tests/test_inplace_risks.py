@@ -20,83 +20,80 @@ except ImportError:
 
 class TestRiskCheck(base.TestCase):
 
-    def _generate_result(self, content_temp):
-        conf = {
-            "contents": content_temp,
-            "profile": "xccdf_preupg_profile_default",
-            "result_dir": os.path.dirname(content_temp),
-            "skip_common": True,
-            "temp_dir": os.path.dirname(content_temp),
-            "id": None,
-            "debug": True,  # so root check won't fail
-            "result_name": 'result',
-            "xml_result_name": 'result.xml',
-            "html_result_name": 'result.html'
-        }
+    risks = ['SLIGHT', 'MEDIUM', 'HIGH', 'EXTREME']
 
-        dc = DummyConf(**conf)
-        cli = CLI(["--contents", content_temp])
-        a = Application(Conf(dc, settings, cli))
-        # Prepare all variables for test
-        a.conf.source_dir = os.getcwd()
-        a.content = a.conf.contents
-        a.basename = os.path.basename(a.content)
-        a.openscap_helper = OpenSCAPHelper(a.conf.result_dir,
-                                           a.conf.result_name,
-                                           a.conf.xml_result_name,
-                                           a.conf.html_result_name,
-                                           a.content)
-        self.assertEqual(a.run_scan(), 0)
-
-    def _copy_xccdf_file(self, update_text):
+    def _copy_xccdf_file(self, update_text=None, update_return_value=None):
         temp_dir = tempfile.mkdtemp()
-        xccdf_file = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7', 'dummy_preupg', 'all-xccdf-upgrade.xml')
-        temp_file = os.path.join(temp_dir, 'all_xccdf.xml')
+        xccdf_file = os.path.join(os.getcwd(), 'tests', 'generated_results', 'inplace_risk_test.xml')
+        temp_file = os.path.join(temp_dir, 'all-xccdf.xml')
         shutil.copyfile(xccdf_file, temp_file)
         content = FileHelper.get_file_content(temp_file, 'rb', decode_flag=False)
-        content = content.replace(b'INPLACE_TAG', update_text)
+        new_text = b'preupg.risk.%s: Test %s Inplace risk' % (update_text, update_text)
+        if update_text is not None:
+            content = content.replace(b'INPLACE_TAG', new_text)
+        else:
+            content = content.replace(b'INPLACE_TAG', "")
+        content = content.replace(b'RESULT_VALUE', update_return_value)
         FileHelper.write_to_file(temp_file, 'wb', content)
         return temp_file
 
-    def test_check_inplace_risk_high(self):
-
-        temp_file = self._copy_xccdf_file(b'preupg.risk.HIGH: Test High Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
+    def _update_xccdf_file(self, return_value, risk):
+        temp_file = self._copy_xccdf_file(update_return_value=return_value,
+                                          update_text=risk)
+        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'all-xccdf.xml'), 0)
         shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 1)
+        return return_value
+
+    def test_check_inplace_risk_high(self):
+        self.assertEqual(self._update_xccdf_file('needs_action', 'HIGH'), 1)
 
     def test_check_inplace_risk_medium(self):
-
-        temp_file = self._copy_xccdf_file(b'preupg.risk.MEDIUM: Test Medium Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 0)
+        self.assertEqual(self._update_xccdf_file('needs_inspection', 'MEDIUM'), 1)
 
     def test_check_inplace_risk_slight(self):
-
-        temp_file = self._copy_xccdf_file(b'preupg.risk.SLIGHT: Test Slight Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 0)
+        self.assertEqual(self._update_xccdf_file('needs_inspection', 'SLIGHT'), 1)
 
     def test_check_inplace_risk_extreme(self):
+        self.assertEqual(self._update_xccdf_file('fail', 'EXTREME'), 2)
 
-        temp_file = self._copy_xccdf_file(b'preupg.risk.EXTREME: Test Extreme Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 2)
+    def test_fail_return_value(self):
+        self.assertEqual(self._update_xccdf_file('fail', None), 2)
 
-    def test_check_inplace_risk_unknown(self):
+    def test_unknown_return_values(self):
+        expected_value = 'unknown'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 2)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
 
-        temp_file = self._copy_xccdf_file(b'preupg.risk.EXTREME: Test Extreme Inplace risk')
-        self._generate_result(temp_file)
-        return_value = XccdfHelper.check_inplace_risk(os.path.join(os.path.dirname(temp_file), 'result.xml'), 0)
-        shutil.rmtree(os.path.dirname(temp_file))
-        self.assertEqual(return_value, 2)
+    def test_pass_return_values(self):
+        expected_value = 'pass'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 0)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
+
+    def test_fixed_return_values(self):
+        expected_value = 'fixed'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 1)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
+
+    def test_informational_return_values(self):
+        expected_value = 'informational'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 4)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
+
+    def test_not_applicable_return_values(self):
+        expected_value = 'not_applicable'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 5)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
+
+    def test_error_return_values(self):
+        expected_value = 'error'
+        self.assertEqual(self._update_xccdf_file(expected_value, None), 3)
+        for risk in self.risks:
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), 3)
 
 
 def suite():

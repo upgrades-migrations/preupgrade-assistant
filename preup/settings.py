@@ -162,7 +162,6 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
                  "- %s/dirtyconf - configuration files which need to be clarified by the administrator.\n"
 
 options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
-list_rules = "List of all available rules:\n%s"
 unknown_rules = "These rules do not exist:\n%s\n"
 text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
@@ -189,9 +188,16 @@ DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
 
 PREUPG_RETURN_VALUES = {'error': 3,
                         'unknown': 2,
-                        'failed': 2,
+                        'fail': 2,
+                        'needs_action': 1,
+                        'needs_inspection': 1,
                         'fixed': 1,
                         'informational': 4,
-                        'not': 5,
+                        'not_applicable': 5,
+                        'not_selected': 5,
+                        'not_checked': 5,
                         'pass': 0
                         }
+ERROR_RETURN_VALUES = ['error', 'pass', 'informational', 'fixed',
+                       'not_applicable', 'not_selected',
+                       'not_checked', 'unknown']
