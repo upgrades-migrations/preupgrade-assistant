@@ -46,9 +46,8 @@ def list_contents(source_dir):
     for dir_name in filter(is_dir, dirs):
         full_dir_name = os.path.join(source_dir, dir_name, settings.content_file)
         if os.path.exists(full_dir_name):
-            logger.info('%s', dir_name)
+            logger_debug.info('%s', dir_name)
             content_dict[dir_name] = full_dir_name
-
     return content_dict
 
 
@@ -576,6 +575,11 @@ class Application(object):
             return 0
 
         logger_debug.debug(version_msg)
+        if self.conf.list_contents_set:
+            for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
+                log_message("%s" % dir_name)
+            return 0
+
         if not self.conf.scan and not self.conf.contents and not self.conf.list_rules:
             cnt = 0
             is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
@@ -595,27 +599,28 @@ If you would like to use this tool, you have to install some." % settings.source
 If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
                 return 10
 
-        if self.conf.list_contents_set:
-            for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
-                log_message("%s" % dir_name)
-            return 0
-
         if self.conf.list_rules:
             list_scans = []
-            is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
-            dirs = os.listdir(self.conf.source_dir)
-            for dir_name in filter(is_dir, dirs):
-                if SystemIdentification.get_assessment_version(dir_name):
-                    list_scans.append(dir_name)
+            cnt = 0
+            if not self.conf.scan:
+                is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
+                dirs = os.listdir(self.conf.source_dir)
+                for dir_name in filter(is_dir, dirs):
+                    if SystemIdentification.get_assessment_version(dir_name):
+                        list_scans.append(dir_name)
+                        self.conf.scan = dir_name
+                        cnt += 1
 
-            if not list_scans:
-                log_message("There were no contents found in directory %s. \
-            If you would like to use this tool, you have to install some." % settings.source_dir)
-                return 10
-            rules = []
-            for scans in list_scans:
-                rules.extend([scans.strip() + ':' + x for x in XccdfHelper.get_list_rules(scans)])
-            log_message(settings.list_rules % '\n'.join(rules))
+                if int(cnt) < 1:
+                    log_message("There were no contents found in directory %s. \
+                If you would like to use this tool, you have to install some." % settings.source_dir)
+                    return 10
+                if int(cnt) > 1:
+                    log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
+            If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
+                    return 10
+            rules = [self.conf.scan + ':' + x for x in XccdfHelper.get_list_rules(self.conf.scan)]
+            log_message('\n'.join(rules))
             return 0
 
         if self.conf.upload and self.conf.results:
