@@ -85,7 +85,7 @@ class TestGroupQuerySet(models.query.QuerySet, TestGroupMixin):
 
 
 class TestGroupManager(models.Manager, TestGroupMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return TestGroupQuerySet(self.model, using=self._db)
 
 
@@ -135,7 +135,7 @@ class TestGroupResultQuerySet(models.query.QuerySet, TestGroupResultMixin):
 
 
 class TestGroupResultManager(models.Manager, TestGroupResultMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return TestGroupResultQuerySet(self.model, using=self._db)
 
 
@@ -216,7 +216,7 @@ class RunQuerySet(models.query.QuerySet, RunMixin):
 
 
 class RunManager(models.Manager, RunMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return RunQuerySet(self.model, using=self._db)
 
 
@@ -314,7 +314,7 @@ class HostRunQuerySet(models.query.QuerySet, HostRunMixin):
 
 
 class HostRunManager(models.Manager, HostRunMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return HostRunQuerySet(self.model, using=self._db)
 
 
@@ -472,7 +472,7 @@ class TestQuerySet(models.query.QuerySet, TestMixin):
 
 
 class TestManager(models.Manager, TestMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return TestQuerySet(self.model, using=self._db)
 
 
@@ -533,7 +533,7 @@ class TestResultQuerySet(models.query.QuerySet, TestResultMixin):
 
 
 class TestResultManager(models.Manager, TestResultMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return TestResultQuerySet(self.model, using=self._db)
 
 
@@ -623,7 +623,7 @@ class TestLogQuerySet(models.query.QuerySet, TestLogMixin):
 
 
 class TestLogManager(models.Manager, TestLogMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return TestLogQuerySet(self.model, using=self._db)
 
 
@@ -666,7 +666,7 @@ class RiskQuerySet(models.query.QuerySet, RiskMixin):
 
 
 class RiskManager(models.Manager, RiskMixin):
-    def get_queryset(self):
+    def get_query_set(self):
         return RiskQuerySet(self.model, using=self._db)
 
 
