@@ -18,6 +18,7 @@ except ImportError:
 
 from preup import xml_manager, settings
 from preup.common import Common
+from preup.settings import ReturnValues
 from preup.scanning import ScanProgress, ScanningHelper
 from preup.utils import FileHelper, ProcessHelper, DirHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
@@ -413,12 +414,12 @@ class Application(object):
         scenario = self.get_scenario()
         if scenario is None:
             log_message('Invalid scenario: %s' % self.conf.contents)
-            return 10
+            return ReturnValues.SCENARIO
         scenario_path = os.path.join(self.conf.source_dir, scenario)
         if not os.path.isdir(scenario_path):
             log_message('Invalid scenario: %s' % scenario,
                         level=logging.ERROR)
-            return 10
+            return ReturnValues.SCENARIO
         return 0
 
     def generate_report(self):
@@ -432,7 +433,7 @@ class Application(object):
         if not self.conf.contents:
             xccdf_compose = XCCDFCompose(self.assessment_dir)
             if xccdf_compose.generate_xml(generate_from_ini=False) != 0:
-                return 10
+                return ReturnValues.SCENARIO
             if os.path.isdir(self.assessment_dir):
                 shutil.rmtree(self.assessment_dir)
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
@@ -456,9 +457,9 @@ class Application(object):
         """The function is used for scanning system with all steps."""
         self._set_devel_mode()
         if int(self.prepare_scan_system()) != 0:
-            return 10
+            return ReturnValues.SCENARIO
         if int(self.generate_report()) != 0:
-            return 10
+            return ReturnValues.SCENARIO
         # Update source XML file in temporary directory
         self.content = os.path.join(self.assessment_dir, settings.content_file)
         self.openscap_helper.update_variables(self.conf.result_dir,
@@ -470,7 +471,7 @@ class Application(object):
             self.report_parser = ReportParser(self.content)
         except IOError:
             log_message("Content {0} does not exist".format(self.content))
-            return 10
+            return ReturnValues.SCENARIO
         if not self.conf.contents:
             version = SystemIdentification.get_assessment_version(self.conf.scan)
             if version is None:
@@ -478,7 +479,7 @@ class Application(object):
                             level=logging.ERROR)
                 log_message("Examples format is like RHEL6_7",
                             level=logging.ERROR)
-                return 10
+                return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             try:
@@ -593,11 +594,11 @@ class Application(object):
             if int(cnt) < 1:
                 log_message("There were no contents found in directory %s. \
 If you would like to use this tool, you have to install some." % settings.source_dir)
-                return 10
+                return ReturnValues.SCENARIO
             if int(cnt) > 1:
                 log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
 If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
-                return 10
+                return ReturnValues.SCENARIO
 
         if self.conf.list_rules:
             list_scans = []
@@ -614,23 +615,23 @@ If you would like to use this tool, you have to specify correct upgrade path par
                 if int(cnt) < 1:
                     log_message("There were no contents found in directory %s. \
                 If you would like to use this tool, you have to install some." % settings.source_dir)
-                    return 10
+                    return ReturnValues.SCENARIO
                 if int(cnt) > 1:
                     log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
             If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
-                    return 10
+                    return ReturnValues.SCENARIO
             rules = [self.conf.scan + ':' + x for x in XccdfHelper.get_list_rules(self.conf.scan)]
             log_message('\n'.join(rules))
             return 0
 
         if self.conf.upload and self.conf.results:
             if not self.upload_results():
-                return 18
+                return ReturnValues.SEND_REPORT_TO_UI
             return 0
 
         if self.conf.mode and self.conf.select_rules:
             log_message(settings.options_not_allowed)
-            return 11
+            return ReturnValues.MODE_SELECT_RULES
 
         if not self.conf.riskcheck and not self.conf.cleanup and not self.conf.kickstart:
             # If force option is not mentioned and user select NO then exits
@@ -642,13 +643,13 @@ If you would like to use this tool, you have to specify correct upgrade path par
                         log_message("Specify correct --dst-arch option.")
                         log_message("Available are '%s' or '%s'" % (settings.migration_options[0],
                                                                     settings.migration_options[1]))
-                        return 12
+                        return ReturnValues.RISK_CLEANUP_KICKSTART
                 if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
                     text = '\n' + settings.migration_text
                 logger_debug.debug("Architecture '%s'. Text '%s'.", SystemIdentification.get_arch(), text)
                 if not show_message(settings.warning_text + text):
                     # We do not want to continue
-                    return 12
+                    return ReturnValues.RISK_CLEANUP_KICKSTART
 
         if self.conf.text:
             # Test whether w3m, lynx and elinks packages are installed
@@ -660,12 +661,12 @@ If you would like to use this tool, you have to specify correct upgrade path par
                     break
             if not found:
                 log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
-                return 16
+                return ReturnValues.MISSING_TEXT_CONVERTOR
 
         if os.geteuid() != 0:
             print("Need to be root", end="\n")
             if not self.conf.debug:
-                return 13
+                return ReturnValues.ROOT
 
         if self.conf.cleanup:
             self.clean_preupgrade_environment()
@@ -679,7 +680,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
         if self.conf.riskcheck:
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before checking risks.")
-                return 14
+                return ReturnValues.PREUPG_BEFORE_KICKSTART
             return_val = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(),
                                                         self.conf.verbose)
             return return_val
@@ -687,7 +688,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
         if self.conf.kickstart:
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
                 log_message("'preupg' command was not run yet. Run them before kickstart generation.")
-                return 14
+                return ReturnValues.PREUPG_BEFORE_KICKSTART
             kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
             kg.main()
             return 0
@@ -699,11 +700,11 @@ If you would like to use this tool, you have to specify correct upgrade path par
             if self.conf.scan.startswith("/"):
                 log_message('Specify correct upgrade path parameter like -s RHEL6_7')
                 log_message('Upgrade path is provided by command preupg --list')
-                return 10
+                return ReturnValues.SCENARIO
             if not os.path.isdir(os.path.join(self.conf.source_dir, self.conf.scan)):
                 log_message('Specify correct upgrade path parameter like -s RHEL6_7')
                 log_message('Upgrade path is provided by command preupg --list')
-                return 10
+                return ReturnValues.SCENARIO
 
         if self.conf.contents:
             self.content = os.path.join(os.getcwd(), self.conf.contents)
@@ -715,15 +716,15 @@ If you would like to use this tool, you have to specify correct upgrade path par
         self.common = Common(self.conf)
         if not self.conf.skip_common:
             if not self.common.common_results():
-                return 17
+                return ReturnValues.SCRIPT_TXT_MISSING
 
         if self.conf.scan or self.conf.contents:
             if not os.path.exists(settings.openscap_binary):
                 log_message("Oscap with SCE enabled is not installed")
-                return 15
+                return ReturnValues.MISSING_OPENSCAP
             if not os.access(settings.openscap_binary, os.X_OK):
                 log_message("Oscap with SCE %s is not executable" % settings.openscap_binary)
-                return 15
+                return ReturnValues.MISSING_OPENSCAP
 
             current_dir = os.getcwd()
             os.chdir("/tmp")

@@ -14,6 +14,7 @@ from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
 from preup.logger import logger_debug
+from preup.settings import ReturnValues
 
 try:
     from xml.etree import ElementTree
@@ -50,7 +51,7 @@ class XCCDFCompose(object):
     def generate_xml(self, generate_from_ini=True):
         if SystemIdentification.get_valid_scenario(self.dir_name) is None:
             print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
-            return 10
+            return ReturnValues.SCENARIO
 
         dir_util.copy_tree(self.result_dir, self.dir_name)
         target_tree = ComposeXML.run_compose(self.dir_name, generate_from_ini=generate_from_ini)

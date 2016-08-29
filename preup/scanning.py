@@ -134,12 +134,10 @@ class ScanProgress(object):
         for index, row in enumerate(self.output_data):
             try:
                 title, rule_id, dummy_result = row.split(':')
-                logger_report.info(row)
+                logger_report.debug(row)
             except ValueError:
                 continue
             else:
                 result_list = [x for x in changed_fields if rule_id in x]
                 if result_list:
-                    self.output_data[index] = u"%s:%s:%s" % (title,
-                                                            rule_id,
-                                                            result_list[0].split(':')[1])
+                    self.output_data[index] = u"%s:%s:%s" % (title, rule_id, result_list[0].split(':')[1])

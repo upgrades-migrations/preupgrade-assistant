@@ -73,33 +73,35 @@ Possible return values are:
 
 \fB0\fP - preupg works properly and was successful even modules went properly. Modules exits with results PASS.
 
-\fB1\fP - preupg works properly but modules finishes with 1. Modules exits with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
+\fB10\fP - preupg works properly but modules finishes with 10. Modules exits with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
 
-\fB2\fP - preupg works properly but modules finishes with 2. Modules exits with results UNKNOWN, FAILED.
+\fB11\fP - preupg works properly but modules finishes with 11. Modules exits with results INFORMATIONAL.
 
-\fB3\fP - preupg works properly but modules finishes with 3. Modules exits with results ERROR.
+\fB12\fP - preupg works properly but modules finishes with 12. Modules exits with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
 
-\fB4\fP - preupg works properly but modules finishes with 4. Modules exits with results INFORMATIONAL.
+\fB13\fP - preupg works properly but modules finishes with 13. Modules exits with results FAILED.
 
-\fB5\fP - preupg works properly but modules finishes with 5. Modules exits with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
+\fB14\fP - preupg works properly but modules finishes with 14. Modules exits with results UNKNOWN.
 
-\fB10\fP - preupg does not find a proper upgrade scenario.
+\fB15\fP - preupg works properly but modules finishes with 15. Modules exits with results ERROR.
 
-\fB11\fP - preupg is executed with parameters \fBmode\fP and \fBselect\-rules\fP. This is not allowed.
+\fB20\fP - preupg does not find a proper upgrade scenario.
 
-\fB12\fP - preupg is executed with parameters \fBriskcheck\fP, \fBcleanup\fP and \fBkickstart\fP. This options are not allowed together.
+\fB21\fP - preupg is executed with parameters \fBmode\fP and \fBselect\-rules\fP. This is not allowed.
 
-\fB13\fP - preupg has to be executed as \fBroot\fP.
+\fB22\fP - preupg is executed with parameters \fBriskcheck\fP, \fBcleanup\fP and \fBkickstart\fP. This options are not allowed together.
 
-\fB14\fP - preupg has to be executed before kickstart generation.
+\fB23\fP - preupg has to be executed as \fBroot\fP.
 
-\fB15\fP - openscap and openscap-engine-sce are not installed on the system.
+\fB24\fP - preupg has to be executed before kickstart generation.
 
-\fB16\fP - you specified a text convertor which does not exist. Allowe convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
+\fB25\fP - openscap and openscap-engine-sce are not installed on the system.
 
-\fB17\fP - File \fB/usr/share/preupgrade/common/scripts.txt\fP is missing. Preupgrade-assistant is not installed properly. Reinstall it.
+\fB26\fP - you specified a text convertor which does not exist. Allowe convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
 
-\fB18\fP - We have detected some trouble with sending report to WEB-UI. Check if it is installed.
+\fB27\fP - File \fB/usr/share/preupgrade/common/scripts.txt\fP is missing. Preupgrade-assistant is not installed properly. Reinstall it.
+
+\fB28\fP - We have detected some trouble with sending report to WEB-UI. Check if it is installed.
 
 
 .SH NOTES

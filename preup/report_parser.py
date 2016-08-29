@@ -206,9 +206,9 @@ class ReportParser(object):
             logger_report.debug("Update_inplace_risk '%s'", inplace_risk)
             return_value = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
             logger_report.debug("Get and print inplace risk return value '%s'", return_value)
-            if int(return_value) < 3:
+            if int(return_value)/2 == 1:
                 res.text = ReportHelper.get_needs_inspection()
-            elif int(return_value) == 3:
+            elif int(return_value)/2 == 2:
                 res.text = ReportHelper.get_needs_action()
             for index, row in enumerate(scanning_progress.output_data):
                 if self.get_nodes_text(rule, "title") in row:
@@ -227,9 +227,8 @@ class ReportParser(object):
         inplace_dict = {
             0: ReportHelper.upd_inspection,
             1: ReportHelper.upd_inspection,
-            2: ReportHelper.upd_inspection,
-            3: ReportHelper.upd_action,
-            4: ReportHelper.upd_extreme,
+            2: ReportHelper.upd_action,
+            3: ReportHelper.upd_extreme,
         }
         for rule in self.get_all_result_rules():
             result = [x for x in self.get_nodes(rule, "result") if x.text == "fail"]
@@ -242,7 +241,7 @@ class ReportParser(object):
                 if not inplace_risk:
                     changed, res.text = inplace_dict[0](rule)
                 else:
-                    inplace_num = int(XccdfHelper.get_and_print_inplace_risk(0, inplace_risk))
+                    inplace_num = int(XccdfHelper.get_and_print_inplace_risk(0, inplace_risk))/2
                     logger_report.debug("Call function '%s'", inplace_dict[inplace_num])
                     changed, res.text = inplace_dict[inplace_num](rule)
                     logger_report.debug("Replace text '%s:%s'", changed, res.text)

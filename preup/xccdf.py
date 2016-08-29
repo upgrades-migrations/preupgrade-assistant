@@ -8,6 +8,7 @@ from operator import itemgetter
 from xml.etree import ElementTree
 
 from preup import settings
+from preup.settings import ModuleValues
 from preup.logger import log_message, logger_report
 from preup.utils import FileHelper, SystemIdentification
 
@@ -25,10 +26,10 @@ class XccdfHelper(object):
         all inplace risks higher then SLIGHT.
         """
         risks = {
-            'SLIGHT:': 2,
-            'MEDIUM:': 2,
-            'HIGH:': 2,
-            'EXTREME:': 4,
+            'SLIGHT:': ModuleValues.NEEDS_INSPECTION,
+            'MEDIUM:': ModuleValues.NEEDS_INSPECTION,
+            'HIGH:': ModuleValues.NEEDS_ACTION,
+            'EXTREME:': ModuleValues.FAIL,
         }
 
         return_value = -1
@@ -62,7 +63,8 @@ class XccdfHelper(object):
                 match = re.match(risk_regex, line)
                 if match:
                     logger_report.debug(line)
-                    inplace_risk.append(line)
+                    if line not in inplace_risk:
+                        inplace_risk.append(line)
         return inplace_risk
 
     @staticmethod
@@ -88,21 +90,46 @@ class XccdfHelper(object):
         results = {}
         for profile in target_tree.findall(XMLNS + "TestResult"):
             # Collect all inplace risk for each return values
-            for check in profile.findall(".//" + XMLNS + "result"):
+            for rule_result in profile.findall(XMLNS + "rule-result"):
+                result_value = None
+                for check in rule_result.findall(XMLNS + "result"):
+                    result_value = check.text
                 if check.text not in results:
                     results[check.text] = []
-                inplace_risk = XccdfHelper.get_check_import_inplace_risk(profile)
-                results[check.text].extend(inplace_risk)
+                inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule_result)
+                if not inplace_risk:
+                    continue
+                for risk in inplace_risk:
+                    if risk not in results[result_value]:
+                        results[result_value].append(risk)
         logger_report.debug(results)
-        for result in six.iterkeys(settings.PREUPG_RETURN_VALUES):
+        return_val = 0
+        for result in settings.ORDERED_LIST:
             if result in results:
-                ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
-                if result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
-                    return settings.PREUPG_RETURN_VALUES['error']
-                if int(ret_val) == -1:
-                    return settings.PREUPG_RETURN_VALUES[result]
+                current_val = 0
+                logger_report.debug('%s found in assessment' % result)
+                if not results[result]:
+                    current_val = settings.PREUPG_RETURN_VALUES[result]
                 else:
-                    return int(ret_val)/2
+                    ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
+                    logger_report.debug('Return value from "get_and_print_inplace_risk" is %s' % ret_val)
+                    # IF specific return codes contains risk then return code 3
+                    if result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
+                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                    elif int(ret_val) == -1:
+                        current_val = settings.PREUPG_RETURN_VALUES[result]
+                    else:
+                        # Needs_action has to return 1 as needs_inspection
+                        if ret_val == 2:
+                            current_val = 1
+                        # EXTREME has to return 2 as FAIL
+                        elif ret_val == 3:
+                            current_val = 2
+                        else:
+                            current_val = ret_val
+                if return_val < current_val:
+                    return_val = current_val
+        return return_val
 
     @staticmethod
     def get_list_rules(scenario):

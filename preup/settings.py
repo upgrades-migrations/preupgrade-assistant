@@ -186,17 +186,49 @@ PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
 DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
 
-PREUPG_RETURN_VALUES = {'error': 3,
-                        'unknown': 2,
-                        'fail': 2,
-                        'needs_action': 1,
-                        'needs_inspection': 1,
-                        'fixed': 1,
-                        'informational': 4,
-                        'not_applicable': 5,
-                        'not_selected': 5,
-                        'not_checked': 5,
-                        'pass': 0
+# Ordered dictionary because of python 2.4.
+
+ORDERED_LIST = ['error', 'unknown', 'fail', 'needs_action', 'needs_inspection',
+                'fixed', 'informational', 'not_applicable', 'not_selected',
+                'not_checked', 'pass']
+
+
+class ReturnValues(object):
+
+    SCENARIO = 20
+    MODE_SELECT_RULES = 21
+    RISK_CLEANUP_KICKSTART = 22
+    ROOT = 23
+    PREUPG_BEFORE_KICKSTART = 24
+    MISSING_OPENSCAP = 25
+    MISSING_TEXT_CONVERTOR = 26
+    SCRIPT_TXT_MISSING = 27
+    SEND_REPORT_TO_UI = 28
+
+
+class ModuleValues(object):
+
+    ERROR = 15
+    UNKNOWN = 14
+    FAIL = 13
+    NEEDS_ACTION = 13
+    NEEDS_INSPECTION = 13
+    FIXED = 12
+    INFORMATIONAL = 11
+    NOT_ALL = 10
+    PASS = 0
+
+PREUPG_RETURN_VALUES = {'error': ModuleValues.ERROR,
+                        'unknown': ModuleValues.UNKNOWN,
+                        'fail': ModuleValues.FAIL,
+                        'needs_action': ModuleValues.NEEDS_ACTION,
+                        'needs_inspection': ModuleValues.NEEDS_INSPECTION,
+                        'fixed': ModuleValues.FIXED,
+                        'informational': ModuleValues.INFORMATIONAL,
+                        'not_applicable': ModuleValues.NOT_ALL,
+                        'not_selected': ModuleValues.NOT_ALL,
+                        'not_checked': ModuleValues.NOT_ALL,
+                        'pass': ModuleValues.PASS
                         }
 ERROR_RETURN_VALUES = ['error', 'pass', 'informational', 'fixed',
                        'not_applicable', 'not_selected',
