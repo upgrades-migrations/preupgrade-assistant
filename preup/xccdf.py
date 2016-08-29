@@ -26,10 +26,10 @@ class XccdfHelper(object):
         all inplace risks higher then SLIGHT.
         """
         risks = {
-            'SLIGHT:': ModuleValues.NEEDS_INSPECTION,
-            'MEDIUM:': ModuleValues.NEEDS_INSPECTION,
-            'HIGH:': ModuleValues.NEEDS_ACTION,
-            'EXTREME:': ModuleValues.FAIL,
+            'SLIGHT:': 2,
+            'MEDIUM:': 2,
+            'HIGH:': 4,
+            'EXTREME:': 6,
         }
 
         return_value = -1
@@ -119,14 +119,12 @@ class XccdfHelper(object):
                     elif int(ret_val) == -1:
                         current_val = settings.PREUPG_RETURN_VALUES[result]
                     else:
-                        # Needs_action has to return 1 as needs_inspection
-                        if ret_val == 2:
-                            current_val = 1
                         # EXTREME has to return 2 as FAIL
-                        elif ret_val == 3:
-                            current_val = 2
+                        if ret_val == 6:
+                            current_val = ModuleValues.FAIL
                         else:
-                            current_val = ret_val
+                            # Needs_action has to return 1 as needs_inspection
+                            current_val = ModuleValues.NEEDS_INSPECTION
                 if return_val < current_val:
                     return_val = current_val
         return return_val

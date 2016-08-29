@@ -7,7 +7,8 @@ import six
 from preup.utils import FileHelper
 from preup.xccdf import XccdfHelper
 from preup import settings
-from preup.logger import logger_report
+from preup.settings import ModuleValues
+from preup.logger import logger_report, log_message
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -225,10 +226,9 @@ class ReportParser(object):
         changed_fields = []
         self.remove_empty_check_import()
         inplace_dict = {
-            0: ReportHelper.upd_inspection,
-            1: ReportHelper.upd_inspection,
-            2: ReportHelper.upd_action,
-            3: ReportHelper.upd_extreme,
+            2: ReportHelper.upd_inspection,
+            4: ReportHelper.upd_action,
+            6: ReportHelper.upd_extreme,
         }
         for rule in self.get_all_result_rules():
             result = [x for x in self.get_nodes(rule, "result") if x.text == "fail"]
@@ -239,9 +239,11 @@ class ReportParser(object):
                 # In case that report has state fail and
                 # no log_risk than it should be needs_inspection
                 if not inplace_risk:
-                    changed, res.text = inplace_dict[0](rule)
+                    changed = rule.get("idref")
+                    res.text = "fail"
+                    log_message('Module %s exits as fail but without risk.' % rule.get("idref"))
                 else:
-                    inplace_num = int(XccdfHelper.get_and_print_inplace_risk(0, inplace_risk))/2
+                    inplace_num = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
                     logger_report.debug("Call function '%s'", inplace_dict[inplace_num])
                     changed, res.text = inplace_dict[inplace_num](rule)
                     logger_report.debug("Replace text '%s:%s'", changed, res.text)
