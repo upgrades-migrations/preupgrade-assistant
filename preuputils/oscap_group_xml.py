@@ -15,7 +15,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import XmlUtils
-from preup.utils import MessageHelper, FileHelper
+from preup.utils import MessageHelper, FileHelper, SystemIdentification
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -109,7 +109,8 @@ class OscapGroupXml(object):
             print ('Problem with writing to file ', file_name, ioe.message)
 
     def write_list_rules(self):
-        rule_name = '_'.join(self.dirname.split('/')[1:])
+        end_point = self.dirname.find(SystemIdentification.get_valid_scenario(self.dirname))
+        rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
         file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
         lines = []
         if os.path.exists(file_list_rules):
