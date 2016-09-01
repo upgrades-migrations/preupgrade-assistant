@@ -109,12 +109,18 @@ class XccdfHelper(object):
                 current_val = 0
                 logger_report.debug('%s found in assessment' % result)
                 if not results[result]:
-                    current_val = settings.PREUPG_RETURN_VALUES[result]
+                    ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
+                    if result == 'fail' and int(ret_val) == -1:
+                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                    else:
+                        current_val = settings.PREUPG_RETURN_VALUES[result]
                 else:
                     ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
+                    print(ret_val)
                     logger_report.debug('Return value from "get_and_print_inplace_risk" is %s' % ret_val)
-                    # IF specific return codes contains risk then return code 3
-                    if result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
+                    if result == 'fail' and int(ret_val) == -1:
+                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                    elif result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
                         current_val = settings.PREUPG_RETURN_VALUES['error']
                     elif int(ret_val) == -1:
                         current_val = settings.PREUPG_RETURN_VALUES[result]

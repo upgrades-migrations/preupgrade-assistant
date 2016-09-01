@@ -54,7 +54,7 @@ class TestRiskCheck(base.TestCase):
         self.assertEqual(self._update_xccdf_file('fail', 'EXTREME'), ModuleValues.FAIL)
 
     def test_fail_return_value(self):
-        self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.ERROR)
 
     def test_unknown_return_values(self):
         expected_value = 'unknown'
@@ -166,6 +166,9 @@ class TestCombinedRiskCheck(base.TestCase):
 
     def test_fixed_failed(self):
         self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, 'EXTREME']), ModuleValues.FAIL)
+
+    def test_fixed_failed_none(self):
+        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, None]), ModuleValues.ERROR)
 
     def test_fixed_information_risk(self):
         self.assertEqual(self._update_xccdf_file(['fixed', 'informational'], [None, 'HIGH']), ModuleValues.ERROR)
