@@ -99,6 +99,7 @@ class Application(object):
         self.tar_ball_name = None
         self.third_party = ""
         self.assessment_dir = None
+        self.list_scans = []
 
     def _add_report_log_file(self):
         """
@@ -480,7 +481,7 @@ class Application(object):
         if not self.conf.contents:
             version = SystemIdentification.get_assessment_version(self.conf.scan)
             if version is None:
-                log_message("Your scan have wrong format",
+                log_message("Your scan have wrong format %s" % version,
                             level=logging.ERROR)
                 log_message("Examples format is like RHEL6_7",
                             level=logging.ERROR)
@@ -573,6 +574,31 @@ class Application(object):
         else:
             self._devel_mode = 0
 
+    def _check_available_contents(self):
+        cnt = 0
+        is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
+        dirs = os.listdir(self.conf.source_dir)
+        self.list_scans = []
+        for dir_name in filter(is_dir, dirs):
+            if SystemIdentification.get_assessment_version(dir_name):
+                self.conf.scan = dir_name
+                self.list_scans.append(dir_name)
+                logger_debug.debug("Scan directory '%s'", self.conf.scan)
+                cnt += 1
+
+        if int(cnt) < 1:
+            log_message("There were no contents found in directory %s. \
+        If you would like to use this tool, you have to install some." % settings.source_dir)
+            return ReturnValues.SCENARIO
+        if int(cnt) > 1:
+            log_message("Preupgrade Assistant detects more than one set of modules.\n")
+            log_message("The list of all available modules in %s is: \n%s" % (settings.source_dir,
+                                                                            '\n'.join(self.list_scans)))
+            log_message("If you would like to use the tool, "
+                        "specify the correct upgrade path mentioned above with parameter -s.")
+            return ReturnValues.SCENARIO
+        return 0
+
     def run(self):
         """run analysis"""
         version_msg = "Preupgrade Assistant version: %s" % VERSION
@@ -587,44 +613,14 @@ class Application(object):
             return 0
 
         if not self.conf.scan and not self.conf.contents and not self.conf.list_rules:
-            cnt = 0
-            is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
-            dirs = os.listdir(self.conf.source_dir)
-            for dir_name in filter(is_dir, dirs):
-                if SystemIdentification.get_assessment_version(dir_name):
-                    self.conf.scan = dir_name
-                    logger_debug.debug("Scan directory '%s'", self.conf.scan)
-                    cnt += 1
-
-            if int(cnt) < 1:
-                log_message("There were no contents found in directory %s. \
-If you would like to use this tool, you have to install some." % settings.source_dir)
-                return ReturnValues.SCENARIO
-            if int(cnt) > 1:
-                log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
-If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
-                return ReturnValues.SCENARIO
+            ret_val = self._check_available_contents()
+            if int(ret_val) != 0:
+                return ret_val
 
         if self.conf.list_rules:
-            list_scans = []
-            cnt = 0
-            if not self.conf.scan:
-                is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
-                dirs = os.listdir(self.conf.source_dir)
-                for dir_name in filter(is_dir, dirs):
-                    if SystemIdentification.get_assessment_version(dir_name):
-                        list_scans.append(dir_name)
-                        self.conf.scan = dir_name
-                        cnt += 1
-
-                if int(cnt) < 1:
-                    log_message("There were no contents found in directory %s. \
-                If you would like to use this tool, you have to install some." % settings.source_dir)
-                    return ReturnValues.SCENARIO
-                if int(cnt) > 1:
-                    log_message("Preupgrade assistant detects more then 1 set of contents in directory %s.\n\
-            If you would like to use this tool, you have to specify correct upgrade path parameter like -s RHEL6_7." % settings.source_dir)
-                    return ReturnValues.SCENARIO
+            ret_val = self._check_available_contents()
+            if int(ret_val) != 0:
+                return ret_val
             rules = [self.conf.scan + ':' + x for x in XccdfHelper.get_list_rules(self.conf.scan)]
             log_message('\n'.join(rules))
             return 0
