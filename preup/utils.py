@@ -472,11 +472,11 @@ class SystemIdentification(object):
 class TarballHelper(object):
 
     @staticmethod
-    def get_tarball_name(result_file, time):
+    def _get_tarball_name(result_file, time):
         return result_file.format(time)
 
     @staticmethod
-    def get_tarball_result_path(root_dir, filename):
+    def _get_tarball_result_path(root_dir, filename):
         return os.path.join(root_dir, filename)
 
     @staticmethod
@@ -499,7 +499,7 @@ class TarballHelper(object):
 
         # used for packing directories into tarball
         os.chdir('/root')
-        tarball_dir = TarballHelper.get_tarball_name(result_file, current_time)
+        tarball_dir = TarballHelper._get_tarball_name(result_file, current_time)
         tarball_name = tarball_dir + '.tar.gz'
         bkp_tar_dir = os.path.join('/root', tarball_dir)
         if direction:
@@ -517,7 +517,7 @@ class TarballHelper(object):
             for f in files_to_copy:
                 shutil.copyfile(os.path.join(dirname, f),
                                 os.path.join(bkp_tar_dir, f))
-            tarball = TarballHelper.get_tarball_result_path(dirname, tarball_name)
+            tarball = TarballHelper._get_tarball_result_path(dirname, tarball_name)
             cmd.append(cmd_pack)
             cmd.append(tarball)
             cmd.append(tarball_dir)
@@ -538,9 +538,16 @@ class TarballHelper(object):
         return os.path.join(settings.tarball_result_dir, tarball_name)
 
     @staticmethod
-    def get_default_tarball_path(result_dir, tarball_name):
+    def get_latest_tarball(result_dir):
         """Returns full tarball path"""
-        return os.path.join(result_dir, tarball_name)
+        if not os.path.isdir(result_dir):
+            return None
+        full_tarball_name = sorted([f for f in os.listdir(result_dir)], reverse=True)
+        # Return the latest tarball
+        if full_tarball_name:
+            return os.path.join(result_dir, full_tarball_name[0])
+        else:
+            return None
 
 
 class ConfigHelper(object):

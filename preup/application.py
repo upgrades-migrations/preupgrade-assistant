@@ -174,7 +174,12 @@ class Application(object):
             log_message(ex.__str__())
             return False
 
-        tarball_results = self.conf.results or tarball_path
+        if not self.conf.results:
+            tarball_results = TarballHelper.get_latest_tarball(settings.tarball_result_dir)
+        else:
+            tarball_results = self.conf.results
+        if tarball_results is None or not os.path.exists(tarball_results):
+            return False
         file_content = FileHelper.get_file_content(tarball_results, 'rb', False, False)
 
         binary = xmlrpclib.Binary(file_content)
@@ -624,7 +629,7 @@ If you would like to use this tool, you have to specify correct upgrade path par
             log_message('\n'.join(rules))
             return 0
 
-        if self.conf.upload and self.conf.results:
+        if self.conf.upload:
             if not self.upload_results():
                 return ReturnValues.SEND_REPORT_TO_UI
             return 0
