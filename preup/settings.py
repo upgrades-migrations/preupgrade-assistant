@@ -211,8 +211,8 @@ class ModuleValues(object):
     ERROR = 15
     UNKNOWN = 14
     FAIL = 13
-    NEEDS_ACTION = 13
-    NEEDS_INSPECTION = 13
+    NEEDS_ACTION = 12
+    NEEDS_INSPECTION = 12
     FIXED = 12
     INFORMATIONAL = 11
     NOT_ALL = 10
