@@ -1,8 +1,8 @@
-.\" Copyright Petr Hracek, 2015
+.\" Copyright Petr Hracek, 2016
 .\"
 .\" This page is distributed under GPL.
 .\"
-.TH preupgrade-assistant-api 1 2015-03-01 "" "Linux User's Manual"
+.TH preupgrade-assistant-api 1 2016-09-01 "" "Linux User's Manual"
 .SH NAME
 preupgrade-assistant-api \- Preupgrade assistant API provides a set of functions
 and variables which can be used for contents writing.
@@ -16,7 +16,7 @@ API provides a set of functions which can be used for better handling of your da
 
 \fBsolution_file\fP - Function adds a message to solution file defined in INI file.
 
-\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory.
+\fBbackup_config_file\fP - Function backups a config file to \fB/root/preupgrade\fP directory.
 
 \fBservice_is_enabled\fP - Function checks if service provided by command chkconfig is enabled.
 
@@ -49,7 +49,7 @@ There are several log files gathered before an assessment:
 \fB$UPGRADE\fP - set to 1 if upgrade mode is specified by module
 
 
-There are several directories located in /root/preupgrade which are used by \fBpreupg\fP command
+There are several directories located in \fB/root/preupgrade\fP which are used by \fBpreupg\fP command
 
 \fBkickstart\fP - used for kickstart generation.
 
