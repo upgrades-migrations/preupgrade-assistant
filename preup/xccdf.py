@@ -116,7 +116,6 @@ class XccdfHelper(object):
                         current_val = settings.PREUPG_RETURN_VALUES[result]
                 else:
                     ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
-                    print(ret_val)
                     logger_report.debug('Return value from "get_and_print_inplace_risk" is %s' % ret_val)
                     if result == 'fail' and int(ret_val) == -1:
                         current_val = settings.PREUPG_RETURN_VALUES['error']
