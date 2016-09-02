@@ -1,0 +1,1 @@
+In case of RESULT_FIXED, this text is not shown to the user. Problem solved no need to bother him.
