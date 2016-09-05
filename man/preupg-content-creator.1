@@ -4,24 +4,24 @@
 .\"
 .TH preupg-content-creator 1 2016-09-01 "" "Linux User's Manual"
 .SH NAME
-preupg-content-creator \- Preupgrade assistant provides this script for faster creation of content
+preupg-content-creator \- The Preupgrade Assistant provides this script for a faster creation of modules
 
 .SH AVAILABLE FUNCTIONS
 API provides a set of functions which can be used for better handling of your data.
 
-\fBcheck_applies_to\fP - Function can be used for specific RPM package detection. If the RPM package does not exists then check script exit with \fBexit_not_applicable\fP return code.
+\fBcheck_applies_to\fP - The function can be used for specific RPM package detection. If the RPM package does not exist, check the script exit with the \fBexit_not_applicable\fP return code.
 
-\fBcheck_root\fP - Function checks whether user is root.
+\fBcheck_root\fP - The function checks whether the user is root.
 
-\fBsolution_file\fP - Function adds a message to solution file defined in INI file.
+\fBsolution_file\fP - The function adds a message to the solution file defined in INI file.
 
-\fBbackup_config_file\fP - Function backups a config file to /root/preupgrade directory.
+\fBbackup_config_file\fP - The function backs up a config file to the /root/preupgrade directory.
 
-\fBservice_is_enabled\fP - Function checks if service provided by command chkconfig is enabled.
+\fBservice_is_enabled\fP - The function checks if the service provided by the chkconfig command is enabled.
 
 .SH HOW TO TEST CONTENT
 
-For testing your content on system follow these steps:
+Follow these steps to test your module on the system:
 
 1. Execute preupg-create-group-xml command which checks whether your content is properly created and nothing is missing.
 
