@@ -84,7 +84,7 @@ def main():
         print ('Problem with reading template.xml file')
         sys.exit(1)
     try:
-        target_tree = ComposeXML.run_compose(target_tree, os.path.dirname(dir_name), content=os.path.basename(dir_name))
+        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name), content=os.path.basename(dir_name))
     except MissingHeaderCheckScriptError:
         sys.exit(1)
     except MissingFileInContentError:
