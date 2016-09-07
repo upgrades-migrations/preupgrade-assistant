@@ -208,14 +208,14 @@ class ReturnValues(object):
 
 class ModuleValues(object):
 
-    ERROR = 15
-    UNKNOWN = 14
-    FAIL = 13
-    NEEDS_ACTION = 12
-    NEEDS_INSPECTION = 12
-    FIXED = 12
-    INFORMATIONAL = 11
-    NOT_ALL = 10
+    ERROR = 2
+    UNKNOWN = 2
+    FAIL = 2
+    NEEDS_ACTION = 1
+    NEEDS_INSPECTION = 0
+    FIXED = 0
+    INFORMATIONAL = 0
+    NOT_ALL = 0
     PASS = 0
 
 PREUPG_RETURN_VALUES = {'error': ModuleValues.ERROR,

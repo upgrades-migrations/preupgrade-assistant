@@ -26,10 +26,10 @@ class XccdfHelper(object):
         all inplace risks higher then SLIGHT.
         """
         risks = {
-            'SLIGHT:': 2,
-            'MEDIUM:': 2,
-            'HIGH:': 4,
-            'EXTREME:': 6,
+            'SLIGHT:': 0,
+            'MEDIUM:': 0,
+            'HIGH:': 1,
+            'EXTREME:': 2,
         }
 
         return_value = -1
@@ -108,6 +108,9 @@ class XccdfHelper(object):
             if result in results:
                 current_val = 0
                 logger_report.debug('%s found in assessment' % result)
+                current_val = settings.PREUPG_RETURN_VALUES[result]
+                ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
+                """
                 if not results[result]:
                     ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
                     if result == 'fail' and int(ret_val) == -1:
@@ -125,11 +128,12 @@ class XccdfHelper(object):
                         current_val = settings.PREUPG_RETURN_VALUES[result]
                     else:
                         # EXTREME has to return 2 as FAIL
-                        if ret_val == 6:
+                        if ret_val == 2:
                             current_val = ModuleValues.FAIL
                         else:
                             # Needs_action has to return 1 as needs_inspection
                             current_val = ModuleValues.NEEDS_INSPECTION
+                """
                 if return_val < current_val:
                     return_val = current_val
         return return_val

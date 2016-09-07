@@ -657,7 +657,6 @@ class PostupgradeHelper(object):
         hasher.update(b'preupgrade-assistant' + content)
         return hasher.hexdigest()
 
-
     @staticmethod
     def postupgrade_scripts(verbose, dirname):
         """

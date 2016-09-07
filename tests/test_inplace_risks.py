@@ -54,37 +54,37 @@ class TestRiskCheck(base.TestCase):
         self.assertEqual(self._update_xccdf_file('fail', 'EXTREME'), ModuleValues.FAIL)
 
     def test_fail_return_value(self):
-        self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.FAIL)
 
     def test_unknown_return_values(self):
         expected_value = 'unknown'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.UNKNOWN)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.UNKNOWN)
 
     def test_pass_return_values(self):
         expected_value = 'pass'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.PASS)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.PASS)
 
     def test_fixed_return_values(self):
         expected_value = 'fixed'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.FIXED)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.FIXED)
 
     def test_informational_return_values(self):
         expected_value = 'informational'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.INFORMATIONAL)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.INFORMATIONAL)
 
     def test_not_applicable_return_values(self):
         expected_value = 'not_applicable'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.NOT_ALL)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.NOT_ALL)
 
     def test_error_return_values(self):
         expected_value = 'error'
@@ -168,10 +168,10 @@ class TestCombinedRiskCheck(base.TestCase):
         self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, 'EXTREME']), ModuleValues.FAIL)
 
     def test_fixed_failed_none(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, None]), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, None]), ModuleValues.FAIL)
 
     def test_fixed_information_risk(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'], [None, 'HIGH']), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'], [None, 'HIGH']), ModuleValues.FIXED)
 
     def test_not_applicable_pass(self):
         self.assertEqual(self._update_xccdf_file(['not_applicable', 'pass'], [None, None]), ModuleValues.NOT_ALL)

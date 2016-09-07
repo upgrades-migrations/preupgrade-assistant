@@ -226,9 +226,9 @@ class ReportParser(object):
         changed_fields = []
         self.remove_empty_check_import()
         inplace_dict = {
-            2: ReportHelper.upd_inspection,
-            4: ReportHelper.upd_action,
-            6: ReportHelper.upd_extreme,
+            0: ReportHelper.upd_inspection,
+            1: ReportHelper.upd_action,
+            2: ReportHelper.upd_extreme,
         }
         for rule in self.get_all_result_rules():
             result = [x for x in self.get_nodes(rule, "result") if x.text == "fail"]
