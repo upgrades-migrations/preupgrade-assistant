@@ -4,13 +4,13 @@
 .\"
 .TH preupgrade-assistant-api 1 2016-09-01 "" "Linux User's Manual"
 .SH NAME
-preupgrade-assistant-api \- Preupgrade Assistant API provides a set of functions
+preupgrade-assistant-api \- The Preupgrade Assistant API provides a set of functions
 and variables which can be used for creating modules.
 
 .SH AVAILABLE FUNCTIONS
 API provides a set of functions which can be used for better handling of your data.
 
-\fBcheck_applies_to\fP - The function can be used for specific RPM package detection. If the RPM package does not exist, check the script exit with the \fBexit_not_applicable\fP return code.
+\fBcheck_applies_to\fP - The function can be used to detect a specific RPM package. If the RPM package does not exist, check the script exit with the \fBexit_not_applicable\fP return code.
 
 \fBcheck_root\fP - The function checks whether the user is root.
 
@@ -36,7 +36,7 @@ There are several log files gathered before the assessment:
 
 \fB$VALUE_GROUP\fP - a file with all groups
 
-\fB$VALUE_CHKCONFIG - a file with \fBchkconfig\fP output
+\fB$VALUE_CHKCONFIG - a file with the \fBchkconfig\fP output
 
 \fB$VALUE_TPM_PREUPGRADE\fP - a directory used for storing your data (such as Kickstart and postupgrade.d directories)
 
@@ -44,9 +44,9 @@ There are several log files gathered before the assessment:
 
 \fB$VALUE_EXECUTABLES\fP - all executables files
 
-\fB$MIGRATE\fP - set to 1 if migration mode is specified by the module
+\fB$MIGRATE\fP - set to 1 if the migration mode is specified by the module
 
-\fB$UPGRADE\fP - set to 1 if upgrade mode is specified by the module
+\fB$UPGRADE\fP - set to 1 if the upgrade mode is specified by the module
 
 
 There are several directories located in \fB/root/preupgrade\fP which are used by the \fBpreupg\fP command
@@ -62,17 +62,17 @@ There are several directories located in \fB/root/preupgrade\fP which are used b
 \fBcommon\fP - the results of long term commands gathered before the assessment
 
 .SH RETURN CODES
-\fBexit_pass\fP - The test passed. Used if nothing "broken" was detected
+\fBexit_pass\fP - The test passed. Used if nothing "broken" was detected.
 
-\fBexit_not_applicable\fP - The rule did not apply to the test target (e.g., the package is not installed). Useful if pripare requirements are not met.
+\fBexit_not_applicable\fP - The rule did not apply to the test target (e.g., the package is not installed).
 
-\fBexit_informational\fP - The rule was evaluated by the checking engine, but isn't to be scored. Ideal for informational results, which have "migration guide" chapter style.
+\fBexit_informational\fP - The rule was evaluated by the checking engine but is not to be scored. Ideal for informational results, which have a "migration guide" chapter style.
 
-\fBexit_fixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility, no manual review expected, but still we should notify the user.
+\fBexit_fixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility. No manual review is expected but the user should be notified..
 
 \fBexit_unknown\fP - Could not tell what happened. Do not know when this should be used ;).
 
-\fBexit_error\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in "an assert way", not as a common result.
+\fBexit_error\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in an "assert way", not as a common result.
 
 \fBexit_fail\fP - The test failed. Moving to a new release with this configuration will result in malfunction. Use when you expect some action from the user - when the migration solution was not completed automatically.
 
@@ -81,26 +81,26 @@ Your script should also tell the administrator how risky it is to upgrade your c
 .SH AVAILABLE RETURN CODES IN REPORTS
 \fBpass\fP - The same as in RETURN CODES
 
-\fBnot_applicable\fP - The rule did not apply to test target. (e.g. package is not installed). Useful if pripare requirements are not met.
+\fBnot_applicable\fP - The rule did not apply to the test target (e.g., the package is not installed).
 
-\fBinformational\fP - The rule was evaluated by the checking engine, but isn't to be scored. Ideal for informational results, which have "migration guide" chapter style.
+\fBinformational\fP - The rule was evaluated by the checking engine, but is not to be scored. Ideal for informational results, which have a "migration guide" chapter style.
 
-\fBfixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility, no manual review expected, but still we should notify the user.
+\fBfixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility. No manual review is expected but the user should be notified.
 
 \fBunknown\fP - Could not tell what happened. Do not know when this should be used ;).
 
-\fBerror\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in "assert way", not as common result.
+\fBerror\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in an "assert way", not as a common result.
 
-\fBneeds_inspection\fP - The test failed with the exit_fail return code. But content developer add one of these logs (log_{slight|medium}_risk before exit_fail.
+\fBneeds_inspection\fP - The test failed with the exit_fail return code but the module developer added one of these logs (log_{slight|medium}_risk before exit_fail.
 
-\fBneeds_action\fP - The test failed with the exit_fail return code. But content developer add the log_high_risk before exit_fail.
+\fBneeds_action\fP - The test failed with the exit_fail return code but the module developer added the log_high_risk before exit_fail.
 
 \fBfail\fP - The test failed. The in-place upgrade is not recommended and marked as an EXTERME risk. 
 
 .SH RISK ASSESSMENT LEVELS
 The available risk assessment levels are:
 
-\fBSlight\fP - We assessed this field and have not found any issues. However, there is still some risk that not all variants have been covered.
+\fBSlight\fP - We assessed this field and have not found any issues. However, there is still a risk that not all variants have been covered.
 
 \fBMedium\fP - It is likely that the area will cause a problem in case of the in-place upgrade. It needs to be checked by the administrator after the in-place upgrade and after the system has been monitored for some time.
 
@@ -112,7 +112,7 @@ The levels None, Slight and Medium change return code exit_fail to exit_needs_in
 
 .SH LOGGING
 
-There are several functions which does logging:
+There are several functions which do logging:
 
 \fBlog_{debug,info,warning,error} <component> <message>\fP
 
@@ -125,12 +125,12 @@ The function creates logs in the format:
 Ini file example
 .nf
 \& [preupgrade]
-\& content_title: <A title>
-\& content_description: <A description of the module>
+\& content_title: <a title>
+\& content_description: <a description of the module>
 \& check_script: <a check script name>
 \& solution_file: <a solution file name which advises the administrator in case of problems>
 \& author: <the author's name and email>
-\& applies_to: <a package name (RPM) which is test it>
+\& applies_to: <a package name (RPM) which is tested>
 .fi
 
 .SH AUTHORS
