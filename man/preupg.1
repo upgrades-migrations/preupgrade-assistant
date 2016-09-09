@@ -1,14 +1,14 @@
-.\" Copyright Petr Hracek, 2016
+.\" Copyright Petr Hracek, 2015
 .\"
 .\" This page is distributed under GPL.
 .\"
-.TH preupg 1 2016-09-01 "" "Linux User's Manual"
+.TH preupg 1 2015-03-01 "" "Linux User's Manual"
 .SH NAME
-preupg \- Preupgrade assistant performs assessment of the system from
-the "upgradeability" point of view
+preupg \- The Preupgrade Assistant performs an assessment of the system from
+the "upgradability" point of view
 
 .SH SYNOPSIS
-\fBpreupg used in case of one installed contents on source system
+\fBpreupg can be used if the modules are installed on the system
 
 \fBpreupg [-l, --list-contents]
 
@@ -21,92 +21,92 @@ the "upgradeability" point of view
 \fBpreupg [--cleanup]
 
 .SH DESCRIPTION
-\fBpreupg\fP is the main binary of Preupgrade Assistant.
+\fBpreupg\fP is the main binary file of the Preupgrade Assistant.
 
 .SH OPTIONS
 .TP
 .B \-c, --contents PATH
-Generates a content for preupgrade assistant.
+Generates a content for the Preupgrade Assistant usage.
 .TP
 .B \-d, --debug
-Makes preupgrade assistant log lots of debugging information.
+Makes the Preupgrade Assistant log with the debugging information.
 .TP
 .B \--cleanup
-Clean all files created by preupg about previous state of the machine.
+Cleans all files created by preupg about the previous state of the machine.
 .TP
 .B \-\-force
-Suppress user interaction.
+Suppresses the user's interaction.
 .TP
 .B \-\-kickstart
-Generate kickstart.
+Generates Kickstart.
 .TP
 .B \-l, --list
-Shows list of installed contents
+Shows a list of installed modules.
 .TP
 .B \-m, --mode MODE
-Select one (or both) from the possible modes: \fBmigrate\fR or \fBupgrade\fR. Both modes are used by default. \fBupgrade\fR is used for in-place upgrades on the same machine by \fIfedup\fR or \fIredhat-upgrade-tool\fR. \fBmigrate\fR is used for migration with kickstart with new clean installation, with settings of the new system as close as possible to settings of original system.
+Selects one (or both) from the possible modes: \fBmigrate\fR or \fBupgrade\fR. Both modes are used by default. \fBupgrade\fR is used for in-place upgrades on the same machine by \fIfedup\fR or \fIredhat-upgrade-tool\fR. \fBmigrate\fR is used for Kickstart migration with a new clean installation and the settings of the new system as close as possible to the settings of the original system.
 .TP
 .B \-s, --scan PATH
-Executes selected assessment taken from list option.
+Executes the selected assessment taken from the option list.
 .TP
 .B --skip-common
-Skips generating common log files used during assessment.
+Skips generating common log files generated during the previous assessment.
 .TP
 .B --riskcheck
-Returns value which depends on INPLACE RISK results.
-If verbose mode is mentioned then shows all inplace risks generated during assessment.
-Return values are 0 for SLIGHT, MEDIUM risk or 1 for HIGH risk or 2 for EXTREME risk.
+Returns a value which depends on the INPLACE RISK results.
+If verbose mode is mentioned, it shows all in-place risks generated during the assessment.
+Return values are 0 for SLIGHT or MEDIUM risk, 1 for HIGH risk and 2 for EXTREME risk.
 .TP
 .B \-\-text
-Convert HTML results to text form by elinks, lynx or w3m.
+Converts HTML results into a text form by elinks, lynx or w3m.
 .TP
 .B \-v, --verbose
-Shows more information during assessment. Verbose can be repeated more times.
+Shows more information during the assessment. Verbose can be repeated more times.
 .TP
 .B \-\-dst-arch
-Specify destination architecture for migrations. Allowed options are: i386-x86_64 or ppc-ppc64.
+Specifies the destination architecture for migrations. Allowed options are: i386-x86_64 or ppc-ppc64.
 
 .SH RETURN STATES
 \fBpreupg\fP command returns several return values.
 
 Possible return values are:
 
-\fB0\fP - preupg works properly and was successful even modules went properly. Modules exits with results PASS.
+\fB0\fP - preupg works properly and the modules exit with results PASS.
 
-\fB10\fP - preupg works properly but modules finishes with 10. Modules exits with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
+\fB10\fP - preupg works properly but modules finish with 10. Modules exit with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
 
-\fB11\fP - preupg works properly but modules finishes with 11. Modules exits with results INFORMATIONAL.
+\fB11\fP - preupg works properly but modules finish with 11. Modules exit with results INFORMATIONAL.
 
-\fB12\fP - preupg works properly but modules finishes with 12. Modules exits with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
+\fB12\fP - preupg works properly but modules finish with 12. Modules exit with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
 
-\fB13\fP - preupg works properly but modules finishes with 13. Modules exits with results FAILED.
+\fB13\fP - preupg works properly but modules finish with 13. Modules exit with results FAILED.
 
-\fB14\fP - preupg works properly but modules finishes with 14. Modules exits with results UNKNOWN.
+\fB14\fP - preupg works properly but modules finish with 14. Modules exit with results UNKNOWN.
 
-\fB15\fP - preupg works properly but modules finishes with 15. Modules exits with results ERROR.
+\fB15\fP - preupg works properly but modules finish with 15. Modules exit with results ERROR.
 
-\fB20\fP - preupg does not find a proper upgrade scenario.
+\fB20\fP - preupg cannot find a proper upgrade scenario.
 
 \fB21\fP - preupg is executed with parameters \fBmode\fP and \fBselect\-rules\fP. This is not allowed.
 
-\fB22\fP - preupg is executed with parameters \fBriskcheck\fP, \fBcleanup\fP and \fBkickstart\fP. This options are not allowed together.
+\fB22\fP - preupg is executed with parameters \fBriskcheck\fP, \fBcleanup\fP and \fBkickstart\fP. These options are not allowed to be used together.
 
 \fB23\fP - preupg has to be executed as \fBroot\fP.
 
-\fB24\fP - preupg has to be executed before kickstart generation or risk check.
+\fB24\fP - preupg has to be executed before the Kickstart generation.
 
 \fB25\fP - openscap and openscap-engine-sce are not installed on the system.
 
-\fB26\fP - you specified a text convertor which does not exist. Allowe convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
+\fB26\fP - You specified a text convertor which is not allowed. Allowed convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
 
-\fB27\fP - File \fB/usr/share/preupgrade/common/scripts.txt\fP is missing. Preupgrade-assistant is not installed properly. Reinstall it.
+\fB27\fP - The \fB/usr/share/preupgrade/common/scripts.txt\fP file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
 
-\fB28\fP - We have detected some trouble with sending report to WEB-UI. Check if it is installed.
+\fB28\fP - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
 
 
 .SH NOTES
-All common log files are stored in \fB/var/cache/preupgrade/common\fP directory.
-Assessment results are stored in \fB/root/preupgrade\fP directory. Tarballs with all assessments are stored in directory \fB/root/preupgrade-results\fP.
+All common log files are stored in the \fB/var/cache/preupgrade/common\fP directory.
+Assessment results are stored in the \fB/root/preupgrade\fP directory. Tarballs with the assessments are stored in the \fB/root/preupgrade-results\fP directory.
 
 .SH AUTHORS
 Petr Hracek, <phracek@redhat.com> (man page)
