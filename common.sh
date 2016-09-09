@@ -464,7 +464,7 @@ check_rpm_to() {
         BINARY_NAME=$(echo "$BINARY_NAME" | tr "," " ")
         for bin in $BINARY_NAME
         do
-            grep "^$bin[[:space:]]" $VALUE_EXECUTABLES> /dev/null
+            grep "/$bin" $VALUE_EXECUTABLES> /dev/null
             if [ $? -ne 0 ]; then
                 log_high_risk "Binary $bin is not installed."
                 NOT_APPLICABLE=1
