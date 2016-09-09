@@ -62,7 +62,7 @@ class TestAPICheck(base.TestCase):
             self.assertTrue(True)
 
     def test_check_rpm_to_binaries(self):
-        expected_binaries = "/usr/bin/fooupg,/sbin/preupg"
+        expected_binaries = "fooupg,preupg"
         self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
 
     def test_not_check_rpm_to_binaries(self):
