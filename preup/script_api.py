@@ -37,7 +37,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preup import settings
-from preup.utils import FileHelper
+from preup.utils import FileHelper, ProcessHelper
 
 __all__ = (
     'log_debug',
@@ -549,8 +549,8 @@ def check_rpm_to(check_rpm="", check_bin=""):
         binaries = check_bin.split(',')
         lines = FileHelper.get_file_content(VALUE_EXECUTABLES, "rb", True)
         for binary in binaries:
-            lst = [x for x in lines if x.strip().endswith("/"+binary)]
-            if not lst:
+            cmd = "which %s" % binary
+            if ProcessHelper.run_subprocess(cmd, print_output=False, shell=True) != 0:
                 log_high_risk("Binary %s is not installed." % binary)
                 not_applicable = 1
 
