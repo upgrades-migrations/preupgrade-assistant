@@ -116,16 +116,29 @@ class Common(object):
         if os.path.islink(filename_remove):
             os.unlink(filename_remove)
 
+    def _get_required_arch_dirname(self):
+        """
+        Get expected dirname of common data for requested assesment of system.
+
+        In case that dst_arch is not specified by --dst-arch option, final
+        arch is arch of current system (e.g. x86_64). In case that destination
+        architecture is specified by the option and it is different to source
+        arch, specific dirname for cross-architecture is returned. E.g. for
+        source arch "i386" and destination arch "x86_64" returns "i386-x86_64".
+
+        Doesn't matter when directory exist or not. Just return expected dirname,
+        which correspond to used convention.
+        """
+        arch = src_arch = SystemIdentification.get_arch()
+        if self.conf.dst_arch and src_arch != self.conf.dst_arch:
+            arch = "%s-%s" % (src_arch, self.conf.dst_arch)
+        return arch
+
     def create_common_symlink(self, filename, variant):
-        """
-        Function removes previous link if exists
-        and then creates a new one
-        """
+        "Function removes previous link if exists and then creates a new one"
         self.remove_common_symlink(filename)
         sym_link_name = filename.replace(variant, 'default')
-        architecture = SystemIdentification.get_arch()
-        if self.conf.dst_arch:
-            architecture = self.conf.dst_arch
+        architecture = self._get_required_arch_dirname()
         os.symlink(os.path.join(self.common_result_dir,
                                 architecture,
                                 filename),
@@ -141,7 +154,7 @@ class Common(object):
         for file_name in settings.KS_FILES:
             target_file = os.path.join(settings.KS_DIR, file_name)
             orig_name = file_name.replace('default', variant)
-            source_name = os.path.join(dir_name, platform.machine(), orig_name)
+            source_name = os.path.realpath(os.path.join(dir_name, file_name))
             if not os.path.exists(target_file) and os.path.exists(source_name):
                 shutil.copyfile(source_name, target_file)
 
@@ -162,11 +175,15 @@ class Common(object):
         # sometimes as i686 architecture. That's problematic in some cases
         # so we solve this for now by this little hack ugly.
         i386_dir = os.path.join(self.common_result_dir, 'i386')
+        i386_x64_dir = os.path.join(self.common_result_dir, 'i386-x86_64')
+        i686_x64_dir = os.path.join(self.common_result_dir, 'i686-x86_64')
         i686_dir = os.path.join(self.common_result_dir, 'i686')
         if not os.path.exists(i686_dir) and os.path.exists(i386_dir):
             os.symlink(i386_dir, i686_dir)
+        if not os.path.exists(i686_x64_dir) and os.path.exists(i386_x64_dir):
+            os.symlink(i386_x64_dir, i686_x64_dir)
         dir_name = os.path.join(self.common_result_dir,
-                                platform.machine())
+                                SystemIdentification.get_arch())
         if not os.path.exists(dir_name):
             return
         server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant) or files.startswith("Common")]

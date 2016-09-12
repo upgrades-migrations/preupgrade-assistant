@@ -162,7 +162,10 @@ Upload results to preupgrade assistant WEB-UI"
         self.parser.add_option(
             "--dst-arch",
             metavar="DSTARCH",
-            help="Use common files from migration common directory."
+            help="""
+                 Specify target/destination architecture where you want to migrate
+                 (e.g.: x86_64). Use of the option is expected on 32b systems.
+                 """
         )
         self.parser.add_option(
             "--old-report-style",

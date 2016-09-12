@@ -646,7 +646,8 @@ class Application(object):
                                                                     settings.migration_options[1]))
                         return ReturnValues.RISK_CLEANUP_KICKSTART
                 if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
-                    text = '\n' + settings.migration_text
+                    if not self.conf.dst_arch:
+                        text = '\n' + settings.migration_text
                 logger_debug.debug("Architecture '%s'. Text '%s'.", SystemIdentification.get_arch(), text)
                 if not show_message(settings.warning_text + text):
                     # We do not want to continue

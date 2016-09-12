@@ -141,8 +141,9 @@ warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
                "Please ensure you have backed up your system and/or data \n" \
                "in the event of a failed upgrade that would require \n" \
                "a full re-install of the system from installation media."
-migration_text = "The running system is 32bit. Migration is possible only to 64bit system.\nSee help --dst-arch option.\n"
-migration_options = ['i386-x86_64', 'ppc-ppc64']
+migration_text = "The running system is 32bit. Migration is possible only to 64bit system.\n" \
+                 "See help --dst-arch option.\n"
+migration_options = ['x86_64', 'ppc64']
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for '{0}':"
 message = "We found some potential in-place upgrade risks.\n" \
