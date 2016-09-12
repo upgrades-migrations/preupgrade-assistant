@@ -123,13 +123,13 @@ class KickstartGenerator(object):
         try:
             ksparser.readKickstart(system_ks_path)
         except (KickstartError, IOError):
-            log_message("Can't read system kickstart at %s" % system_ks_path)
+            log_message("Cannot read the system Kickstart at %s." % system_ks_path)
             try:
                 ksparser.readKickstart(ks_template)
             except AttributeError:
-                log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py", level=logging.DEBUG)
+                log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py.", level=logging.DEBUG)
             except IOError:
-                log_message("Can't read kickstart template %s" % settings.KS_TEMPLATE)
+                log_message("Cannot read the Kickstart template %s." % settings.KS_TEMPLATE)
                 return None
         return ksparser
 
@@ -148,11 +148,11 @@ class KickstartGenerator(object):
         try:
             script_path = settings.KS_TEMPLATE_POSTSCRIPT
         except AttributeError:
-            log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py')
+            log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py.')
             return
         script_str = FileHelper.get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
         if not script_str:
-            log_message("Can't open script template: {0}".format(script_path))
+            log_message("Cannot open the script template: {0}.".format(script_path))
             return
         if tarball_content is not None:
             script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
@@ -201,7 +201,7 @@ class KickstartGenerator(object):
                                                          method=True,
                                                          decode_flag=False)
         except IOError:
-            log_message("File %s is missing. Partitioning layout has not to be complete." % self.kick_start_name,
+            log_message("The %s file is missing. The partitioning layout might not be complete." % self.kick_start_name,
                         level=logging.WARNING)
             return None
         for index, row in enumerate(kickstart_data):
@@ -212,7 +212,7 @@ class KickstartGenerator(object):
 
     def generate(self):
         if not self.collect_data():
-            log_message("Important data are missing for kickstart generation.", level=logging.ERROR)
+            log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
             return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
@@ -228,7 +228,7 @@ class KickstartGenerator(object):
 
     def main(self):
         if not os.path.exists(os.path.join(settings.result_dir, settings.xml_result_name)):
-            log_message("'preupg' command was not run yet. Run them before kickstart generation.")
+            log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
             return 1
 
         KickstartGenerator.copy_kickstart_templates()

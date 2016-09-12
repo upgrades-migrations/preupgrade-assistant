@@ -215,7 +215,7 @@ class PackagesHandling(BaseKickstart):
             try:
                 result_list.extend(PackagesHandling.get_package_list(prefix + l, 2))
             except IOError:
-                log_message("File '%s' was not found. Skipping package generation.", (prefix + l))
+                log_message("The '%s' file was not found. Skipping the package generation.", (prefix + l))
                 return None
         return result_list
 

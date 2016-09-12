@@ -241,7 +241,7 @@ class ReportParser(object):
                 if not inplace_risk:
                     changed = rule.get("idref")
                     res.text = "fail"
-                    log_message('Module %s exits as fail but without risk.' % rule.get("idref"))
+                    log_message('The %s module exits as fail but without a risk.' % rule.get("idref"))
                 else:
                     inplace_num = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
                     logger_report.debug("Call function '%s'", inplace_dict[inplace_num])

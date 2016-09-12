@@ -52,7 +52,7 @@ class Common(object):
 
     def common_results(self):
         """run common scripts"""
-        log_message("Gathering logs used by preupgrade assistant:")
+        log_message("Gathering logs used by the Preupgrade Assistant:")
         self.switch_dir()
         try:
             max_length = max(max([len(x.split("=", 4)[3]) for x in self.lines]), len(settings.assessment_text))

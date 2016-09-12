@@ -154,7 +154,7 @@ class Application(object):
         url = ""
         if self.conf.upload is True:
             # lets try default configuration
-            log_message('You have to specify server where to upload results.')
+            log_message('Specify the server where to upload the results.')
             log_message(settings.ui_command.format(self.conf.results))
             return False
         else:
@@ -192,24 +192,24 @@ class Application(object):
         try:
             status = response['status']
         except KeyError:
-            log_message('Invalid response from server.')
-            log_message("Invalid response from server: %s" % response, level=logging.ERROR)
+            log_message('Invalid response from the server.')
+            log_message("Invalid response from the server: %s" % response, level=logging.ERROR)
         else:
             if status == 'OK':
                 try:
                     url = response['url']
                 except KeyError:
-                    log_message('Report submitted successfully.')
+                    log_message('The report submitted successfully.')
                 else:
-                    log_message('Report submitted successfully. You can inspect it at %s' % url)
+                    log_message('The report submitted successfully. You can inspect it at %s.' % url)
             else:
                 try:
                     message = response['message']
-                    log_message('Report not submitted. Server returned message: ', message)
-                    log_message("Report submit: %s (%s)" % (status, message), level=logging.ERROR)
+                    log_message('The report not submitted. The server returned a message: ', message)
+                    log_message("The report status: %s (%s)" % (status, message), level=logging.ERROR)
                 except KeyError:
-                    log_message('Report not submitted. Server returned status: ', status)
-                    log_message("Report submit: %s" % status, level=logging.ERROR)
+                    log_message('The report not submitted. The server returned a status: ', status)
+                    log_message("The report status: %s" % status, level=logging.ERROR)
 
     def prepare_scan_directories(self):
         """Used for prepartion of directories used during scan functionality"""
@@ -261,7 +261,7 @@ class Application(object):
         end_time = datetime.datetime.now()
         diff = end_time - start_time
         log_message(
-            "Assessment finished (time %.2d:%.2ds)" % (diff.seconds / 60,
+            "The assessment finished (time %.2d:%.2ds)" % (diff.seconds / 60,
                                                        diff.seconds % 60)
         )
 
@@ -476,14 +476,14 @@ class Application(object):
         try:
             self.report_parser = ReportParser(self.content)
         except IOError:
-            log_message("Content {0} does not exist".format(self.content))
+            log_message("The module {0} does not exist.".format(self.content))
             return ReturnValues.SCENARIO
         if not self.conf.contents:
             version = SystemIdentification.get_assessment_version(self.conf.scan)
             if version is None:
-                log_message("Your scan have wrong format %s" % version,
+                log_message("Your scan is in a wrong format %s." % version,
                             level=logging.ERROR)
-                log_message("Examples format is like RHEL6_7",
+                log_message("It should be like 'RHEL6_7' for upgrade from RHEL 6->7.",
                             level=logging.ERROR)
                 return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
@@ -520,8 +520,8 @@ class Application(object):
             ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
         self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
-        log_message("Tarball with results is stored here '%s' ." % self.tar_ball_name)
-        log_message("The latest assessment is stored in directory '%s' ." % self.conf.result_dir)
+        log_message("The tarball with results is stored in '%s' ." % self.tar_ball_name)
+        log_message("The latest assessment is stored in the '%s' directory." % self.conf.result_dir)
         # pack all configuration files to tarball
         return 0
 
@@ -557,12 +557,12 @@ class Application(object):
             # We do not want to print anything in case of testing contents
             pass
         if self.report_data:
-            log_message('Summary 3rd party providers:')
+            log_message('Summary of the third party providers:')
             for target, dummy_report in six.iteritems(self.report_data):
                 self.third_party = target
-                log_message("Read the 3rd party content {0} {1} for more details.".
+                log_message("Read the third party content {0} {1} for more details.".
                             format(target, path))
-        log_message("Upload results to UI by command:\ne.g. {0} .".format(command))
+        log_message("Upload results to UI by the command:\ne.g. {0} .".format(command))
 
     def _set_devel_mode(self):
         # Check for devel_mode
@@ -587,15 +587,15 @@ class Application(object):
                 cnt += 1
 
         if int(cnt) < 1:
-            log_message("There were no contents found in directory %s. \
+            log_message("There were no modules found in the %s directory. \
         If you would like to use this tool, you have to install some." % settings.source_dir)
             return ReturnValues.SCENARIO
         if int(cnt) > 1:
-            log_message("Preupgrade Assistant detects more than one set of modules.\n")
-            log_message("The list of all available modules in %s is: \n%s" % (settings.source_dir,
-                                                                            '\n'.join(self.list_scans)))
+            log_message("Preupgrade Assistant detects more "
+                        "than one set of modules in the %s directory.\n" % settings.source_dir)
+            log_message("The list of sets of all available modules is: \n%s" % '\n'.join(self.list_scans))
             log_message("If you would like to use the tool, "
-                        "specify the correct upgrade path mentioned above with parameter -s.")
+                        "specify the correct upgrade path mentioned above with a parameter -s.")
             return ReturnValues.SCENARIO
         return 0
 
@@ -641,8 +641,8 @@ class Application(object):
                 if self.conf.dst_arch:
                     correct_option = [x for x in settings.migration_options if self.conf.dst_arch == x]
                     if not correct_option:
-                        log_message("Specify correct --dst-arch option.")
-                        log_message("Available are '%s' or '%s'" % (settings.migration_options[0],
+                        log_message("Specify the correct --dst-arch option.")
+                        log_message("There are '%s' or '%s' available." % (settings.migration_options[0],
                                                                     settings.migration_options[1]))
                         return ReturnValues.RISK_CLEANUP_KICKSTART
                 if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
@@ -681,7 +681,7 @@ class Application(object):
                                               self.content)
         if self.conf.riskcheck:
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
-                log_message("'preupg' command was not run yet. Run them before checking risks.")
+                log_message("The 'preupg' command was not run yet. Run it to check for possible risks.")
                 return ReturnValues.PREUPG_BEFORE_KICKSTART
             return_val = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(),
                                                         self.conf.verbose)
@@ -689,7 +689,7 @@ class Application(object):
 
         if self.conf.kickstart:
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
-                log_message("'preupg' command was not run yet. Run them before kickstart generation.")
+                log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
                 return ReturnValues.PREUPG_BEFORE_KICKSTART
             kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
             kg.main()
@@ -700,12 +700,16 @@ class Application(object):
                                         self.conf.scan,
                                         settings.content_file)
             if self.conf.scan.startswith("/"):
-                log_message('Specify correct upgrade path parameter like -s RHEL6_7')
-                log_message('Upgrade path is provided by command preupg --list')
+                log_message('Specify the correct upgrade path parameter like -s RHEL6_7')
+                log_message("Upgrade path is provided by the 'preupg --list' command.")
+                self._check_available_contents()
+                log_message("The available upgrade paths: '%s'" % '\n'.join(self.list_scans))
                 return ReturnValues.SCENARIO
             if not os.path.isdir(os.path.join(self.conf.source_dir, self.conf.scan)):
-                log_message('Specify correct upgrade path parameter like -s RHEL6_7')
-                log_message('Upgrade path is provided by command preupg --list')
+                log_message('Specify the correct upgrade path parameter like -s RHEL6_7')
+                self._check_available_contents()
+                log_message("Upgrade path is provided by the 'preupg --list' command.")
+                log_message("The available upgrade paths: '%s'" % '\n'.join(self.list_scans))
                 return ReturnValues.SCENARIO
 
         if self.conf.contents:

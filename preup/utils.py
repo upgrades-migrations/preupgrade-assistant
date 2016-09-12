@@ -121,8 +121,8 @@ class FileHelper(object):
         """
         if os.path.isfile(xml_file):
             if not os.access(xml_file, os.R_OK):
-                log_message("File is not readable." % xml_file, level=logging.ERROR)
-                raise IOError("File %s is not readable." % xml_file)
+                log_message("The file is not readable." % xml_file, level=logging.ERROR)
+                raise IOError("The %s file is not readable." % xml_file)
         else:
             log_message("%s is not a file" % xml_file, level=logging.ERROR)
             raise IOError("%s is not a file." % xml_file)
@@ -144,8 +144,8 @@ class FileHelper(object):
         if is_valid:
             return xml_file
         else:
-            log_message("Provided file is not a valid XML file", level=logging.ERROR)
-            raise RuntimeError("Provided file is not a valid XML file")
+            log_message("The provided file is not a valid XML file", level=logging.ERROR)
+            raise RuntimeError("The provided file is not a valid XML file")
 
     @staticmethod
     def get_interpreter(filename, verbose=False):
@@ -163,7 +163,7 @@ class FileHelper(object):
             return inter
         else:
             if verbose:
-                log_message("Problem with getting interpreter", level=logging.ERROR)
+                log_message("Problem with getting an interpreter", level=logging.ERROR)
             return None
 
     @staticmethod
@@ -192,7 +192,7 @@ class FileHelper(object):
         except IOError:
             raise
         if data is None:
-            raise ValueError("You try decode binary data to unicode: %s" % path)
+            raise ValueError("You are tring decode binary data to unicode: %s" % path)
         return data
 
     @staticmethod
@@ -249,7 +249,7 @@ class FileHelper(object):
         If not then ERROR message arise
         """
         if not os.access(file_name, os.X_OK):
-            MessageHelper.print_error_msg(title="The file %s is not executable" % file_name)
+            MessageHelper.print_error_msg(title="The %s file is not executable" % file_name)
 
     @staticmethod
     def get_script_type(file_name):
@@ -287,8 +287,8 @@ class DirHelper(object):
         """Check if provided temp dir is valid."""
         if os.path.isdir(temp_dir):
             if not os.access(temp_dir, os.W_OK):
-                log_message("Directory %s is not writable." % temp_dir, level=logging.ERROR)
-                raise IOError("Directory %s is not writable." % temp_dir)
+                log_message("The %s directory is not writable." % temp_dir, level=logging.ERROR)
+                raise IOError("The %s directory is not writable." % temp_dir)
         else:
             os.makedirs(temp_dir)
         if mode:
@@ -532,7 +532,7 @@ class TarballHelper(object):
             try:
                 shutil.copy(tarball, settings.tarball_result_dir + "/")
             except IOError:
-                log_message("Problem with copying tarball '%s' to /root/preupgrade-results", tarball)
+                log_message("Problem with copying the tarball '%s' to /root/preupgrade-results", tarball)
         os.chdir(current_dir)
 
         return os.path.join(settings.tarball_result_dir, tarball_name)
@@ -570,7 +570,7 @@ class ConfigFilesHelper(object):
         # Check if configuration file exists in /root/preupgrade/cleanconf directory
         clean_conf_name = os.path.join(result_dir, cleanconf)
         if os.path.exists(clean_conf_name):
-            message = "Configuration file '%s' exists in '%s' directory"
+            message = "The '%s' configuration file already exists in the '%s' directory"
             logger.info(message % (clean_conf_name, os.path.dirname(clean_conf_name)))
             # Check if configuration file exists in dirtyconf
             # If so delete them.
@@ -588,7 +588,7 @@ class ConfigFilesHelper(object):
             full_path = os.path.realpath(full_path)
         # Check if configuration file exists in dirtyconf directory
         if os.path.exists(dirtyconf):
-            logger.info("File '%s' already exists in dirtyconf directory", dirtyconf)
+            logger.info("The '%s' file already exists in the dirtyconf directory", dirtyconf)
             return False
         # Check whether dirtyconf directory with dirname(filename) exists
         if not os.path.exists(os.path.dirname(dirtyconf)):
@@ -617,7 +617,7 @@ class ConfigFilesHelper(object):
                     continue
             except ValueError:
                 return
-            logger_debug.debug("File name to copy '%s'", filename)
+            logger_debug.debug("The '%s' file name to copy.", filename)
             new_filename = filename[1:]
             # Check whether config file exists in cleanconf directory
             cleanconf_file_name = os.path.join(clean_conf, new_filename)
@@ -625,7 +625,7 @@ class ConfigFilesHelper(object):
             # Check if config file does not exist in cleanconf directory
             if ConfigFilesHelper.check_cleanconf_dir(result_dir, cleanconf_file_name):
                 if os.path.exists(dirtyconf_file_name):
-                    log_message("File %s exist in %s directory" % (new_filename, dirty_conf), logging.DEBUG)
+                    log_message("The %s file exist in the %s directory" % (new_filename, dirty_conf), logging.DEBUG)
                     os.unlink(dirtyconf_file_name)
                 continue
             # Check if config file does not exists in dirtyconf directory
@@ -703,7 +703,7 @@ class PostupgradeHelper(object):
         print what scripts were changed.
         """
         if not os.path.exists(dirname):
-            message = 'Directory %s does not exist for creating checksum file'
+            message = 'The %s directory does not exist for creating checksum file'
             log_message(message, settings.postupgrade_dir, level=logging.ERROR)
             return
 
@@ -724,7 +724,7 @@ class PostupgradeHelper(object):
         if check:
             hashed_file = PostupgradeHelper.get_hashes(os.path.join(dirname, settings.base_hashed_file))
             if hashed_file is None:
-                message = 'Hashed_file is missing. Postupgrade scripts will not be executed'
+                message = 'The Hashed_file is missing. The postupgrade scripts will not be executed'
                 log_message(message, level=logging.WARNING)
                 return False
             hashed_file_new = PostupgradeHelper.get_hashes(full_path_name)
@@ -732,7 +732,7 @@ class PostupgradeHelper(object):
             for file_name in [settings.base_hashed_file, filename]:
                 os.remove(os.path.join(dirname, file_name))
             if different_hashes or len(different_hashes) > 0:
-                message = 'Checksums are different in these postupgrade scripts: %s'
+                message = 'The checksums are different in these postupgrade scripts: %s'
                 log_message(message % different_hashes, level=logging.WARNING)
                 return False
         return True
