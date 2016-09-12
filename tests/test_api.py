@@ -61,6 +61,10 @@ class TestAPICheck(base.TestCase):
         except SystemExit:
             self.assertTrue(True)
 
+    def test_check_rpm_to_binaries(self):
+        expected_binaries = "ls,cp"
+        self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
+
     def test_not_check_rpm_to_binaries(self):
         expected_binaries = "/usr/bin/fooupg,/bin/preupg"
         try:
