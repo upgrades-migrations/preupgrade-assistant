@@ -116,7 +116,10 @@ class PartitionGenerator(BaseKickstart):
             if device_type == 'lvm':
                 if self.vg_info is None or not self.vg_info:
                     continue
-                vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
+                try:
+                    vg_name = [x for x in six.iterkeys(self.vg_info) if device.startswith(x)][0]
+                except IndexError:
+                    return
                 # Get volume group name
                 if not self.vol_group.has_key(vg_name):
                     self.vol_group[vg_name] = {}
