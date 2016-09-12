@@ -773,7 +773,7 @@ def deploy_hook(*args):
     :return:
     """
 
-    if MODULE_NAME == "":
+    if MODULE_PATH == "":
         return 0
     if args[0] == "":
         log_error("Hook name is not specified. (Possible values are postupgrade, preupgrade.)")
