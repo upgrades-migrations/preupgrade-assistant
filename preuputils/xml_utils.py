@@ -140,7 +140,7 @@ class XmlUtils(object):
             if key == 'current_directory':
                 val = '/'.join(get_full_xml_tag(self.dirname))
                 val = 'SCENARIO/' + val
-            if key == 'module_path':
+            if key == 'module_name':
                 val = '_'.join(get_full_xml_tag(self.dirname))
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
