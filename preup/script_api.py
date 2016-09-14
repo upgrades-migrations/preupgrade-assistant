@@ -185,12 +185,19 @@ VALUE_CURRENT_DIRECTORY = os.environ['XCCDF_VALUE_CURRENT_DIRECTORY']
 SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
 
 #
+# Variable which referes to current upgrade path directory
+#
+VALUE_REPORT_DIR = os.environ['XCCDF_VALUE_REPORT_DIR']
+
+#
 # Name of module being currently executed
 #
 try:
     MODULE_PATH = os.environ['XCCDF_VALUE_MODULE_PATH']
 except KeyError:
-    MODULE_PATH = "MODULE_PATH"
+    MODULE_PATH = VALUE_CURRENT_DIRECTORY.replace(VALUE_REPORT_DIR, '')
+    MODULE_PATH = MODULE_PATH.replace('/', '_')
+
 
 #
 # MIGRATE means if preupg binary was used with `--mode migrate` parameter
@@ -787,9 +794,12 @@ def deploy_hook(*args):
         if not os.path.exists(script_name):
             log_error("Script_name %s does not exist.", script_name)
             return 1
-        hook_dir = "%s/hooks/%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
+        hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
+        else:
+            log_error("The %s directory already exists" % hook_dir)
+            exit_error()
         shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
         for arg in args[2:]:
             if os.path.isdir(arg):
