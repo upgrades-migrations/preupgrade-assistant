@@ -776,12 +776,15 @@ deploy_hook() {
                 log_error "The $hook_dir directory already exists."; exit_error
             fi
             log_debug "Copy script $script_name as $hook_dir/run_hook."
-            cp "$script_name" "$hook_dir/run_hook"
-            while [ $# -ne 0 ]; do
-                TO_COPY=$1
-                cp -r "$TO_COPY" "$hook_dir"
-                shift
-            done
+            cp -- "$script_name" "$hook_dir/run_hook" 2>/dev/null || {
+                log_error "Copying of hook scrip failed: $script_name"
+                exit_error
+            }
+            [ -n "$1" ] || return 0
+            cp -r -- "$@" "$hook_dir" 2>/dev/null || {
+                log_error "Copying of following files with hook script failed: $*"
+                exit_error
+            }
             ;;
         *) log_error "Unknown option $deploy_name"; exit_error
             ;;
