@@ -793,21 +793,26 @@ def deploy_hook(*args):
     if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
             log_error("Script_name %s does not exist.", script_name)
-            return 1
+            exit_error()
         hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
         else:
             log_error("The %s directory already exists" % hook_dir)
             exit_error()
-        shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
-        for arg in args[2:]:
-            if os.path.isdir(arg):
-                shutil.copytree(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
-                                os.path.join(hook_dir))
-            else:
-                shutil.copyfile(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
-                                os.path.join(hook_dir, arg))
+        try:
+            shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
+            for arg in args[2:]:
+                if os.path.isdir(arg):
+                    shutil.copytree(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
+                                    os.path.join(hook_dir))
+                else:
+                    shutil.copyfile(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
+                                    os.path.join(hook_dir, arg))
+        except Error as e:
+            log_error("Copying of hook script failed: %s" % e)
+            exit_error()
+
     else:
         log_error("Unknown hook option '%s'", deploy_name)
         exit_error()
