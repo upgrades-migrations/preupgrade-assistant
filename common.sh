@@ -747,26 +747,26 @@ deploy_hook() {
     local deploy_name=$1
     [ -z "$deploy_name" ] && {
         log_error "Hook name is not specified. (Possible values are postupgrade, preupgrade.)"
-        return 1
+        exit_error
     }
     shift
     local script_name=$1
     [ -z "$script_name" ] && {
         log_error "Script name is not specified. It is mandatory."
-        return 1
+        exit_error
     }
     shift
 
     [ -z "$MODULE_PATH" ] && {
         log_error "Module path is not specfied."
-        return 1
+        exit_error
     }
 
     case $deploy_name in
         "postupgrade"|"preupgrade")
             if [ ! -f "$script_name" ] ; then
                 log_error "Script_name $script_name does not exist."
-                return 1
+                exit_error
             fi
             hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf$MODULE_PATH/$deploy_name"
             if [ ! -d "$hook_dir" ]; then

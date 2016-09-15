@@ -793,7 +793,7 @@ def deploy_hook(*args):
     if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
             log_error("Script_name %s does not exist.", script_name)
-            return 1
+            exit_error()
         hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
