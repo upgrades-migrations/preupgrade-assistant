@@ -792,9 +792,9 @@ def deploy_hook(*args):
     script_name = os.path.join(VALUE_CURRENT_DIRECTORY, args[1])
     if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
-            log_error("Script_name %s does not exist.", script_name)
+            log_error("Script_name %s does not exist." % script_name)
             exit_error()
-        hook_dir = "%s/hooks/xccdf_%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
+        hook_dir = "%s/hooks/xccdf%s/%s" % (VALUE_TMP_PREUPGRADE, MODULE_PATH, deploy_name)
         if not os.path.isdir(hook_dir):
             os.makedirs(hook_dir)
         else:
@@ -803,13 +803,23 @@ def deploy_hook(*args):
         try:
             shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
             for arg in args[2:]:
-                if os.path.isdir(arg):
-                    shutil.copytree(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
-                                    os.path.join(hook_dir))
-                else:
-                    shutil.copyfile(os.path.join(VALUE_CURRENT_DIRECTORY, arg),
-                                    os.path.join(hook_dir, arg))
-        except Error as e:
+                full_hook_name = os.path.join(VALUE_CURRENT_DIRECTORY, arg)
+                hook_arg = os.path.join(hook_dir, arg)
+                try:
+                    if os.path.isdir(full_hook_name):
+                        if os.path.isdir(hook_arg):
+                            log_error("The %s directory already exists" % hook_arg)
+                            exit_error()
+                        shutil.copytree(full_hook_name, hook_arg)
+                    else:
+                        if os.path.exists(hook_arg):
+                            log_error("The %s file already exists" % hook_arg)
+                            exit_error()
+                        shutil.copyfile(full_hook_name, hook_arg)
+                except OSError as e:
+                    log_error("Copying file failed: %s" % e)
+                    exit_error()
+        except IOError as e:
             log_error("Copying of hook script failed: %s" % e)
             exit_error()
 
