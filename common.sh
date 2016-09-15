@@ -392,7 +392,7 @@ switch_to_content() {
     #
     # Function for switch to the content directory
     #
-    cd $CURRENT_DIRECTORY
+    cd "$CURRENT_DIRECTORY"
 }
 
 check_applies_to() {
@@ -471,7 +471,7 @@ check_rpm_to() {
         BINARY_NAME=$(echo "$BINARY_NAME" | tr "," " ")
         for bin in $BINARY_NAME
         do
-            which $bin > /dev/null 2>&1
+            which "$bin" > /dev/null 2>&1
             if [ $? -ne 0 ]; then
                 log_high_risk "Binary $bin is not installed."
                 NOT_APPLICABLE=1
@@ -504,7 +504,7 @@ solution_file() {
     # solution file will be created in module directory
     # :param message: Message - string of list of strings
     #
-    echo "$1" >> $SOLUTION_FILE
+    echo "$1" >> "$SOLUTION_FILE"
 }
 
 
@@ -636,7 +636,7 @@ is_dist_native() {
                 ;;
             *)
                 if [ -f "$DIST_NATIVE" ]; then
-                    grep "^$pkg" $DIST_NATIVE > /dev/null
+                    grep "^$pkg" "$DIST_NATIVE" > /dev/null
                     if [ $? -eq 0 ]; then
                         return 0
                     fi
@@ -654,8 +654,8 @@ get_dist_native_list() {
     local pkg
     local line
     while read line; do
-        pkg=$(echo $line | cut -d " " -f1 )
-        is_dist_native $pkg >/dev/null && echo $pkg
+        pkg=$(echo "$line" | cut -d " " -f1 )
+        is_dist_native "$pkg" >/dev/null && echo "$pkg"
     done < "$VALUE_RPM_QA"
 }
 
@@ -709,7 +709,7 @@ print_home_dirs() {
     # returns 0 on SUCCESS, otherwise 1 and logs warning
     # shouldn't be used before load_config_parser
     #
-    [ $# -eq 1 ] && [ $USER_CONFIG_FILE -eq 1 ] || {
+    [ $# -eq 1 ] && [ "$USER_CONFIG_FILE" -eq 1 ] || {
         conf_get_section "$PREUPGRADE_CONFIG" "home-dirs"
         return 0
     }
@@ -729,7 +729,7 @@ add_pkg_to_kickstart() {
     }
 
     while [ $# -ne 0 ]; do
-        echo $1 >> $SPECIAL_PKG_LIST
+        echo "$1" >> "$SPECIAL_PKG_LIST"
         shift
     done
     return 0
@@ -745,19 +745,19 @@ deploy_hook() {
     #
 
     local deploy_name=$1
-    [ -z $deploy_name ] && {
+    [ -z "$deploy_name" ] && {
         log_error "Hook name is not specified. (Possible values are postupgrade, preupgrade.)"
         return 1
     }
     shift
     local script_name=$1
-    [ -z $script_name ] && {
+    [ -z "$script_name" ] && {
         log_error "Script name is not specified. It is mandatory."
         return 1
     }
     shift
 
-    [ -z $MODULE_PATH ] && {
+    [ -z "$MODULE_PATH" ] && {
         log_error "Module path is not specfied."
         return 1
     }
@@ -776,10 +776,10 @@ deploy_hook() {
                 log_error "The $hook_dir directory already exists."; exit_error
             fi
             log_debug "Copy script $script_name as $hook_dir/run_hook."
-            cp $script_name "$hook_dir/run_hook"
+            cp "$script_name" "$hook_dir/run_hook"
             while [ $# -ne 0 ]; do
                 TO_COPY=$1
-                cp -r $TO_COPY $hook_dir
+                cp -r "$TO_COPY" "$hook_dir"
                 shift
             done
             ;;
