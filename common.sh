@@ -654,7 +654,7 @@ get_dist_native_list() {
     local pkg
     local line
     while read line; do
-        pkg=$(echo "$line" | cut -d " " -f1 )
+        pkg=$(echo "$line" | grep -Eom1 '^[^[:space:]]+')
         is_dist_native "$pkg" >/dev/null && echo "$pkg"
     done < "$VALUE_RPM_QA"
 }
