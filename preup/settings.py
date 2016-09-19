@@ -189,7 +189,7 @@ DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
 
 # Ordered dictionary because of python 2.4.
 
-ORDERED_LIST = ['error', 'unknown', 'fail', 'needs_action', 'needs_inspection',
+ORDERED_LIST = ['error', 'fail', 'needs_action', 'needs_inspection',
                 'fixed', 'informational', 'not_applicable', 'not_selected',
                 'not_checked', 'pass']
 
@@ -210,7 +210,6 @@ class ReturnValues(object):
 class ModuleValues(object):
 
     ERROR = 2
-    UNKNOWN = 2
     FAIL = 2
     NEEDS_ACTION = 1
     NEEDS_INSPECTION = 0
@@ -220,7 +219,6 @@ class ModuleValues(object):
     PASS = 0
 
 PREUPG_RETURN_VALUES = {'error': ModuleValues.ERROR,
-                        'unknown': ModuleValues.UNKNOWN,
                         'fail': ModuleValues.FAIL,
                         'needs_action': ModuleValues.NEEDS_ACTION,
                         'needs_inspection': ModuleValues.NEEDS_INSPECTION,
@@ -233,4 +231,4 @@ PREUPG_RETURN_VALUES = {'error': ModuleValues.ERROR,
                         }
 ERROR_RETURN_VALUES = ['error', 'pass', 'informational', 'fixed',
                        'not_applicable', 'not_selected',
-                       'not_checked', 'unknown']
+                       'not_checked' ]

@@ -182,8 +182,8 @@ class XmlUtils(object):
                                'log_error', 'log_warning'],
                       'exit_': ['exit_error', 'exit_fail',
                                 'exit_fixed', 'exit_not_applicable',
-                                'exit_pass', 'exit_unknown',
-                                'exit_informational']}
+                                'exit_pass', 'exit_informational']
+                      }
         for check in check_func:
             self.mh.check_inplace_risk(prefix=check, check_func=check_func[check])
         self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[0])

@@ -169,11 +169,6 @@ RESULT_FAILED=$RESULT_FAIL
 RESULT_ERROR=$XCCDF_RESULT_ERROR
 
 #
-# Exit status for 'unknown' result
-#
-RESULT_UNKNOWN=$XCCDF_RESULT_UNKNOWN
-
-#
 # Exit status for 'notapplicable' result
 #
 RESULT_NOT_APPLICABLE=$XCCDF_RESULT_NOT_APPLICABLE
@@ -333,13 +328,6 @@ log_extreme_risk() {
     # Inplace upgrade is impossible.
     #
     _log_risk "EXTREME" "$1"
-}
-
-exit_unknown() {
-    #
-    # Could not tell what happened.
-    #
-    exit $RESULT_UNKNOWN
 }
 
 exit_pass() {

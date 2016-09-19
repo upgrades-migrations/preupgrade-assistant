@@ -61,7 +61,6 @@ __all__ = (
     'exit_not_applicable',
     'exit_informational',
     'exit_pass',
-    'exit_unknown',
     'check_rpm_to',
     'check_applies_to',
     'solution_file',
@@ -468,11 +467,6 @@ def exit_error():
 def exit_pass():
     """Test passed."""
     sys.exit(int(os.environ['XCCDF_RESULT_PASS']))
-
-
-def exit_unknown():
-    """Could not tell what happened."""
-    sys.exit(int(os.environ['XCCDF_RESULT_UNKNOWN']))
 
 
 def exit_not_applicable():

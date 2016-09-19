@@ -56,12 +56,6 @@ class TestRiskCheck(base.TestCase):
     def test_fail_return_value(self):
         self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.FAIL)
 
-    def test_unknown_return_values(self):
-        expected_value = 'unknown'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.UNKNOWN)
-        for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.UNKNOWN)
-
     def test_pass_return_values(self):
         expected_value = 'pass'
         self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.PASS)
@@ -131,9 +125,6 @@ class TestCombinedRiskCheck(base.TestCase):
     def test_error_pass(self):
         self.assertEqual(self._update_xccdf_file(['error', 'pass'], [None, None]), ModuleValues.ERROR)
 
-    def test_error_unknown(self):
-        self.assertEqual(self._update_xccdf_file(['error', 'unknown'], [None, None]), ModuleValues.ERROR)
-
     def test_error_failed(self):
         self.assertEqual(self._update_xccdf_file(['error', 'fail'], [None, None]), ModuleValues.ERROR)
 
@@ -142,12 +133,6 @@ class TestCombinedRiskCheck(base.TestCase):
 
     def test_needs_inspection_pass(self):
         self.assertEqual(self._update_xccdf_file(['needs_inspection', 'pass'], [None, None]), ModuleValues.NEEDS_INSPECTION)
-
-    def test_unknown_pass(self):
-        self.assertEqual(self._update_xccdf_file(['unknown', 'pass'], [None, None]), ModuleValues.UNKNOWN)
-
-    def test_unknown_informational(self):
-        self.assertEqual(self._update_xccdf_file(['unknown', 'informational'], [None, None]), ModuleValues.UNKNOWN)
 
     def test_informational_pass(self):
         self.assertEqual(self._update_xccdf_file(['informational', 'pass'], [None, None]), ModuleValues.INFORMATIONAL)
