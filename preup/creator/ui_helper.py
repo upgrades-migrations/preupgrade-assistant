@@ -67,6 +67,7 @@ class UIHelper(object):
         self.check_script = True
         self.solution_file = True
         self.refresh_content = False
+        self.script_type = None
 
     def _init_dict(self):
         self.content_dict['content_description'] = ''
@@ -117,16 +118,16 @@ class UIHelper(object):
             self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
 
         if self.upgrade_path is True or self.upgrade_path == "":
-            print ("Scenario is mandatory. You have to specify it.")
+            print ("The scenario is mandatory. You have to specify it.")
             return None
 
         if not SystemIdentification.get_valid_scenario(self.upgrade_path):
             if self.content_path is None:
                 self.content_path = self.upgrade_path
-            print ("Scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
+            print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
             return None
 
-        message = 'Path %s already exists.\nDo you want to create a content there?' % self.upgrade_path
+        message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
         if UIHelper.check_path(self.get_upgrade_path(), message) is None:
             return None
 
@@ -134,6 +135,31 @@ class UIHelper(object):
 
     def prepare_content_env(self):
         self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
+
+    def get_script_type(self):
+        while True:
+            options = ['sh', 'py']
+            self.script_type = get_user_input(settings.type_check_script, any_input=True)
+            if self.script_type not in options:
+                print("Select either 'sh or 'py'.")
+                continue
+            if self.script_type is True and self.script_type != "":
+                self.script_type = "sh"
+                break
+            else:
+                break
+        print(self.script_type)
+        if self.script_type == "sh":
+            message = settings.check_script % settings.default_bash_script_name
+        else:
+            message = settings.check_script % settings.default_python_script_name
+        checkscript = get_user_input(message, any_input=True)
+        if checkscript is True:
+            if self.script_type == "sh":
+                checkscript = settings.default_bash_script_name
+            else:
+                checkscript = settings.default_python_script_name
+        return checkscript
 
     def get_content_info(self):
         self._group_name = get_user_input(settings.group_name, any_input=True)
@@ -144,16 +170,14 @@ class UIHelper(object):
             self._content_name = settings.default_module
         self.prepare_content_env()
         if os.path.exists(self.get_content_path()):
-            message = "Content %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
+            message = "The module %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
                                                                                                   self.content_path)
             if UIHelper.check_path(os.path.join(self.upgrade_path, self.content_path), message):
                 # User would like to overwrite the content. We will delete them and and make newerone.
                 self.refresh_content = True
         else:
             os.makedirs(self.get_content_path())
-        checkscript = get_user_input(settings.check_script, any_input=True)
-        if checkscript is True:
-            checkscript = settings.default_script_name
+        checkscript = self.get_script_type()
         if UIHelper.check_path(os.path.join(self.get_content_path(), checkscript),
                                settings.check_path % checkscript) is None:
             self.check_script = False
@@ -203,10 +227,14 @@ class UIHelper(object):
 
     def _create_check_script(self):
         if self.check_script:
+            if self.script_type == "sh":
+                content = settings.temp_bash_script
+            else:
+                content = settings.temp_python_script
             FileHelper.write_to_file(os.path.join(self.get_content_path(),
                                                   self.get_check_script()),
                                      'wb',
-                                     settings.temp_check_script)
+                                     content)
             os.chmod(os.path.join(self.get_content_path(),
                                   self.get_check_script()),
                      0755)
