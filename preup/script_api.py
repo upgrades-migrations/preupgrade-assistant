@@ -808,7 +808,6 @@ def deploy_hook(*args):
                     hook_arg = os.path.join(hook_dir, os.path.basename(arg))
                 else:
                     hook_arg = os.path.join(hook_dir, arg)
-                log_error(hook_arg)
                 if os.path.isdir(hook_arg):
                     log_error("The %s directory already exists" % hook_arg)
                     exit_error()
