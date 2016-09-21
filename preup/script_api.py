@@ -31,6 +31,7 @@ import os
 import sys
 import re
 import shutil
+import errno
 try:
     import configparser
 except ImportError:
@@ -577,7 +578,7 @@ def solution_file(message):
     :param message: Message - string of list of strings
     :return:
     """
-    solution_filename = os.path.join(os.environ['CURRENT_DIRECTORY'], SOLUTION_FILE)
+    solution_filename = os.path.join(VALUE_CURRENT_DIRECTORY, SOLUTION_FILE)
     if os.path.exists(solution_filename):
         mod = "a+b"
     else:
@@ -789,7 +790,7 @@ def deploy_hook(*args):
     if args[1] == "":
         log_error("Script name is not specified. It is mandatory.")
         exit_error()
-    script_name = os.path.join(VALUE_CURRENT_DIRECTORY, args[1])
+    script_name = args[1]
     if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
             log_error("Script_name %s does not exist." % script_name)
@@ -803,22 +804,25 @@ def deploy_hook(*args):
         try:
             shutil.copyfile(script_name, os.path.join(hook_dir, "run_hook"))
             for arg in args[2:]:
-                full_hook_name = os.path.join(VALUE_CURRENT_DIRECTORY, arg)
-                hook_arg = os.path.join(hook_dir, arg)
-                try:
-                    if os.path.isdir(full_hook_name):
-                        if os.path.isdir(hook_arg):
-                            log_error("The %s directory already exists" % hook_arg)
-                            exit_error()
-                        shutil.copytree(full_hook_name, hook_arg)
-                    else:
-                        if os.path.exists(hook_arg):
-                            log_error("The %s file already exists" % hook_arg)
-                            exit_error()
-                        shutil.copyfile(full_hook_name, hook_arg)
-                except OSError as e:
-                    log_error("Copying file failed: %s" % e)
+                if arg.startswith('/'):
+                    hook_arg = os.path.join(hook_dir, os.path.basename(arg))
+                else:
+                    hook_arg = os.path.join(hook_dir, arg)
+                log_error(hook_arg)
+                if os.path.isdir(hook_arg):
+                    log_error("The %s directory already exists" % hook_arg)
                     exit_error()
+                if os.path.isfile(hook_arg):
+                    log_error("The %s file already exists" % hook_arg)
+                    exit_error()
+                try:
+                    shutil.copytree(arg, hook_arg)
+                except OSError as exc:
+                    if exc.errno == errno.ENOTDIR:
+                        shutil.copyfile(arg, hook_arg)
+                    else:
+                        log_error("Copying failed: %s" % exc)
+                        exit_error()
         except IOError as e:
             log_error("Copying of hook script failed: %s" % e)
             exit_error()
@@ -830,3 +834,5 @@ def deploy_hook(*args):
 load_pa_configuration()
 
 shorten_envs()
+
+os.chdir(VALUE_CURRENT_DIRECTORY)

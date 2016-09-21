@@ -40,6 +40,7 @@ class TestCreator(base.TestCase):
         self.puh._content_name = self.content_name
         self.puh.check_script = True
         self.puh.solution_file = True
+        self.puh.script_type = "sh"
         content_dict = {}
         content_dict['check_script'] = "foobar_check_script.sh"
         content_dict['solution'] = "foobar_solution.txt"
