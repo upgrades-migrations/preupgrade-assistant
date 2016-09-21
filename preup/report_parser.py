@@ -268,7 +268,7 @@ class ReportParser(object):
 
     def remove_debug_info(self):
         """Function removes debug information from report"""
-        re_expr = r'^DEBUG.*'
+        re_expr = r'^preupg.log.DEBUG.*'
         for rule in self.get_all_result_rules():
             for check_import in self.filter_grandchildren(rule,
                                                           "check",
