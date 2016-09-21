@@ -828,7 +828,7 @@ def deploy_hook(*args):
             exit_error()
 
     else:
-        log_error("Unknown hook option '%s'", deploy_name)
+        log_error("Unknown hook option '%s'" % deploy_name)
         exit_error()
 
 load_pa_configuration()
