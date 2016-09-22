@@ -783,13 +783,13 @@ def deploy_hook(*args):
 
     if MODULE_PATH == "":
         return 0
-    if args[0] == "":
+    if len(args) < 1:
         log_error("Hook name is not specified. (Possible values are postupgrade, preupgrade.)")
         exit_error()
-    deploy_name = args[0]
-    if args[1] == "":
+    elif len(args) < 2:
         log_error("Script name is not specified. It is mandatory.")
         exit_error()
+    deploy_name = args[0]
     script_name = args[1]
     if deploy_name == "postupgrade" or deploy_name == "preupgrade":
         if not os.path.exists(script_name):
