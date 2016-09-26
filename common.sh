@@ -768,7 +768,7 @@ deploy_hook() {
                 log_error "Script_name $script_name does not exist."
                 exit_error
             fi
-            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf$MODULE_PATH/$deploy_name"
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/$MODULE_PATH/$deploy_name"
             if [ ! -d "$hook_dir" ]; then
                 log_debug "Dir $hook_dir does not exist."
                 mkdir -p "$hook_dir"

@@ -118,7 +118,7 @@ class TestAPICheck(base.TestCase):
         script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/cp")
         postupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
                                             "hooks",
-                                            "xccdf" + script_api.MODULE_PATH,
+                                            script_api.MODULE_PATH,
                                             deploy_type,
                                             )
         for f in ["run_hook", "common.sh", "cp"]:
@@ -132,7 +132,7 @@ class TestAPICheck(base.TestCase):
         script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/cp")
         preupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
                                             "hooks",
-                                            "xccdf" + script_api.MODULE_PATH,
+                                            script_api.MODULE_PATH,
                                             deploy_type,
                                             )
         for f in ["run_hook", "common.sh", "cp"]:
