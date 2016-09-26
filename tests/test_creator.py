@@ -71,7 +71,7 @@ class TestCreator(base.TestCase):
                         'content_title = foobar_test_title',
                         '']
 
-        self.assertListEqual(lines, expected_ini)
+        self.assertEqual(lines, expected_ini)
 
     def test_group_ini(self):
         group_ini = os.path.join(self.puh.get_upgrade_path(),
@@ -83,7 +83,7 @@ class TestCreator(base.TestCase):
         expected_group_ini = ['[preupgrade]',
                               'group_title = Title for foobar_group',
                               '']
-        self.assertListEqual(lines, expected_group_ini)
+        self.assertEqual(lines, expected_group_ini)
 
     def test_check_script(self):
         check_script = os.path.join(self.puh.get_content_path(), self.puh.get_check_script())
@@ -96,7 +96,7 @@ class TestCreator(base.TestCase):
                       '',
                       "### For more information see 'man preupg-content-creator' or 'man preupgrade-assistant-api'.",
                       '']
-        self.assertListEqual(lines, exp_script)
+        self.assertEqual(lines, exp_script)
 
 
 def suite():
