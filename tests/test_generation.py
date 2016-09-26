@@ -21,6 +21,9 @@ FOO_RESULTS = FOO_DIR + variables.result_prefix
 
 
 class TestContentGenerate(base.TestCase):
+    dir_name = None
+    result_dir = None
+
     def setUp(self):
         self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
         self.result_dir = os.path.join(os.getcwd(), 'tests', FOO_RESULTS, 'dummy')
@@ -44,6 +47,9 @@ class TestContentGenerate(base.TestCase):
 
 
 class TestGlobalContent(base.TestCase):
+    temp_dir = None
+    dir_name = None
+    result_dir = None
 
     def setUp(self):
         self.temp_dir = tempfile.mktemp(prefix='preupgrade', dir='/tmp')
