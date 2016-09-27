@@ -30,6 +30,7 @@ class TestCreator(base.TestCase):
     puh = None
     group_name = "foobar_group"
     content_name = "foobar_content"
+    content_dict = {}
 
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
@@ -40,24 +41,23 @@ class TestCreator(base.TestCase):
         self.puh._content_name = self.content_name
         self.puh.check_script = True
         self.puh.solution_file = True
-        self.puh.script_type = "sh"
-        content_dict = {}
-        content_dict['check_script'] = "foobar_check_script.sh"
-        content_dict['solution'] = "foobar_solution.txt"
-        content_dict['content_title'] = "foobar_test_title"
-        content_dict['content_description'] = "Foobar content test description"
-        self.puh.content_dict = content_dict
+        self.content_dict['check_script'] = "foobar_check_script.sh"
+        self.content_dict['solution'] = "foobar_solution.txt"
+        self.content_dict['content_title'] = "foobar_test_title"
+        self.content_dict['content_description'] = "Foobar content test description"
+        self.puh.content_dict = self.content_dict
         self.puh.content_path = os.path.join(self.puh.get_group_name(), self.puh.get_content_name())
         if os.path.exists(self.puh.get_content_path()):
             shutil.rmtree(self.puh.get_content_path())
         os.makedirs(self.puh.get_content_path())
-        self.puh.prepare_content_env()
-        self.puh.create_final_content()
 
     def tearDown(self):
         shutil.rmtree(self.tempdir)
 
     def test_content_ini(self):
+        self.puh.script_type = "sh"
+        self.puh.prepare_content_env()
+        self.puh.create_final_content()
         content_ini = os.path.join(self.puh.get_content_path(), self.puh.get_content_ini_file())
         self.assertEqual(content_ini, os.path.join(self.upgrade_dir,
                                                    self.group_name,
@@ -74,6 +74,9 @@ class TestCreator(base.TestCase):
         self.assertEqual(lines, expected_ini)
 
     def test_group_ini(self):
+        self.puh.script_type = "sh"
+        self.puh.prepare_content_env()
+        self.puh.create_final_content()
         group_ini = os.path.join(self.puh.get_upgrade_path(),
                                  self.puh.get_group_name(), 'group.ini')
         self.assertEqual(group_ini, os.path.join(self.upgrade_dir,
@@ -85,7 +88,10 @@ class TestCreator(base.TestCase):
                               '']
         self.assertEqual(lines, expected_group_ini)
 
-    def test_check_script(self):
+    def test_bash_check_script(self):
+        self.puh.script_type = "sh"
+        self.puh.prepare_content_env()
+        self.puh.create_final_content()
         check_script = os.path.join(self.puh.get_content_path(), self.puh.get_check_script())
         lines = load_file(check_script)
         exp_script = ['#!/bin/bash',
@@ -98,12 +104,27 @@ class TestCreator(base.TestCase):
                       '']
         self.assertEqual(lines, exp_script)
 
+    def test_python_check_script(self):
+        self.puh.script_type = "python"
+        self.puh.prepare_content_env()
+        self.puh.create_final_content()
+        check_script = os.path.join(self.puh.get_content_path(), self.puh.get_check_script())
+        lines = load_file(check_script)
+        exp_script = ['#!/usr/bin/python',
+                      '# -*- Mode: Python; python-indent: 8; indent-tabs-mode: t -*-','',
+                      'import sys',
+                      'import os', '',
+                      'from preup.script_api import *', '',
+                      '#END GENERATED SECTION', '',
+                      "### For more information see 'man preupg-content-creator' or 'man preupgrade-assistant-api'."]
+        self.assertEqual(lines, exp_script)
+
 
 def suite():
     loader = unittest.TestLoader()
-    suite = unittest.TestSuite()
-    suite.addTest(loader.loadTestsFromTestCase(TestCreator))
-    return suite
+    unit_suite = unittest.TestSuite()
+    unit_suite.addTest(loader.loadTestsFromTestCase(TestCreator))
+    return unit_suite
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=3).run(suite())
