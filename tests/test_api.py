@@ -63,7 +63,7 @@ class TestAPICheck(base.TestCase):
             self.assertTrue(True)
 
     def test_check_rpm_to_binaries(self):
-        expected_binaries = "ls,cp"
+        expected_binaries = "cp,nm"
         self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
 
     def test_not_check_rpm_to_binaries(self):
@@ -115,13 +115,13 @@ class TestAPICheck(base.TestCase):
         if os.path.isdir(hook_dir):
             shutil.rmtree(hook_dir)
         deploy_type = "postupgrade"
-        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/cp")
+        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/nm")
         postupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
                                             "hooks",
                                             script_api.MODULE_PATH,
                                             deploy_type,
                                             )
-        for f in ["run_hook", "common.sh", "cp"]:
+        for f in ["run_hook", "common.sh", "nm"]:
             self.assertTrue(os.path.isfile(os.path.join(postupgrade_hook_dir, f)))
 
     def test_deploy_hook_preupgrade(self):
@@ -129,13 +129,13 @@ class TestAPICheck(base.TestCase):
         if os.path.isdir(hook_dir):
             shutil.rmtree(hook_dir)
         deploy_type = "preupgrade"
-        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/cp")
+        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/nm")
         preupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
                                             "hooks",
                                             script_api.MODULE_PATH,
                                             deploy_type,
                                             )
-        for f in ["run_hook", "common.sh", "cp"]:
+        for f in ["run_hook", "common.sh", "nm"]:
             self.assertTrue(os.path.isfile(os.path.join(preupgrade_hook_dir, f)))
 
 

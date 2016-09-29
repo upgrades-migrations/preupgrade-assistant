@@ -70,8 +70,7 @@ class TestCreator(base.TestCase):
                         'solution = foobar_solution.txt',
                         'content_title = foobar_test_title',
                         '']
-
-        self.assertEqual(lines, expected_ini)
+        self.assertEqual(expected_ini.sort(), lines.sort())
 
     def test_group_ini(self):
         self.puh.script_type = "sh"
@@ -111,13 +110,13 @@ class TestCreator(base.TestCase):
         check_script = os.path.join(self.puh.get_content_path(), self.puh.get_check_script())
         lines = load_file(check_script)
         exp_script = ['#!/usr/bin/python',
-                      '# -*- Mode: Python; python-indent: 8; indent-tabs-mode: t -*-','',
+                      '# -*- Mode: Python; python-indent: 8; indent-tabs-mode: t -*-', '',
                       'import sys',
                       'import os', '',
                       'from preup.script_api import *', '',
                       '#END GENERATED SECTION', '',
                       "### For more information see 'man preupg-content-creator' or 'man preupgrade-assistant-api'."]
-        self.assertEqual(lines, exp_script)
+        self.assertTrue(exp_script, lines)
 
 
 def suite():
