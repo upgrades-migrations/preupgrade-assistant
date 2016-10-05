@@ -106,10 +106,10 @@ class ModuleHelper(object):
             generated_section.append(
                 ModuleHelper.apply_function(updates, begin_fnc, end_fnc, sep, script_type)
                 )
-            if "check_bin" in updates or "check_rpm" in updates:
-                generated_section.append(
-                    ModuleHelper.rpm_bin_function(updates, begin_fnc, end_fnc, sep, script_type)
-                )
+        if "check_bin" in updates or "check_rpm" in updates:
+            generated_section.append(
+                ModuleHelper.rpm_bin_function(updates, begin_fnc, end_fnc, sep, script_type)
+            )
         return generated_section, functions
 
     def update_check_script(self, updates, author=None):
