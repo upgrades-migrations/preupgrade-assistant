@@ -3,7 +3,10 @@
 from __future__ import unicode_literals, print_function
 import os
 import re
-import rpm
+try:
+    import rpm
+except ImportError:
+    pass
 import six
 from preup.utils import FileHelper
 from preup import settings
