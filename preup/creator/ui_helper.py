@@ -140,15 +140,14 @@ class UIHelper(object):
         while True:
             options = ['sh', 'py']
             self.script_type = get_user_input(settings.type_check_script, any_input=True)
+            if self.script_type is True:
+                self.script_type = "sh"
+                break
             if self.script_type not in options:
                 print("Select either 'sh or 'py'.")
                 continue
-            if self.script_type is True and self.script_type != "":
-                self.script_type = "sh"
-                break
             else:
                 break
-        print(self.script_type)
         if self.script_type == "sh":
             message = settings.check_script % settings.default_bash_script_name
         else:
