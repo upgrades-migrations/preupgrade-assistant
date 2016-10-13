@@ -6,22 +6,15 @@ import shutil
 import stat
 import tempfile
 
-from xml.etree import ElementTree
-try:
-    from xml.etree.ElementTree import ParseError
-except ImportError:
-    from xml.parsers.expat import ExpatError as ParseError
-
-from preuputils.compose import ComposeXML
+from preup.xml.compose import ComposeXML
 from preup import xccdf
 from preup import settings
-from preuputils import variables
-from preuputils.xml_utils import XmlUtils
-from preuputils.oscap_group_xml import OscapGroupXml
+from preup.xml import variables
+from preup.xml.xml_utils import XmlUtils
+from preup.xml.oscap_group_xml import OscapGroupXml
 from preup.utils import FileHelper
 from preup.xml_manager import html_escape, html_escape_string
-from preup.exception import MissingFileInContentError, MissingTagsIniFileError, EmptyTagIniFileError
-
+from preup.exception import MissingFileInContentError, MissingTagsIniFileError
 try:
     import base
 except ImportError:

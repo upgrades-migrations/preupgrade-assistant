@@ -1,27 +1,21 @@
 include MANIFEST.in
 include Makefile
 include common.sh
-include README*
 include LICENSE
-include preupg premigrate
-include preupg.bash
-include preupg-content-creator
+include premigrate
+include preupg
 
-recursive-include common *
-recursive-include kickstart *
-recursive-include man *
-recursive-include preuputils *
-recursive-include postupgrade.d *
-recursive-include scripts *.sh
+recursive-include data *
+recursive-include doc *
+recursive-include etc *
+include           man/*
+include           preup/*.py
+include           preup/creator/*
+recursive-include preup/kickstart *
+include           preup/ui/licenses/*
+include           preup/ui/report/fixtures/initial_data.json
+recursive-include preup/ui/static *
+recursive-include preup/ui/templates *
+include           preup/xml/*
 recursive-include tests *
-recursive-include preup_creator *
-recursive-include openscap *
-recursive-include templates *
-
-include preup_ui/licenses/*
-include preup_ui/report/fixtures/initial_data.json
-include preup-conf/preupgrade-assistant.conf
-include ui-conf/99-preup-httpd.conf.private
-include ui-conf/99-preup-httpd.conf.public
-recursive-include preup_ui/static *
-recursive-include preup_ui/templates *
+include           tools/*.sh

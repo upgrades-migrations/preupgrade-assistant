@@ -9,8 +9,8 @@ import six
 from distutils import dir_util
 
 from preup.utils import FileHelper, SystemIdentification
-from preuputils import variables
-from preuputils.oscap_group_xml import OscapGroupXml
+from preup.xml import variables
+from preup.xml.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
 from preup.logger import logger_debug
@@ -337,4 +337,3 @@ class ComposeXML(object):
         cls.indent(target_tree)
 
         return target_tree
-

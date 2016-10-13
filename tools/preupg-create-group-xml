@@ -7,8 +7,8 @@ import shutil
 from xml.etree import ElementTree
 
 from distutils import dir_util
-from preuputils import variables
-from preuputils.compose import ComposeXML
+from preup.xml import variables
+from preup.xml.compose import ComposeXML
 from preup import settings
 from preup.utils import FileHelper, SystemIdentification
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError

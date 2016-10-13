@@ -13,7 +13,7 @@ try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
-from preuputils import xml_tags
+from preup.xml import xml_tags
 
 
 def get_node(tree, tag, name_space='', prefix=''):

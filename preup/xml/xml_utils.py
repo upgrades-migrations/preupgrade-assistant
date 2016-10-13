@@ -8,8 +8,8 @@ import copy
 from preup.xml_manager import html_escape_string
 from preup.utils import SystemIdentification, FileHelper, MessageHelper
 from preup import settings
-from preuputils import xml_tags
-from preuputils.script_utils import ModuleHelper
+from preup.xml import xml_tags
+from preup.xml.script_utils import ModuleHelper
 from preup.exception import MissingTagsIniFileError, EmptyTagIniFileError
 
 

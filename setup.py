@@ -21,17 +21,23 @@ script_files = ['preupg', 'premigrate', 'preup_ui_manage',
                 'preupg-content-creator', 'preupg-kickstart-generator']
 
 data_files = {
-    'preup_ui/report/fixtures/': ['preup_ui/report/fixtures/initial_data.json'],
-    'preuputils/': ['preuputils/template.xml'],
-    '/etc': ['preup-conf/preupgrade-assistant.conf'],
-    '/usr/share/preupgrade/': ['common.sh', 'README', 'README.kickstart'],
-    '/usr/share/preupgrade/common': ['common/scripts.txt', 'common/post_scripts.txt'],
-    '/usr/share/preupgrade/kickstart': ['kickstart/default.ks', 'kickstart/finish.sh'],
-    '/usr/share/preupgrade/postupgrade.d': ['postupgrade.d/copy_clean_conf.sh'],
+    'preup/ui/report/fixtures/':
+        ['preup/ui/report/fixtures/initial_data.json'],
+    'preup/xml/':
+        ['preup/xml/xccdf_template.xml'],
+    '/etc':
+        ['etc/preupgrade-assistant.conf'],
+    '/usr/share/preupgrade/':
+        ['common.sh', 'doc/README', 'doc/README.kickstart', 'doc/README.ui'],
+    '/usr/share/preupgrade/common':
+        ['data/preassesment/scripts.txt'],
+    '/usr/share/preupgrade/kickstart':
+        ['data/migration/migration.ks', 'data/migration/post_migration.sh'],
+    '/usr/share/preupgrade/postupgrade.d':
+        ['data/postupgrade.d/copy_clean_conf.sh']
 }
 
-# recursively add templates and static
-paths = ['preup_ui/templates/', 'preup_ui/static/', 'preup_ui/lib/']
+paths = ['preup/ui/templates/', 'preup/ui/static/']
 for path in paths:
     for root, dirs, files in os.walk(path):
         data_files[root] = [os.path.join(root, f) for f in files]
@@ -49,14 +55,14 @@ for scheme in INSTALL_SCHEMES.values():
     scheme["data"] = scheme["purelib"]
 
 setup(
-        name=package_name,
-        version=package_version,
-        url=project_url,
-        author=project_author,
-        author_email=project_author_email,
-        description=project_description,
-        packages=packages,
-        data_files=data_files.items(),
-        scripts=script_files,
-        test_suite='tests.suite',
+    name=package_name,
+    version=package_version,
+    url=project_url,
+    author=project_author,
+    author_email=project_author_email,
+    description=project_description,
+    packages=packages,
+    data_files=data_files.items(),
+    scripts=script_files,
+    test_suite='tests.suite'
 )

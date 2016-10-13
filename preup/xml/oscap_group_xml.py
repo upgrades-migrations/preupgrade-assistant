@@ -14,7 +14,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from preuputils.xml_utils import XmlUtils
+from preup.xml.xml_utils import XmlUtils
 from preup.utils import MessageHelper, FileHelper, SystemIdentification
 try:
     from xml.etree import ElementTree

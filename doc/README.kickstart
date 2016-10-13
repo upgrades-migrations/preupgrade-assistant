@@ -1,4 +1,4 @@
-The kickstart directory contains various files needed for generating Kickstart used to clone the system.
+The /root/preupgrade/kickstart directory contains various files needed for generating Kickstart used to clone the system.
 
  * RHEL6_All_installed_packages ... All the packages signed and installed by Red Hat
  * All_changed_file ... All the changed files installed by RPM

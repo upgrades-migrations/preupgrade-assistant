@@ -6,8 +6,8 @@ import shutil
 
 import os
 
-from preuputils.compose import XCCDFCompose, ComposeXML
-from preuputils import variables
+from preup.xml.compose import XCCDFCompose, ComposeXML
+from preup.xml import variables
 from preup.utils import FileHelper
 from preup import settings
 

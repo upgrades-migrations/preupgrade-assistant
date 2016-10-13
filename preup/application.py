@@ -20,14 +20,15 @@ from preup import xml_manager, settings
 from preup.common import Common
 from preup.settings import ReturnValues
 from preup.scanning import ScanProgress, ScanningHelper
-from preup.utils import FileHelper, ProcessHelper, DirHelper
+from preup.utils import FileHelper, ProcessHelper, DirHelper, ConfigFilesHelper
 from preup.utils import MessageHelper, TarballHelper, SystemIdentification
-from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper, ConfigFilesHelper
+from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper
 from preup.xccdf import XccdfHelper
-from preup.logger import log_message, LoggerHelper, logger, logger_report, logger_debug
+from preup.logger import log_message, LoggerHelper, logger, logger_report
+from preup.logger import logger_debug
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
-from preuputils.compose import XCCDFCompose
+from preup.xml.compose import XCCDFCompose
 from preup.version import VERSION
 
 
