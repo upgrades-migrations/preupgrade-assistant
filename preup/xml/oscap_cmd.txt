@@ -1,1 +1,0 @@
-oscap xccdf validate *.xml

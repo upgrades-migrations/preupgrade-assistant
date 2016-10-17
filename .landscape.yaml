@@ -14,7 +14,7 @@ autodetect: True
 # paths to be ignored
 ignore-paths:
     - docs
-    - preup_ui
+    - preup/ui
     - setup.py
     - tests
 ignore-patterns:

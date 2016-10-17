@@ -12,7 +12,8 @@ from preup import settings
 def main():
     cli_kickstart = CLIKickstart()
     conf = ConfKickstart(cli_kickstart.opts, settings, cli_kickstart)
-    app = KickstartGenerator(conf, settings.KS_DIR, settings.PREUPGRADE_KS)
+    app = KickstartGenerator(conf, settings.KS_DIR,
+                             settings.PREUPGRADE_KS_PATH)
     ret = 0
     try:
         app.main()

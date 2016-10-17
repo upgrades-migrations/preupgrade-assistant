@@ -11,10 +11,10 @@ else:
 defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
 
 # dir where results of analysis are stored
-result_dir = os.path.join("/root", prefix)
+assesment_results_dir = os.path.join("/root", prefix)
 
 # Dir where tar balls are placed
-tarball_result_dir = result_dir+"-results"
+tarball_result_dir = assesment_results_dir + "-results"
 
 # base name of XML and HTML file with results
 result_name = "result"
@@ -53,9 +53,10 @@ preupg_report_log = os.path.join(log_dir, "preupg-report.log")
 # dir where the postupgrade scripts are placed
 postupgrade_dir = "postupgrade.d"
 
-# dir with preupgrade-scripts which are executed before reboot and upgrade.
-preupgrade_name = "preupgrade-scripts"
-preupgrade_scripts = os.path.join(result_dir, preupgrade_name)
+# dir with scripts which are to be executed before reboot and upgrade.
+preupgrade_scripts_dir = "preupgrade-scripts"
+preupgrade_scripts_path = os.path.join(assesment_results_dir,
+                                       preupgrade_scripts_dir)
 
 # dirtyconfig directory used by preupgrade assistant
 dirty_conf_dir = 'dirtyconf'
@@ -83,7 +84,7 @@ add_ons = "3rdparty"
 # Default content file
 content_file = "all-xccdf.xml"
 
-# prefix of tag in fccdf files
+# prefix of tag in xccdf files
 xccdf_tag = "xccdf_preupg_rule_"
 
 # name of the hash file
@@ -173,13 +174,14 @@ ui_command = "preupg -u http://example.com:8099/submit/ -r {0}"
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
-KS_DIR = os.path.join(result_dir, 'kickstart')
-KS_TEMPLATE = 'default.ks'
-KS_TEMPLATE_POSTSCRIPT = 'finish.sh'
+KS_DIR = os.path.join(assesment_results_dir, 'kickstart')
+KS_TEMPLATE = 'migration.ks'
+KS_TEMPLATE_POSTSCRIPT = 'postmigrate.sh'
 KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
 KS_FILES = ['default_grouplist-el7', 'default-optional_grouplist-el7']
 KS_SCRIPTS = "kickstart_scripts.txt"
-PREUPGRADE_KS = os.path.join(KS_DIR, 'preupgrade.ks')
+PREUPGRADE_KS = 'migration.ks'
+PREUPGRADE_KS_PATH = os.path.join(KS_DIR, PREUPGRADE_KS)
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
 REPORTS = ['admin', 'user']

@@ -134,9 +134,6 @@ class Application(object):
         else:
             self.debug_log_file = settings.preupg_log
 
-    def get_preupgrade_kickstart(self):
-        return settings.PREUPGRADE_KS
-
     def get_third_party_dir(self, assessment):
         """
         Function returns a 3rdparty dir for upgrade path
@@ -456,9 +453,11 @@ class Application(object):
 
     def copy_preupgrade_scripts(self, assessment_dir):
         # Copy preupgrade-scripts directory from scenarvirtuio
-        preupg_scripts = os.path.join(assessment_dir, settings.preupgrade_name)
+        preupg_scripts = os.path.join(assessment_dir,
+                                      settings.preupgrade_scripts_dir)
         if os.path.exists(preupg_scripts):
-            dir_util.copy_tree(preupg_scripts, settings.preupgrade_scripts)
+            dir_util.copy_tree(preupg_scripts,
+                               settings.preupgrade_scripts_path)
 
     def scan_system(self):
         """The function is used for scanning system with all steps."""
@@ -692,7 +691,8 @@ class Application(object):
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
                 log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
                 return ReturnValues.PREUPG_BEFORE_KICKSTART
-            kg = KickstartGenerator(self.conf, settings.KS_DIR, self.get_preupgrade_kickstart())
+            kg = KickstartGenerator(self.conf, settings.KS_DIR,
+                                    settings.PREUPGRADE_KS_PATH)
             kg.main()
             return 0
 

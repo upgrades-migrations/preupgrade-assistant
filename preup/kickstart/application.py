@@ -30,10 +30,10 @@ class BaseKickstart(object):
 class KickstartGenerator(object):
     """Generate kickstart using data from provided result"""
 
-    def __init__(self, conf, dir_name, kick_start_name):
+    def __init__(self, conf, dir_name, kickstart_name):
         self.dir_name = dir_name
         self.ks = None
-        self.kick_start_name = kick_start_name
+        self.kickstart_name = kickstart_name
         self.ks_list = []
         self.repos = None
         self.latest_tarball = ""
@@ -163,7 +163,7 @@ class KickstartGenerator(object):
 
     def save_kickstart(self):
         kickstart_data = self.ks.handler.__str__()
-        FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
+        FileHelper.write_to_file(self.kickstart_name, 'wb', kickstart_data)
 
     def update_kickstart(self, text, cnt):
         self.ks_list.insert(cnt, text)
@@ -196,19 +196,19 @@ class KickstartGenerator(object):
         list_issues = [' --', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
-            kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
+            kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kickstart_name),
                                                          'rb',
                                                          method=True,
                                                          decode_flag=False)
         except IOError:
-            log_message("The %s file is missing. The partitioning layout might not be complete." % self.kick_start_name,
+            log_message("The %s file is missing. The partitioning layout might not be complete." % self.kickstart_name,
                         level=logging.WARNING)
             return None
         for index, row in enumerate(kickstart_data):
             tag = [com for com in list_issues if row.startswith(com)]
             if tag:
                 kickstart_data[index] = "#" + row
-        FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
+        FileHelper.write_to_file(self.kickstart_name, 'wb', kickstart_data)
 
     def generate(self):
         if not self.collect_data():
@@ -238,7 +238,7 @@ class KickstartGenerator(object):
             tar_ball_dir = os.path.basename(self.latest_tarball).split('.')[0]
             kickstart_dir = os.path.join(os.path.dirname(self.dir_name),
                                          tar_ball_dir)
-            log_message(settings.kickstart_text % (settings.PREUPGRADE_KS,
+            log_message(settings.kickstart_text % (self.kickstart_name,
                                                    kickstart_dir,
                                                    kickstart_dir))
         KickstartGenerator.kickstart_scripts()

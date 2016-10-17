@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 from preup.version import VERSION
 
 project_name = "preupgrade-assistant"
-project_url = "https://github.com/phracek/preupgrade-assistant/"
+project_url = "https://github.com/upgrades-migrations/preupgrade-assistant/"
 project_author = "Red Hat, Inc."
 project_author_email = "phracek@redhat.com"
 project_description = "Preupgrade assistant"
@@ -16,9 +16,9 @@ package_name = "%s" % project_name
 package_module_name = project_name
 package_version = VERSION
 
-script_files = ['preupg', 'premigrate', 'preup_ui_manage',
-                'preupg-xccdf-compose', 'preupg-create-group-xml',
-                'preupg-content-creator', 'preupg-kickstart-generator']
+script_files = ['preupg', 'premigrate', 'tools/preupg-kickstart-generator',
+                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml',
+                'tools/preupg-content-creator', 'tools/preup_ui_manage']
 
 data_files = {
     'preup/ui/report/fixtures/':
@@ -32,7 +32,7 @@ data_files = {
     '/usr/share/preupgrade/common':
         ['data/preassesment/scripts.txt'],
     '/usr/share/preupgrade/kickstart':
-        ['data/migration/migration.ks', 'data/migration/post_migration.sh'],
+        ['data/templates/migration.ks', 'data/templates/post_migration.sh'],
     '/usr/share/preupgrade/postupgrade.d':
         ['data/postupgrade.d/copy_clean_conf.sh']
 }

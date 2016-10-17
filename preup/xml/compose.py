@@ -306,7 +306,7 @@ class ComposeXML(object):
 
     @classmethod
     def get_template_file(cls):
-        return os.path.join(os.path.dirname(__file__), "template.xml")
+        return os.path.join(os.path.dirname(__file__), variables.xccdf_template)
 
     @classmethod
     def get_xml_tree(cls):
@@ -314,7 +314,7 @@ class ComposeXML(object):
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
-            print('Problem with reading template.xml file')
+            print('Problem with reading {0} file'.format(variables.xccdf_template)
             return None
         return target_tree
 

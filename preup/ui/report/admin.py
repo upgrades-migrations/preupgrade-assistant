@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from preup_ui.utils.admin import register_admin_module
+from preup.ui.utils.admin import register_admin_module
 
-register_admin_module('preup_ui.report.models')
+register_admin_module('preup.ui.report.models')

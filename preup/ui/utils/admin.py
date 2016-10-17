@@ -25,7 +25,7 @@ from django.utils.safestring import mark_safe
 from django.contrib import admin
 from django.db import models as dmodels
 from django.db.models import Field, ForeignKey, OneToOneField
-from preup_ui.utils import public
+from preup.ui.utils import public
 from types import ModuleType
 
 

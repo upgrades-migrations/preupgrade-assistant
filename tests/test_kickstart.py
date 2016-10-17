@@ -13,8 +13,6 @@ try:
 except ImportError:
     import tests.base as base
 
-PREUPGRADE_KS = 'preupgrade.ks'
-
 
 def get_full_path(file_name):
     return os.path.join(os.getcwd(), 'tests', 'kickstart_data', file_name)
@@ -58,18 +56,18 @@ class TestKickstartPartitioning(base.TestCase):
     kg = None
 
     def setUp(self):
-        kickstart_file = 'preupgrade.ks'
-        default_ks = 'default.ks'
+        ks_template = settings.KS_TEMPLATE
+        ks_result = settings.PREUPGRADE_KS
         self.WORKING_DIR = tempfile.mkdtemp(prefix='preupg')
         if os.path.isdir(self.WORKING_DIR):
             shutil.rmtree(self.WORKING_DIR)
         os.makedirs(self.WORKING_DIR)
         settings.KS_DIR = self.WORKING_DIR
-        shutil.copyfile(os.path.join(os.getcwd(), 'tests', kickstart_file),
-                        os.path.join(self.WORKING_DIR, kickstart_file))
-        shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', default_ks),
-                        os.path.join(self.WORKING_DIR, default_ks))
-        self.kg = KickstartGenerator(None, self.WORKING_DIR, os.path.join(kickstart_file))
+        shutil.copyfile(os.path.join(os.getcwd(), 'tests', ks_result),
+                        os.path.join(self.WORKING_DIR, ks_result))
+        shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', ks_template),
+                        os.path.join(self.WORKING_DIR, ks_template))
+        self.kg = KickstartGenerator(None, self.WORKING_DIR, os.path.join(ks_result))
         self.kg.collect_data()
 
     def test_lvm_partitions(self):

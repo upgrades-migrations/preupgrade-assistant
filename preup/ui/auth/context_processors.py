@@ -1,4 +1,4 @@
-from preup_ui.config.models import AppSettings
+from preup.ui.config.models import AppSettings
 
 def auth_enabled(request):
     return {'auth_enabled': AppSettings.get_autologin_user_id() is None}

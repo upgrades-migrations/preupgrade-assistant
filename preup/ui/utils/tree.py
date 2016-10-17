@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from django.utils.datastructures import SortedDict
-from preup_ui.config.models import AppSettings
-from preup_ui.report.models import TestResult, TestGroupResult
+from preup.ui.config.models import AppSettings
+from preup.ui.report.models import TestResult, TestGroupResult
 from .views import get_states_to_filter
 
 

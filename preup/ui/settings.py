@@ -1,5 +1,5 @@
 """
-Django settings for preup_ui project.
+Django settings for preupgrade-assistant UI project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -43,17 +43,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'preup_ui.report',
-    'preup_ui.config',
-    'preup_ui.xmlrpc_backend',
-    'preup_ui',
+    'preup.ui.report',
+    'preup.ui.config',
+    'preup.ui.xmlrpc_backend',
+    'preup.ui',
 )
 
 if VERSION < (1, 7):
     INSTALLED_APPS += ('south',)
     SOUTH_MIGRATION_MODULES = {
-        'preup_ui.report': 'preup_ui.report.south_migrations',
-        'preup_ui.config': 'preup_ui.config.south_migrations',
+        'preup.ui.report': 'preup.ui.report.south_migrations',
+        'preup.ui.config': 'preup.ui.config.south_migrations',
     }
 
 MIDDLEWARE_CLASSES = (
@@ -68,12 +68,12 @@ if VERSION >= (1, 7):
     )
 MIDDLEWARE_CLASSES += (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'preup_ui.exception_middleware.ExceptionMiddleware',
+    'preup.ui.exception_middleware.ExceptionMiddleware',
 )
 
-ROOT_URLCONF = 'preup_ui.urls'
+ROOT_URLCONF = 'preup.ui.urls'
 
-WSGI_APPLICATION = 'preup_ui.wsgi.application'
+WSGI_APPLICATION = 'preup.ui.wsgi.application'
 
 
 # Database
@@ -113,12 +113,12 @@ RESULTS_DIR = os.path.join(DATA_DIR, 'results')
 from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 TEMPLATE_CONTEXT_PROCESSORS += (
     'django.core.context_processors.request',
-    'preup_ui.auth.context_processors.auth_enabled',
+    'preup.ui.auth.context_processors.auth_enabled',
 )
 
 
 AUTHENTICATION_BACKENDS = (
-    'preup_ui.auth.backends.AutologinBackend',
+    'preup.ui.auth.backends.AutologinBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -139,7 +139,7 @@ if DEBUG:
 
 XMLRPC_METHODS = {
     'submission': (
-        ('preup_ui.xmlrpc.submission', 'submit'),
+        ('preup.ui.xmlrpc.submission', 'submit'),
     ),
 }
 

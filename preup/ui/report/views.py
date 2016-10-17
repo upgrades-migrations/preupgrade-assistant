@@ -5,7 +5,7 @@ import traceback
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.context import RequestContext
 import os
-from preup_ui.config.models import AppSettings
+from preup.ui.config.models import AppSettings
 
 from .models import Run, Result
 from .forms import *
@@ -16,8 +16,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.core.urlresolvers import reverse, reverse_lazy
-from preup_ui.utils.tree import render_result
-from preup_ui.utils.views import is_state_filter, return_error, get_states_to_filter
+from preup.ui.utils.tree import render_result
+from preup.ui.utils.views import is_state_filter, return_error, get_states_to_filter
 from django.http.response import Http404
 from django.template import loader
 

@@ -1,7 +1,6 @@
-include MANIFEST.in
-include Makefile
 include common.sh
 include LICENSE
+include MANIFEST.in
 include premigrate
 include preupg
 

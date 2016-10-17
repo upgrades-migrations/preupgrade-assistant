@@ -9,8 +9,8 @@ import datetime
 
 from django.db import models
 from django.conf import settings
-from preup_ui.config.models import AppSettings
-from preup_ui.utils.enum import Enum
+from preup.ui.config.models import AppSettings
+from preup.ui.utils.enum import Enum
 from shutil import rmtree
 
 
