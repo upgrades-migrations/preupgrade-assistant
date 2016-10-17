@@ -323,13 +323,8 @@ class Application(object):
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
         for report in self._get_reports():
-            if self.conf.old_report_style:
-                ReportParser.write_xccdf_version(report, direction=True)
             self.openscap_helper.run_generate(report,
-                                              report.replace('.xml', '.html'),
-                                              old_style=self.conf.old_report_style)
-            if self.conf.old_report_style:
-                ReportParser.write_xccdf_version(report)
+                                              report.replace('.xml', '.html'))
 
     def prepare_xml_for_html(self):
         """The function prepares a XML file for HTML creation"""

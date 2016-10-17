@@ -167,12 +167,7 @@ Upload results to preupgrade assistant WEB-UI"
                  (e.g.: x86_64). Use of the option is expected on 32b systems.
                  """
         )
-        self.parser.add_option(
-            "--old-report-style",
-            action="store_true",
-            metavar="OLDREPORTSTYLE",
-            help="Use old report style without CSS issues."
-        )
+
 
 if __name__ == '__main__':
     x = CLI()
