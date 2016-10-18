@@ -781,10 +781,12 @@ class OpenSCAPHelper(object):
         self.content = content
 
     @staticmethod
-    def get_xsl_stylesheet():
+    def get_xsl_stylesheet(old_style=False):
         """Return full XSL stylesheet path"""
-        return os.path.join(settings.share_dir, "preupgrade", "xsl",
-                            settings.xsl_sheet)
+        if old_style:
+            return os.path.join(settings.share_dir, "preupgrade", "xsl", "old_style", settings.old_xsl_sheet)
+        else:
+            return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
 
     @staticmethod
     def get_command_generate():
@@ -794,13 +796,12 @@ class OpenSCAPHelper(object):
             command_generate = ['xccdf', 'generate', 'report']
         return command_generate
 
-    def build_generate_command(self, xml_file, html_file):
+    def build_generate_command(self, xml_file, html_file, old_style=False):
         """Function builds a command for generating results"""
         command = [settings.openscap_binary]
         command.extend(OpenSCAPHelper.get_command_generate())
         if not SystemIdentification.get_system():
-            command.extend(("--stylesheet",
-                            OpenSCAPHelper.get_xsl_stylesheet()))
+            command.extend(("--stylesheet", OpenSCAPHelper.get_xsl_stylesheet(old_style=old_style)))
         command.extend(("--output", html_file))
         command.append(FileHelper.check_xml(xml_file))
         return command
@@ -844,12 +845,12 @@ class OpenSCAPHelper(object):
         return os.path.join(self.result_dir,
                             OpenSCAPHelper.get_third_party_name("") + self.result_name + ".txt")
 
-    def run_generate(self, xml_file, html_file):
+    def run_generate(self, xml_file, html_file, old_style=False):
         """
         The function generates result.html file from result.xml file
         which was modified by preupgrade assistant
         """
-        cmd = self.build_generate_command(xml_file, html_file)
+        cmd = self.build_generate_command(xml_file, html_file, old_style=old_style)
         generate_tempfile = os.path.join('/tmp', ''.join(random.SystemRandom().choice(string.ascii_letters)))
         ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
         if os.path.exists(generate_tempfile):

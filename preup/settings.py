@@ -29,6 +29,8 @@ html_result_name = result_name + '.html'
 # base name of custom xsl stylesheet
 xsl_sheet = "xccdf-report.xsl"
 
+old_xsl_sheet = "preup.xsl"
+
 share_dir = "/usr/share"
 # sources delivered by preupgrade assistant package
 source_dir = os.path.join(share_dir, prefix)
