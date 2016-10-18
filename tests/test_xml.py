@@ -9,7 +9,6 @@ import tempfile
 from preup.xml.compose import ComposeXML
 from preup import xccdf
 from preup import settings
-from preup.xml import variables
 from preup.xml.xml_utils import XmlUtils
 from preup.xml.oscap_group_xml import OscapGroupXml
 from preup.utils import FileHelper
@@ -31,7 +30,7 @@ class TestXMLCompose(base.TestCase):
 
     def setUp(self):
         dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
-        self.result_dir = os.path.join(dir_name+variables.result_prefix)
+        self.result_dir = os.path.join(dir_name + settings.results_postfix)
         dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(self.result_dir):
             shutil.rmtree(self.result_dir)
@@ -107,7 +106,9 @@ class TestScriptGenerator(base.TestCase):
     test_ini = []
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests",
+                                    "FOOBAR6_7" + settings.results_postfix,
+                                    "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -205,7 +206,9 @@ class TestXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests",
+                                    "FOOBAR6_7" + settings.results_postfix,
+                                    "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)

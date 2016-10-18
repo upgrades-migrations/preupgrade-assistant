@@ -143,7 +143,7 @@ class Application(object):
 
     def get_postupgrade_dir(self):
         """Function returns postupgrade dir"""
-        return os.path.join(self.conf.result_dir, settings.postupgrade_dir)
+        return os.path.join(self.conf.assesment_results_dir, settings.postupgrade_dir)
 
     def upload_results(self, tarball_path=None):
         """upload tarball with results to frontend"""
@@ -212,8 +212,8 @@ class Application(object):
     def prepare_scan_directories(self):
         """Used for prepartion of directories used during scan functionality"""
         self.basename = os.path.basename(self.content)
-        dirs = [self.conf.result_dir, settings.tarball_result_dir]
-        dirs.extend(os.path.join(self.conf.result_dir, x) for x in settings.preupgrade_dirs)
+        dirs = [self.conf.assesment_results_dir, settings.tarball_result_dir]
+        dirs.extend(os.path.join(self.conf.assesment_results_dir, x) for x in settings.preupgrade_dirs)
         if self.conf.temp_dir:
             dirs.append(self.conf.temp_dir)
         for dir_name in dirs:
@@ -221,8 +221,8 @@ class Application(object):
 
         # Copy README files into proper directories
         for key, val in six.iteritems(settings.readme_files):
-            shutil.copyfile(os.path.join(settings.share_dir, "preupgrade", key),
-                            os.path.join(self.conf.result_dir, val))
+            shutil.copyfile(os.path.join(settings.source_dir, key),
+                            os.path.join(self.conf.assesment_results_dir, val))
 
     def get_total_check(self):
         """Returns a total check"""
@@ -230,18 +230,18 @@ class Application(object):
 
     def run_scan_process(self):
         """Function scans the source system"""
-        self.xml_mgr = xml_manager.XmlManager(self.conf.result_dir,
+        self.xml_mgr = xml_manager.XmlManager(self.conf.assesment_results_dir,
                                               self.get_scenario(),
                                               os.path.basename(self.content),
-                                              self.conf.result_name)
+                                              self.conf.result_prefix)
 
-        self.report_parser.add_global_tags(self.conf.result_dir,
+        self.report_parser.add_global_tags(self.conf.assesment_results_dir,
                                            self.get_proper_scenario(self.get_scenario()),
                                            self.conf.mode,
                                            self._devel_mode,
                                            self._dist_mode)
 
-        self.report_parser.modify_result_path(self.conf.result_dir,
+        self.report_parser.modify_result_path(self.conf.assesment_results_dir,
                                               self.get_proper_scenario(self.get_scenario()),
                                               self.conf.mode)
         # Execute assessment
@@ -296,7 +296,7 @@ class Application(object):
 
         :return:
         """
-        force_directories = [self.conf.result_dir]
+        force_directories = [self.conf.assesment_results_dir]
         delete_directories = [settings.tarball_result_dir,
                               settings.cache_dir,
                               settings.log_dir]
@@ -315,10 +315,10 @@ class Application(object):
         The function remove symlink /root/preupgrade from older versions
         Also it removes directory /root/preupgrade because of new assessment.
         """
-        if os.path.islink(self.conf.result_dir):
-            os.unlink(self.conf.result_dir)
-        if os.path.isdir(self.conf.result_dir):
-            shutil.rmtree(self.conf.result_dir)
+        if os.path.islink(self.conf.assesment_results_dir):
+            os.unlink(self.conf.assesment_results_dir)
+        if os.path.isdir(self.conf.assesment_results_dir):
+            shutil.rmtree(self.conf.assesment_results_dir)
 
     def prepare_for_generation(self):
         """Function prepares the XML file for conversion to HTML format"""
@@ -367,7 +367,7 @@ class Application(object):
         It finds solution files and update XML file.
         """
         # Copy postupgrade.d special files
-        PostupgradeHelper.special_postupgrade_scripts(self.conf.result_dir)
+        PostupgradeHelper.special_postupgrade_scripts(self.conf.assesment_results_dir)
         PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
 
         solution_files = self.report_parser.get_solution_files()
@@ -430,7 +430,7 @@ class Application(object):
         """Function generates report"""
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
-        self.assessment_dir = os.path.join(self.conf.result_dir, self.get_proper_scenario(scenario))
+        self.assessment_dir = os.path.join(self.conf.assesment_results_dir, self.get_proper_scenario(scenario))
         dir_util.copy_tree(scenario_path, self.assessment_dir)
         # Try copy directory with contents to /root/preupgrade
         # Call xccdf_compose API for generating all-xccdf.xml
@@ -468,8 +468,8 @@ class Application(object):
             return ReturnValues.SCENARIO
         # Update source XML file in temporary directory
         self.content = os.path.join(self.assessment_dir, settings.content_file)
-        self.openscap_helper.update_variables(self.conf.result_dir,
-                                              self.conf.result_name,
+        self.openscap_helper.update_variables(self.conf.assesment_results_dir,
+                                              self.conf.result_prefix,
                                               self.conf.xml_result_name,
                                               self.conf.html_result_name,
                                               self.content)
@@ -512,16 +512,16 @@ class Application(object):
             self.run_third_party_modules(third_party_dir_name)
 
         self.copy_preupgrade_scripts(self.assessment_dir)
-        ConfigFilesHelper.copy_modified_config_files(settings.result_dir)
+        ConfigFilesHelper.copy_modified_config_files(settings.assesment_results_dir)
 
         # It prints out result in table format
         ScanningHelper.format_rules_to_table(main_report, "main contents")
         for target, report in six.iteritems(self.report_data):
             ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
-        self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.result_dir, self.conf.verbose)
+        self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assesment_results_dir, self.conf.verbose)
         log_message("The tarball with results is stored in '%s' ." % self.tar_ball_name)
-        log_message("The latest assessment is stored in the '%s' directory." % self.conf.result_dir)
+        log_message("The latest assessment is stored in the '%s' directory." % self.conf.assesment_results_dir)
         # pack all configuration files to tarball
         return 0
 
@@ -549,7 +549,7 @@ class Application(object):
                 log_message('Summary information:')
                 log_message(report_dict[int(self.report_return_value)])
             for report_type in settings.REPORTS:
-                file_name = settings.result_name + '-' + report_type + '.html'
+                file_name = settings.result_prefix + '-' + report_type + '.html'
                 report_name = os.path.join(os.path.dirname(self.report_parser.get_path()), file_name)
                 if os.path.exists(report_name):
                     log_message("Read the %s report file %s for more details." % (report_type, report_name))
@@ -674,8 +674,8 @@ class Application(object):
             self.clean_preupgrade_environment()
             return 0
 
-        self.openscap_helper = OpenSCAPHelper(self.conf.result_dir,
-                                              self.conf.result_name,
+        self.openscap_helper = OpenSCAPHelper(self.conf.assesment_results_dir,
+                                              self.conf.result_prefix,
                                               self.conf.xml_result_name,
                                               self.conf.html_result_name,
                                               self.content)

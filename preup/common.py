@@ -27,7 +27,8 @@ class Common(object):
     def __init__(self, conf):
         self.conf = conf
         self.cwd = ""
-        self.lines = FileHelper.get_file_content(self.conf.common_script, "rb", method=True)
+        self.lines = FileHelper.get_file_content(self.conf.common_scripts,
+                                                 "rb", True)
         self.common_result_dir = ""
 
     def common_logfiles(self, filename):
@@ -93,11 +94,11 @@ class Common(object):
                 values = line.strip().split("=", 5)
                 if values[4] == "YES":
                     shutil.copyfile(values[1],
-                                    os.path.join(self.conf.result_dir,
+                                    os.path.join(self.conf.assesment_results_dir,
                                                  "kickstart",
                                                  values[5]))
                 else:
-                    if os.path.exists(os.path.join(self.conf.result_dir,
+                    if os.path.exists(os.path.join(self.conf.assesment_results_dir,
                                                    values[1])):
                         os.remove(values[1])
         except IOError:

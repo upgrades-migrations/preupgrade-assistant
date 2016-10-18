@@ -9,7 +9,6 @@ import six
 from distutils import dir_util
 
 from preup.utils import FileHelper, SystemIdentification
-from preup.xml import variables
 from preup.xml.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
@@ -40,9 +39,9 @@ class XCCDFCompose(object):
         :return:
         """
         self.result_dir = argument
-        self.dir_name = self.result_dir + variables.result_prefix
+        self.dir_name = self.result_dir + settings.results_postfix
         if self.result_dir.endswith("/"):
-            self.dir_name = self.result_dir[:-1] + variables.result_prefix
+            self.dir_name = self.result_dir[:-1] + settings.results_postfix
 
         # Delete previous contents if they exist.
         if os.path.exists(self.dir_name):
@@ -306,7 +305,7 @@ class ComposeXML(object):
 
     @classmethod
     def get_template_file(cls):
-        return os.path.join(os.path.dirname(__file__), variables.xccdf_template)
+        return os.path.join(os.path.dirname(__file__), settings.xccdf_template)
 
     @classmethod
     def get_xml_tree(cls):
@@ -314,7 +313,8 @@ class ComposeXML(object):
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
-            print('Problem with reading {0} file'.format(variables.xccdf_template)
+            print('Problem with reading {0} file'
+                  .format(settings.xccdf_template))
             return None
         return target_tree
 

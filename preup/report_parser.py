@@ -371,7 +371,7 @@ class ReportParser(object):
             return None
         orig_name = self.path
         new_report_name = os.path.join(os.path.dirname(self.path),
-                                       settings.result_name + '-' + report_type + '.xml')
+                                       settings.result_prefix + '-' + report_type + '.xml')
         shutil.copyfile(self.path, new_report_name)
         self.reload_xml(new_report_name)
         list_dict = {}

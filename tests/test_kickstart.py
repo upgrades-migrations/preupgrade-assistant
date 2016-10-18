@@ -56,7 +56,6 @@ class TestKickstartPartitioning(base.TestCase):
     kg = None
 
     def setUp(self):
-        ks_template = settings.KS_TEMPLATE
         ks_result = settings.PREUPGRADE_KS
         self.WORKING_DIR = tempfile.mkdtemp(prefix='preupg')
         if os.path.isdir(self.WORKING_DIR):
@@ -65,9 +64,7 @@ class TestKickstartPartitioning(base.TestCase):
         settings.KS_DIR = self.WORKING_DIR
         shutil.copyfile(os.path.join(os.getcwd(), 'tests', ks_result),
                         os.path.join(self.WORKING_DIR, ks_result))
-        shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', ks_template),
-                        os.path.join(self.WORKING_DIR, ks_template))
-        self.kg = KickstartGenerator(None, self.WORKING_DIR, os.path.join(ks_result))
+        self.kg = KickstartGenerator(None, self.WORKING_DIR, ks_result)
         self.kg.collect_data()
 
     def test_lvm_partitions(self):

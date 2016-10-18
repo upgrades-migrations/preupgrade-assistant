@@ -753,12 +753,13 @@ class PostupgradeHelper(object):
                             "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
 
         for key, val in six.iteritems(postupgrade_dict):
-            source_file = os.path.join(settings.source_dir, settings.postupgrade_dir, key)
+            source_file = os.path.join(settings.data_dir,
+                                       settings.postupgrade_dir, key)
             if os.path.exists(source_file):
-                shutil.copy(source_file,
-                            os.path.join(result_dir,
-                                         settings.postupgrade_dir,
-                                         val))
+                destination_file = os.path.join(result_dir,
+                                                settings.postupgrade_dir,
+                                                val)
+                shutil.copy(source_file, destination_file)
 
 
 class OpenSCAPHelper(object):
@@ -783,10 +784,9 @@ class OpenSCAPHelper(object):
     @staticmethod
     def get_xsl_stylesheet(old_style=False):
         """Return full XSL stylesheet path"""
-        if old_style:
-            return os.path.join(settings.share_dir, "preupgrade", "xsl", "old_style", settings.old_xsl_sheet)
-        else:
-            return os.path.join(settings.share_dir, "preupgrade", "xsl", settings.xsl_sheet)
+        subfolder = "simple_style" if old_style else "complex_style"
+        return os.path.join(settings.data_dir, "html_report",
+                            subfolder, settings.xsl_sheet)
 
     @staticmethod
     def get_command_generate():

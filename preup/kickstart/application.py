@@ -171,10 +171,11 @@ class KickstartGenerator(object):
 
     @staticmethod
     def copy_kickstart_templates():
-        # Copy kickstart files (/usr/share/preupgrade/kickstart) for kickstart generation
+        # Copy kickstart files for kickstart generation
         for file_name in settings.KS_TEMPLATES:
             target_name = os.path.join(settings.KS_DIR, file_name)
-            source_name = os.path.join(settings.source_dir, 'kickstart', file_name)
+            source_name = os.path.join(settings.data_dir, 'templates',
+                                       file_name)
             if not os.path.exists(target_name) and os.path.exists(source_name):
                 try:
                     shutil.copy(source_name, target_name)
@@ -227,7 +228,8 @@ class KickstartGenerator(object):
         return True
 
     def main(self):
-        if not os.path.exists(os.path.join(settings.result_dir, settings.xml_result_name)):
+        if not os.path.exists(os.path.join(settings.assesment_results_dir,
+                                           settings.xml_result_name)):
             log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
             return 1
 
@@ -245,11 +247,10 @@ class KickstartGenerator(object):
 
     @staticmethod
     def kickstart_scripts():
+        ks_scripts_file = os.path.join(settings.data_dir, "preassesment",
+                                       settings.KS_SCRIPTS)
         try:
-            lines = FileHelper.get_file_content(os.path.join(settings.common_dir,
-                                                             settings.KS_SCRIPTS),
-                                                "rb",
-                                                method=True)
+            lines = FileHelper.get_file_content(ks_scripts_file, "rb", True)
             for line in lines:
                 line = line.strip()
                 if line.startswith("#"):

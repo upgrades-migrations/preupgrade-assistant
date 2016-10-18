@@ -13,35 +13,35 @@ defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencod
 # dir where results of analysis are stored
 assesment_results_dir = os.path.join("/root", prefix)
 
+results_postfix = "-results"
 # Dir where tar balls are placed
-tarball_result_dir = assesment_results_dir + "-results"
+tarball_result_dir = assesment_results_dir + results_postfix
+
+xccdf_template = "xccdf_template.xml"
 
 # base name of XML and HTML file with results
-result_name = "result"
+result_prefix = "result"
 
-tarball_base = result_name + 's'
+tarball_base = result_prefix + 's'
 tarball_prefix = "preupg_"
 tarball_name = tarball_prefix + tarball_base + "-{0}"
 
-xml_result_name = result_name + '.xml'
-html_result_name = result_name + '.html'
+xml_result_name = result_prefix + '.xml'
+html_result_name = result_prefix + '.html'
 
-# base name of custom xsl stylesheet
 xsl_sheet = "xccdf-report.xsl"
-
-old_xsl_sheet = "preup.xsl"
 
 share_dir = "/usr/share"
 # sources delivered by preupgrade assistant package
 source_dir = os.path.join(share_dir, prefix)
 
-# dir where the cached logs are stored
-cache_dir = "/var/cache/preupgrade"
+data_dir = os.path.join(source_dir, "data")
 
 # file where the lock file stored
 lock_file = "/var/run/preupgrade.pid"
 
-# dir with log files"
+# dir where the cached logs are stored
+cache_dir = "/var/cache/preupgrade"
 log_dir = "/var/log/preupgrade"
 
 # preupg log file
@@ -71,12 +71,8 @@ profile = "xccdf_preupg_profile_default"
 # name of dir with common files
 common_name = "common"
 
-# default directory is /var/tmp/preupgrade/common
-# absolute path to dir with common files
-common_dir = os.path.join(share_dir, prefix, common_name)
-
 # path to file with definitions of common scripts
-common_script = os.path.join(common_dir, "scripts.txt")
+common_scripts = os.path.join(data_dir, "preassesment", "scripts.txt")
 
 # Addons dir for 3rdparty contents
 add_ons = "3rdparty"
@@ -93,27 +89,21 @@ base_hashed_file = "hashed_file"
 # name of the file which contains a list of rules
 file_list_rules = "list_rules"
 
-# path to file with definitions of common scripts
-post_script = os.path.join(common_dir, "post_scripts.txt")
-
 # kickstart and postupgrade.d directories
-preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
-                   'hooks', 'kickstart', postupgrade_dir, 'common',
+preupgrade_dirs = [dirty_conf_dir, clean_conf_dir, 'hooks', 'data/templates',
+                   "data/" + postupgrade_dir, 'data/preassesment',
                    'preupgrade-scripts', 'noauto_postupgrade.d']
 
 
 PREUPG_README = 'README'
-readme_files = {'README': PREUPG_README,
-                'README.kickstart': os.path.join('kickstart', 'README'),
+readme_files = {'doc/README': PREUPG_README,
+                'doc/README.kickstart': os.path.join('kickstart', 'README'),
                 }
 
 # Used for autogeneration check script issues
 autocomplete = True
 
-# new state needs_inspection
 needs_inspection = "needs_inspection"
-
-# new state needs_action
 needs_action = "needs_action"
 
 openscap_binary = "/usr/bin/oscap"
@@ -175,13 +165,14 @@ openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
 KS_DIR = os.path.join(assesment_results_dir, 'kickstart')
-KS_TEMPLATE = 'migration.ks'
-KS_TEMPLATE_POSTSCRIPT = 'postmigrate.sh'
-KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
+KS_FILENAME = 'migration.ks'
+KS_PATH = os.path.join(KS_DIR, KS_FILENAME)
+KS_TEMPLATE = KS_FILENAME
+KS_POSTSCRIPT_TEMPLATE = 'postmigrate.sh'
+KS_TEMPLATES = [KS_TEMPLATE, KS_POSTSCRIPT_TEMPLATE]
 KS_FILES = ['default_grouplist-el7', 'default-optional_grouplist-el7']
 KS_SCRIPTS = "kickstart_scripts.txt"
-PREUPGRADE_KS = 'migration.ks'
-PREUPGRADE_KS_PATH = os.path.join(KS_DIR, PREUPGRADE_KS)
+
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
 REPORTS = ['admin', 'user']
