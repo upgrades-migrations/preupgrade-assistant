@@ -9,7 +9,7 @@ import six
 from distutils import dir_util
 
 from preup.utils import FileHelper, SystemIdentification
-from preup.xml.oscap_group_xml import OscapGroupXml
+from preup.xmlgen.oscap_group_xml import OscapGroupXml
 from preup import settings
 from preup import xccdf
 from preup.logger import logger_debug

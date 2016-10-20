@@ -6,7 +6,7 @@ import shutil
 
 import os
 
-from preup.xml.compose import XCCDFCompose, ComposeXML
+from preup.xmlgen.compose import XCCDFCompose, ComposeXML
 from preup.utils import FileHelper
 from preup import settings
 

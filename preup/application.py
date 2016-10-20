@@ -28,7 +28,7 @@ from preup.logger import log_message, LoggerHelper, logger, logger_report
 from preup.logger import logger_debug
 from preup.report_parser import ReportParser
 from preup.kickstart.application import KickstartGenerator
-from preup.xml.compose import XCCDFCompose
+from preup.xmlgen.compose import XCCDFCompose
 from preup.version import VERSION
 
 
