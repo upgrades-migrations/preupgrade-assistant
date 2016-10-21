@@ -98,9 +98,9 @@ class KickstartGenerator(object):
     def collect_data(self):
         self._remove_obsolete_data()
         collected_data = True
-        self.ks = KickstartGenerator.load_or_default(KickstartGenerator.get_kickstart_path(self.dir_name),
-                                                     os.path.join(self.dir_name,
-                                                                  settings.KS_TEMPLATE))
+        self.ks = KickstartGenerator.load_or_default(
+            KickstartGenerator.get_kickstart_path(self.dir_name),
+            os.path.join(self.dir_name, settings.KS_TEMPLATE))
         if self.ks is None:
             collected_data = False
         self.latest_tarball = self.get_latest_tarball()
@@ -127,9 +127,9 @@ class KickstartGenerator(object):
             try:
                 ksparser.readKickstart(ks_template)
             except AttributeError:
-                log_message("There is no KS_TEMPLATE_POSTSCRIPT specified in settings.py.", level=logging.DEBUG)
+                log_message("There is no KS_POSTSCRIPT_TEMPLATE specified in settings.py.", level=logging.DEBUG)
             except IOError:
-                log_message("Cannot read the Kickstart template %s." % settings.KS_TEMPLATE)
+                log_message("Cannot read the Kickstart template %s." % ks_template)
                 return None
         return ksparser
 

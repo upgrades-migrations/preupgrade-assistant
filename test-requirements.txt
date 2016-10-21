@@ -3,4 +3,6 @@ coverage
 pytest-cov
 pytest
 pytest-pylint
-
+ordered_set
+importlib
+https://github.com/rhinstaller/pykickstart/archive/pykickstart-2.zip

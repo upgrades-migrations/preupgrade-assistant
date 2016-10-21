@@ -18,30 +18,6 @@ def get_full_path(file_name):
     return os.path.join(os.getcwd(), 'tests', 'kickstart_data', file_name)
 
 
-class BaseKickstart(object):
-    WORKING_DIR = ''
-    TESTS_DIR = os.path.dirname(__file__)
-    TEST_FILES = []
-    TEST_FILES_DIR = ''
-
-    def setup(self):
-        """Setup the temporary environment and change the working directory to it."""
-        self.WORKING_DIR = tempfile.mkdtemp(prefix="rebase-helper-test-")
-        os.chdir(self.WORKING_DIR)
-        # copy files into the testing environment directory
-        for file_name in self.TEST_FILES:
-            shutil.copy(os.path.join(self.TEST_FILES_DIR, file_name), os.getcwd())
-
-    def teardown(self):
-        """
-        Destroy the temporary environment.
-
-        :return:
-        """
-        os.chdir(self.TESTS_DIR)
-        shutil.rmtree(self.WORKING_DIR)
-
-
 class TestKickstartPartitioning(base.TestCase):
 
     kickstart = None
@@ -56,15 +32,17 @@ class TestKickstartPartitioning(base.TestCase):
     kg = None
 
     def setUp(self):
-        ks_result = settings.PREUPGRADE_KS
+        ks_template = settings.KS_TEMPLATE
         self.WORKING_DIR = tempfile.mkdtemp(prefix='preupg')
         if os.path.isdir(self.WORKING_DIR):
             shutil.rmtree(self.WORKING_DIR)
         os.makedirs(self.WORKING_DIR)
         settings.KS_DIR = self.WORKING_DIR
-        shutil.copyfile(os.path.join(os.getcwd(), 'tests', ks_result),
-                        os.path.join(self.WORKING_DIR, ks_result))
-        self.kg = KickstartGenerator(None, self.WORKING_DIR, ks_result)
+        shutil.copyfile(os.path.join(os.getcwd(), 'data', 'templates',
+                                     ks_template),
+                        os.path.join(self.WORKING_DIR, ks_template))
+        self.kg = KickstartGenerator(None, self.WORKING_DIR,
+                                     settings.KS_FILENAME)
         self.kg.collect_data()
 
     def test_lvm_partitions(self):

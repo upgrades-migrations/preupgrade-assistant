@@ -767,6 +767,7 @@ class OpenSCAPHelper(object):
     def __init__(self, result_dir, result_name, xml_result_name, html_result_name, content, third_party=None):
         self.binary = [settings.openscap_binary]
         self.result_dir = result_dir
+        print("result dir: " + result_dir)
         self.third_party = third_party
         self.xml_result_name = xml_result_name
         self.html_result_name = html_result_name

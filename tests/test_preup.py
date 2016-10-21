@@ -21,7 +21,7 @@ def setup_preupg_environment(args, content, tmp_dir, mode=None):
     conf = {
         "contents": content,
         "profile": "xccdf_preupg_profile_default",
-        "result_dir": tmp_dir,
+        "assesment_results_dir": tmp_dir,
         "skip_common": True,
         "temp_dir": tmp_dir,
         "id": None,
@@ -78,7 +78,8 @@ class TestPreupgMigrate(base.TestCase):
         args = ["--contents", content, "--mode", "migrate"]
         a = setup_preupg_environment(args, content, self.temp_dir, mode='migrate')
         self.assertEqual(a.run_scan(), 0)
-        rp = ReportParser(os.path.join(self.temp_dir, "result.xml"))
+        rp = ReportParser(os.path.join(self.temp_dir,
+                                       settings.xml_result_name))
         rp.modify_result_path(self.temp_dir, "FOOBAR6_7", 'migrate')
         for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
             self.assertTrue(values.get("id"))

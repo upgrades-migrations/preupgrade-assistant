@@ -692,7 +692,7 @@ class Application(object):
                 log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
                 return ReturnValues.PREUPG_BEFORE_KICKSTART
             kg = KickstartGenerator(self.conf, settings.KS_DIR,
-                                    settings.PREUPGRADE_KS_PATH)
+                                    settings.KS_PATH)
             kg.main()
             return 0
 

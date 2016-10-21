@@ -37,6 +37,7 @@ class TestXMLCompose(base.TestCase):
         shutil.copytree(dir_name, self.result_dir)
 
         settings.autocomplete = False
+        settings.data_dir = os.path.join(os.getcwd(), "data")
         self.target_tree = ComposeXML.run_compose(self.result_dir)
 
     def tearDown(self):

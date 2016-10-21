@@ -305,11 +305,13 @@ class ComposeXML(object):
 
     @classmethod
     def get_template_file(cls):
-        return os.path.join(os.path.dirname(__file__), settings.xccdf_template)
+        return os.path.join(settings.data_dir, "templates",
+                            settings.xccdf_template)
 
     @classmethod
     def get_xml_tree(cls):
         template_file = ComposeXML.get_template_file()
+        print(template_file)
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
