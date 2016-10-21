@@ -147,7 +147,7 @@ class TestXMLUpdates(base.TestCase):
         rp.modify_result_path(result_path, "FOOBAR6_7", 'migrate')
         found_tmp = 0
 
-        for values in rp.get_nodes(rp.target_tree, "Value", ".//"):
+        for values in rp.get_nodes(rp.target_tree, "Value", prefix=".//"):
             if values.get("id").endswith("_tmp_preupgrade"):
                 for value in rp.get_nodes(values, "value"):
                     if value.text == result_path:

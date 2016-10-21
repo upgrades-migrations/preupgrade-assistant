@@ -311,7 +311,6 @@ class ComposeXML(object):
     @classmethod
     def get_xml_tree(cls):
         template_file = ComposeXML.get_template_file()
-        print(template_file)
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:

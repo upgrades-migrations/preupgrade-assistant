@@ -132,7 +132,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'part swap --ondisk=vda --size=1000',
                            ]
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip() in self.kg.ks.handler.__str__())
 
     def test_firewall_rules(self):
         firewall_cmd = get_full_path(self.firewall_cmd)
