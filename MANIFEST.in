@@ -1,9 +1,8 @@
 include common.sh
 include LICENSE
 include MANIFEST.in
-include premigrate
-include preupg
 
+include           bin/*
 recursive-include data *
 recursive-include doc *
 recursive-include etc *

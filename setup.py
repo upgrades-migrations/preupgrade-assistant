@@ -5,7 +5,7 @@ import os
 import distutils.command.sdist
 from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
-from preup.version import VERSION
+from preupg.version import VERSION
 
 project_name = "preupgrade-assistant"
 project_url = "https://github.com/upgrades-migrations/preupgrade-assistant/"
@@ -16,20 +16,20 @@ package_name = "%s" % project_name
 package_module_name = project_name
 package_version = VERSION
 
-script_files = ['preupg', 'premigrate', 'tools/preupg-kickstart-generator',
-                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml',
-                'tools/preupg-content-creator', 'tools/preup_ui_manage']
+script_files = ['bin/preupg', 'bin/premigrate', 'tools/preupg-content-creator',
+                'tools/preupg-kickstart-generator', 'tools/preup_ui_manage',
+                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml']
 
 data_files = {
-    'preup/ui/report/fixtures/':
-        ['preup/ui/report/fixtures/initial_data.json'],
+    'preupg/ui/report/fixtures/':
+        ['preupg/ui/report/fixtures/initial_data.json'],
     '/usr/share/preupgrade/':
         ['common.sh', 'doc/README', 'doc/README.kickstart', 'doc/README.ui']
 }
 
 # Include relative path to dirs with non-python files - these will be added
 # to the python module directory with the same relative path
-paths = ['preup/ui/templates/', 'preup/ui/static/']
+paths = ['preupg/ui/templates/', 'preupgui/static/']
 for path in paths:
     for root, dirs, files in os.walk(path):
         data_files[root] = [os.path.join(root, f) for f in files]
