@@ -7,13 +7,13 @@ recursive-include data *
 recursive-include doc *
 recursive-include etc *
 include           man/*
-include           preup/*.py
-include           preup/creator/*
-recursive-include preup/kickstart *
-include           preup/ui/licenses/*
-include           preup/ui/report/fixtures/initial_data.json
-recursive-include preup/ui/static *
-recursive-include preup/ui/templates *
-include           preup/xml/*
+include           preupg/*.py
+include           preupg/creator/*
+recursive-include preupg/kickstart *
+include           preupg/ui/licenses/*
+include           preupg/ui/report/fixtures/initial_data.json
+recursive-include preupg/ui/static *
+recursive-include preupg/ui/templates *
+include           preupg/xmlgen/*
 recursive-include tests *
-include           tools/*.sh
+include           tools/*
