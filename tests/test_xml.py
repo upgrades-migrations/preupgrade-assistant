@@ -6,14 +6,14 @@ import shutil
 import stat
 import tempfile
 
-from preup.xmlgen.compose import ComposeXML
-from preup import xccdf
-from preup import settings
-from preup.xmlgen.xml_utils import XmlUtils
-from preup.xmlgen.oscap_group_xml import OscapGroupXml
-from preup.utils import FileHelper
-from preup.xml_manager import html_escape, html_escape_string
-from preup.exception import MissingFileInContentError, MissingTagsIniFileError
+from preupg.xmlgen.compose import ComposeXML
+from preupg import xccdf
+from preupg import settings
+from preupg.xmlgen.xml_utils import XmlUtils
+from preupg.xmlgen.oscap_group_xml import OscapGroupXml
+from preupg.utils import FileHelper
+from preupg.xml_manager import html_escape, html_escape_string
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 try:
     import base
 except ImportError:

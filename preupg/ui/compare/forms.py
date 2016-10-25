@@ -2,7 +2,7 @@
 
 from django import forms
 
-from preup.ui.report.models import Result
+from preupg.ui.report.models import Result
 
 
 class ResultForm(forms.Form):

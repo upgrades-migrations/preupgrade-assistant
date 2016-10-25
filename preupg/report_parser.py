@@ -4,16 +4,16 @@ import os
 import shutil
 import six
 
-from preup.utils import FileHelper
-from preup.xccdf import XccdfHelper
-from preup import settings
-from preup.settings import ModuleValues
-from preup.logger import logger_report, log_message
+from preupg.utils import FileHelper
+from preupg.xccdf import XccdfHelper
+from preupg import settings
+from preupg.settings import ModuleValues
+from preupg.logger import logger_report, log_message
 try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
-from preup.xmlgen import xml_tags
+from preupg.xmlgen import xml_tags
 
 
 def get_node(tree, tag, name_space='', prefix=''):

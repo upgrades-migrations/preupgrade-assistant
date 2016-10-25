@@ -8,10 +8,10 @@ import six
 import os
 
 from pykickstart.constants import CLEARPART_TYPE_ALL
-from preup.kickstart.application import BaseKickstart
-from preup.utils import FileHelper
-from preup.logger import log_message, logging
-from preup import settings
+from preupg.kickstart.application import BaseKickstart
+from preupg.utils import FileHelper
+from preupg.logger import log_message, logging
+from preupg import settings
 
 
 class PartitionGenerator(BaseKickstart):

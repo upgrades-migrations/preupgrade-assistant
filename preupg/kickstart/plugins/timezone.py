@@ -4,8 +4,8 @@
 Class creates a set of packages for migration scenario
 """
 
-from preup.utils import FileHelper
-from preup.kickstart.application import BaseKickstart
+from preupg.utils import FileHelper
+from preupg.kickstart.application import BaseKickstart
 
 
 class TimezoneHandling(BaseKickstart):

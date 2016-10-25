@@ -8,12 +8,12 @@ import shutil
 import six
 from distutils import dir_util
 
-from preup.utils import FileHelper, SystemIdentification
-from preup.xmlgen.oscap_group_xml import OscapGroupXml
-from preup import settings
-from preup import xccdf
-from preup.logger import logger_debug
-from preup.settings import ReturnValues
+from preupg.utils import FileHelper, SystemIdentification
+from preupg.xmlgen.oscap_group_xml import OscapGroupXml
+from preupg import settings
+from preupg import xccdf
+from preupg.logger import logger_debug
+from preupg.settings import ReturnValues
 
 try:
     from xml.etree import ElementTree

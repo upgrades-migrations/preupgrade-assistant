@@ -5,12 +5,12 @@ import os
 import six
 import copy
 
-from preup.xml_manager import html_escape_string
-from preup.utils import SystemIdentification, FileHelper, MessageHelper
-from preup import settings
-from preup.xmlgen import xml_tags
-from preup.xmlgen.script_utils import ModuleHelper
-from preup.exception import MissingTagsIniFileError, EmptyTagIniFileError
+from preupg.xml_manager import html_escape_string
+from preupg.utils import SystemIdentification, FileHelper, MessageHelper
+from preupg import settings
+from preupg.xmlgen import xml_tags
+from preupg.xmlgen.script_utils import ModuleHelper
+from preupg.exception import MissingTagsIniFileError, EmptyTagIniFileError
 
 
 def get_full_xml_tag(dirname):

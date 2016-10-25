@@ -5,9 +5,9 @@ import os
 import re
 import rpm
 import six
-from preup.utils import FileHelper
-from preup import settings
-from preup.logger import logger_report
+from preupg.utils import FileHelper
+from preupg import settings
+from preupg.logger import logger_report
 
 
 def html_escape_string(pattern):

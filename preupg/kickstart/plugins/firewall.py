@@ -6,9 +6,9 @@ Class creates a set of packages for migration scenario
 
 import os
 
-from preup.utils import FileHelper
-from preup.kickstart.application import BaseKickstart
-from preup import settings
+from preupg.utils import FileHelper
+from preupg.kickstart.application import BaseKickstart
+from preupg import settings
 
 
 class FirewallHandling(BaseKickstart):

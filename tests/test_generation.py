@@ -6,9 +6,9 @@ import shutil
 
 import os
 
-from preup.xmlgen.compose import XCCDFCompose, ComposeXML
-from preup.utils import FileHelper
-from preup import settings
+from preupg.xmlgen.compose import XCCDFCompose, ComposeXML
+from preupg.utils import FileHelper
+from preupg import settings
 
 try:
     import base

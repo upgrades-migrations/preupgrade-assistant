@@ -7,8 +7,8 @@ from django.utils.http import is_safe_url
 from django.views.generic.list import ListView
 
 from .forms import UserCreationForm
-from preup.ui.config.models import AppSettings
-from preup.ui.utils.views import return_error
+from preupg.ui.config.models import AppSettings
+from preupg.ui.utils.views import return_error
 
 from django.views.generic import TemplateView, DeleteView, FormView, View
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, login as auth_login, get_user_model

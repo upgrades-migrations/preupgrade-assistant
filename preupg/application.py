@@ -16,20 +16,20 @@ try:
 except ImportError:
     from xmlrpc.client import Fault
 
-from preup import xml_manager, settings
-from preup.common import Common
-from preup.settings import ReturnValues
-from preup.scanning import ScanProgress, ScanningHelper
-from preup.utils import FileHelper, ProcessHelper, DirHelper, ConfigFilesHelper
-from preup.utils import MessageHelper, TarballHelper, SystemIdentification
-from preup.utils import PostupgradeHelper, ConfigHelper, OpenSCAPHelper
-from preup.xccdf import XccdfHelper
-from preup.logger import log_message, LoggerHelper, logger, logger_report
-from preup.logger import logger_debug
-from preup.report_parser import ReportParser
-from preup.kickstart.application import KickstartGenerator
-from preup.xmlgen.compose import XCCDFCompose
-from preup.version import VERSION
+from preupg import xml_manager, settings
+from preupg.common import Common
+from preupg.settings import ReturnValues
+from preupg.scanning import ScanProgress, ScanningHelper
+from preupg.utils import FileHelper, ProcessHelper, DirHelper, OpenSCAPHelper
+from preupg.utils import MessageHelper, TarballHelper, SystemIdentification
+from preupg.utils import PostupgradeHelper, ConfigHelper, ConfigFilesHelper
+from preupg.xccdf import XccdfHelper
+from preupg.logger import log_message, LoggerHelper, logger, logger_report
+from preupg.logger import logger_debug
+from preupg.report_parser import ReportParser
+from preupg.kickstart.application import KickstartGenerator
+from preupg.xmlgen.compose import XCCDFCompose
+from preupg.version import VERSION
 
 
 def fault_repr(self):
@@ -73,7 +73,7 @@ class Application(object):
     """Class for oscap binary and reporting results to UI"""
 
     def __init__(self, conf):
-        """conf is preup.conf.Conf object, contains configuration"""
+        """conf is preupg.conf.Conf object, contains configuration"""
         self.conf = conf
         self.content = ""
         self.result_file = ""

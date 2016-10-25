@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function
 import logging
 import sys
-from preup import settings
+from preupg import settings
 
 
 class LoggerHelper(object):

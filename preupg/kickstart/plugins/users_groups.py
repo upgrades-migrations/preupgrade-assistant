@@ -7,9 +7,9 @@ Class appends users and groups to kickstart
 import six
 import os
 
-from preup import settings
-from preup.utils import FileHelper
-from preup.kickstart.application import BaseKickstart
+from preupg import settings
+from preupg.utils import FileHelper
+from preupg.kickstart.application import BaseKickstart
 
 
 class UsersGroupsGenerator(BaseKickstart):

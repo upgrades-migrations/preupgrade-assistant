@@ -5,8 +5,8 @@ import os
 import tempfile
 import shutil
 
-from preup.kickstart.application import KickstartGenerator
-from preup import settings
+from preupg.kickstart.application import KickstartGenerator
+from preupg import settings
 
 try:
     import base

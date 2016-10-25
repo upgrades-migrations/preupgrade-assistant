@@ -43,17 +43,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'preup.ui.report',
-    'preup.ui.config',
-    'preup.ui.xmlrpc_backend',
-    'preup.ui',
+    'preupg.ui.report',
+    'preupg.ui.config',
+    'preupg.ui.xmlrpc_backend',
+    'preupg.ui',
 )
 
 if VERSION < (1, 7):
     INSTALLED_APPS += ('south',)
     SOUTH_MIGRATION_MODULES = {
-        'preup.ui.report': 'preup.ui.report.south_migrations',
-        'preup.ui.config': 'preup.ui.config.south_migrations',
+        'preupg.ui.report': 'preupg.ui.report.south_migrations',
+        'preupg.ui.config': 'preupg.ui.config.south_migrations',
     }
 
 MIDDLEWARE_CLASSES = (
@@ -68,12 +68,12 @@ if VERSION >= (1, 7):
     )
 MIDDLEWARE_CLASSES += (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'preup.ui.exception_middleware.ExceptionMiddleware',
+    'preupg.ui.exception_middleware.ExceptionMiddleware',
 )
 
-ROOT_URLCONF = 'preup.ui.urls'
+ROOT_URLCONF = 'preupg.ui.urls'
 
-WSGI_APPLICATION = 'preup.ui.wsgi.application'
+WSGI_APPLICATION = 'preupg.ui.wsgi.application'
 
 
 # Database
@@ -113,12 +113,12 @@ RESULTS_DIR = os.path.join(DATA_DIR, 'results')
 from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 TEMPLATE_CONTEXT_PROCESSORS += (
     'django.core.context_processors.request',
-    'preup.ui.auth.context_processors.auth_enabled',
+    'preupg.ui.auth.context_processors.auth_enabled',
 )
 
 
 AUTHENTICATION_BACKENDS = (
-    'preup.ui.auth.backends.AutologinBackend',
+    'preupg.ui.auth.backends.AutologinBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -139,7 +139,7 @@ if DEBUG:
 
 XMLRPC_METHODS = {
     'submission': (
-        ('preup.ui.xmlrpc.submission', 'submit'),
+        ('preupg.ui.xmlrpc.submission', 'submit'),
     ),
 }
 

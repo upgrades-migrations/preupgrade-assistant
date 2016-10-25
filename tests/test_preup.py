@@ -4,12 +4,12 @@ import tempfile
 import shutil
 import os
 
-from preup.application import Application
-from preup.conf import Conf, DummyConf
-from preup.cli import CLI
-from preup import settings, xml_manager
-from preup.utils import PostupgradeHelper, SystemIdentification, FileHelper, OpenSCAPHelper
-from preup.report_parser import ReportParser
+from preupg.application import Application
+from preupg.conf import Conf, DummyConf
+from preupg.cli import CLI
+from preupg import settings, xml_manager
+from preupg.utils import PostupgradeHelper, SystemIdentification, FileHelper, OpenSCAPHelper
+from preupg.report_parser import ReportParser
 
 try:
     import base

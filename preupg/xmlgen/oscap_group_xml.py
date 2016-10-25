@@ -14,13 +14,13 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from preup.xmlgen.xml_utils import XmlUtils
-from preup.utils import MessageHelper, FileHelper, SystemIdentification
+from preupg.xmlgen.xml_utils import XmlUtils
+from preupg.utils import MessageHelper, FileHelper, SystemIdentification
 try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
-from preup import settings
+from preupg import settings
 
 try:
     from xml.etree.ElementTree import ParseError

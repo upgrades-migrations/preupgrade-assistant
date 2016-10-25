@@ -6,8 +6,8 @@ import tempfile
 import preup
 
 from xml.etree import ElementTree
-from preup.application import Application
-from preup.conf import DummyConf, Conf
+from preupg.application import Application
+from preupg.conf import DummyConf, Conf
 from report.processing import xml_to_html, stringify_children, parse_report
 from report.service import extract_tarball
 
@@ -78,7 +78,7 @@ Text outside tag <html:div>Text <html:em>inside</html:em> tag</html:div> x <b>y<
 #         """
 #         "scan" system with dummy content and import it
 #         """
-#         a = Application(Conf(self.conf, preup.settings))
+#         a = Application(Conf(self.conf, preupg.settings))
 #         tarball_path = a.scan_system()
 #
 #         xml_path, html_path = extract_tarball(tarball_path, self.temp_dir)

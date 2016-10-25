@@ -1,7 +1,7 @@
 
 from __future__ import unicode_literals
 import os
-from preup.logger import settings, logger_report, log_message, logging
+from preupg.logger import settings, logger_report, log_message, logging
 
 
 class ScanningHelper(object):

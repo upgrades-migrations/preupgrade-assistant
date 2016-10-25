@@ -1,8 +1,8 @@
-from preup.ui.config.models import AppSettings
-from preup.ui.report.forms import StateFilterForm
+from preupg.ui.config.models import AppSettings
+from preupg.ui.report.forms import StateFilterForm
 
 from django import template
-from preup.ui.utils.views import get_states_to_filter
+from preupg.ui.utils.views import get_states_to_filter
 
 register = template.Library()
 

@@ -5,7 +5,7 @@ from __future__ import print_function, unicode_literals
 import optparse
 from optparse import OptionValueError
 
-from preup.constants import *
+from preupg.constants import *
 
 
 def upload_callback(option, dummy_opt_str, dummy_value, parser):

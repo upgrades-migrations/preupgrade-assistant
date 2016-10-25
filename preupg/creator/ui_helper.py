@@ -11,10 +11,10 @@ import sys
 import six
 
 from distutils.util import strtobool
-from preup.utils import FileHelper, SystemIdentification
-from preup.creator import settings
+from preupg.utils import FileHelper, SystemIdentification
+from preupg.creator import settings
 
-from preup.settings import content_file as ALL_XCCDF_XML
+from preupg.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
 
 

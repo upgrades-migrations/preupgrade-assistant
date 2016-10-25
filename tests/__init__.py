@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from preup import settings
+from preupg import settings
 
 dirname = os.path.join(os.path.dirname(__file__), 'tmp')
 solution_txt = 'solution.txt'

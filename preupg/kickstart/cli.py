@@ -1,6 +1,6 @@
 import optparse
 
-from preup.constants import *
+from preupg.constants import *
 
 
 class CLIKickstart(object):

@@ -3,8 +3,8 @@
 The application module serves for creating a content
 """
 
-from preup.logger import logging, LoggerHelper, logger
-from preup.creator.ui_helper import UIHelper
+from preupg.logger import logging, LoggerHelper, logger
+from preupg.creator.ui_helper import UIHelper
 
 
 class Application(object):
@@ -12,7 +12,7 @@ class Application(object):
     """Class for oscap binary and reporting results to UI"""
 
     def __init__(self, conf):
-        """conf is preup.conf.Conf object, contains configuration"""
+        """conf is preupg.conf.Conf object, contains configuration"""
         self.conf = conf
         if self.conf.debug is None:
             LoggerHelper.add_stream_handler(logger, logging.INFO)

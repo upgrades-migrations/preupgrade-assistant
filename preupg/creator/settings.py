@@ -14,7 +14,7 @@ temp_python_script = """#!/usr/bin/python
 import sys
 import os
 
-from preup.script_api import *
+from preupg.script_api import *
 
 #END GENERATED SECTION
 

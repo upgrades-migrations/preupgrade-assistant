@@ -19,8 +19,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from preup import settings
-from preup.logger import log_message, logging, logger, logger_debug
+from preupg import settings
+from preupg.logger import log_message, logging, logger, logger_debug
 
 from os import path, access, W_OK, R_OK, X_OK
 

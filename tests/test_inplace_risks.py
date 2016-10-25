@@ -4,10 +4,10 @@ import tempfile
 import shutil
 import os
 
-from preup.xccdf import XccdfHelper
-from preup.utils import FileHelper
-from preup import settings
-from preup.settings import ModuleValues
+from preupg.xccdf import XccdfHelper
+from preupg.utils import FileHelper
+from preupg import settings
+from preupg.settings import ModuleValues
 
 try:
     import base

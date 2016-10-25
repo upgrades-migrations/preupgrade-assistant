@@ -3,8 +3,8 @@ import uuid
 from django.core.urlresolvers import reverse
 import os
 
-from preup.ui.report.models import Run, Host
-from preup.ui.report.service import import_report
+from preupg.ui.report.models import Run, Host
+from preupg.ui.report.service import import_report
 
 from django.conf import settings
 

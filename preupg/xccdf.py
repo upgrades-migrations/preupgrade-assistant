@@ -7,10 +7,10 @@ import six
 from operator import itemgetter
 from xml.etree import ElementTree
 
-from preup import settings
-from preup.settings import ModuleValues
-from preup.logger import log_message, logger_report
-from preup.utils import FileHelper, SystemIdentification
+from preupg import settings
+from preupg.settings import ModuleValues
+from preupg.logger import log_message, logger_report
+from preupg.utils import FileHelper, SystemIdentification
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 

@@ -3,9 +3,9 @@ from __future__ import print_function, unicode_literals
 import os
 import re
 
-from preup.utils import FileHelper, MessageHelper
-from preup import settings
-from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.utils import FileHelper, MessageHelper
+from preupg import settings
+from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
 
 
 class ModuleHelper(object):

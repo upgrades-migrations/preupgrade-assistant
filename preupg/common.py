@@ -10,9 +10,9 @@ import platform
 import datetime
 import shutil
 from distutils import dir_util
-from preup.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
-from preup.logger import log_message
-from preup import settings
+from preupg.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
+from preupg.logger import log_message
+from preupg import settings
 
 
 def get_add_on_name(filename, add_on):
