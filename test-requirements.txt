@@ -4,5 +4,4 @@ ordered_set
 importlib
 https://github.com/bocekm/astroid/archive/py26_compatibility.zip
 https://github.com/bocekm/pylint/archive/py26_compatibility.zip
-https://github.com/rhinstaller/pykickstart/archive/pykickstart-2.zip
 backports.functools_lru_cache
