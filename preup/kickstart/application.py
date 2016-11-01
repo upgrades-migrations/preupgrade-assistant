@@ -15,7 +15,7 @@ from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import makeVersion
 
 from preup.logger import logger, logging, LoggerHelper, logger_debug, log_message
-from preup.utils import FileHelper, ProcessHelper
+from preup.utils import FileHelper, ProcessHelper, MessageHelper
 from preup import settings
 
 
@@ -210,10 +210,28 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
+    def _get_all_postinstall_scripts(self):
+        found_scripts = []
+        for (path, dirs, files) in os.walk(os.path.join(settings.result_dir, settings.kickstart_dir)):
+            for f in files:
+                file_name = os.path.join(path, f)
+                if os.path.exists(file_name) and FileHelper.check_file(file_name, u"x") is True:
+                    found_scripts.append(file_name)
+        return found_scripts
+
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
             return None
+        if not self._get_all_postinstall_scripts():
+            accept = ['y', 'yes']
+            log_message("You did not specify any postinstall scripts. "
+                        "Include them to %s " % os.path.join(settings.result_dir, settings.postinstall_dir))
+            choice = MessageHelper.get_message(message="Do you want to continue with kickstart generation "
+                                               "without postinstall scripts?",
+                                               prompt="(Y/n)")
+            if choice.lower() not in accept:
+                return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
         for module in six.iterkeys(self.plugin_classes):

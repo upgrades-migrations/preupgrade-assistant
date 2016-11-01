@@ -95,15 +95,22 @@ file_list_rules = "list_rules"
 # path to file with definitions of common scripts
 post_script = os.path.join(common_dir, "post_scripts.txt")
 
+# kickstart directory name
+kickstart_dir = "kickstart"
+
+# kickstart postinstall directory name
+postinstall_dir = "postinstall.d"
+
 # kickstart and postupgrade.d directories
 preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
-                   'hooks', 'kickstart', postupgrade_dir, 'common',
-                   'preupgrade-scripts', 'noauto_postupgrade.d']
+                   'hooks', kickstart_dir, postupgrade_dir, 'common',
+                   'preupgrade-scripts', 'noauto_postupgrade.d',
+                   postinstall_dir]
 
 
 PREUPG_README = 'README'
 readme_files = {'README': PREUPG_README,
-                'README.kickstart': os.path.join('kickstart', 'README'),
+                'README.kickstart': os.path.join(kickstart_dir, 'README'),
                 }
 
 # Used for autogeneration check script issues
@@ -173,7 +180,7 @@ ui_command = "preupg -u http://example.com:8099/submit/ -r {0}"
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
-KS_DIR = os.path.join(result_dir, 'kickstart')
+KS_DIR = os.path.join(result_dir, kickstart_dir)
 KS_TEMPLATE = 'default.ks'
 KS_TEMPLATE_POSTSCRIPT = 'finish.sh'
 KS_TEMPLATES = [KS_TEMPLATE, KS_TEMPLATE_POSTSCRIPT]
