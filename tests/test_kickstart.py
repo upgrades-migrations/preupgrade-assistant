@@ -6,6 +6,8 @@ import tempfile
 import shutil
 
 from preup.kickstart.application import KickstartGenerator
+from preup.kickstart.cli import CLIKickstart
+from preup.kickstart.conf import ConfKickstart, DummyConfKickstart
 from preup import settings
 
 try:
@@ -69,7 +71,12 @@ class TestKickstartPartitioning(base.TestCase):
                         os.path.join(self.WORKING_DIR, kickstart_file))
         shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', default_ks),
                         os.path.join(self.WORKING_DIR, default_ks))
-        self.kg = KickstartGenerator(None, self.WORKING_DIR, os.path.join(kickstart_file))
+        conf = {"force": True}
+        dc = DummyConfKickstart(**conf)
+        cli_kickstart = CLIKickstart(["--force"])
+        conf = ConfKickstart(cli_kickstart.opts, dc, cli_kickstart)
+        app = KickstartGenerator(conf, settings.KS_DIR, settings.PREUPGRADE_KS)
+        self.kg = KickstartGenerator(conf, self.WORKING_DIR, os.path.join(kickstart_file))
         self.kg.collect_data()
 
     def test_lvm_partitions(self):

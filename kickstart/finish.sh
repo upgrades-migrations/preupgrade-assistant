@@ -30,7 +30,7 @@ do
     fi
 done
 cd ${PWD}
-POST_INSTALL_SCRIPTS="postinstall.d"
+POST_INSTALL_SCRIPTS="postmigrate.d"
 cd $POST_INSTALL_SCRIPTS
 for file in $(find . -type f -executable)
 do

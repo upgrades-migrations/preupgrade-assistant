@@ -280,6 +280,22 @@ class FileHelper(object):
                       }
         return file_types[mime_type]
 
+    @staticmethod
+    def get_list_executable_files_in_dir(dir_name):
+        """
+        The function returns list of executable files in directory.
+
+        :param dir_name: Dir name where executable files are searched
+        :return: List of files or empty list
+        """
+        found_scripts = []
+        for (root_path, dirs, files) in os.walk(dir_name):
+            for f in files:
+                file_name = os.path.join(root_path, f)
+                if os.path.exists(file_name) and FileHelper.check_file(file_name, u"x") is True:
+                    found_scripts.append(file_name)
+        return found_scripts
+
 
 class DirHelper(object):
 

@@ -99,13 +99,13 @@ post_script = os.path.join(common_dir, "post_scripts.txt")
 kickstart_dir = "kickstart"
 
 # kickstart postinstall directory name
-postinstall_dir = "postinstall.d"
+postmigrate_dir = "postmigrate.d"
 
 # kickstart and postupgrade.d directories
 preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
                    'hooks', kickstart_dir, postupgrade_dir, 'common',
                    'preupgrade-scripts', 'noauto_postupgrade.d',
-                   postinstall_dir]
+                   postmigrate_dir]
 
 
 PREUPG_README = 'README'

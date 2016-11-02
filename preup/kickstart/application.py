@@ -210,28 +210,22 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
-    def _get_all_postinstall_scripts(self):
-        found_scripts = []
-        for (path, dirs, files) in os.walk(os.path.join(settings.result_dir, settings.kickstart_dir)):
-            for f in files:
-                file_name = os.path.join(path, f)
-                if os.path.exists(file_name) and FileHelper.check_file(file_name, u"x") is True:
-                    found_scripts.append(file_name)
-        return found_scripts
-
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
             return None
-        if not self._get_all_postinstall_scripts():
-            accept = ['y', 'yes']
-            log_message("You did not specify any postinstall scripts. "
-                        "Include them to %s " % os.path.join(settings.result_dir, settings.postinstall_dir))
-            choice = MessageHelper.get_message(message="Do you want to continue with kickstart generation "
-                                               "without postinstall scripts?",
-                                               prompt="(Y/n)")
-            if choice.lower() not in accept:
-                return None
+        if not self.conf.force:
+            if not FileHelper.get_list_executable_files_in_dir(os.path.join(settings.result_dir,
+                                                                            settings.kickstart_dir)):
+                accept = ['y', 'yes']
+                log_message("The '%s' folder is empty - scripts to be executed "
+                            "after the migration should be placed here." % os.path.join(settings.result_dir,
+                                                                                        settings.postmigrate_dir))
+                message = "Do you want to continue with kickstart generation without any postmigration scripts?"
+                choice = MessageHelper.get_message(message=message,
+                                                   prompt="(Y/n)")
+                if choice.lower() not in accept:
+                    return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
         for module in six.iterkeys(self.plugin_classes):
