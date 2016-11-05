@@ -12,10 +12,10 @@
 
 ##
 # Briefly:
-#   In case we want to manual inspection/check/action AFTER UPGRADE by user,
+#   In case we want to manual action/check BEFORE UPGRADE by user,
 #   we have to do basically just 3 things:
 #     1) provide text in $SOLUTION_FILE - what is the problem, instructions,...
-#     2) use log_medium_risk to provide short message that we found problem
+#     2) use log_high_risk to provide short message that we found problem
 #     3) exit by exit_failed - to inform preupg, that something happend
 #           - or: exit $RESULT_FAILED
 ##
@@ -23,16 +23,17 @@
 #
 # So now we know that rpm foo is installed (we set 'foo' for applies_to option
 # in content.ini file). In this example, when file $foo_conf exists and
-# contains 'deprecated_option', we inform user about found issue
+# contains substring "explode_on_new_system", we inform user that action
+# before upgrade is required.
 #
 foo_conf="/etc/preupg-foo-example"
-if [[ -e "$foo_conf" ]] && grep -q "^deprecated_option" "$foo_conf"; then
-  log_medium_risk "Found deprecated option in $foo_conf"
+if [[ -e "$foo_conf" ]] && grep -q "explode_on_new_system" "$foo_conf"; then
+  log_risk_risk "Found dangerous option in $foo_conf."
   {
-    echo -n "The $foo_conf config file of foo tool contains deprecated option"
-    echo -n " 'deprecated_option' which is not available on new system. This"
-    echo -n " may affect functionality of your other applications, which"
-    echo    " depend on it."
+    echo -n "The $foo_conf config file of foo tool contains dangerous option"
+    echo -n " 'explode_on_new_system', which will blow up your mahine when"
+    echo -n " you keep it. You have to remove the option from the file before"
+    echo    " upgrade to prevent your machine against explosion."
   } >> "$SOLUTION_FILE"
 
   exit_failed
