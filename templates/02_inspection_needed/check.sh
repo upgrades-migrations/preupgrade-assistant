@@ -32,7 +32,7 @@ if [[ -e "$foo_conf" ]] && grep -q "^deprecated_option" "$foo_conf"; then
     echo -n "The $foo_conf config file of foo tool contains deprecated option"
     echo -n " 'deprecated_option' which is not available on new system. This"
     echo -n " may affect functionality of your other applications, which"
-    echo -n " depend on it."
+    echo    " depend on it."
   } >> "$SOLUTION_FILE"
 
   exit_failed
