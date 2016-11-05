@@ -1,7 +1,0 @@
-
-Solution text file can be used as a reference to KnowledgeBase article.
-
-The current configuration file cannot be used on target system.
-Before using the configuration file do action described in Knowledgebase article
-
-
