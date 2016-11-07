@@ -3,10 +3,10 @@
 
 
 import sys
-from preup.creator.cli import CLICreator
-from preup.creator.conf import ConfCreator
-from preup.creator.application import Application
-from preup import settings
+from preupg.creator.cli import CLICreator
+from preupg.creator.conf import ConfCreator
+from preupg.creator.application import Application
+from preupg import settings
 
 
 def main():

@@ -5,9 +5,9 @@ import os
 import shutil
 import sys
 
-from preup.xml.compos import XCCDFCompose
-from preup.exception import MissingHeaderCheckScriptError, MissingFileInContentError, MissingTagsIniFileError
-from preup import settings
+from preupg.xml.compos import XCCDFCompose
+from preupg.exception import MissingHeaderCheckScriptError, MissingFileInContentError, MissingTagsIniFileError
+from preupg import settings
 
 
 def main():
