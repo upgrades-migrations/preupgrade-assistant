@@ -7,11 +7,11 @@ import shutil
 from xml.etree import ElementTree
 
 from distutils import dir_util
-from preup.xml.compose import ComposeXML
-from preup import settings
-from preup.utils import FileHelper, SystemIdentification
-from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
-from preup.logger import *
+from preupg.xml.compose import ComposeXML
+from preupg import settings
+from preupg.utils import FileHelper, SystemIdentification
+from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.logger import *
 
 try:
     from xml.etree.ElementTree import ParseError
