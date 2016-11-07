@@ -94,11 +94,11 @@ class Common(object):
                 values = line.strip().split("=", 5)
                 if values[4] == "YES":
                     shutil.copyfile(values[1],
-                                    os.path.join(self.conf.assesment_results_dir,
+                                    os.path.join(self.conf.assessment_results_dir,
                                                  "kickstart",
                                                  values[5]))
                 else:
-                    if os.path.exists(os.path.join(self.conf.assesment_results_dir,
+                    if os.path.exists(os.path.join(self.conf.assessment_results_dir,
                                                    values[1])):
                         os.remove(values[1])
         except IOError:
@@ -119,7 +119,7 @@ class Common(object):
 
     def _get_required_arch_dirname(self):
         """
-        Get expected dirname of common data for requested assesment of system.
+        Get expected dirname of common data for requested assessment of system.
 
         In case that dst_arch is not specified by --dst-arch option, final
         arch is arch of current system (e.g. x86_64). In case that destination

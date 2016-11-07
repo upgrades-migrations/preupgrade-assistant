@@ -21,7 +21,7 @@ def setup_preupg_environment(args, content, tmp_dir, mode=None):
     conf = {
         "contents": content,
         "profile": "xccdf_preupg_profile_default",
-        "assesment_results_dir": tmp_dir,
+        "assessment_results_dir": tmp_dir,
         "skip_common": True,
         "temp_dir": tmp_dir,
         "id": None,
@@ -35,7 +35,7 @@ def setup_preupg_environment(args, content, tmp_dir, mode=None):
     a.conf.source_dir = os.getcwd()
     a.content = a.conf.contents
     a.basename = os.path.basename(a.content)
-    a.openscap_helper = OpenSCAPHelper(a.conf.assesment_results_dir,
+    a.openscap_helper = OpenSCAPHelper(a.conf.assessment_results_dir,
                                        a.conf.result_prefix,
                                        a.conf.xml_result_name,
                                        a.conf.html_result_name,

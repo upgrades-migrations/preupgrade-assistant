@@ -228,7 +228,7 @@ class KickstartGenerator(object):
         return True
 
     def main(self):
-        if not os.path.exists(os.path.join(settings.assesment_results_dir,
+        if not os.path.exists(os.path.join(settings.assessment_results_dir,
                                            settings.xml_result_name)):
             log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
             return 1
@@ -247,7 +247,7 @@ class KickstartGenerator(object):
 
     @staticmethod
     def kickstart_scripts():
-        ks_scripts_file = os.path.join(settings.data_dir, "preassesment",
+        ks_scripts_file = os.path.join(settings.data_dir, "preassessment",
                                        settings.KS_SCRIPTS)
         try:
             lines = FileHelper.get_file_content(ks_scripts_file, "rb", True)

@@ -11,11 +11,11 @@ else:
 defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
 
 # dir where results of analysis are stored
-assesment_results_dir = os.path.join("/root", prefix)
+assessment_results_dir = os.path.join("/root", prefix)
 
 results_postfix = "-results"
 # Dir where tar balls are placed
-tarball_result_dir = assesment_results_dir + results_postfix
+tarball_result_dir = assessment_results_dir + results_postfix
 
 xccdf_template = "xccdf_template.xml"
 
@@ -55,7 +55,7 @@ postupgrade_dir = "postupgrade.d"
 
 # dir with scripts which are to be executed before reboot and upgrade.
 preupgrade_scripts_dir = "preupgrade-scripts"
-preupgrade_scripts_path = os.path.join(assesment_results_dir,
+preupgrade_scripts_path = os.path.join(assessment_results_dir,
                                        preupgrade_scripts_dir)
 
 # dirtyconfig directory used by preupgrade assistant
@@ -72,7 +72,7 @@ profile = "xccdf_preupg_profile_default"
 common_name = "common"
 
 # path to file with definitions of common scripts
-common_scripts = os.path.join(data_dir, "preassesment", "scripts.txt")
+common_scripts = os.path.join(data_dir, "preassessment", "scripts.txt")
 
 # Addons dir for 3rdparty contents
 add_ons = "3rdparty"
@@ -91,7 +91,7 @@ file_list_rules = "list_rules"
 
 # kickstart and postupgrade.d directories
 preupgrade_dirs = [dirty_conf_dir, clean_conf_dir, 'hooks', 'data/templates',
-                   "data/" + postupgrade_dir, 'data/preassesment',
+                   "data/" + postupgrade_dir, 'data/preassessment',
                    'preupgrade-scripts', 'noauto_postupgrade.d']
 
 
@@ -164,7 +164,7 @@ ui_command = "preupg -u http://example.com:8099/submit/ -r {0}"
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
-KS_DIR = os.path.join(assesment_results_dir, 'kickstart')
+KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 KS_FILENAME = 'migration.ks'
 KS_PATH = os.path.join(KS_DIR, KS_FILENAME)
 KS_TEMPLATE = KS_FILENAME
