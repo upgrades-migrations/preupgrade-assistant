@@ -314,8 +314,7 @@ class ComposeXML(object):
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
-            print('Problem with reading {0} file'
-                  .format(settings.xccdf_template))
+            print('Problem with reading %s file' % settings.xccdf_template)
             return None
         return target_tree
 

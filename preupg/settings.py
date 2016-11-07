@@ -90,14 +90,13 @@ base_hashed_file = "hashed_file"
 file_list_rules = "list_rules"
 
 # kickstart and postupgrade.d directories
-preupgrade_dirs = [dirty_conf_dir, clean_conf_dir, 'hooks', 'data/templates',
-                   "data/" + postupgrade_dir, 'data/preassessment',
+preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
+                   'hooks', 'kickstart', postupgrade_dir, 'common',
                    'preupgrade-scripts', 'noauto_postupgrade.d']
 
-
 PREUPG_README = 'README'
-readme_files = {'doc/README': PREUPG_README,
-                'doc/README.kickstart': os.path.join('kickstart', 'README'),
+readme_files = {'README': PREUPG_README,
+                'README.kickstart': os.path.join('kickstart', 'README'),
                 }
 
 # Used for autogeneration check script issues
@@ -165,7 +164,7 @@ openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 
 UPGRADE_PATH = ""
 KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
-KS_FILENAME = 'migration.ks'
+KS_FILENAME = 'preupgrade.ks'
 KS_PATH = os.path.join(KS_DIR, KS_FILENAME)
 KS_TEMPLATE = KS_FILENAME
 KS_POSTSCRIPT_TEMPLATE = 'postmigrate.sh'

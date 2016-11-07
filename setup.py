@@ -29,7 +29,7 @@ data_files = {
 
 # Include relative path to dirs with non-python files - these will be added
 # to the python module directory with the same relative path
-paths = ['preupg/ui/templates/', 'preupgui/static/']
+paths = ['preupg/ui/templates/', 'preupg/ui/static/']
 for path in paths:
     for root, dirs, files in os.walk(path):
         data_files[root] = [os.path.join(root, f) for f in files]
