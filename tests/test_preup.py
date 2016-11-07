@@ -381,11 +381,9 @@ class TestPremigratePrefix(base.TestCase):
 def suite():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    # TODO We have to find out a diferent way how to test it.
-    # TODO oscap does not support --progress option
-    #suite.addTest(loader.loadTestsFromTestCase(TestPreupg))
-    #suite.addTest(loader.loadTestsFromTestCase(TestPreupgMigrate))
-    #suite.addTest(loader.loadTestsFromTestCase(TestPreupgUpgrade))
+    suite.addTest(loader.loadTestsFromTestCase(TestPreupg))
+    suite.addTest(loader.loadTestsFromTestCase(TestPreupgMigrate))
+    suite.addTest(loader.loadTestsFromTestCase(TestPreupgUpgrade))
     suite.addTest(loader.loadTestsFromTestCase(TestCLI))
     suite.addTest(loader.loadTestsFromTestCase(TestHashes))
     suite.addTest(loader.loadTestsFromTestCase(TestSolutionReplacement))
