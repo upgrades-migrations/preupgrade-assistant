@@ -275,6 +275,7 @@ class FileHelper(object):
                       'application/x-sh': 'sh',
                       'application/x-perl': 'perl',
                       'text/plain': 'txt',
+                      'text/x-sh': 'sh',
                       None: 'txt',
                       }
         return file_types[mime_type]
