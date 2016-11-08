@@ -10,16 +10,16 @@ Installation and configuration
 
 2.  Choose a configuration file:
     If you want the UI to be accessible over the network,
-    enable the 99-preup-httpd.conf.public configuration file:
+    enable the 99-preupg-httpd.conf.public configuration file:
 
-        mv /etc/httpd/conf.d/99-preup-httpd.conf.public \
-           /etc/httpd/conf.d/99-preup-httpd.conf
+        mv /etc/httpd/conf.d/99-preupg-httpd.conf.public \
+           /etc/httpd/conf.d/99-preupg-httpd.conf
 
     If you want the UI to be accessible on the localhost only,
-    enable the 99-preup-httpd.conf.private configuration file:
+    enable the 99-preupg-httpd.conf.private configuration file:
 
-        mv /etc/httpd/conf.d/99-preup-httpd.conf.private \
-           /etc/httpd/conf.d/99-preup-httpd.conf
+        mv /etc/httpd/conf.d/99-preupg-httpd.conf.private \
+           /etc/httpd/conf.d/99-preupg-httpd.conf
 
 3.  Start the httpd service (and enable it to start after reboot):
 
