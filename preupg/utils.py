@@ -786,10 +786,11 @@ class OpenSCAPHelper(object):
     def get_xsl_stylesheet(old_style=False):
         """Return full XSL stylesheet path"""
         if old_style:
-            subfolder = "html_report_simple"
+            subfolder = "simple"
         else:
-            subfolder = "html_report_complex"
-        return os.path.join(settings.data_dir, subfolder, settings.xsl_sheet)
+            subfolder = "complex"
+        return os.path.join(settings.data_dir, "report", subfolder,
+                            settings.xsl_sheet)
 
     @staticmethod
     def get_command_generate():

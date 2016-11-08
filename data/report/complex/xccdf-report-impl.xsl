@@ -35,11 +35,11 @@ Authors:
 
 <xsl:key name="references" match="//cdf:Rule/cdf:reference" use="@href"/>
 
-<xsl:include href="../../openscap/xsl/xccdf-branding.xsl" />
-<xsl:include href="../../openscap/xsl/xccdf-resources.xsl" />
+<xsl:include href="/usr/share/openscap/xsl/xccdf-branding.xsl" />
+<xsl:include href="/usr/share/openscap/xsl/xccdf-resources.xsl" />
 <xsl:include href="xccdf-share.xsl" />
 
-<xsl:include href="../../openscap/xsl/xccdf-report-oval-details.xsl" />
+<xsl:include href="/usr/share/openscap/xsl/xccdf-report-oval-details.xsl" />
 
 <xsl:output
     method="html"

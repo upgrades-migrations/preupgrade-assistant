@@ -475,11 +475,11 @@ Authors:
 
 <xsl:template match='cdf:check-content-ref' mode='sce-engine-results'>
   <xsl:variable name='stdout-check-imports' select='../cdf:check-import[@import-name="stdout"]'/>
-  
+
   <xsl:apply-templates select='$stdout-check-imports' mode='brief' />
-  
+
 <xsl:if test='not($stdout-check-imports)'>
-  <!-- fallback that looks for SCE result files -->  
+  <!-- fallback that looks for SCE result files -->
   <xsl:variable name='filename'>
     <xsl:choose>
       <xsl:when test='contains($sce-tmpl, "%")'><xsl:value-of select='concat(substring-before($sce-tmpl, "%"), @href, substring-after($sce-tmpl, "%"))'/></xsl:when>
