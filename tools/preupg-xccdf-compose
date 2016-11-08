@@ -5,7 +5,7 @@ import os
 import shutil
 import sys
 
-from preupg.xml.compos import XCCDFCompose
+from preupg.xmlgen.compose import XCCDFCompose
 from preupg.exception import MissingHeaderCheckScriptError, MissingFileInContentError, MissingTagsIniFileError
 from preupg import settings
 
