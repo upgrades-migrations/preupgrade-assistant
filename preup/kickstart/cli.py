@@ -20,7 +20,8 @@ class CLIKickstart(object):
 
     def add_args(self):
         self.parser.add_option(
-            "--force",
+            "-y",
+            "--assumeyes",
             action="store_true",
             default=False,
             help="Suppress user interaction"

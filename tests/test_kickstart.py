@@ -71,9 +71,9 @@ class TestKickstartPartitioning(base.TestCase):
                         os.path.join(self.WORKING_DIR, kickstart_file))
         shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', default_ks),
                         os.path.join(self.WORKING_DIR, default_ks))
-        conf = {"force": True}
+        conf = {"y": True}
         dc = DummyConfKickstart(**conf)
-        cli_kickstart = CLIKickstart(["--force"])
+        cli_kickstart = CLIKickstart(["--assumeyes"])
         conf = ConfKickstart(cli_kickstart.opts, dc, cli_kickstart)
         app = KickstartGenerator(conf, settings.KS_DIR, settings.PREUPGRADE_KS)
         self.kg = KickstartGenerator(conf, self.WORKING_DIR, os.path.join(kickstart_file))
