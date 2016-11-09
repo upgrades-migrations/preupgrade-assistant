@@ -292,7 +292,7 @@ class FileHelper(object):
         for (root_path, dirs, files) in os.walk(dir_name):
             for f in files:
                 file_name = os.path.join(root_path, f)
-                if os.path.exists(file_name) and FileHelper.check_file(file_name, u"x") is True:
+                if os.path.exists(file_name) and FileHelper.check_file(file_name, "x") is True:
                     found_scripts.append(file_name)
         return found_scripts
 

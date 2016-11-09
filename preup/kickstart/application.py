@@ -213,7 +213,7 @@ class KickstartGenerator(object):
 
     def check_postimigrate_dir(self):
         if not FileHelper.get_list_executable_files_in_dir(os.path.join(settings.result_dir,
-                                                                        settings.kickstart_dir)):
+                                                                        settings.postmigrate_dir)):
             if not self.conf.assumeyes:
                 accept = ['y', 'yes']
                 log_message("The '%s' folder is empty - scripts to be executed "
