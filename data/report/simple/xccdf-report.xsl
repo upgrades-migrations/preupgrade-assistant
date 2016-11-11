@@ -24,10 +24,10 @@ Authors:
 
 
 <xsl:stylesheet version="1.1"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:cdf="http://checklists.nist.gov/xccdf/1.1"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:cdf="http://checklists.nist.gov/xccdf/1.1"
     xmlns:exsl="http://exslt.org/common"
-	xmlns:db="http://docbook.org/ns/docbook"
+    xmlns:db="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns="http://docbook.org/ns/docbook"
     xmlns:s="http://open-scap.org/"
@@ -475,10 +475,19 @@ Authors:
 
 <xsl:template match='cdf:check-content-ref' mode='sce-engine-results'>
   <xsl:variable name='stdout-check-imports' select='../cdf:check-import[@import-name="stdout"]'/>
+  <xsl:variable name='stderr-check-imports' select='../cdf:check-import[@import-name="stderr"]'/>
 
-  <xsl:apply-templates select='$stdout-check-imports' mode='brief' />
+  <xsl:if test="$stdout-check-imports">
+      Additional output:
+      <xsl:apply-templates select='$stdout-check-imports' mode='brief' />
+  </xsl:if>
+  <xsl:if test="$stderr-check-imports">
+      Logs:
+      <xsl:apply-templates select='$stderr-check-imports' mode='brief' />
+  </xsl:if>
 
-<xsl:if test='not($stdout-check-imports)'>
+
+<xsl:if test='not($stdout-check-imports) and not($stderr-check-imports)'>
   <!-- fallback that looks for SCE result files -->
   <xsl:variable name='filename'>
     <xsl:choose>
