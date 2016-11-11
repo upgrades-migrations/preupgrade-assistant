@@ -28,7 +28,7 @@
 #
 foo_conf="/etc/preupg-foo-example"
 if [[ -e "$foo_conf" ]] && grep -q "explode_on_new_system" "$foo_conf"; then
-  log_risk_risk "Found dangerous option in $foo_conf."
+  log_high_risk "Found dangerous option in $foo_conf."
   {
     echo -n "The $foo_conf config file of foo tool contains dangerous option"
     echo -n " 'explode_on_new_system', which will blow up your mahine when"
@@ -40,12 +40,12 @@ if [[ -e "$foo_conf" ]] && grep -q "explode_on_new_system" "$foo_conf"; then
 fi
 
 #
-# At the end, when issue isn't presented, we will we want to
-# inform user, that everything is OK and we did some check. For this case
-# we will exit by exit_pass.
+# At the end, when issue isn't presented, we want to inform user, that
+# everything is OK and we did some check. For this case we will exit
+# by exit_pass.
 #
 # NOTE: you should know, that content of $SOLUTION_FILE will not be printed
-#       the report, because doesn't make sense and we don't want to produce
+#       in the report, because doesn't make sense and we don't want to produce
 #       a lot of text when it is not necessary. So you don't need truncate
 #       the file, even when you printed there some text.
 exit_pass
