@@ -647,11 +647,19 @@ Authors:
     <xsl:param name="sce-tmpl"/>
 
     <xsl:choose>
-        <xsl:when test="$check/cdf:check-import[@import-name = 'stdout']/text()">
-            <span class="label label-default"><abbr title="Script Check Engine stdout taken from check-import">SCE stdout</abbr></span>
-            <pre><code>
-                <xsl:value-of select="$check/cdf:check-import[@import-name = 'stdout']/text()"/>
-            </code></pre>
+        <xsl:when test="$check/cdf:check-import[@import-name = 'stdout']/text() or $check/cdf:check-import[@import-name = 'stderr']/text()">
+            <xsl:if test="$check/cdf:check-import[@import-name = 'stdout']/text()">
+                <span class="label label-default"><abbr title="Script Check Engine stdout taken from check-import">Additional output</abbr></span>
+                <pre><code>
+                    <xsl:value-of select="$check/cdf:check-import[@import-name = 'stdout']/text()"/>
+                </code></pre>
+            </xsl:if>
+            <xsl:if test="$check/cdf:check-import[@import-name = 'stderr']/text()">
+                <span class="label label-default"><abbr title="Script Check Engine stderr taken from check-import">Logs</abbr></span>
+                <pre><code>
+                    <xsl:value-of select="$check/cdf:check-import[@import-name = 'stderr']/text()"/>
+                </code></pre>
+            </xsl:if>
         </xsl:when>
         <xsl:otherwise>
             <xsl:variable name="filename">
@@ -663,11 +671,18 @@ Authors:
 
             <xsl:if test="$filename != ''">
                 <xsl:variable name="stdout" select="document($filename)/sceres:sce_results/sceres:stdout/text()"/>
+                <xsl:variable name="stderr" select="document($filename)/sceres:sce_results/sceres:stderr/text()"/>
 
                 <xsl:if test="normalize-space($stdout)">
-                    <span class="label label-default"><abbr title="Script Check Engine stdout taken from '{$filename}'">SCE stdout</abbr></span>
+                    <span class="label label-default"><abbr title="Script Check Engine stdout taken from '{$filename}'">Additional output</abbr></span>
                     <pre><code>
                         <xsl:copy-of select="$stdout"/>
+                    </code></pre>
+                </xsl:if>
+                <xsl:if test="normalize-space($stderr)">
+                    <span class="label label-default"><abbr title="Script Check Engine stderr taken from '{$filename}'">Logs</abbr></span>
+                    <pre><code>
+                        <xsl:copy-of select="$stderr"/>
                     </code></pre>
                 </xsl:if>
             </xsl:if>
