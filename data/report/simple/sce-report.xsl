@@ -23,8 +23,8 @@ Authors:
 
 
 <xsl:stylesheet version="1.1"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns="http://docbook.org/ns/docbook"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns="http://docbook.org/ns/docbook"
     xmlns:sceres="http://open-scap.org/page/SCE_result_file"
     xmlns:xccdf="http://checklists.nist.gov/xccdf/1.1"
     >
@@ -37,6 +37,7 @@ Authors:
 
 <xsl:template mode='brief' match='sceres:sce_results'>
   <programlisting><xsl:value-of select='concat("&#10;", sceres:stdout/text())' /></programlisting>
+  <programlisting><xsl:value-of select='concat("&#10;", sceres:stderr/text())' /></programlisting>
 </xsl:template>
 
 </xsl:stylesheet>
