@@ -25,8 +25,6 @@ data_files = {
         ['preupg/ui/report/fixtures/initial_data.json'],
     '/usr/share/preupgrade/':
         ['common.sh', 'doc/README', 'doc/README.kickstart', 'doc/README.ui'],
-    '/usr/share/premigrate/':
-        ['common.sh', 'doc/README', 'doc/README.kickstart', 'doc/README.ui'],
     '/usr/share/doc/preupgrade-assistant/':
         ['LICENSE']
 }
