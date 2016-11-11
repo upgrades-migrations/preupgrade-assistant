@@ -40,7 +40,7 @@ for path in paths:
 # dirs will be copied to
 paths = {'/usr/share/preupgrade/': 'data/',
          '/': 'etc/'}
-for absolute_dir_base, local_relative_dir in paths.iteritems():
+for absolute_dir_base, local_relative_dir in iter(paths.items()):
     for root, dirs, files in os.walk(local_relative_dir):
         absolute_dir = os.path.join(absolute_dir_base, root)
         data_files[absolute_dir] = [os.path.join(root, f) for f in files]
