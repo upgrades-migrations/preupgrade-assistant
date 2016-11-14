@@ -6,12 +6,11 @@ stages:
   # don't start any services (mailny not the default ones)
   services:
   script:
-    - dnf -y install python2 python3 python2-devel python3-devel rpm-python python-tox python3-tox python-pip python-setuptools python3-setuptools gcc redhat-rpm-config git openscap openscap-engine-sce openscap-utils pykickstart python-requests python-kickstart coreutils which
+    - dnf -y install python2 python3 python2-devel python3-devel rpm-python python-tox python3-tox python-pip python-setuptools python3-setuptools gcc gcc-c++ redhat-rpm-config git openscap openscap-engine-sce openscap-utils pykickstart python-requests python-kickstart coreutils which
     - echo "[preupgrade-assistant]" > /etc/preupgrade-assistant.conf
     - echo "home_directory_file=.preupgrade-dirs" >> /etc/preupgrade-assistant.conf
     - echo "user_config_file=enabled\n\n" >> /etc/preupgrade-assistant.conf
     - echo "[home-dirs]\n.config/\n.mozilla/\n" >> /etc/preupgrade-assistant.conf
-    #- pip install tox setuptools
     - tox --recreate
 
 test:f23:
