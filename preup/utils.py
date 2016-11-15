@@ -275,6 +275,7 @@ class FileHelper(object):
                       'application/x-sh': 'sh',
                       'application/x-perl': 'perl',
                       'text/plain': 'txt',
+                      'text/x-sh': 'sh',
                       None: 'txt',
                       }
         return file_types[mime_type]
@@ -552,13 +553,12 @@ class TarballHelper(object):
 
 class ConfigHelper(object):
     @staticmethod
-    def get_preupg_config_file(full_path, key, section="preupgrade"):
+    def get_preupg_config_file(full_path, key, section="preupgrade-assistant"):
         if not os.path.exists(full_path):
             return None
 
         config = configparser.RawConfigParser(allow_no_value=True)
         config.read(full_path)
-        section = 'preupgrade-assistant'
         if config.has_section(section):
             if config.has_option(section, key):
                 return config.get(section, key)

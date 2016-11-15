@@ -55,6 +55,7 @@ class TestKickstartPartitioning(base.TestCase):
     firewall_cmd = 'firewall-cmd'
     users = 'Users'
     groups = 'Groups'
+    kg = None
 
     def setUp(self):
         kickstart_file = 'preupgrade.ks'
@@ -86,7 +87,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'logvol /  --size=8000 --name=lv_root --vgname=vg_rhel67',
                            'logvol swap  --size=1000 --name=lv_swap --vgname=vg_rhel67']
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_lvm_crypt_partitions(self):
         lvm_lsblk = get_full_path('lvm_crypt_lsblk_list')
@@ -103,7 +104,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'logvol /  --size=8000 --name=lv_root --vgname=vg_rhel67',
                            'logvol swap  --size=1000 --name=lv_swap --vgname=vg_rhel67']
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_crypt_partitions(self):
         lvm_lsblk = get_full_path('crypt_lsblk_list')
@@ -114,7 +115,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'part /boot --ondisk=vda --size=200',
                            'part swap --ondisk=vda --size=2000']
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_raid_crypt_partitions(self):
         raid_lsblk = get_full_path('raid_lsblk_list')
@@ -131,7 +132,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'raid /home --device=md0 --level=0 --encrypted raid.00003 raid.00004'
                            ]
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_raid_second_partitions(self):
         raid_lsblk = get_full_path('raid_lsblk_second_list')
@@ -145,7 +146,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'raid / --device=md0 --level=0 raid.00001 raid.00002',
                            ]
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_native_partitioning(self):
         lsblk_native_lsblk = get_full_path('lsblk_native_list')
@@ -166,7 +167,7 @@ class TestKickstartPartitioning(base.TestCase):
         self.kg.generate()
         expected_layout = ['firewall --enabled --service=foo,bar,test']
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def test_user_and_groups(self):
         files = ['Users', 'Groups', 'setup_passwd', 'uidgid']
@@ -181,7 +182,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'user --homedir=/home/preupg --name=preupg --shell=/sbin/nologin --uid=501 --gid=501']
 
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip(), self.kg.ks.handler.__str__())
 
     def tearDown(self):
         pass

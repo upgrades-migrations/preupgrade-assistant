@@ -20,10 +20,8 @@ class TestAPICheck(base.TestCase):
     dist_native = 'dist_native'
 
     def setUp(self):
-        if os.path.isdir(self.dirname):
-            shutil.rmtree(self.dirname)
-        os.makedirs(self.dirname)
-        os.makedirs(os.path.join(self.dirname, 'kickstart'))
+        if not os.path.isdir(os.path.join(self.dirname, 'kickstart')):
+            os.makedirs(os.path.join(self.dirname, 'kickstart'))
         script_api.VALUE_RPM_RHSIGNED = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_rhsigned')
         script_api.VALUE_RPM_QA = os.path.join(os.path.dirname(__file__), self.api_files, 'rpm_qa')
         script_api.VALUE_CHKCONFIG = os.path.join(os.path.dirname(__file__), self.api_files, 'chkconfig')
@@ -37,8 +35,11 @@ class TestAPICheck(base.TestCase):
     def test_solution_file(self):
         expected_output = ["Testing message"]
         script_api.solution_file('\n'.join(expected_output))
-        output = FileHelper.get_file_content(os.path.join(self.dirname, self.solution_txt), "r", method=True)
+        output = FileHelper.get_file_content(os.path.join(script_api.VALUE_CURRENT_DIRECTORY, self.solution_txt),
+                                             "r",
+                                             method=True)
         self.assertEqual(expected_output, output)
+        os.unlink(os.path.join(script_api.VALUE_CURRENT_DIRECTORY, self.solution_txt))
 
     def test_is_pkg_installed(self):
         expected_installed_pkg = "preupgrade-assistant"
@@ -62,7 +63,7 @@ class TestAPICheck(base.TestCase):
             self.assertTrue(True)
 
     def test_check_rpm_to_binaries(self):
-        expected_binaries = "ls,cp"
+        expected_binaries = "strings,nm"
         self.assertEqual(script_api.check_rpm_to(check_bin=expected_binaries), 0)
 
     def test_not_check_rpm_to_binaries(self):
@@ -109,9 +110,33 @@ class TestAPICheck(base.TestCase):
         for pkg in FileHelper.get_file_content(script_api.SPECIAL_PKG_LIST,'rb', method=True):
             self.assertTrue(pkg.strip() in expected_list)
 
-    def tearDown(self):
-        if os.path.isdir(self.dirname):
-            shutil.rmtree(self.dirname)
+    def test_deploy_hook_postupgrade(self):
+        hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE, "hooks")
+        if os.path.isdir(hook_dir):
+            shutil.rmtree(hook_dir)
+        deploy_type = "postupgrade"
+        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/nm")
+        postupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
+                                            "hooks",
+                                            script_api.MODULE_PATH,
+                                            deploy_type,
+                                            )
+        for f in ["run_hook", "common.sh", "nm"]:
+            self.assertTrue(os.path.isfile(os.path.join(postupgrade_hook_dir, f)))
+
+    def test_deploy_hook_preupgrade(self):
+        hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE, "hooks")
+        if os.path.isdir(hook_dir):
+            shutil.rmtree(hook_dir)
+        deploy_type = "preupgrade"
+        script_api.deploy_hook(deploy_type, "setup.py", "common.sh", "/usr/bin/nm")
+        preupgrade_hook_dir = os.path.join(script_api.VALUE_TMP_PREUPGRADE,
+                                            "hooks",
+                                            script_api.MODULE_PATH,
+                                            deploy_type,
+                                            )
+        for f in ["run_hook", "common.sh", "nm"]:
+            self.assertTrue(os.path.isfile(os.path.join(preupgrade_hook_dir, f)))
 
 
 def suite():

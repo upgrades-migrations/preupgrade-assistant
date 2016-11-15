@@ -1,6 +1,6 @@
 # preupgrade-assistant
 
-[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) [![GitLab build status](https://gitlab.com/phracek/preupgrade-assistant/badges/master/build.svg)](https://gitlab.com/phracek/preupgrade-assistant/commits/master)
+[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) [![GitLab build status](https://gitlab.com/phracek/preupgrade-assistant/badges/master/build.svg)](https://gitlab.com/phracek/preupgrade-assistant/commits/master) [![Travis CI build status](https://travis-ci.org/upgrades-migrations/preupgrade-assistant.svg?branch=master)](https://travis-ci.org/upgrades-migrations/preupgrade-assistant)
 
 Preupgrade assistant performs assessment of the system from the "upgradeability" point of view.
 
@@ -25,3 +25,12 @@ Preupgrade assistant performs assessment of the system from the "upgradeability"
 ## How to execute preupgrade-assistant
 
 Just run ./preupg. But with root priviledges because of preupg binary needs to have an access to all files.
+
+## Contribute
+
+See our guidelines on [how to contribute](https://github.com/upgrades-migrations/preupgrade-assistant/wiki/Contribute) to this project.
+
+## Contact us
+
+- On a freenode.net IRC channel #preupgrade
+- Write a question as [an issue here on GitHub](https://github.com/upgrades-migrations/preupgrade-assistant/issues/new)

@@ -3,6 +3,23 @@ import os
 
 from preup import settings
 
+dirname = os.path.join(os.path.dirname(__file__), 'tmp')
+solution_txt = 'solution.txt'
+os.environ['XCCDF_VALUE_TMP_PREUPGRADE'] = dirname
+os.environ['CURRENT_DIRECTORY'] = dirname
+os.environ['XCCDF_VALUE_SOLUTION_FILE'] = solution_txt
+os.environ['XCCDF_VALUE_REPORT_DIR'] = dirname
+os.environ['XCCDF_VALUE_CURRENT_DIRECTORY'] = os.path.join(os.path.dirname(__file__), "..")
+os.environ['XCCDF_RESULT_ERROR'] = "3"
+os.environ['XCCDF_RESULT_FAILED'] = "2"
+os.environ['XCCDF_RESULT_FAIL'] = "2"
+os.environ['XCCDF_RESULT_UNKNOWN'] = "2"
+os.environ['XCCDF_RESULT_FIXED'] = "1"
+os.environ['XCCDF_RESULT_NEEDS_INSPECTION'] = "1"
+os.environ['XCCDF_RESULT_NEEDS_ACTION'] = "1"
+os.environ['XCCDF_RESULT_NOT_APPLICABLE'] = "10"
+os.environ['XCCDF_VALUE_MODULE_PATH'] = "test_script_api"
+
 
 def suite():
     settings.log_dir = os.getcwd()
@@ -30,11 +47,13 @@ def suite():
     from tests import test_api
     from tests import test_kickstart
     from tests import test_inplace_risks
+    from tests import test_creator
     suite.addTests(test_preup.suite())
     suite.addTests(test_xml.suite())
     suite.addTests(test_kickstart.suite())
     suite.addTests(test_inplace_risks.suite())
     suite.addTests(test_api.suite())
+    suite.addTests(test_creator.suite())
     return suite
 
 if __name__ == '__main__':

@@ -99,6 +99,105 @@ class TestXMLCompose(base.TestCase):
         self.assertTrue(author)
 
 
+class TestScriptGenerator(base.TestCase):
+
+    """Main testing of right generating of XML files for OSCAP."""
+    dirname = None
+    filename = None
+    test_solution = None
+    loaded_ini = None
+    check_script = None
+    check_sh = None
+    solution_text = None
+    rule = None
+    xml_utils = None
+    test_ini = []
+
+    def setUp(self):
+        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        if os.path.exists(self.dirname):
+            shutil.rmtree(self.dirname)
+        os.makedirs(self.dirname)
+        self.filename = os.path.join(self.dirname, 'test.ini')
+        self.rule = []
+        self.test_solution = "test_solution.txt"
+        self.check_script = "check_script.sh"
+        self.loaded_ini = {}
+        self.test_ini = {'content_title': 'Testing content title',
+                         'content_description': ' some content description',
+                         'author': 'test <test@redhat.com>',
+                         'config_file': '/etc/named.conf',
+                         'check_script': self.check_script,
+                         'solution': self.test_solution}
+        self.check_sh = """#!/bin/bash
+
+#END GENERATED SECTION
+
+#This is testing check script
+ """
+        check_name = os.path.join(self.dirname, self.check_script)
+        FileHelper.write_to_file(check_name, "wb", self.check_sh)
+        os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
+
+        self.solution_text = """
+A solution text for test suite"
+"""
+        test_solution_name = os.path.join(self.dirname, self.test_solution)
+        FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
+        os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
+
+    def _return_check(self, text):
+        content = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        found = [x for x in content if x.startswith(text)]
+        return found
+
+    def test_applies_to(self):
+        self.test_ini['applies_to'] = 'test_rpm'
+        self.loaded_ini[self.filename] = []
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.rule = self.xml_utils.prepare_sections()
+        self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
+
+    def test_check_bin(self):
+        self.test_ini['binary_req'] = 'cpf'
+        self.loaded_ini[self.filename] = []
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.rule = self.xml_utils.prepare_sections()
+        self.assertTrue(self._return_check('check_rpm_to "" "cpf"'))
+
+    def test_check_rpm(self):
+        self.test_ini['requires'] = 'test_rpm'
+        self.loaded_ini[self.filename] = []
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.rule = self.xml_utils.prepare_sections()
+        self.assertTrue(self._return_check('check_rpm_to "test_rpm" ""'))
+
+    def test_check_rpm_bin(self):
+        self.test_ini['binary_req'] = 'cpf'
+        self.test_ini['requires'] = 'test_rpm'
+        self.loaded_ini[self.filename] = []
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.rule = self.xml_utils.prepare_sections()
+        self.assertTrue(self._return_check('check_rpm_to "test_rpm" "cpf"'))
+
+    def test_applies_to_bin(self):
+        self.test_ini['applies_to'] = 'test_rpm'
+        self.test_ini['binary_req'] = 'cpf'
+        self.loaded_ini[self.filename] = []
+        self.loaded_ini[self.filename].append(self.test_ini)
+        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.rule = self.xml_utils.prepare_sections()
+        self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
+        self.assertTrue(self._return_check('check_rpm_to "" "cpf"'))
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+
 class TestXML(base.TestCase):
 
     """Main testing of right generating of XML files for OSCAP."""
@@ -564,6 +663,7 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestIncorrectINI))
     suite.addTest(loader.loadTestsFromTestCase(TestXMLCompose))
     suite.addTest(loader.loadTestsFromTestCase(HTMLEscapeTest))
+    suite.addTest(loader.loadTestsFromTestCase(TestScriptGenerator))
     return suite
 
 if __name__ == '__main__':

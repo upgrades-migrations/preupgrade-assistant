@@ -188,7 +188,7 @@ RESULT_INFORMATIONAL=$XCCDF_RESULT_INFORMATIONAL
 #
 
 if [ -z MODULE_PATH -o x"$MODULE_PATH" == "x" ]; then
-    MODULE_PATH=${CURRENT_DIRECTORY#$XCCDF_VALUE_REPORT_DIR}
+    MODULE_PATH=${CURRENT_DIRECTORY#$XCCDF_VALUE_REPORT_DIR/}
     MODULE_PATH=${MODULE_PATH////_}
 else
     MODULE_PATH=$XCCDF_VALUE_MODULE_PATH
@@ -642,7 +642,7 @@ get_dist_native_list() {
     local pkg
     local line
     while read line; do
-        pkg=$(echo "$line" | cut -d " " -f1 )
+        pkg=$(echo "$line" | grep -Eom1 '^[^[:space:]]+')
         is_dist_native "$pkg" >/dev/null && echo "$pkg"
     done < "$VALUE_RPM_QA"
 }
@@ -756,7 +756,7 @@ deploy_hook() {
                 log_error "Script_name $script_name does not exist."
                 exit_error
             fi
-            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/xccdf$MODULE_PATH/$deploy_name"
+            hook_dir="$VALUE_TMP_PREUPGRADE/hooks/$MODULE_PATH/$deploy_name"
             if [ ! -d "$hook_dir" ]; then
                 log_debug "Dir $hook_dir does not exist."
                 mkdir -p "$hook_dir"
