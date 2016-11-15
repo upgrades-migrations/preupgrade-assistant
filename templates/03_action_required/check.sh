@@ -40,12 +40,6 @@ if [[ -e "$foo_conf" ]] && grep -q "explode_on_new_system" "$foo_conf"; then
 fi
 
 #
-# At the end, when issue isn't presented, we want to inform user, that
-# everything is OK and we did some check. For this case we will exit
-# by exit_pass.
+# Again, when there is not issue, exit by exit_pass
 #
-# NOTE: you should know, that content of $SOLUTION_FILE will not be printed
-#       in the report, because doesn't make sense and we don't want to produce
-#       a lot of text when it is not necessary. So you don't need truncate
-#       the file, even when you printed there some text.
 exit_pass

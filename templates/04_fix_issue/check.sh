@@ -12,22 +12,25 @@
 
 ##
 # Briefly:
-#    1) you can store modified config files to special directories to apply
-#       them later on the new system
-#    2) you can create executable script and store them to special directory,
-#       so they will be executed during post-upgrade phase
-#    - you should log msg about done/planned action - log_info/log_slight_risk
-#    final) in case that there is not another issue and you fixes any,
-#           exit by exit_fixed
+#    When you want to fix an issue automatically, there are several ways what
+#    you can do:
+#      1) you can store modified config files to special directories to apply
+#         them later on the new system
+#      2) you can create executable script and store them to special directory,
+#         so they will be executed during post-upgrade phase
+#      - for both cases above: you should log message about done/planned action
+#        - so use log_info or log_slight_risk
+#      final) in case that there is not another issue and you fixes any,
+#             exit by exit_fixed
 ##
 
 ##
 # Story:
 #
-# Do you remember a previous template? Could you imagine, that in such case
-# (some option has been deprecated/removed on new system and should be removed
-# from configuration file) we can do an action automatically, when we can do
-# that safely?
+# Do you remember the previous example about required action? Could you
+# imagine, that in such case (some option has been deprecated/removed on new
+# system and should be removed from configuration file) we can do an action
+# automatically? Of course under condition that we can do that safely.
 #
 # So this module will fix similar problem for naughty-foo package:
 #  1) option "obsoleted_option" has been renamed on new system to "new_option"
@@ -35,9 +38,9 @@
 #  2) second issue is about "deprecated_option", which should be removed
 #     - we will just comment out such line, but in that case we should still
 #       recommend inspection by user - because he may will need to modify
-#       their's application because of this
+#       their's application because of the option is missing
 #  3) we found that for correct functionality we need to install another one
-#     package (for any reason - sometimes it is required in realy world)
+#     package (for any reason - sometimes it is required in real world)
 #     - this we can resolve simply by post-upgrade script and say that we
 #       fixes that issue
 #
@@ -48,7 +51,7 @@
 
 #
 # Special directory of Preupgrade Assistant, which should contains config
-# files, that are safe/compatible for upgrade/migration to new system
+# files, that are compatible for upgrade or migration to new system
 # and user doesn't have to check it. See manual.
 #
 PREUPG_CLEANCONFDIR="$VALUE_TMP_PREUPGRADE/cleanconf"
@@ -64,22 +67,20 @@ foo_conf="/etc/preupg-foo-example"
 dst_foo_conf="${PREUPG_CLEANCONFDIR}${foo_conf}"
 
 #
-#
+# name of the post-upgrade script
 #
 post_script="04_fix_issue_postupgrade.sh"
 
 #
-# we will use this variable for exit
+# expected exit code
 #
 ret=$RESULT_PASS
 
 #
-# Just helper function, which set expected exit code according to given
-# parameter and current expected return value in 'ret' variable.
-# So we just set exit value according to current problem and don't need to
-# test if we can do that or not (we don't want to exit with fixed result,
-# when we know, that there exists something which still needs attention
-# of user.
+# Set expected exit code according to given parameter and current value
+# of the $ret variable
+#
+# @param  exit code; expted values are: $RESULT_FAIL, $RESULT_FIXED
 #
 set_result() {
   case $1 in
@@ -94,10 +95,9 @@ set_result() {
 ###########################################################
 
 if [[ ! -e "$foo_conf" ]]; then
-  # In this case we assume that file must exists, so I will log error
-  # otherwise. However, exit_error can says that the module has some
-  # issue and should be fixed.
-  echo >&2 "The $foo_conf file doesn't exist, but it is required by naughty-foo package."
+  # The file is required, so log error and exit with error when it doesn't
+  # exists.
+  log_error "The $foo_conf file doesn't exist, but it is required by naughty-foo package."
   exit_error
 fi
 
@@ -115,7 +115,8 @@ if grep -q "obsoleted_option" "$foo_conf"; then
   sed -ir 's/^[[:space:]]*obsoleted_option([[:space:]]|$)/new_option /' \
     > "$dst_foo_conf"
   {
-    echo -n "The \"obsoleted_option\" configuration option has been renamed"
+    #FIXME !!!
+    echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
     echo -n " on new system to \"new_option\". This has been fixed"
     echo -n " and fixed configuration file will be applied on new system"
     echo    " automatically."
@@ -133,7 +134,8 @@ if grep -q "deprecated_option" "$foo_conf"; then
   sed -ir 's/^[[:space:]]*deprecated_option([[:space:]]|$)/#deprecated_option /' \
     > "$dst_foo_conf"
   {
-    echo -n "The \"deprecated_option\" option  has been removed on new system."
+    #FIXME !!!
+    echo -n "The \"deprecated_option\" option has been removed on new system."
     echo -n " You should check correct functionality of your applications."
     echo -n " The option has been commented out."
     echo
@@ -145,10 +147,10 @@ fi
 # ok, we will pretend, that when naughty-foo-cottage subpackage is installed,
 # we will want to install naughty-foo-house on new system
 if is_pkg_installed "naughty-foo-house"; then
-  log_info "The package naughty-foo-house has been split on new system. naughty-foo-cottage will be installed."
-  echo -n "The package naughty-foo-house has been split on new system and part"
-  echo -n " of current funcionality is provided by naughty-foo-house package."
-  echo    " New package will be installed automatically by post-upgrade script."
+  log_info "The package naughty-foo-cottage has been split on new system. naughty-foo-house will be installed."
+  echo -n "The package naughty-foo-cottage has been split on new system and part"
+  echo -n " of current funcionality is provided by the naughty-foo-house package."
+  echo    " The new package will be installed automatically by post-upgrade script."
   echo
   cp -a "$post_script" "$POSTUPGRADE_DIR"
   chmod +x "${POSTUPGRADE_DIR}/${post_script}"

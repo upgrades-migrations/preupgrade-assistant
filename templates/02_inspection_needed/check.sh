@@ -23,14 +23,14 @@
 #
 # So now we know that rpm foo is installed (we set 'foo' for applies_to option
 # in content.ini file). In this example, when file $foo_conf exists and
-# contains 'deprecated_option', we inform user about found issue
+# contains deprecated option 'CookieLogs', we inform user about found issue
 #
 foo_conf="/etc/preupg-foo-example"
-if [[ -e "$foo_conf" ]] && grep -q "^deprecated_option" "$foo_conf"; then
-  log_medium_risk "Found deprecated option in $foo_conf"
+if [[ -e "$foo_conf" ]] && grep -q "^CookieLogs" "$foo_conf"; then
+  log_medium_risk "Found deprecated option 'CookieLogs' in $foo_conf"
   {
     echo -n "The $foo_conf config file of foo tool contains deprecated option"
-    echo -n " 'deprecated_option' which is not available on new system. This"
+    echo -n " 'CookieLogs' which is not available on new system. This"
     echo -n " may affect functionality of your other applications, which"
     echo    " depend on it."
   } >> "$SOLUTION_FILE"
@@ -39,12 +39,10 @@ if [[ -e "$foo_conf" ]] && grep -q "^deprecated_option" "$foo_conf"; then
 fi
 
 #
-# At the end, when issue isn't presented, we will we want to
-# inform user, that everything is OK and we did some check. For this case
-# we will exit by exit_pass.
+# At the end, when issue isn't present, we will we want to inform user, that
+# everything is OK and we did some check. For this case we will exit
+# by exit_pass.
 #
-# NOTE: you should know, that content of $SOLUTION_FILE will not be printed
-#       the report, because doesn't make sense and we don't want to produce
-#       a lot of text when it is not necessary. So you don't need truncate
-#       the file, even when you printed there some text.
+# Reminder: when you use exit_pass, the content in solution file is ignored.
+#
 exit_pass
