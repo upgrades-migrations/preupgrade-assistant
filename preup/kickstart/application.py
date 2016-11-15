@@ -212,7 +212,7 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
-    def check_postimigrate_dir(self):
+    def check_postmigrate_dir(self):
         if not FileHelper.get_list_executable_files_in_dir(os.path.join(settings.result_dir,
                                                                         settings.postmigrate_dir)):
             if not self.conf.assumeyes:
@@ -232,7 +232,7 @@ class KickstartGenerator(object):
         if not self.collect_data():
             log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
             return None
-        if not self.check_postimigrate_dir():
+        if not self.check_postmigrate_dir():
             return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
