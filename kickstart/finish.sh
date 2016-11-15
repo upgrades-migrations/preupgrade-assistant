@@ -30,8 +30,8 @@ do
     fi
 done
 cd ${PWD}
-KS_SCRIPTS="kickstart/scripts"
-cd $KS_SCRIPTS
+POST_INSTALL_SCRIPTS="postmigrate.d"
+cd $POST_INSTALL_SCRIPTS
 for file in $(find . -type f -executable)
 do
     echo "Running script ${file} ..." >> ${PREUPGRADE_LOG}
