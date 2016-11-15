@@ -20,7 +20,6 @@ def suite():
     os.environ['XCCDF_RESULT_ERROR'] = "3"
     os.environ['XCCDF_RESULT_FAILED'] = "2"
     os.environ['XCCDF_RESULT_FAIL'] = "2"
-    os.environ['XCCDF_RESULT_UNKNOWN'] = "2"
     os.environ['XCCDF_RESULT_FIXED'] = "1"
     os.environ['XCCDF_RESULT_NEEDS_INSPECTION'] = "1"
     os.environ['XCCDF_RESULT_NEEDS_ACTION'] = "1"
