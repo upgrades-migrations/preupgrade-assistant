@@ -272,6 +272,9 @@ fi
 %endif # with_tools
 
 %changelog
+* Wed Nov 16 2016 Michal Bocek <mbocek@redhat.com> 2.1.10-1
+- new package built with tito
+
 * Mon Oct 10 2016 Petr Hracek <phracek@redhat.com> - 2.1.10-6
 - default value in script type is not picked on Enter
 - Related: #1332792
