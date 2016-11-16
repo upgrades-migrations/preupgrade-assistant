@@ -275,6 +275,15 @@ class XmlUtils(object):
         for x in name.split(','):
             self.update_files(x.strip(), content)
 
+    def fnc_binary_req(self, key, name):
+        """Function checks if binary exists on current system."""
+        if name in key and key[name] is not "":
+            if not self.mh.detect_binary(key[name]):
+                message = "The '%s' binary file is not available on the system where you generate module.\n" \
+                          "Check INI file in the '%s' directory." % (key[name], self.dirname)
+                MessageHelper.print_error_msg(title=message,
+                                              level=' WARNING ')
+
     def dummy_fnc(self, key, name):
         """Function is only dummy."""
         pass
@@ -303,7 +312,7 @@ class XmlUtils(object):
             'check_description': self.fnc_check_description,
             'solution': self.fnc_solution_text,
             'applies_to': self.dummy_fnc,
-            'binary_req': self.dummy_fnc,
+            'binary_req': self.fnc_binary_req,
             'content_title': self.update_text,
             'content_description': self.update_text,
         }

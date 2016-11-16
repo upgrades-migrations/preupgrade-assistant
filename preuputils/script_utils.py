@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 import os
 import re
 
-from preup.utils import FileHelper, MessageHelper
+from preup.utils import FileHelper, MessageHelper, ProcessHelper
 from preup import settings
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
 
@@ -36,6 +36,13 @@ class ModuleHelper(object):
             raise MissingFileInContentError
         if type_name != 'solution':
             FileHelper.check_executable(self.full_path_name)
+
+    @staticmethod
+    def detect_binary(binary_name):
+        cmd = "which %s" % binary_name
+        if ProcessHelper.run_subprocess(cmd, print_output=False, shell=True) != 0:
+            return False
+        return True
 
     @staticmethod
     def apply_function(updates, begin_fnc, end_fnc, dummy_sep, script_type):
