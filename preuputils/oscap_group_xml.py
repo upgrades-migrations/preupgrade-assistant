@@ -15,7 +15,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preuputils.xml_utils import XmlUtils
-from preup.utils import MessageHelper, FileHelper, SystemIdentification
+from preup.utils import MessageHelper, FileHelper, PreupgHelper
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -44,37 +44,6 @@ class OscapGroupXml(object):
         self.rule = []
         self.ret = {}
 
-    def find_all_ini(self):
-        """
-        This function is used for finding all _fix files in the user defined
-        directory
-        """
-        for dir_name in os.listdir(self.dirname):
-            if dir_name.endswith(".ini"):
-                self.lists.append(os.path.join(self.dirname, dir_name))
-        for file_name in self.lists:
-            if FileHelper.check_file(file_name, "r") is False:
-                continue
-            try:
-                config = configparser.ConfigParser()
-                filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
-                config.readfp(filehander)
-                fields = {}
-                if config.has_section('premigrate'):
-                    section = 'premigrate'
-                else:
-                    section = 'preupgrade'
-                for option in config.options(section):
-                    fields[option] = config.get(section, option)
-                self.loaded[file_name] = [fields]
-            except configparser.MissingSectionHeaderError:
-                MessageHelper.print_error_msg(title="Missing section header")
-            except configparser.NoSectionError:
-                MessageHelper.print_error_msg(title="Missing section header")
-            except configparser.ParsingError:
-                MessageHelper.print_error_msg(title="Incorrect INI file\n", msg=file_name)
-                os.sys.exit(1)
-
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
         # load content without decoding to unicode - ElementTree requests this
@@ -86,8 +55,7 @@ class OscapGroupXml(object):
 
     def write_xml(self):
         """The function is used for storing a group.xml file"""
-        self.find_all_ini()
-        self.write_list_rules()
+        self.loaded = PreupgHelper.get_all_inifiles(self.dirname)
         xml_utils = XmlUtils(self.dirname, self.loaded)
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
@@ -108,19 +76,4 @@ class OscapGroupXml(object):
         except IOError as ioe:
             print ('Problem with writing to file ', file_name, ioe.message)
 
-    def write_list_rules(self):
-        end_point = self.dirname.find(SystemIdentification.get_valid_scenario(self.dirname))
-        rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
-        file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
-        lines = []
-        if os.path.exists(file_list_rules):
-            lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
-        else:
-            lines = []
-        for values in six.itervalues(self.loaded):
-            check_script = [v for k, v in six.iteritems(values[0]) if k == 'check_script']
-            if check_script:
-                check_script = os.path.splitext(''.join(check_script))[0]
-                lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
-        FileHelper.write_to_file(file_list_rules, "wb", lines)
 

@@ -11,8 +11,9 @@ import sys
 import six
 
 from distutils.util import strtobool
-from preup.utils import FileHelper, SystemIdentification
+from preup.utils import FileHelper, MessageHelper
 from preup.creator import settings
+from preup import settings as preup_settings
 
 from preup.settings import content_file as ALL_XCCDF_XML
 section = 'preupgrade'
@@ -67,7 +68,8 @@ class UIHelper(object):
         self.check_script = True
         self.solution_file = True
         self.refresh_content = False
-        self.script_type = None
+        self.source_number = None
+        self.target_number = None
 
     def _init_dict(self):
         self.content_dict['content_description'] = ''
@@ -113,6 +115,41 @@ class UIHelper(object):
             return self.upgrade_path
         return os.path.join(os.getcwd(), self.upgrade_path)
 
+    def get_proper_number(self, text):
+        number = None
+        while True:
+            try:
+                number = get_user_input(text, any_input=True)
+                int(number)
+                break
+            except ValueError:
+                accept = ['y', 'yes']
+                choice = MessageHelper.get_message(title=settings.enter_number % number, prompt='[Y/n]')
+                if not choice.lower() in accept:
+                    break
+        return number
+
+    def get_proper_upgrade_path(self):
+        while True:
+            self.source_number = self.get_proper_number(settings.source_path)
+            if self.source_number is None:
+                return None
+
+            self.target_number = self.get_proper_number(settings.target_path)
+            if self.target_number is None:
+                return None
+
+            if int(self.source_number) >= int(self.target_number):
+                message = settings.wrong_upgrade_path % (self.source_number, self.target_number)
+                accept = ['y', 'yes']
+                choice = MessageHelper.get_message(title=message,
+                                                   prompt='[Y/n]')
+                if not choice.lower() in accept:
+                    return False
+            else:
+                break
+        return True
+
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
             self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
@@ -121,10 +158,7 @@ class UIHelper(object):
             print ("The scenario is mandatory. You have to specify it.")
             return None
 
-        if not SystemIdentification.get_valid_scenario(self.upgrade_path):
-            if self.content_path is None:
-                self.content_path = self.upgrade_path
-            print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
+        if not self.get_proper_upgrade_path():
             return None
 
         message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
@@ -265,7 +299,27 @@ class UIHelper(object):
             print ('We have a problem with writing %s file to disc' % group_ini)
             raise
 
+    def _create_upgrade_file(self):
+        version_file = os.path.join(self.upgrade_path, preup_settings.upgrade_version_file)
+        if os.path.exists(version_file):
+            lines = FileHelper.get_file_content(version_file, 'rb', method=True)
+            source_version = lines[0].strip()
+            target_version = lines[1].strip()
+            if source_version != self.source_number or target_version != self.target_number:
+                old_path = source_version + '->' + target_version
+                new_path = self.source_number + '->' + self.target_number
+                title = settings.different_version_file % (old_path, new_path)
+                choice = MessageHelper.get_message(title=title,
+                                                   message="Do you want to overwrite it?",
+                                                   prompt='[Y/n]')
+                if choice not in ['y', 'yes']:
+                    return True
+
+        lines = [self.source_number, self.target_number]
+        FileHelper.write_to_file(version_file, 'wb', '\n'.join(lines))
+
     def create_final_content(self):
+        self._create_upgrade_file()
         try:
             self._create_group_ini()
             self._create_ini_file()

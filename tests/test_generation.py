@@ -16,17 +16,12 @@ try:
 except ImportError:
     import tests.base as base
 
-FOO_DIR = 'FOOBAR6_7'
+FOO_DIR = 'FOOBAR'
 FOO_RESULTS = FOO_DIR + variables.result_prefix
 
 
 class TestContentGenerate(base.TestCase):
     dir_name = None
-    result_dir = None
-
-    def setUp(self):
-        self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
-        self.result_dir = os.path.join(os.getcwd(), 'tests', FOO_RESULTS, 'dummy')
 
     def tearDown(self):
         if os.path.exists(os.path.join('tests', FOO_RESULTS)):
@@ -36,7 +31,24 @@ class TestContentGenerate(base.TestCase):
             if group_xml:
                 os.unlink(os.path.join(d, group_xml[0]))
 
-    def test_compose(self):
+    def test_compose_with_dir_prefix(self):
+        foo_dir = FOO_DIR + '6_7'
+        #shutil.copytree(FOO_DIR, os.path.join('tests', foo_dir))
+        self.dir_name = os.path.join(os.getcwd(), 'tests', foo_dir, 'dummy')
+        foo_results = foo_dir + variables.result_prefix
+        result_dir = os.path.join(os.getcwd(), 'tests', foo_results, 'dummy')
+        expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
+        for content in expected_contents:
+            compose_xml = ComposeXML()
+            result_dir = os.path.join(self.dir_name, content)
+            compose_xml.collect_group_xmls(self.dir_name, content=content, generate_from_ini=True)
+            self.assertTrue(os.path.exists(os.path.join(result_dir, 'group.xml')))
+            self.assertFalse(os.path.exists(os.path.join(result_dir, 'all-xccdf.xml')))
+
+    def test_compose_with_file(self):
+        self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
+        foo_results = FOO_DIR + variables.result_prefix
+        result_dir = os.path.join(os.getcwd(), 'tests', foo_results, 'dummy')
         expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
         for content in expected_contents:
             compose_xml = ComposeXML()
@@ -51,10 +63,11 @@ class TestGlobalContent(base.TestCase):
     dir_name = None
     result_dir = None
 
+    temp_dir = tempfile.mktemp(prefix='preupgrade', dir='/tmp')
+    dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR)
+    result_dir = os.path.join(temp_dir, FOO_DIR + '-results')
+
     def setUp(self):
-        self.temp_dir = tempfile.mktemp(prefix='preupgrade', dir='/tmp')
-        self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR)
-        self.result_dir = os.path.join(self.temp_dir, FOO_DIR + '-results')
         shutil.copytree(self.dir_name, os.path.join(self.temp_dir, FOO_DIR))
 
     def tearDown(self):
@@ -76,9 +89,9 @@ class TestGlobalContent(base.TestCase):
 
 def suite():
     loader = unittest.TestLoader()
-    suite = unittest.TestSuite()
-    suite.addTest(loader.loadTestsFromTestCase(TestContentGenerate))
-    suite.addTest(loader.loadTestsFromTestCase(TestGlobalContent))
+    suite_gen = unittest.TestSuite()
+    suite_gen.addTest(loader.loadTestsFromTestCase(TestContentGenerate))
+    suite_gen.addTest(loader.loadTestsFromTestCase(TestGlobalContent))
     return suite
 
 if __name__ == '__main__':

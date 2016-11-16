@@ -32,7 +32,9 @@ solution_text = "Specify the solution file which will be shown in the report: [%
 content_title = "Specify the module title:"
 content_desc = "Would you like to specify the module description?"
 content_desc_text = "Write the module description:"
-upgrade_path = "Specify the upgrade path (like RHEL6_7) where the module will be stored:"
+upgrade_path = "Specify the directory (like RHEL) where the module will be stored:"
+source_path = "Specify source upgrade number where you would like to assess the system:"
+target_path = "Specify target upgrade number where do you wnat to upgrade your source system:"
 summary_title = 'preupg-content-creator generated these files to be updated:'
 summary_directory = '- the module was created in the %s directory.'
 summary_ini = '- the INI file which defines the module is %s.'
@@ -44,3 +46,8 @@ type_check_script = "Would you like to create a BASH or Python check script? [sh
 text_for_testing = "\nFor testing content run these two commands:\n" \
                    "- preupg-create-group-xml %s to create XML file\n" \
                    "- preupg -c %s"
+enter_number = "You did not enter a number '%s'. Specify proper number. "
+wrong_upgrade_path = "You specified a upgrade/migration path '%s'->'%s'. " \
+                     "It is not valid. Target number has to be bigger."
+different_version_file = "Your version file contains different upgrade/migration path '%s'. " \
+                         "You defined upgrade/migration path '%s'"

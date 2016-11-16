@@ -107,6 +107,7 @@ preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
                    'preupgrade-scripts', 'noauto_postupgrade.d',
                    postmigrate_dir]
 
+installed_dirs = [postupgrade_dir, 'common', 'kickstart', 'xsl']
 
 PREUPG_README = 'README'
 readme_files = {'README': PREUPG_README,
@@ -123,6 +124,9 @@ needs_inspection = "needs_inspection"
 needs_action = "needs_action"
 
 openscap_binary = "/usr/bin/oscap"
+
+# file which contains source and target version used for migration / upgrade
+upgrade_version_file = "upgrade_path"
 
 # The full license text
 license = u"""Preupgrade Assistant performs system upgradability assessment
@@ -175,7 +179,7 @@ text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
                    'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
                    'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
                    }
-
+base_dir_missing = "The base directory is needed for testing a module."
 ui_command = "preupg -u http://example.com:8099/submit/ -r {0}"
 openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
 

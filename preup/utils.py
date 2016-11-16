@@ -20,6 +20,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preup import settings
+from preup.settings import ReturnValues
 from preup.logger import log_message, logging, logger, logger_debug
 
 from os import path, access, W_OK, R_OK, X_OK
@@ -76,6 +77,21 @@ class MessageHelper(object):
                 print ('You have to choose one of y/n.')
             else:
                 return choice
+
+    @staticmethod
+    def show_message(message):
+        """
+        Prints message out on stdout message (kind of yes/no) and return answer.
+
+        Return values are:
+        Return True on accept (y/yes). Otherwise returns False
+        """
+        accept = ['y', 'yes']
+        choice = MessageHelper.get_message(title=message, prompt='[Y/n]')
+        if choice.lower() in accept:
+            return True
+        else:
+            return False
 
 
 class FileHelper(object):
@@ -393,6 +409,57 @@ class PreupgHelper(object):
     def get_prefix():
         return settings.prefix
 
+    @staticmethod
+    def get_all_inifiles(dirname):
+        """
+        This function is used for finding all _fix files in the user defined
+        directory
+        """
+        lists = []
+        loaded = {}
+        for dir_name in os.listdir(dirname):
+            if dir_name.endswith(".ini"):
+                lists.append(os.path.join(dirname, dir_name))
+        for file_name in lists:
+            if FileHelper.check_file(file_name, "r") is False:
+                continue
+            try:
+                config = configparser.ConfigParser()
+                filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
+                config.readfp(filehander)
+                fields = {}
+                if config.has_section('premigrate'):
+                    section = 'premigrate'
+                else:
+                    section = 'preupgrade'
+                for option in config.options(section):
+                    fields[option] = config.get(section, option)
+                loaded[file_name] = [fields]
+            except configparser.MissingSectionHeaderError:
+                MessageHelper.print_error_msg(title="Missing section header")
+            except configparser.NoSectionError:
+                MessageHelper.print_error_msg(title="Missing section header")
+            except configparser.ParsingError:
+                MessageHelper.print_error_msg(title="Incorrect INI file\n", msg=file_name)
+                os.sys.exit(1)
+        return loaded
+
+    @staticmethod
+    def write_list_rules(dir_name):
+        end_point = dir_name.find(SystemIdentification.get_valid_scenario(dir_name))
+        file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
+        lines = []
+        for root, subdir, files in os.walk(dir_name):
+            found = [x for x in files if x.endswith('.ini')]
+            if found:
+                rule_name = '_'.join(root[end_point:].split('/')[1:])
+                check_script = ConfigHelper.get_preupg_config_file(os.path.join(root, found[0]),
+                                                                   'check_script')
+                if check_script:
+                    check_script = os.path.splitext(''.join(check_script))[0]
+                    lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
+        FileHelper.write_to_file(file_list_rules, "wb", lines)
+
 
 class SystemIdentification(object):
 
@@ -416,33 +483,68 @@ class SystemIdentification(object):
         return settings.text_converters.keys()
 
     @staticmethod
+    def get_version_file(dirname):
+        return os.path.join(dirname, settings.upgrade_version_file)
+
+    @staticmethod
     def get_assessment_version(dir_name):
         if PreupgHelper.get_prefix() == "preupgrade":
-            matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(2)]
-            else:
-                return None
+            version_file = SystemIdentification.get_version_file(dir_name)
+            if version_file:
+                lines = SystemIdentification.check_version_file(version_file)
+                if lines:
+                    return SystemIdentification.check_version(lines)
+
         elif PreupgHelper.get_prefix() == "premigrate":
             matched = re.search(r'\D+(\d*)_\D+(\d+)', dir_name, re.I)
             if matched:
                 return [matched.group(1), matched.group(2)]
-            else:
-                return None
         else:
-            matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(3)]
-            else:
-                return None
+            version_file = SystemIdentification.get_version_file(dir_name)
+            if version_file:
+                lines = SystemIdentification.check_version_file(version_file)
+                if lines:
+                    return SystemIdentification.check_version(lines)
+        return None
+
+    @staticmethod
+    def check_version(lines):
+        try:
+            src, target = lines[0].split('_')
+            target = target.strip()
+            int(src)
+            int(target)
+            if int(src) >= int(target):
+                return False
+        except IndexError:
+            return False
+        except ValueError:
+            return False
+        return [src, target]
+
+    @staticmethod
+    def check_version_file(version_file):
+        if not os.path.exists(version_file):
+            print("The '%s' upgrade path file does not exist." % version_file)
+            return False
+        lines = FileHelper.get_file_content(version_file, 'r', method=True)
+        if not lines:
+            print("'The '%s' upgrade path file is empty" % version_file)
+            return False
+        return lines
 
     @staticmethod
     def get_valid_scenario(dir_name):
-        matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
-        if matched:
-            return matched[0]
-        else:
+        version_file = os.path.join(dir_name, settings.upgrade_version_file)
+        lines = SystemIdentification.check_version_file(version_file)
+        if not lines:
             return None
+        if not SystemIdentification.check_version(lines):
+            print("The '%s' upgrade file does not have proper format." % version_file)
+            print("The upgrade path file contains:\n%s" % '\n'.join(lines))
+            print("It should be like:\n6_7")
+            return None
+        return os.path.basename(dir_name)
 
     @staticmethod
     def get_variant():
@@ -484,6 +586,28 @@ class SystemIdentification(object):
                 if pem in mapping_dict.keys():
                     variant.append(mapping_dict[pem])
         return variant
+
+    @staticmethod
+    def arch_checker(conf):
+        if not conf.riskcheck and not conf.cleanup and not conf.kickstart:
+            # If force option is not mentioned and user select NO then exits
+            if not conf.force:
+                text = ""
+                if conf.dst_arch:
+                    correct_option = [x for x in settings.migration_options if conf.dst_arch == x]
+                    if not correct_option:
+                        log_message("Specify the correct --dst-arch option.")
+                        log_message("There are '%s' or '%s' available." % (settings.migration_options[0],
+                                                                           settings.migration_options[1]))
+                        return ReturnValues.RISK_CLEANUP_KICKSTART
+                if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
+                    if not conf.dst_arch:
+                        text = '\n' + settings.migration_text
+                logger_debug.debug("Architecture '%s'. Text '%s'.", SystemIdentification.get_arch(), text)
+                if not MessageHelper.show_message(settings.warning_text + text):
+                    # We do not want to continue
+                    return ReturnValues.RISK_CLEANUP_KICKSTART
+        return 0
 
 
 class TarballHelper(object):

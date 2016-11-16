@@ -8,7 +8,7 @@ import shutil
 import six
 from distutils import dir_util
 
-from preup.utils import FileHelper, SystemIdentification
+from preup.utils import FileHelper, SystemIdentification, PreupgHelper
 from preuputils import variables
 from preuputils.oscap_group_xml import OscapGroupXml
 from preup import settings
@@ -48,13 +48,14 @@ class XCCDFCompose(object):
         if os.path.exists(self.dir_name):
             shutil.rmtree(self.dir_name)
 
-    def generate_xml(self, generate_from_ini=True):
-        if SystemIdentification.get_valid_scenario(self.dir_name) is None:
-            print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
+    def generate_xml(self, generate_from_ini=True, common_stuff=True):
+        if SystemIdentification.get_valid_scenario(self.result_dir) is None:
             return ReturnValues.SCENARIO
 
         dir_util.copy_tree(self.result_dir, self.dir_name)
-        target_tree = ComposeXML.run_compose(self.dir_name, generate_from_ini=generate_from_ini)
+        target_tree = ComposeXML.run_compose(self.dir_name,
+                                             generate_from_ini=generate_from_ini,
+                                             common_stuff=common_stuff)
 
         report_filename = os.path.join(self.dir_name, settings.content_file)
         try:
@@ -319,7 +320,7 @@ class ComposeXML(object):
         return target_tree
 
     @classmethod
-    def run_compose(cls, dir_name, content=None, generate_from_ini=True):
+    def run_compose(cls, dir_name, content=None, generate_from_ini=True, common_stuff=True):
         target_tree = ComposeXML.get_xml_tree()
         settings.UPGRADE_PATH = dir_name
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
@@ -335,6 +336,8 @@ class ComposeXML(object):
         cls.resolve_selects(target_tree)
         cls.refresh_status(target_tree)
         cls.indent(target_tree)
+        if common_stuff:
+            PreupgHelper.write_list_rules(dir_name)
 
         return target_tree
 

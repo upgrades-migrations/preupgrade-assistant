@@ -18,7 +18,7 @@ def get_full_xml_tag(dirname):
     found = 0
     # Get index of scenario and cut directory till scenario (included)
     for index, dir_name in enumerate(dirname.split(os.path.sep)):
-        if re.match(r'\D+(\d)_(\D*)(\d)-results', dir_name, re.I):
+        if re.match(r'(\D*)-results', dir_name, re.I):
             found = index
     main_dir = dirname.split(os.path.sep)[found+1:]
     return main_dir

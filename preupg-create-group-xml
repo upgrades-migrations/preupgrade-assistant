@@ -9,10 +9,10 @@ from xml.etree import ElementTree
 from distutils import dir_util
 from preuputils import variables
 from preuputils.compose import ComposeXML
-from preup import settings
 from preup.utils import FileHelper, SystemIdentification
 from preup.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
-from preup.logger import *
+from preup.logger import logger, logger_debug, LoggerHelper, logging
+from preup import settings
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -26,6 +26,10 @@ def main():
                       help='Generate only group.xml file.',
                       action='store_true'
                       )
+    parser.add_option(
+                      '-b', '--base-dir',
+                      help='Specify the module base directory where you have stored all modules.',
+                      )
     opts, args = parser.parse_args()
 
     if len(args) > 1 or len(args) == 0:
@@ -33,6 +37,10 @@ def main():
         parser.print_help()
         sys.exit(1)
 
+    if not opts.base_dir:
+        print('Specify module base directory.')
+        parser.print_help()
+        sys.exit(1)
     if not os.path.exists(args[0]):
         print('Dir %s does not exists.' % args[0])
         sys.exit(1)
@@ -57,7 +65,8 @@ def main():
         print ('In directory %s was not found any INI file.' % args[0])
         sys.exit(1)
 
-    dir_name = SystemIdentification.get_valid_scenario(args[0])
+    base_dir = os.path.abspath(opts.base_dir)
+    dir_name = SystemIdentification.get_valid_scenario(base_dir)
     if dir_name is None:
         print ('Dir does not contain proper scenario.')
         sys.exit(1)
@@ -84,7 +93,9 @@ def main():
         print ('Problem with reading template.xml file')
         sys.exit(1)
     try:
-        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name), content=os.path.basename(dir_name))
+        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
+                                             content=os.path.basename(dir_name),
+                                             common_stuff=False)
     except MissingHeaderCheckScriptError:
         sys.exit(1)
     except MissingFileInContentError:
@@ -96,12 +107,12 @@ def main():
         # must be encoded by ElementTree!
         data = ElementTree.tostring(target_tree, "utf-8")
         FileHelper.write_to_file(os.path.join(dir_name, filename), "wb", data, False)
-        print ('Generated report file for preupgrade-assistant is: %s' % ''.join(os.path.join(dir_name, filename)))
+        report_file = os.path.join(dir_name, filename)
+        print ('Generated report file for preupgrade-assistant is: %s' % report_file)
+        print ("For testing report run the command:")
+        print ("preupg -c %s -b %s" % (report_file, base_dir + variables.result_prefix))
     except IOError:
         print ("Problem with writing file %s." % filename)
-
-
-    #oscap_group.write_profile_xml(target_tree)
 
 if __name__ == "__main__":
     main()

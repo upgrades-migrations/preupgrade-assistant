@@ -146,15 +146,22 @@ class XccdfHelper(object):
         return rules
 
     @staticmethod
-    def update_platform(full_path):
+    def update_platform(full_path, base_dir):
         file_lines = FileHelper.get_file_content(full_path, 'rb', method=True)
-        platform = ''
-        platform_id = ''
         if not SystemIdentification.get_system():
             platform = settings.CPE_RHEL
         else:
             platform = settings.CPE_FEDORA
-        platform_id = SystemIdentification.get_assessment_version(full_path)
+        platform_id = SystemIdentification.get_assessment_version(base_dir)
+        if platform_id is None:
+            version_file = os.path.join(base_dir, settings.upgrade_version_file)
+            lines = FileHelper.get_file_content(version_file, 'r', method=True)
+            if not lines:
+                return None
+            platform_id, _ = SystemIdentification.check_version(lines)
+            if not platform_id:
+                return None
+
         for index, line in enumerate(file_lines):
             if 'PLATFORM_NAME' in line:
                 line = line.replace('PLATFORM_NAME', platform)

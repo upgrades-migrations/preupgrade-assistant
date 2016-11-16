@@ -27,7 +27,7 @@ def main():
     result_dir_name = args[0] + variables.result_prefix
     if os.path.exists(result_dir_name):
         shutil.rmtree(result_dir_name)
-    xccdf_compose = XCCDFCompose(args[0])
+    xccdf_compose = XCCDFCompose(os.path.abspath(args[0]))
     try:
         xccdf_compose.generate_xml(generate_from_ini=True)
     except MissingHeaderCheckScriptError:

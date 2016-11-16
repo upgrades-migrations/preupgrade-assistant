@@ -35,20 +35,26 @@ class TestXMLCompose(base.TestCase):
     result_dir = None
     target_tree = None
     tree = None
+    version_file = None
 
     def setUp(self):
-        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
+        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR')
         self.result_dir = os.path.join(dir_name+variables.result_prefix)
+
         dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(self.result_dir):
             shutil.rmtree(self.result_dir)
         shutil.copytree(dir_name, self.result_dir)
+        self.version_file = os.path.join(self.result_dir, settings.upgrade_version_file)
+        FileHelper.write_to_file(self.version_file, "w", ['6_7'])
 
         settings.autocomplete = False
         self.target_tree = ComposeXML.run_compose(self.result_dir)
 
     def tearDown(self):
         shutil.rmtree(self.result_dir)
+        if os.path.exists(self.version_file):
+            os.unlink(self.version_file)
 
     def test_compose(self):
         """Basic test of composing"""
@@ -114,7 +120,7 @@ class TestScriptGenerator(base.TestCase):
     test_ini = []
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests", "FOOBAR" + variables.result_prefix, "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -212,7 +218,7 @@ class TestXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests", "FOOBAR" + variables.result_prefix, "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -489,7 +495,7 @@ class TestIncorrectINI(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dir_name = "tests/FOOBAR6_7/incorrect_ini"
+        self.dir_name = "tests/FOOBAR/incorrect_ini"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
@@ -566,8 +572,13 @@ A solution text for test suite"
         text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
         text_ini += '\n[]\neliskk\n'
         FileHelper.write_to_file(self.filename, "wb", text_ini)
-        oscap = OscapGroupXml(self.dir_name)
-        self.assertRaises(SystemExit, oscap.find_all_ini)
+        sys_exit = False
+        try:
+            oscap = OscapGroupXml(self.dir_name)
+            oscap.write_xml()
+        except SystemExit:
+            sys_exit = True
+        self.assertTrue(sys_exit)
 
     def test_secret_check_script(self):
         """Check occurrence of secret file for check script"""
@@ -590,7 +601,7 @@ class TestGroupXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dir_name = "tests/FOOBAR6_7-results/test_group"
+        self.dir_name = "tests/FOOBAR-results/test_group"
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'group.ini')
         test_ini = {'group_title': 'Testing content title'}

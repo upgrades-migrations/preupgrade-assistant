@@ -173,6 +173,11 @@ Upload results to preupgrade assistant WEB-UI"
             metavar="OLDREPORTSTYLE",
             help="Use old report style without CSS issues."
         )
+        self.parser.add_option(
+            "-b",
+            "--base-dir",
+            help="Specify the module base directory where you have stored all modules."
+        )
 
 if __name__ == '__main__':
     x = CLI()

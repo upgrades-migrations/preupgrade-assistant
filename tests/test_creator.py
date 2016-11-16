@@ -34,7 +34,7 @@ class TestCreator(base.TestCase):
 
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
-        self.upgrade_dir = os.path.join(self.tempdir, "FOOBAR6_7")
+        self.upgrade_dir = os.path.join(self.tempdir, "FOOBAR")
         os.makedirs(self.upgrade_dir)
         self.puh = UIHelper(self.upgrade_dir)
         self.puh._group_name = self.group_name
