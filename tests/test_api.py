@@ -3,8 +3,8 @@ import unittest
 import shutil
 import os
 
-from preup import script_api
-from preup.utils import FileHelper
+from preupg import script_api
+from preupg.utils import FileHelper
 
 try:
     import base

@@ -1,0 +1,26 @@
+#!/usr/bin/python2 -tt
+# -*- coding: utf-8 -*-
+
+
+import sys
+from preupg.creator.cli import CLICreator
+from preupg.creator.conf import ConfCreator
+from preupg.creator.application import Application
+from preupg import settings
+
+
+def main():
+    cli_creator = CLICreator()
+    conf = ConfCreator(cli_creator.opts, settings, cli_creator)
+    app = Application(conf)
+    ret = 0
+    try:
+        ret = app.run()
+    except KeyboardInterrupt:
+        print ('\nContent creation was interrupted by user.\n')
+        return 1
+    return ret
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,38 @@
+#!/usr/bin/python2
+from __future__ import print_function
+import optparse
+import os
+import shutil
+import sys
+
+from preupg.xmlgen.compose import XCCDFCompose
+from preupg.exception import MissingHeaderCheckScriptError, MissingFileInContentError, MissingTagsIniFileError
+from preupg import settings
+
+
+def main():
+    parser = optparse.OptionParser(usage="%prog dirname", description="Create XML files for OpenSCAP")
+    opts, args = parser.parse_args()
+    if len(args) > 1 or len(args) == 0:
+        print ('Specify just one directory')
+        parser.print_help()
+        sys.exit(0)
+
+    if args[0].endswith('/'):
+        args[0] = args[0][:-1]
+    result_dir_name = args[0] + settings.results_postfix
+    if os.path.exists(result_dir_name):
+        shutil.rmtree(result_dir_name)
+    xccdf_compose = XCCDFCompose(args[0])
+    try:
+        xccdf_compose.generate_xml(generate_from_ini=True)
+    except MissingHeaderCheckScriptError:
+        sys.exit(1)
+    except MissingFileInContentError:
+        sys.exit(1)
+    except MissingTagsIniFileError:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

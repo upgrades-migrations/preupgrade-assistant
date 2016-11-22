@@ -5,45 +5,19 @@ import os
 import tempfile
 import shutil
 
-from preup.kickstart.application import KickstartGenerator
-from preup.kickstart.cli import CLIKickstart
-from preup.kickstart.conf import ConfKickstart, DummyConfKickstart
-from preup import settings
+from preupg.kickstart.application import KickstartGenerator
+from preupg.kickstart.cli import CLIKickstart
+from preupg.kickstart.conf import ConfKickstart, DummyConfKickstart
+from preupg import settings
 
 try:
     import base
 except ImportError:
     import tests.base as base
 
-PREUPGRADE_KS = 'preupgrade.ks'
-
 
 def get_full_path(file_name):
     return os.path.join(os.getcwd(), 'tests', 'kickstart_data', file_name)
-
-
-class BaseKickstart(object):
-    WORKING_DIR = ''
-    TESTS_DIR = os.path.dirname(__file__)
-    TEST_FILES = []
-    TEST_FILES_DIR = ''
-
-    def setup(self):
-        """Setup the temporary environment and change the working directory to it."""
-        self.WORKING_DIR = tempfile.mkdtemp(prefix="rebase-helper-test-")
-        os.chdir(self.WORKING_DIR)
-        # copy files into the testing environment directory
-        for file_name in self.TEST_FILES:
-            shutil.copy(os.path.join(self.TEST_FILES_DIR, file_name), os.getcwd())
-
-    def teardown(self):
-        """
-        Destroy the temporary environment.
-
-        :return:
-        """
-        os.chdir(self.TESTS_DIR)
-        shutil.rmtree(self.WORKING_DIR)
 
 
 class TestKickstartPartitioning(base.TestCase):
@@ -60,23 +34,21 @@ class TestKickstartPartitioning(base.TestCase):
     kg = None
 
     def setUp(self):
-        kickstart_file = 'preupgrade.ks'
-        default_ks = 'default.ks'
+        ks_template = settings.KS_TEMPLATE
         self.WORKING_DIR = tempfile.mkdtemp(prefix='preupg')
         if os.path.isdir(self.WORKING_DIR):
             shutil.rmtree(self.WORKING_DIR)
         os.makedirs(self.WORKING_DIR)
         settings.KS_DIR = self.WORKING_DIR
-        shutil.copyfile(os.path.join(os.getcwd(), 'tests', kickstart_file),
-                        os.path.join(self.WORKING_DIR, kickstart_file))
-        shutil.copyfile(os.path.join(os.getcwd(), 'kickstart', default_ks),
-                        os.path.join(self.WORKING_DIR, default_ks))
+        shutil.copyfile(os.path.join(os.getcwd(), 'data', 'templates',
+                                     ks_template),
+                        os.path.join(self.WORKING_DIR, ks_template))
         conf = {"y": True}
         dc = DummyConfKickstart(**conf)
         cli_kickstart = CLIKickstart(["--assumeyes"])
         conf = ConfKickstart(cli_kickstart.opts, dc, cli_kickstart)
-        app = KickstartGenerator(conf, settings.KS_DIR, settings.PREUPGRADE_KS)
-        self.kg = KickstartGenerator(conf, self.WORKING_DIR, os.path.join(kickstart_file))
+        self.kg = KickstartGenerator(conf, self.WORKING_DIR,
+                                     settings.KS_FILENAME)
         self.kg.collect_data()
 
     def test_lvm_partitions(self):
@@ -166,7 +138,7 @@ class TestKickstartPartitioning(base.TestCase):
                            'part swap --ondisk=vda --size=1000',
                            ]
         for layout in expected_layout:
-            self.assertIn(layout.strip(), self.kg.ks.handler.__str__())
+            self.assertTrue(layout.strip() in self.kg.ks.handler.__str__())
 
     def test_firewall_rules(self):
         firewall_cmd = get_full_path(self.firewall_cmd)
