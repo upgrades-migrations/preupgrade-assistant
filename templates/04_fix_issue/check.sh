@@ -5,44 +5,43 @@
 #END GENERATED SECTION
 
 #
-# The whole section above is processed and modified by preupg-xccdf-compose
-# script, according to content of INI file (in this case content.ini).
-# And in addition the LICENSE used by PreupgradeAssistant is inserted.
+# The whole section above is processed and modified by the preupg-xccdf-compose
+# script, according to the contents of the INI file (in this case it is the content.ini file).
+# In addition, the LICENSE used by the Preupgrade Assistant is inserted.
 #
 
 ##
-# Briefly:
-#    When you want to fix an issue automatically, there are several ways what
-#    you can do:
-#      1) you can store modified config files to special directories to apply
+# Long story short:
+#
+#    There are two ways to fix an issue automatically:
+#      1) Store modified config files in special directories to apply
 #         them later on the new system
-#      2) you can create executable script and store them to special directory,
-#         so they will be executed during post-upgrade phase
-#      - for both cases above: you should log message about done/planned action
-#        - so use log_info or log_slight_risk
-#      final) in case that there is not another issue and you fixes any,
-#             exit by exit_fixed
+#         OR
+#      2) Create an executable script and store it in a special directory,
+#         so it will be executed during the post-upgrade phase
+#
+#      For both cases above you should log a message about the planned or completed action,
+#          so use "log_info" or "log_slight_risk".
+#      In the end (with no more issues present)
+#             exit by "exit_fixed".
 ##
 
 ##
-# Story:
+# Short story long:
 #
-# Do you remember the previous example about required action? Could you
-# imagine, that in such case (some option has been deprecated/removed on new
-# system and should be removed from configuration file) we can do an action
-# automatically? Of course under condition that we can do that safely.
+# Do you remember the previous example about the required action? Could you
+# imagine that in such case (some options were deprecated or removed on the new
+# system and should have been removed from the configuration file), the action can be done
+# automatically? Of course only if you can do that safely.
 #
-# So this module will fix similar problem for naughty-foo package:
-#  1) option "obsoleted_option" has been renamed on new system to "new_option"
-#      - nice, this we can fix it in our config file safely!
-#  2) second issue is about "deprecated_option", which should be removed
-#     - we will just comment out such line, but in that case we should still
-#       recommend inspection by user - because he may will need to modify
-#       their's application because of the option is missing
-#  3) we found that for correct functionality we need to install another one
-#     package (for any reason - sometimes it is required in real world)
-#     - this we can resolve simply by post-upgrade script and say that we
-#       fixes that issue
+# This module fixes a similar problem for the "naughty-foo" package:
+#  1) The option "obsoleted_option" has been renamed on the new system to "new_option"
+#      - nice, you can fix this in the config file safely.
+#  2) The second issue is about a "deprecated_option", which should be removed
+#     - you will just comment out such a line, but in that case the inspection is still recommended
+#       because you might need to modify your application because of the missing option.
+#  3) You found that for the correct functionality you need to install another package
+#     - you can resolve this by the post-upgrade script and say that the issue is fixed
 #
 
 ###########################################################
@@ -50,37 +49,37 @@
 ###########################################################
 
 #
-# Special directory of Preupgrade Assistant, which should contains config
-# files, that are compatible for upgrade or migration to new system
-# and user doesn't have to check it. See manual.
+# A special directory of the Preupgrade Assistant that should contain config
+# files that are compatible for the upgrade or migration to a new system
+# and you don't have to check it. See the manual.
 #
 PREUPG_CLEANCONFDIR="$VALUE_TMP_PREUPGRADE/cleanconf"
 
 #
-# path to config file
+# The path to the config file
 #
 foo_conf="/etc/preupg-foo-example"
 
 #
-# path to backed up config file
+# The path to the backed up config file
 #
 dst_foo_conf="${PREUPG_CLEANCONFDIR}${foo_conf}"
 
 #
-# name of the post-upgrade script
+# The name of the post-upgrade script
 #
 post_script="04_fix_issue_postupgrade.sh"
 
 #
-# expected exit code
+# The expected exit code
 #
 ret=$RESULT_PASS
 
 #
-# Set expected exit code according to given parameter and current value
-# of the $ret variable
+# Set the expected exit code according to the given parameter and current value
+# of the $ret variable.
 #
-# @param  exit code; expted values are: $RESULT_FAIL, $RESULT_FIXED
+# @param  exit code; expected values are: $RESULT_FAIL, $RESULT_FIXED
 #
 set_result() {
   case $1 in
@@ -95,30 +94,29 @@ set_result() {
 ###########################################################
 
 if [[ ! -e "$foo_conf" ]]; then
-  # The file is required, so log error and exit with error when it doesn't
-  # exists.
-  log_error "The $foo_conf file doesn't exist, but it is required by naughty-foo package."
+  # The file is required, so log "error" and exit with "error" when the file doesn't
+  # exist.
+  log_error "The $foo_conf file doesn't exist but it is required by the naughty-foo package."
   exit_error
 fi
 
 # case 1)
 if grep -q "obsoleted_option" "$foo_conf"; then
-  log_info "The 'obsoleted_option' in '$foo_conf' has been renamed on new system to 'new_option'."
+  log_info "The 'obsoleted_option' in '$foo_conf' has been renamed on the new system to 'new_option'."
 
-  # fix it - store output file to special directory, keeping its parents
-  # We will use $PREUPG_CLEANCONFDIR for this purpose (see above). However,
-  # we should check that file hasn't been backed up already at first.
-  # (We assume now, that everything else is compatible. Otherwise we should
-  #  not use that directory and use dirtyconf instead.)
+  # Store the output file in a special directory together with its parents.
+  # Use the $PREUPG_CLEANCONFDIR directory for this purpose (see above). However,
+  # check first that the file hasn't been backed up already.
+  # (Provided that everything else is compatible; otherwise do
+  #  not use that directory and use the dirtyconf directory instead.)
   [ -e "$dst_foo_conf" ] \
     || cp -ar "$foo_conf" "$PREUPG_CLEANCONFDIR"
   sed -ir 's/^[[:space:]]*obsoleted_option([[:space:]]|$)/new_option /' \
     > "$dst_foo_conf"
   {
-    #FIXME !!!
-    echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
-    echo -n " on new system to \"new_option\". This has been fixed"
-    echo -n " and fixed configuration file will be applied on new system"
+     echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
+    echo -n " to \"new_option\" on the new system. This has been fixed"
+    echo -n " and the fixed configuration file will be applied on the new system"
     echo    " automatically."
     echo
   } >> "$SOLUTION_FILE"
@@ -134,23 +132,22 @@ if grep -q "deprecated_option" "$foo_conf"; then
   sed -ir 's/^[[:space:]]*deprecated_option([[:space:]]|$)/#deprecated_option /' \
     > "$dst_foo_conf"
   {
-    #FIXME !!!
-    echo -n "The \"deprecated_option\" option has been removed on new system."
-    echo -n " You should check correct functionality of your applications."
-    echo -n " The option has been commented out."
+     echo -n "The \"deprecated_option\" option has been removed from the new system."
+    echo -n "The option has been commented out."
+    echo -n "Check the correct functionality of your applications."
     echo
   } >> "$SOLUTION_FILE"
   set_result $RESULT_FAIL
 fi
 
-# case 3
-# ok, we will pretend, that when naughty-foo-cottage subpackage is installed,
-# we will want to install naughty-foo-house on new system
+# case 3)
+# ok, let's pretend that when a naughty-foo-cottage subpackage is installed,
+# we will want to install a naughty-foo-house on the new system 
 if is_pkg_installed "naughty-foo-house"; then
-  log_info "The package naughty-foo-cottage has been split on new system. naughty-foo-house will be installed."
-  echo -n "The package naughty-foo-cottage has been split on new system and part"
-  echo -n " of current funcionality is provided by the naughty-foo-house package."
-  echo    " The new package will be installed automatically by post-upgrade script."
+  log_info "The 'naughty-foo-cottage' package has been split on the new system. A 'naughty-foo-house' package will be installed."
+  echo -n "The naughty-foo-cottage package has been split on the new system and a part"
+  echo -n " of the current funcionality is provided by the naughty-foo-house package."
+  echo    " The new package will be installed automatically by the post-upgrade script."
   echo
   cp -a "$post_script" "$POSTUPGRADE_DIR"
   chmod +x "${POSTUPGRADE_DIR}/${post_script}"
@@ -159,7 +156,7 @@ fi
 
 
 #
-# Use expected exit code to provide info about result of the script.
+# Use the expected exit code to provide the info about the script result.
 #
 exit $ret
 
