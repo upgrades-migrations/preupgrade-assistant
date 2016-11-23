@@ -1,0 +1,8 @@
+#!/usr/bin/python2
+from preupg import preupg_diff
+import sys
+
+if __name__ == '__main__':
+    sys.exit(
+        preupg_diff.run()
+    )
