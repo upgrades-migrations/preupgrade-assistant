@@ -5,44 +5,44 @@
 #END GENERATED SECTION
 
 #
-# The whole section above is processed and modified by preupg-xccdf-compose
-# script, according to content of INI file (in this case content.ini).
-# And in addition the LICENSE used by PreupgradeAssistant is inserted.
+# The whole section above is processed and modified by the preupg-xccdf-compose
+# script, according to the contents of the INI file (in this case it is the content.ini file).
+# In addition, the LICENSE used by the Preupgrade Assistant is inserted.
 #
 
 ##
 # Briefly:
-#   In case we want to manual inspection/check/action AFTER UPGRADE by user,
-#   we have to do basically just 3 things:
-#     1) provide text in $SOLUTION_FILE - what is the problem, instructions,...
-#     2) use log_medium_risk to provide short message that we found problem
-#     3) exit by exit_failed - to inform preupg, that something happend
+#   In case a manual inspection, check or action AFTER the upgrade is needed,
+#   do the following things:
+#     1) provide a text in $SOLUTION_FILE: a description of the problem and remediation instructions
+#     2) use "log_medium_risk" to provide a short message that a problem was found
+#     3) exit by "exit_failed" to inform preupg, that something unusual happened
 #           - or: exit $RESULT_FAILED
 ##
 
 #
-# So now we know that rpm foo is installed (we set 'foo' for applies_to option
-# in content.ini file). In this example, when file $foo_conf exists and
-# contains deprecated option 'CookieLogs', we inform user about found issue
+# So now you know that the foo RPM package is installed (because you set 'foo' in the "applies_to" option
+# in the content.ini file). In this example, if the $foo_conf file exists and if it
+# contains a deprecated 'CookieLogs' option, you are informed about the detected issue:
 #
 foo_conf="/etc/preupg-foo-example"
 if [[ -e "$foo_conf" ]] && grep -q "^CookieLogs" "$foo_conf"; then
-  log_medium_risk "Found deprecated option 'CookieLogs' in $foo_conf"
+  log_medium_risk "Found a deprecated 'CookieLogs' option in $foo_conf"
   {
-    echo -n "The $foo_conf config file of foo tool contains deprecated option"
-    echo -n " 'CookieLogs' which is not available on new system. This"
-    echo -n " may affect functionality of your other applications, which"
-    echo    " depend on it."
+    echo -n "The $foo_conf config file in the foo package contains a deprecated option"
+    echo -n " 'CookieLogs' which is not available on the new system. This"
+    echo -n " might affect the functionality of the applications that"
+    echo    " depend on the aforementioned option."
   } >> "$SOLUTION_FILE"
 
   exit_failed
 fi
 
 #
-# At the end, when issue isn't present, we will we want to inform user, that
-# everything is OK and we did some check. For this case we will exit
-# by exit_pass.
+# In the end, when the issue is resolved, you want to be informed that the check has been done and
+# everything is OK now. In this case, exit the module
+# by "exit_pass".
 #
-# Reminder: when you use exit_pass, the content in solution file is ignored.
+# Reminder: when you use "exit_pass", the content of the solution file is ignored and not printed.
 #
 exit_pass
