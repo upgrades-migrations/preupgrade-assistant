@@ -1,9 +1,0 @@
-
-Solution text file can be used as a reference to KnowledgeBase article.
-
-The current configuration file cannot be used on target system.
-We found an incompatibility in configuration file. Recommendation is to install the new system.
-
-Link to some Knowledge Base article:
-
-
