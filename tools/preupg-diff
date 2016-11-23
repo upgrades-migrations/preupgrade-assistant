@@ -62,7 +62,8 @@ class ResultXML(object):
         tree = self.get_xml_tree_object(xml_path)
         self.root = tree.getroot()
         self.rules = self.get_rules()
-        self.rule_results = self.get_rule_results()
+        self.get_results()
+        print(self.rules)
 
     @staticmethod
     def get_xml_tree_object(xml_path):
@@ -73,19 +74,30 @@ class ResultXML(object):
 
     def get_rules(self):
         rules = {}
-        for rule in self.root.getiterator(get_tag_with_ns("Rule")):
-            rules["tag_obj"] = rule
-            rules["solution"] = rule.find(get_tag_with_ns("fixtext")).text
+        rule_tag_name = get_tag_with_ns("Rule")
+        solution_tag_name = get_tag_with_ns("fixtext")
+        for rule_tag in self.root.getiterator(rule_tag_name):
+            rule = {}
+            rule["rule_tag_obj"] = rule_tag
+            rule["solution"] = rule_tag.find(solution_tag_name).text
+            rules[rule_tag.attrib["id"]] = rule
         return rules
 
-    def get_rule_results(self):
-        rule_results = {}
-        tag = get_tag_with_ns("rule-result")
-        for rule_result in self.root.getiterator(tag):
-            rule_results["tag_obj"] = rule_result
-            tag = get_tag_with_ns("result")
-            rule_results["result"] = rule_result.find(tag).text
-        return rule_results
+    def get_results(self):
+        result_tag_name = get_tag_with_ns("rule-result")
+        result_subtag_name = get_tag_with_ns("result")
+        output_tag_name = get_tag_with_ns("check-import")
+        for result_tag in self.root.getiterator(result_tag_name):
+            # Results of a rule are stored on a different place in the XML.
+            # It's possible to find the rule result by rule id.
+            rule_id = result_tag.attrib["idref"]
+            self.rules[rule_id]["result_tag_obj"] = result_tag
+            result_text = result_tag.find(result_subtag_name).text
+            self.rules[rule_id]["result"] = result_text
+            for output_tag in result_tag.getiterator(output_tag_name):
+                # Get content of both stdout and stderr
+                output_type = output_tag.attrib["import-name"]
+                self.rules[rule_id][output_type] = output_tag.text
 
 
 def main():
