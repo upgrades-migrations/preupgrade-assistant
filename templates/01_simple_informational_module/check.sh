@@ -20,8 +20,8 @@ log_info "You are running your first module. Congratulations. See the report for
 
 #
 # Usually there are cases when you want to add more information
-# to the solution file. For example, you want to check, if you have installed
-# the preupgrade-assistant package or you use the upstream source
+# to the solution file. For example, you want to check if you have installed
+# the preupgrade-assistant package or you are using the upstream source
 # code.
 #
 if is_pkg_installed "preupgrade-assistant"; then
@@ -36,7 +36,7 @@ if is_pkg_installed "preupgrade-assistant"; then
     echo    " http://bugzilla.redhat.com/"
   } >> "$SOLUTION_FILE"
 else
-  log_info "You are probably running an upstream version of preupgrade-assistant. Great to see it :-)"
+  log_info "You are probably running an upstream version of the Preupgrade Assistant. Great to see it :-)"
 fi
 
 #
