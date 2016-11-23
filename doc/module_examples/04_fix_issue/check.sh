@@ -6,8 +6,9 @@
 
 #
 # The whole section above is processed and modified by the preupg-xccdf-compose
-# script, according to the contents of the INI file (in this case it is the content.ini file).
-# In addition, the LICENSE used by the Preupgrade Assistant is inserted.
+# script, according to the contents of the INI file (in this case it is the
+# content.ini file). In addition, the LICENSE used by the Preupgrade Assistant
+# is inserted.
 #
 
 ##
@@ -20,8 +21,8 @@
 #      2) Create an executable script and store it in a special directory,
 #         so it will be executed during the post-upgrade phase
 #
-#      For both cases above you should log a message about the planned or completed action,
-#          so use "log_info" or "log_slight_risk".
+#      For both cases above you should log a message about the planned
+#          or completed action, so use "log_info" or "log_slight_risk".
 #      In the end (with no more issues present)
 #             exit by "exit_fixed".
 ##
@@ -31,17 +32,21 @@
 #
 # Do you remember the previous example about the required action? Could you
 # imagine that in such case (some options were deprecated or removed on the new
-# system and should have been removed from the configuration file), the action can be done
-# automatically? Of course only if you can do that safely.
+# system and should have been removed from the configuration file), the action
+# can be done automatically? Of course only if you can do that safely.
 #
 # This module fixes a similar problem for the "naughty-foo" package:
-#  1) The option "obsoleted_option" has been renamed on the new system to "new_option"
-#      - nice, you can fix this in the config file safely.
+#  1) The option "obsoleted_option" has been renamed on the new system
+#     to "new_option"
+#     - nice, you can fix this in the config file safely.
 #  2) The second issue is about a "deprecated_option", which should be removed
-#     - you will just comment out such a line, but in that case the inspection is still recommended
-#       because you might need to modify your application because of the missing option.
-#  3) You found that for the correct functionality you need to install another package
-#     - you can resolve this by the post-upgrade script and say that the issue is fixed
+#     - you will just comment out such a line, but in that case the inspection
+#       is still recommended because you might need to modify your application
+#       because of the missing option.
+#  3) You found that for the correct functionality you need to install another
+#     package
+#     - you can resolve this by the post-upgrade script and say that the issue
+#       is fixed
 #
 
 ###########################################################
@@ -114,10 +119,10 @@ if grep -q "obsoleted_option" "$foo_conf"; then
   sed -ir 's/^[[:space:]]*obsoleted_option([[:space:]]|$)/new_option /' \
     > "$dst_foo_conf"
   {
-     echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
+    echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
     echo -n " to \"new_option\" on the new system. This has been fixed"
-    echo -n " and the fixed configuration file will be applied on the new system"
-    echo    " automatically."
+    echo -n " and the fixed configuration file will be applied on the new"
+    echo    " system automatically."
     echo
   } >> "$SOLUTION_FILE"
   set_result $RESULT_FIXED
@@ -132,9 +137,9 @@ if grep -q "deprecated_option" "$foo_conf"; then
   sed -ir 's/^[[:space:]]*deprecated_option([[:space:]]|$)/#deprecated_option /' \
     > "$dst_foo_conf"
   {
-     echo -n "The \"deprecated_option\" option has been removed from the new system."
-    echo -n "The option has been commented out."
-    echo -n "Check the correct functionality of your applications."
+    echo -n "The \"deprecated_option\" option has been removed from the new"
+    echo -n " system. The option has been commented out. Check the correct"
+    echo -n " functionality of your applications."
     echo
   } >> "$SOLUTION_FILE"
   set_result $RESULT_FAIL
@@ -142,12 +147,13 @@ fi
 
 # case 3)
 # ok, let's pretend that when a naughty-foo-cottage subpackage is installed,
-# we will want to install a naughty-foo-house on the new system 
+# we will want to install a naughty-foo-house on the new system
 if is_pkg_installed "naughty-foo-house"; then
   log_info "The 'naughty-foo-cottage' package has been split on the new system. A 'naughty-foo-house' package will be installed."
-  echo -n "The naughty-foo-cottage package has been split on the new system and a part"
-  echo -n " of the current funcionality is provided by the naughty-foo-house package."
-  echo    " The new package will be installed automatically by the post-upgrade script."
+  echo -n "The naughty-foo-cottage package has been split on the new system"
+  echo -n " and a part of the current funcionality is provided by the"
+  echo -n " naughty-foo-house package. The new package will be installed"
+  echo    " automatically by the post-upgrade script."
   echo
   cp -a "$post_script" "$POSTUPGRADE_DIR"
   chmod +x "${POSTUPGRADE_DIR}/${post_script}"

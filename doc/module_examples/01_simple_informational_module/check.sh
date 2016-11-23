@@ -6,7 +6,8 @@
 
 #
 # The whole section above is processed and modified by the preupg-xccdf-compose
-# script, according to the contents of the INI file (in this case it is the content.ini file).
+# script, according to the contents of the INI file (in this case it is the
+# content.ini file).
 # In addition, the LICENSE used by the Preupgrade Assistant is inserted.
 #
 
@@ -19,10 +20,9 @@
 log_info "You are running your first module. Congratulations. See the report for more information."
 
 #
-# Usually there are cases when you want to add more information
-# to the solution file. For example, you want to check if you have installed
-# the preupgrade-assistant package or you are using the upstream source
-# code.
+# Usually there are cases when you want to add more information to the solution
+# file. For example, you want to check if you have installed the
+# preupgrade-assistant package or you are using the upstream source code.
 #
 if is_pkg_installed "preupgrade-assistant"; then
   log_info "You have installed the preupgrade-assistant package."
@@ -40,7 +40,8 @@ else
 fi
 
 #
-# IMPORTANT: 
-#  The script has to end with a specific exit code, which states a type of the result.
-#  In this case, it is an informational result. See common.sh for further information.
+# IMPORTANT:
+#  The script has to end with a specific exit code, which states a type of the
+#  result. In this case, it is an informational result. See common.sh for
+#  further information.
 exit_informational
