@@ -1,0 +1,98 @@
+#!/usr/bin/python -tt
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2016 Red Hat, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+from __future__ import print_function
+
+import argparse
+from lxml import etree as ET
+import sys
+
+
+def parse_cli_opts():
+    parser = argparse.ArgumentParser(
+        description="preupg-diff takes two Preupgrade Assistant XML reports"
+        " A and B, from which the A has been already analyzed by somebody,"
+        " and B is the new one. preupg-diff helps you if you want to see only"
+        " the new issues that emerged in B. It spits out a new report which"
+        " is report B without the issues reported in A. The Preupgrade"
+        " Assistant XML report is to be found in /root/preupgrade/.")
+    parser.add_argument("xmla", help="XML report with analyzed issues")
+    parser.add_argument("xmlb", help="New XML report with unknown possibly"
+                                     " new issues")
+    return parser.parse_args()
+
+
+def get_tag_with_ns(tag_name):
+    """All the tags in Preupgrade Assistant result XML are prepended with ns0
+    namespace, which is required by python XML parsing modules to be used when
+    looking for a tag. This function returns a tag name prepended by this
+    namespace and the return value can be used directly for tag searches.
+    """
+    ns0 = "http://checklists.nist.gov/xccdf/1.2"
+    return "{%s}%s" % (ns0, tag_name)
+
+
+def get_tag_without_ns(tag_with_ns):
+    """Remove namespace prepending the actual tag name and return the tag
+    name only."""
+    if '}' in tag_with_ns:
+        return tag_with_ns.split('}', 1)[1]
+    else:
+        return tag_with_ns
+
+
+class ResultXML(object):
+    def __init__(self, xml_path):
+        tree = self.get_xml_tree_object(xml_path)
+        self.root = tree.getroot()
+        self.rules = self.get_rules()
+        self.rule_results = self.get_rule_results()
+
+    @staticmethod
+    def get_xml_tree_object(xml_path):
+        try:
+            return ET.parse(xml_path)
+        except OSError:
+            sys.exit("Error: Failed to read XML '%s'" % xml_path)
+
+    def get_rules(self):
+        rules = {}
+        for rule in self.root.getiterator(get_tag_with_ns("Rule")):
+            rules["tag_obj"] = rule
+            rules["solution"] = rule.find(get_tag_with_ns("fixtext")).text
+        return rules
+
+    def get_rule_results(self):
+        rule_results = {}
+        tag = get_tag_with_ns("rule-result")
+        for rule_result in self.root.getiterator(tag):
+            rule_results["tag_obj"] = rule_result
+            tag = get_tag_with_ns("result")
+            rule_results["result"] = rule_result.find(tag).text
+        return rule_results
+
+
+def main():
+    parsed_opts = parse_cli_opts()
+    xmla = ResultXML(parsed_opts.xmla)
+    xmlb = ResultXML(parsed_opts.xmlb)
+
+
+if __name__ == "__main__":
+    main()
