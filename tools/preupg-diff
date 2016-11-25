@@ -25,6 +25,7 @@ import sys
 
 # Rule result attributes to be compared for equality
 rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
+output_xml_name = "result_diff.xml"
 
 
 def parse_cli_opts():
@@ -42,7 +43,8 @@ def parse_cli_opts():
 
 class ResultXML(object):
     def __init__(self, xml_path):
-        self.root = get_xml_tree_object(xml_path).getroot()
+        self.tree = get_xml_tree_object(xml_path)
+        self.root = self.tree.getroot()
         self.get_rules()
 
     def get_rules(self):
@@ -52,6 +54,7 @@ class ResultXML(object):
         - result .. result string, e.g. informational
         - stdout .. optional element holding standard output
         - stderr .. optional element holding standard error output
+        - rule_tag and result_tag .. reference to the XML tag object
         """
         self.rules = {}
         self.get_rule_ids_and_solutions()
@@ -60,6 +63,7 @@ class ResultXML(object):
     def get_rule_ids_and_solutions(self):
         for rule_tag in find_subtags_recursive(self.root, "Rule"):
             rule = {}
+            rule["rule_tag"] = rule_tag
             rule["solution"] = find_first_subtag(rule_tag, "fixtext").text
             self.rules[rule_tag.attrib["id"]] = rule
 
@@ -68,12 +72,26 @@ class ResultXML(object):
             rule_id = result_tag.attrib["idref"]
             result_text = find_first_subtag(result_tag, "result").text
             self.rules[rule_id]["result"] = result_text
+            self.rules[rule_id]["result_tag"] = result_tag
             self.get_stdout_stderr(rule_id, result_tag)
 
     def get_stdout_stderr(self, rule_id, result_tag):
         for output_tag in find_subtags_recursive(result_tag, "check-import"):
             output_type = output_tag.attrib["import-name"]
             self.rules[rule_id][output_type] = output_tag.text
+
+    def remove_rule(self, rule_id):
+        """Remove all references to a rule from the whole XML."""
+        remove_tag(self.rules[rule_id]["rule_tag"])
+        remove_tag(self.rules[rule_id]["result_tag"])
+        remove_tag(self.get_select_tag(rule_id))
+
+    def get_select_tag(self, rule_id):
+        for select_tag in find_subtags_recursive(self.root, "select"):
+            if select_tag.attrib["idref"] == rule_id:
+                return select_tag
+        else:
+            sys.exit("Error: Can't find select tag: " + rule_id)
 
 
 """-----------------XML UTILS-----------------"""
@@ -107,22 +125,28 @@ def get_tag_with_ns(tag_name):
     return "{%s}%s" % (ns0, tag_name)
 
 
+def remove_tag(tag_obj):
+    parent = tag_obj.getparent()
+    parent.remove(tag_obj)
+    # TODO: Remove parent tags if there's nothing under them left
+
+
 """-----------------END XML UTILS-----------------"""
 
 
-def get_rules_w_the_same_result(first_xml_rules, second_xml_rules):
+def get_rules_w_same_result(first_xml_rules, second_xml_rules):
     same_result_rules = {}
     for key in second_xml_rules.keys():
         if key not in first_xml_rules:
             continue
         # Save those new XML rules that have the same result as in the old XML
-        if are_results_the_same(first_xml_rules[key], second_xml_rules[key]):
+        if are_results_same(first_xml_rules[key], second_xml_rules[key]):
             same_result_rules[key] = second_xml_rules[key]
 
     return same_result_rules
 
 
-def are_results_the_same(first_xml_rule_attrs, second_xml_rule_attrs):
+def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
     for key in rule_attrs_to_compare:
         if key not in first_xml_rule_attrs or key not in second_xml_rule_attrs:
             continue
@@ -131,14 +155,14 @@ def are_results_the_same(first_xml_rule_attrs, second_xml_rule_attrs):
     return True
 
 
-def remove_same_result_rules(same_result_rules):
-    for rule in same_result_rules.keys():
-        print(rule)
-        # print(same_result_rules[rule]["rule_tag_obj"].getparent().tag)
-        # print(same_result_rules[rule]["result_tag_obj"].getparent().tag)
+def remove_same_result_rules(xml_to_trim, same_result_rules):
+    for rule_id in same_result_rules.keys():
+        xml_to_trim.remove_rule(rule_id)
+    xml_to_trim.tree.write(output_xml_name, pretty_print=True)
 
 
 def print_difference_status(second_xml_rules, same_result_rules):
+    print("Diff XML written: " + output_xml_name)
     num_new_rules = len(second_xml_rules.keys())
     num_same_rules = len(same_result_rules.keys())
     if num_same_rules:
@@ -146,9 +170,9 @@ def print_difference_status(second_xml_rules, same_result_rules):
             print("Every rule from the second XML has exactly the same"
                   " result as in the first XML.")
         else:
-            print("Removed %d rules (out of %d) from the second XML.\nThese"
-                  " removed rules have exactly the same result in both XMLs."
-                  % (num_same_rules, num_new_rules))
+            print("Removed %d rules (out of %d) from the second XML.\nNote:"
+                  " The removed rules had exactly the same result in both"
+                  " XMLs." % (num_same_rules, num_new_rules))
     else:
         print("All the rules have different results.")
 
@@ -157,10 +181,10 @@ def main():
     parsed_opts = parse_cli_opts()
     first_xml = ResultXML(parsed_opts.first_xml)
     second_xml = ResultXML(parsed_opts.second_xml)
-    same_result_rules = get_rules_w_the_same_result(first_xml.rules,
-                                                    second_xml.rules)
+    same_result_rules = get_rules_w_same_result(first_xml.rules,
+                                                second_xml.rules)
 
-    remove_same_result_rules(same_result_rules)
+    remove_same_result_rules(second_xml, same_result_rules)
     print_difference_status(second_xml.rules, same_result_rules)
 
 
