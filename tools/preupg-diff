@@ -23,24 +23,26 @@ import argparse
 from lxml import etree as ET
 import sys
 
+# Rule result attributes to be compared for equality
+rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
+
 
 def parse_cli_opts():
     parser = argparse.ArgumentParser(
-        description="preupg-diff takes two Preupgrade Assistant XML reports"
-        " A and B, from which the A has been already analyzed by somebody,"
-        " and B is the new one. preupg-diff helps you if you want to see only"
-        " the new issues that emerged in B. It spits out a new report which"
-        " is report B without the issues reported in A. The Preupgrade"
-        " Assistant XML report is to be found in /root/preupgrade/.")
-    parser.add_argument("xmla", help="XML report with analyzed issues")
-    parser.add_argument("xmlb", help="New XML report with unknown possibly"
-                                     " new issues")
+        description="preupg-diff takes two Preupgrade Assistant XML reports,"
+        " from which the first has been already analyzed by somebody, and the"
+        " second hasn't been yet. preupg-diff helps to focus only on the new"
+        " issues that emerged in the second XML - it outputs an XML with"
+        " only those results that are new or different from the analyzed XML.")
+    parser.add_argument("first_xml", help="XML report with analyzed issues")
+    parser.add_argument("second_xml", help="New XML report with possibly"
+                                           " new issues")
     return parser.parse_args()
 
 
 def get_tag_with_ns(tag_name):
     """All the tags in Preupgrade Assistant result XML are prepended with ns0
-    namespace, which is required by python XML parsing modules to be used when
+    namespace, which is required by python XML parsing modules when
     looking for a tag. This function returns a tag name prepended by this
     namespace and the return value can be used directly for tag searches.
     """
@@ -63,7 +65,6 @@ class ResultXML(object):
         self.root = tree.getroot()
         self.rules = self.get_rules()
         self.get_results()
-        print(self.rules)
 
     @staticmethod
     def get_xml_tree_object(xml_path):
@@ -100,10 +101,60 @@ class ResultXML(object):
                 self.rules[rule_id][output_type] = output_tag.text
 
 
+def get_rules_w_the_same_result(first_xml_rules, second_xml_rules):
+    """Dictionary holding the rule results has this structure:
+    { <rule ID> : {"rule_tag_obj" : <rule XML tag object>,
+                   "result_tag_obj" : <rule result XML tag object>,
+                   "result" : <result string, e.g. informational>,
+                   "solution" : <solution/remediation text>,
+                   "stdout" : <optional element holding standard output>,
+                   "stderr" : <optional element holding standard error output>
+                  },
+      <rule ID> : { ...
+    }
+    """
+    same_result_rules = {}
+    for key in second_xml_rules.keys():
+        if key not in first_xml_rules:
+            continue
+        # Save those new XML rules that have the same result as in the old XML
+        if are_results_the_same(first_xml_rules[key], second_xml_rules[key]):
+            same_result_rules[key] = second_xml_rules[key]
+
+    return same_result_rules
+
+
+def are_results_the_same(first_xml_rule_attrs, second_xml_rule_attrs):
+    for key in rule_attrs_to_compare:
+        if key not in first_xml_rule_attrs or key not in second_xml_rule_attrs:
+            continue
+        if first_xml_rule_attrs[key] != second_xml_rule_attrs[key]:
+            return False
+    return True
+
+
+def print_difference_status(second_xml_rules, same_result_rules):
+    num_new_rules = len(second_xml_rules.keys())
+    num_same_rules = len(same_result_rules.keys())
+    if num_same_rules:
+        if num_same_rules == num_new_rules:
+            print("Every rule from the second XML has exactly the same"
+                  " result as in the first XML.")
+        else:
+            print("Removed %d rules (out of %d) from the second XML.\nThese"
+                  " removed rules have exactly the same result in both XMLs."
+                  % (num_same_rules, num_new_rules))
+    else:
+        print("All the rules have different results.")
+
+
 def main():
     parsed_opts = parse_cli_opts()
-    xmla = ResultXML(parsed_opts.xmla)
-    xmlb = ResultXML(parsed_opts.xmlb)
+    first_xml = ResultXML(parsed_opts.first_xml)
+    second_xml = ResultXML(parsed_opts.second_xml)
+    same_result_rules = get_rules_w_the_same_result(first_xml.rules,
+                                                    second_xml.rules)
+    print_difference_status(second_xml.rules, same_result_rules)
 
 
 if __name__ == "__main__":
