@@ -40,6 +40,63 @@ def parse_cli_opts():
     return parser.parse_args()
 
 
+class ResultXML(object):
+    def __init__(self, xml_path):
+        self.root = get_xml_tree_object(xml_path).getroot()
+        self.get_rules()
+
+    def get_rules(self):
+        """This method finds all the rules that has been used during the
+        system preassessment and saves the following information:
+        - solution .. solution/remediation text
+        - result .. result string, e.g. informational
+        - stdout .. optional element holding standard output
+        - stderr .. optional element holding standard error output
+        """
+        self.rules = {}
+        self.get_rule_ids_and_solutions()
+        self.get_results_and_outputs()
+
+    def get_rule_ids_and_solutions(self):
+        for rule_tag in find_subtags_recursive(self.root, "Rule"):
+            rule = {}
+            rule["solution"] = find_first_subtag(rule_tag, "fixtext").text
+            self.rules[rule_tag.attrib["id"]] = rule
+
+    def get_results_and_outputs(self):
+        for result_tag in find_subtags_recursive(self.root, "rule-result"):
+            rule_id = result_tag.attrib["idref"]
+            result_text = find_first_subtag(result_tag, "result").text
+            self.rules[rule_id]["result"] = result_text
+            self.get_stdout_stderr(rule_id, result_tag)
+
+    def get_stdout_stderr(self, rule_id, result_tag):
+        for output_tag in find_subtags_recursive(result_tag, "check-import"):
+            output_type = output_tag.attrib["import-name"]
+            self.rules[rule_id][output_type] = output_tag.text
+
+
+"""-----------------XML UTILS-----------------"""
+
+
+def get_xml_tree_object(xml_path):
+    try:
+        return ET.parse(xml_path)
+    except OSError:
+        sys.exit("Error: Failed to read XML '%s'" % xml_path)
+
+
+def find_subtags_recursive(tag_obj, tag_name):
+    """Returns tags with the specific name within the whole XML."""
+    tag_name_with_ns = get_tag_with_ns(tag_name)
+    return tag_obj.getiterator(tag_name_with_ns)
+
+
+def find_first_subtag(tag_obj, tag_name):
+    tag_name_with_ns = get_tag_with_ns(tag_name)
+    return tag_obj.find(tag_name_with_ns)
+
+
 def get_tag_with_ns(tag_name):
     """All the tags in Preupgrade Assistant result XML are prepended with ns0
     namespace, which is required by python XML parsing modules when
@@ -50,69 +107,10 @@ def get_tag_with_ns(tag_name):
     return "{%s}%s" % (ns0, tag_name)
 
 
-def get_tag_without_ns(tag_with_ns):
-    """Remove namespace prepending the actual tag name and return the tag
-    name only."""
-    if '}' in tag_with_ns:
-        return tag_with_ns.split('}', 1)[1]
-    else:
-        return tag_with_ns
-
-
-class ResultXML(object):
-    def __init__(self, xml_path):
-        tree = self.get_xml_tree_object(xml_path)
-        self.root = tree.getroot()
-        self.rules = self.get_rules()
-        self.get_results()
-
-    @staticmethod
-    def get_xml_tree_object(xml_path):
-        try:
-            return ET.parse(xml_path)
-        except OSError:
-            sys.exit("Error: Failed to read XML '%s'" % xml_path)
-
-    def get_rules(self):
-        rules = {}
-        rule_tag_name = get_tag_with_ns("Rule")
-        solution_tag_name = get_tag_with_ns("fixtext")
-        for rule_tag in self.root.getiterator(rule_tag_name):
-            rule = {}
-            rule["rule_tag_obj"] = rule_tag
-            rule["solution"] = rule_tag.find(solution_tag_name).text
-            rules[rule_tag.attrib["id"]] = rule
-        return rules
-
-    def get_results(self):
-        result_tag_name = get_tag_with_ns("rule-result")
-        result_subtag_name = get_tag_with_ns("result")
-        output_tag_name = get_tag_with_ns("check-import")
-        for result_tag in self.root.getiterator(result_tag_name):
-            # Results of a rule are stored on a different place in the XML.
-            # It's possible to find the rule result by rule id.
-            rule_id = result_tag.attrib["idref"]
-            self.rules[rule_id]["result_tag_obj"] = result_tag
-            result_text = result_tag.find(result_subtag_name).text
-            self.rules[rule_id]["result"] = result_text
-            for output_tag in result_tag.getiterator(output_tag_name):
-                # Get content of both stdout and stderr
-                output_type = output_tag.attrib["import-name"]
-                self.rules[rule_id][output_type] = output_tag.text
+"""-----------------END XML UTILS-----------------"""
 
 
 def get_rules_w_the_same_result(first_xml_rules, second_xml_rules):
-    """Dictionary holding the rule results has this structure:
-    { <rule ID> : {"rule_tag_obj" : <rule XML tag object>,
-                   "result_tag_obj" : <rule result XML tag object>,
-                   "result" : <result string, e.g. informational>,
-                   "solution" : <solution/remediation text>,
-                   "stdout" : <optional element holding standard output>,
-                   "stderr" : <optional element holding standard error output>
-                  },
-      <rule ID> : { ...
-    }
-    """
     same_result_rules = {}
     for key in second_xml_rules.keys():
         if key not in first_xml_rules:
@@ -131,6 +129,13 @@ def are_results_the_same(first_xml_rule_attrs, second_xml_rule_attrs):
         if first_xml_rule_attrs[key] != second_xml_rule_attrs[key]:
             return False
     return True
+
+
+def remove_same_result_rules(same_result_rules):
+    for rule in same_result_rules.keys():
+        print(rule)
+        # print(same_result_rules[rule]["rule_tag_obj"].getparent().tag)
+        # print(same_result_rules[rule]["result_tag_obj"].getparent().tag)
 
 
 def print_difference_status(second_xml_rules, same_result_rules):
@@ -154,6 +159,8 @@ def main():
     second_xml = ResultXML(parsed_opts.second_xml)
     same_result_rules = get_rules_w_the_same_result(first_xml.rules,
                                                     second_xml.rules)
+
+    remove_same_result_rules(same_result_rules)
     print_difference_status(second_xml.rules, same_result_rules)
 
 
