@@ -3,19 +3,18 @@
 #
 # Copyright (C) 2016 Red Hat, Inc.
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
+
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
@@ -30,12 +29,13 @@ output_xml_name = "result_diff.xml"
 
 def parse_cli_opts():
     parser = argparse.ArgumentParser(
-        description="preupg-diff takes two Preupgrade Assistant XML reports,"
-        " from which the first has been already analyzed by somebody, and the"
-        " second hasn't been yet. preupg-diff helps to focus only on the new"
-        " issues that emerged in the second XML - it outputs an XML with"
-        " only those results that are new or different from the analyzed XML.")
-    parser.add_argument("first_xml", help="XML report with analyzed issues")
+        description="preupg-diff takes two Preupgrade Assistant XML reports"
+        " from which the first has been already analyzed and the second hasn't"
+        " been yet. preupg-diff helps to find new issues that emerged in the"
+        " second XML - it outputs an XML with only those results that are new"
+        " or different from the analyzed XML.")
+    parser.add_argument("first_xml", help="XML report with all issues already"
+                                          " analyzed")
     parser.add_argument("second_xml", help="New XML report with possibly"
                                            " new issues")
     return parser.parse_args()
@@ -80,6 +80,10 @@ class ResultXML(object):
             output_type = output_tag.attrib["import-name"]
             self.rules[rule_id][output_type] = output_tag.text
 
+    def remove_same_result_rules(self, same_result_rules):
+        for rule_id in same_result_rules.keys():
+            self.remove_rule(rule_id)
+
     def remove_rule(self, rule_id):
         """Remove all references to a rule from the whole XML."""
         remove_tag(self.rules[rule_id]["rule_tag"])
@@ -93,6 +97,14 @@ class ResultXML(object):
         else:
             sys.exit("Error: Can't find select tag: " + rule_id)
 
+    def remove_empty_group_tags(self):
+        for group_tag in find_subtags_recursive(self.root, "Group"):
+            if has_no_subtags_recursive(group_tag, "Rule"):
+                remove_tag(group_tag)
+
+    def write_to_file(self):
+        self.tree.write(output_xml_name, pretty_print=True)
+
 
 """-----------------XML UTILS-----------------"""
 
@@ -104,14 +116,14 @@ def get_xml_tree_object(xml_path):
         sys.exit("Error: Failed to read XML '%s'" % xml_path)
 
 
-def find_subtags_recursive(tag_obj, tag_name):
+def find_subtags_recursive(tag_obj, subtag_name):
     """Returns tags with the specific name within the whole XML."""
-    tag_name_with_ns = get_tag_with_ns(tag_name)
+    tag_name_with_ns = get_tag_with_ns(subtag_name)
     return tag_obj.getiterator(tag_name_with_ns)
 
 
-def find_first_subtag(tag_obj, tag_name):
-    tag_name_with_ns = get_tag_with_ns(tag_name)
+def find_first_subtag(tag_obj, subtag_name):
+    tag_name_with_ns = get_tag_with_ns(subtag_name)
     return tag_obj.find(tag_name_with_ns)
 
 
@@ -128,7 +140,14 @@ def get_tag_with_ns(tag_name):
 def remove_tag(tag_obj):
     parent = tag_obj.getparent()
     parent.remove(tag_obj)
-    # TODO: Remove parent tags if there's nothing under them left
+
+
+def has_no_subtags_recursive(tag_obj, subtag_name):
+    """Return true if tag_obj has no subtags of a particular name."""
+    if sum(1 for _ in find_subtags_recursive(tag_obj, subtag_name)):
+        return False
+    else:
+        return True
 
 
 """-----------------END XML UTILS-----------------"""
@@ -155,12 +174,6 @@ def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
     return True
 
 
-def remove_same_result_rules(xml_to_trim, same_result_rules):
-    for rule_id in same_result_rules.keys():
-        xml_to_trim.remove_rule(rule_id)
-    xml_to_trim.tree.write(output_xml_name, pretty_print=True)
-
-
 def print_difference_status(second_xml_rules, same_result_rules):
     print("Diff XML written: " + output_xml_name)
     num_new_rules = len(second_xml_rules.keys())
@@ -181,10 +194,13 @@ def main():
     parsed_opts = parse_cli_opts()
     first_xml = ResultXML(parsed_opts.first_xml)
     second_xml = ResultXML(parsed_opts.second_xml)
+
     same_result_rules = get_rules_w_same_result(first_xml.rules,
                                                 second_xml.rules)
+    second_xml.remove_same_result_rules(same_result_rules)
+    second_xml.remove_empty_group_tags()
+    second_xml.write_to_file()
 
-    remove_same_result_rules(second_xml, same_result_rules)
     print_difference_status(second_xml.rules, same_result_rules)
 
 
