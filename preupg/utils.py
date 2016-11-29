@@ -809,7 +809,8 @@ class OpenSCAPHelper(object):
             command_generate = ['xccdf', 'generate', 'report']
         return command_generate
 
-    def build_generate_command(self, xml_file, html_file, old_style=False):
+    @staticmethod
+    def build_generate_command(xml_file, html_file, old_style=False):
         """Function builds a command for generating results"""
         command = [settings.openscap_binary]
         command.extend(OpenSCAPHelper.get_command_generate())

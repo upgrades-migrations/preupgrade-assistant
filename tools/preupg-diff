@@ -20,11 +20,13 @@ from __future__ import print_function
 
 import argparse
 from lxml import etree as ET
+import os
 import sys
 
 # Rule result attributes to be compared for equality
 rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
-output_xml_name = "result_diff.xml"
+diff_report_xml = "result_diff.xml"
+diff_report_html = diff_report_xml.replace('.xml', '.html')
 
 
 def parse_cli_opts():
@@ -38,6 +40,10 @@ def parse_cli_opts():
                                           " analyzed")
     parser.add_argument("second_xml", help="New XML report with possibly"
                                            " new issues")
+    parser.add_argument("-s", "--simple-html", help="Generate simpler HTML"
+                        " than the default, without clickable buttons, just"
+                        " long scrollable document. This is more like a devel"
+                        " option which may not work.", action="store_true")
     return parser.parse_args()
 
 
@@ -103,7 +109,7 @@ class ResultXML(object):
                 remove_tag(group_tag)
 
     def write_to_file(self):
-        self.tree.write(output_xml_name, pretty_print=True)
+        self.tree.write(diff_report_xml, pretty_print=True)
 
 
 """-----------------XML UTILS-----------------"""
@@ -175,7 +181,8 @@ def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
 
 
 def print_difference_status(second_xml_rules, same_result_rules):
-    print("Diff XML written: " + output_xml_name)
+    print("Diff XML generated: " + diff_report_xml)
+    print("Diff HTML generated: " + diff_report_html)
     num_new_rules = len(second_xml_rules.keys())
     num_same_rules = len(same_result_rules.keys())
     if num_same_rules:
@@ -187,7 +194,25 @@ def print_difference_status(second_xml_rules, same_result_rules):
                   " The removed rules had exactly the same result in both"
                   " XMLs." % (num_same_rules, num_new_rules))
     else:
-        print("All the rules have different results.")
+        print("All the rules have different results. The diff XML is the same"
+              " as the second XML.")
+
+
+def generate_html(simple_html):
+        if not os.path.exists(diff_report_xml):
+            sys.exit("Error: HTML generation failed: source %s not found" %
+                     diff_report_xml)
+        from preupg.utils import OpenSCAPHelper, ProcessHelper
+        cmd = OpenSCAPHelper.build_generate_command(diff_report_xml,
+                                                    diff_report_html,
+                                                    simple_html)
+        log = "html.log"
+        ret_val = ProcessHelper.run_subprocess(cmd, print_output=True,
+                                               output=log)
+        if ret_val != 0:
+            sys.exit("Error: HTML generation failed. See %s for details" % log)
+        else:
+            os.remove(log)
 
 
 def main():
@@ -200,7 +225,7 @@ def main():
     second_xml.remove_same_result_rules(same_result_rules)
     second_xml.remove_empty_group_tags()
     second_xml.write_to_file()
-
+    generate_html(parsed_opts.simple_html)
     print_difference_status(second_xml.rules, same_result_rules)
 
 

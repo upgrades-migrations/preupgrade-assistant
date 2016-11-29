@@ -11,14 +11,15 @@ project_name = "preupgrade-assistant"
 project_url = "https://github.com/upgrades-migrations/preupgrade-assistant/"
 project_author = "Red Hat, Inc."
 project_author_email = "phracek@redhat.com"
-project_description = "Preupgrade assistant"
+project_description = "Preupgrade Assistant"
 package_name = "%s" % project_name
 package_module_name = project_name
 package_version = VERSION
 
 script_files = ['bin/preupg', 'bin/premigrate', 'tools/preupg-content-creator',
                 'tools/preupg-kickstart-generator', 'tools/preupg-ui-manage',
-                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml']
+                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml',
+                'tools/preupg-diff']
 
 data_files = {
     'preupg/ui/report/fixtures/':
