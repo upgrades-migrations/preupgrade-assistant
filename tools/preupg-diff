@@ -25,8 +25,7 @@ import sys
 
 # Rule result attributes to be compared for equality
 rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
-diff_report_xml = "result_diff.xml"
-diff_report_html = diff_report_xml.replace('.xml', '.html')
+diff_report_name = "result_diff"
 
 
 def parse_cli_opts():
@@ -34,8 +33,9 @@ def parse_cli_opts():
         description="preupg-diff takes two Preupgrade Assistant XML reports"
         " from which the first has been already analyzed and the second hasn't"
         " been yet. preupg-diff helps to find new issues that emerged in the"
-        " second XML - it outputs an XML with only those results that are new"
-        " or different from the analyzed XML.")
+        " second XML by outputting a report with only those results that"
+        " are new or different from the analyzed XML. The output is in both"
+        " XML and HTML format and named %s.xml/html." % diff_report_name)
     parser.add_argument("first_xml", help="XML report with all issues already"
                                           " analyzed")
     parser.add_argument("second_xml", help="New XML report with possibly"
@@ -109,7 +109,7 @@ class ResultXML(object):
                 remove_tag(group_tag)
 
     def write_to_file(self):
-        self.tree.write(diff_report_xml, pretty_print=True)
+        self.tree.write(diff_report_name + ".xml", pretty_print=True)
 
 
 """-----------------XML UTILS-----------------"""
@@ -181,8 +181,8 @@ def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
 
 
 def print_difference_status(second_xml_rules, same_result_rules):
-    print("Diff XML generated: " + diff_report_xml)
-    print("Diff HTML generated: " + diff_report_html)
+    print("Diff XML generated: " + diff_report_name + ".xml")
+    print("Diff HTML generated: " + diff_report_name + ".html")
     num_new_rules = len(second_xml_rules.keys())
     num_same_rules = len(same_result_rules.keys())
     if num_same_rules:
@@ -199,12 +199,12 @@ def print_difference_status(second_xml_rules, same_result_rules):
 
 
 def generate_html(simple_html):
-        if not os.path.exists(diff_report_xml):
+        if not os.path.exists(diff_report_name + ".xml"):
             sys.exit("Error: HTML generation failed: source %s not found" %
-                     diff_report_xml)
+                     diff_report_name + ".xml")
         from preupg.utils import OpenSCAPHelper, ProcessHelper
-        cmd = OpenSCAPHelper.build_generate_command(diff_report_xml,
-                                                    diff_report_html,
+        cmd = OpenSCAPHelper.build_generate_command(diff_report_name + ".xml",
+                                                    diff_report_name + ".html",
                                                     simple_html)
         log = "html.log"
         ret_val = ProcessHelper.run_subprocess(cmd, print_output=True,
