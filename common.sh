@@ -189,6 +189,14 @@ else
     MODULE_PATH=$XCCDF_VALUE_MODULE_PATH
 fi
 
+#
+# Module-generated files storage path
+#
+# This should be used as root for things like hooks and
+# attachments.  Don't save files directly here, create
+# a subdirectory for each type of file.
+#
+_MODULE_STORAGE=$VALUE_TMP_PREUPGRADE/storage/$MODULE_PATH
 
 #
 # variables set by PA config file #
@@ -680,6 +688,63 @@ add_pkg_to_kickstart() {
     return 0
 }
 
+attach_file() {
+    #
+    # Attach a file to module result
+    #
+    # Usage:
+    #
+    #    attach_file SRC [NAME]
+    #
+    # Store file SRC with the module result as NAME.  If NAME is not provided,
+    # last element of the SRC path is used.  SRC cannot be a directory.  NAME
+    # may contain slashes, meaning sub-path of the storage directory.
+    #
+    # Examples:
+    #
+    #     # COMMAND                 # RESULT
+    #     attach_file foo           # 'foo' in storage dir
+    #     attach_file bar baz       # 'bar' in storage dir, renamed to 'baz'
+    #     attach_file qux sub/qux   # 'qux' inside 'sub' subdir of storage dir
+    #
+    # This is somewhat equivalent to `cp SRC /module/result/path/NAME`, except
+    # that the destination path is decided by the API and created as needed.
+    #
+    local src=$1        # SRC file
+    local dst=$2        # NAME
+    local full_dst      # final destination path (incl. file part)
+    log_debug "attach_file(): src='$src'"
+    log_debug "attach_file(): dst='$dst'"
+    test -n "$src" || {
+        log_error "usage: attach_file SRC [NAME]"
+        exit_error
+    }
+    test -f "$src" || {
+        log_error "no such file: $src"
+        exit_error
+    }
+    case $dst in
+        /*)
+            log_error "destination name must not start with slash: $dst"
+            exit_error
+            ;;
+        "")
+            full_dst="$_MODULE_STORAGE/files/${src##*/}"
+            ;;
+        *)
+            full_dst="$_MODULE_STORAGE/files/$dst"
+            ;;
+    esac
+    _is_rooted_in "$full_dst" "$_MODULE_STORAGE" || {
+        log_error "destination NAME points outside storage: $dst"
+        exit_error
+    }
+    log_debug "attach_file(): full_dst='$full_dst'"
+    mkdir -p "${full_dst%/*}"
+    test -e "${full_dst}" && log_warning "overwriting attachment: $src"
+    cp -a "$src" "$full_dst"
+}
+
 deploy_hook() {
     #
     # Function which deploys script to specific location.
@@ -734,6 +799,32 @@ deploy_hook() {
         *) log_error "Unknown option $deploy_name"; exit_error
             ;;
     esac
+    return 0
+}
+
+_is_rooted_in() {
+    #
+    # Check that path $1 is under "jail" $2
+    #
+    # Usage:
+    #
+    #     _is_rooted_in PATH JAIL
+    #
+    # True if PATH points inside JAIL directory. PATH does not
+    # have to exist.  Both paths are canonicalized first (i.e.
+    # symlinks are resolved paths are changed to  absolute).
+    #
+    # This is helpful to check against jailbreaking.
+    #
+    local path=$1       # PATH
+    local jail=$2       # JAIL
+    local cpath         # canonical PATH
+    local cjail         # canonical JAIL
+    local subpath       # sub-directory part of PATH
+    cpath=$(readlink -m "$path")
+    cjail=$(readlink -m "$jail")
+    subpath=${cpath#$cjail/}
+    test "$subpath" == "$cpath" && return 1
     return 0
 }
 

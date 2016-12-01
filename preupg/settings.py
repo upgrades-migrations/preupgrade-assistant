@@ -104,7 +104,7 @@ postmigrate_dir = "postmigrate.d"
 preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
                    'hooks', kickstart_dir, postupgrade_dir, 'common',
                    'preupgrade-scripts', 'noauto_postupgrade.d',
-                   postmigrate_dir]
+                   postmigrate_dir, 'storage']
 
 DOC_DIR = '/usr/share/doc/preupgrade-assistant/'
 PREUPG_README = 'README'
