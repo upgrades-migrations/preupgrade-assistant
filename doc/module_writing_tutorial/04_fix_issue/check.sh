@@ -4,13 +4,6 @@
 
 #END GENERATED SECTION
 
-#
-# The whole section above is processed and modified by the preupg-xccdf-compose
-# script, according to the contents of the INI file (in this case it is the
-# content.ini file). In addition, the LICENSE used by the Preupgrade Assistant
-# is inserted.
-#
-
 ##
 # Long story short:
 #

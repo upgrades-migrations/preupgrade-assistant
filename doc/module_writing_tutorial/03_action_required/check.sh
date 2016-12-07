@@ -4,28 +4,24 @@
 
 #END GENERATED SECTION
 
-#
-# The whole section above is processed and modified by the preupg-xccdf-compose
-# script, according to the contents of the INI file (in this case it is the
-# content.ini file). In addition, the LICENSE used by the Preupgrade Assistant
-# is inserted.
-#
 
 ##
 # Briefly:
-#   In case a manual inspection, check or action BEFORE the upgrade is needed,
-#   do the following things:
+#   This module script example is applicable for the scenario where any manual
+#   action or inspection BEFORE the upgrade is needed. The following is the
+#   minimum such module should contain:
 #     1) provide a text in $SOLUTION_FILE: a description of the problem and
 #        remediation instructions
 #     2) use "log_high_risk" to provide a short message that a problem was
-#        found
+#        found (Preupgrade Assistant requires the risk to be set to high
+#        in this scenario)
 #     3) exit by "exit_failed" to inform preupg, that something unusual
 #        happened
-#           - or: exit $RESULT_FAILED
+#           - or: "exit $RESULT_FAILED" which does the same as the above
 #
 
 # So now you know that the foo RPM package is installed (because you set 'foo'
-# in the "applies_to" option in the content.ini file). In this example, if the
+# in the "applies_to" option in the module.ini file). In this example, if the
 # $foo_conf file exists and if it contains an "explode_on_new_system"
 # substring, you are informed that an action is required before the upgrade:
 foo_conf="/etc/preupg-foo-example"

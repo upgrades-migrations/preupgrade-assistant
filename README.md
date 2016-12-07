@@ -25,6 +25,16 @@ Preupgrade assistant performs assessment of the system from the "upgradeability"
 
 Just run ./preupg. But with root priviledges because of preupg binary needs to have an access to all files.
 
+## Module writting tutorial
+
+To learn how to write modules for the Preupgrade Assistant, please go through
+the tutorial located in the doc/module_writing_tutorial, reading through
+the contents of the subfolders in the numerical order (01, 02, ..).
+
+The tutorial will be kept up to date according to changes in Preupgrade assistant
+and provided API and probably will be spread continuosly to describe best practices
+for writing of modules.
+
 ## Contribute
 
 See our guidelines on [how to contribute](https://github.com/upgrades-migrations/preupgrade-assistant/wiki/Contribute) to this project.

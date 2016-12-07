@@ -5,9 +5,9 @@
 #END GENERATED SECTION
 
 #
-# The whole section above is processed and modified by the preupg-xccdf-compose
-# script, according to the contents of the INI file (in this case it is the
-# content.ini file).
+# The whole section above is required inside the check script as it is
+# processed and modified by the preupg-xccdf-compose script, according to the
+# contents of the INI file (in this case it is the module.ini file).
 # In addition, the LICENSE used by the Preupgrade Assistant is inserted.
 #
 
@@ -23,6 +23,10 @@ log_info "You are running your first module. Congratulations. See the report for
 # Usually there are cases when you want to add more information to the solution
 # file. For example, you want to check if you have installed the
 # preupgrade-assistant package or you are using the upstream source code.
+#
+# Used $SOLUTION_FILE is a variable provided by Preupgrade Assistant API and
+# it points to a filename mentioned in the solution_text option within
+# the module INI file.
 #
 if is_pkg_installed "preupgrade-assistant"; then
   log_info "You have installed the preupgrade-assistant package."
