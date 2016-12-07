@@ -7,7 +7,7 @@ import shutil
 from xml.etree import ElementTree
 
 from distutils import dir_util
-from preupg.xml.compose import ComposeXML
+from preupg.xmlgen.compose import ComposeXML
 from preupg import settings
 from preupg.utils import FileHelper, SystemIdentification
 from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
