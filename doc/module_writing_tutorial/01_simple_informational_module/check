@@ -24,7 +24,7 @@ log_info "You are running your first module. Congratulations. See the report for
 # file. For example, you want to check if you have installed the
 # preupgrade-assistant package or you are using the upstream source code.
 #
-# Used $SOLUTION_FILE is a variable provided by Preupgrade Assistant API and
+# The used $SOLUTION_FILE variable is provided by the Preupgrade Assistant API and
 # it points to a filename mentioned in the solution_text option within
 # the module INI file.
 #
