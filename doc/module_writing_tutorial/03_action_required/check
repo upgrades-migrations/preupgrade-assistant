@@ -1,0 +1,43 @@
+#!/bin/bash
+
+. /usr/share/preupgrade/common.sh
+
+#END GENERATED SECTION
+
+
+##
+# Briefly:
+#   This module script example is applicable for the scenario where a manual
+#   action or inspection BEFORE the upgrade is needed. The following list is the
+#   minimum that you should do:
+#     1) Provide a text in $SOLUTION_FILE: a description of the problem and
+#        remediation instructions.
+#     2) Use "log_high_risk" to provide a short message that a problem was
+#        found (Preupgrade Assistant requires the risk to be set to high
+#        in this scenario).
+#     3) Exit by "exit_failed" to inform preupg, that something unusual
+#        happened
+#           - or: "exit $RESULT_FAILED" which does the same as the above.
+#
+
+# So now you know that the foo RPM package is installed (because you set 'foo'
+# in the "applies_to" option in the module.ini file). In this example, if the
+# $foo_conf file exists and if it contains an "explode_on_new_system"
+# substring, you are informed that an action is required before the upgrade:
+foo_conf="/etc/preupg-foo-example"
+if [[ -e "$foo_conf" ]] && grep -q "explode_on_new_system" "$foo_conf"; then
+  log_high_risk "Found a dangerous option in $foo_conf."
+  {
+    echo -n "The $foo_conf config file of the foo package contains a dangerous"
+    echo -n " option 'explode_on_new_system', which will blow up your machine"
+    echo -n " when you keep it. Remove the option from the file before"
+    echo    " the upgrade to prevent your machine from exploding."
+  } >> "$SOLUTION_FILE"
+
+  exit_failed
+fi
+
+#
+# Again, when there is not an issue anymore, exit by "exit_pass".
+#
+exit_pass
