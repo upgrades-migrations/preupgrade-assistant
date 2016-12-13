@@ -1,0 +1,30 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+
+import os
+import argparse
+
+from preupg import xml_to_json
+
+
+def main():
+    parser = argparse.ArgumentParser(prog='preupg-xml-to-json',
+                                     description='''
+                                     PreupgradeAssistant tool
+                                     to convert XML result into JSON''')
+    parser.add_argument('source', help='XML file for conversion')
+    parser.add_argument('dest', nargs='?', help='destination file or dir')
+    args = parser.parse_args()
+
+    if args.dest is None:
+        args.dest = os.path.join(os.getcwd(), 'result.json')
+    else:
+        if os.path.isdir(args.dest):
+            args.dest = os.path.join(os.path.realpath(args.dest),
+                                     'result.json')
+    convertor = xml_to_json.XmlJsonConverter(args.source)
+    with open(args.dest, 'w') as json_file:
+        json_file.write(convertor.convert())
+
+if __name__ == '__main__':
+    main()

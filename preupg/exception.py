@@ -29,3 +29,24 @@ class EmptyTagIniFileError(RuntimeError):
     """
 
     pass
+
+
+class MissingElementException(Exception):
+    """
+    Element in xml file does not exist
+    """
+    pass
+
+
+class EmptyTextException(Exception):
+    """
+    Text inside element in empty
+    """
+    pass
+
+
+class AttrNotFoundException(Exception):
+    """
+    Searched attribute does not exist
+    """
+    pass
