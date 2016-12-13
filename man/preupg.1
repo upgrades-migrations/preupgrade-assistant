@@ -71,17 +71,11 @@ Specifies the destination architecture for migrations. Allowed options are: i386
 
 Possible return values are:
 
-\fB0\fP - preupg works properly and the modules exit with results PASS.
+\fB0\fP - preupg works properly and modules exit with the following results: PASS, FIXED, INFORMATIONAL, NEEDS_INSPECTION, NOT_APPLICABLE.
 
-\fB10\fP - preupg works properly but modules finish with 10. Modules exit with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
+\fB1\fP - preupg works properly but at least one module finishes with NEEDS_ACTION result.
 
-\fB11\fP - preupg works properly but modules finish with 11. Modules exit with results INFORMATIONAL.
-
-\fB12\fP - preupg works properly but modules finish with 12. Modules exit with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
-
-\fB13\fP - preupg works properly but modules finish with 13. Modules exit with results FAILED.
-
-\fB15\fP - preupg works properly but modules finish with 15. Modules exit with results ERROR.
+\fB2\fP - preupg works properly but at least one module finishes with FAIL or ERROR result.
 
 \fB20\fP - preupg cannot find a proper upgrade scenario.
 
