@@ -142,7 +142,7 @@ fi
 # ok, let's pretend that when a naughty-foo-cottage subpackage is installed,
 # we will want to install a naughty-foo-house on the new system
 if is_pkg_installed "naughty-foo-house"; then
-  log_info "The 'naughty-foo-cottage' package has been split on the new system. A 'naughty-foo-house' package will be installed."
+  log_info "Functionality of the 'naughty-foo-cottage' package has been split into 'naughty-foo-cottage' and 'naughty-foo-house'.  The 'naughty-foo-house' package will be installed to preserve all capabilities."
   echo -n "The naughty-foo-cottage package has been split on the new system"
   echo -n " and a part of the current funcionality is provided by the"
   echo -n " naughty-foo-house package. The new package will be installed"
