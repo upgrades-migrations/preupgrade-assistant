@@ -1,6 +1,6 @@
 # preupgrade-assistant
 
-[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) [![GitLab build status](https://gitlab.com/phracek/preupgrade-assistant/badges/master/build.svg)](https://gitlab.com/phracek/preupgrade-assistant/commits/master) ![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)
+[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) [![GitLab build status](https://gitlab.com/phracek/preupgrade-assistant/badges/master/build.svg)](https://gitlab.com/phracek/preupgrade-assistant/commits/master) [![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)](https://preupg.000webhostapp.com/master_build_log.html)
 
 Preupgrade assistant performs assessment of the system from the "upgradeability" point of view.
 
