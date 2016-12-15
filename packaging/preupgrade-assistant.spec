@@ -1,30 +1,28 @@
-%{!?scl:%global pkg_name %{name}}
-
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
 %global         django_version  1.5.5
 %global         south_version   0.8.4
-%bcond_without  ui
-%bcond_without  tools
+%global         not_fedora ! 0%{?fedora:1}
+%global         build_ui %{not_fedora}
 
 Name:           preupgrade-assistant
 Version:        2.2.0
 Release:        1%{?dist}
-Summary:        Preupgrade assistant
+Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
 License:        GPLv3+
 Source0:        %{name}-%{version}.tar.gz
+%if %{not_fedora}
 Source1:        Django-%{django_version}.tar.gz
 Source2:        south-%{south_version}.tar.gz
+Source3:        scripts.txt
+%endif # not_fedora
 
-BuildRoot:      %{_tmppath}/%{pkg_name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  rpm-devel
 BuildRequires:  python-devel
-%if %{?_with_check:1}%{!?_with_check:0}
-BuildRequires:  perl-XML-XPath
-%endif
 BuildRequires:  python-setuptools
 BuildRequires:  rpm-python
 BuildRequires:  diffstat
@@ -49,17 +47,17 @@ Conflicts:      %{name}-tools < 2.1.0-1
 Obsoletes:      %{name} < 2.1.3-1
 
 %description
-Preupgrade assistant analyses the system to assess the feasibility of
-upgrading the system to a new major version. Such analysis includes check for
+Preupgrade Assistant analyses the system to assess the feasibility of
+upgrading the system to a new major version. Such analysis includes a check for
 removed packages, packages replaced by partially incompatible packages, changes
-in libraries, users and groups and various services. Report of this analysis
-can help admins with the system upgrade - by identification of potential
-troubles and by mitigating some of the incompatibilities. Data gathered
-by Preupgrade Assistant can be used for in-place upgrade or migration of the
-system. Migrated system is a new system installation retaining as much of the
-old system setup as possible.
+in libraries, users and groups, and various other services. A report of this
+analysis can help admins with the system upgrade by identification of potential
+troubles and by mitigating some of the incompatibilities. The data gathered
+by Preupgrade Assistant can be used for the in-place upgrade or migration of
+the system, where the migration means a new system installation that retains as
+much of the old system setup as possible.
 
-%if 0%{?with_ui}
+%if %{build_ui}
 %package ui
 Summary:    Preupgrade Assistant Web Based User Interface
 Group:      System Environment/Libraries
@@ -69,74 +67,63 @@ Requires:   mod_wsgi
 Requires:   %{name} = %{version}-%{release}
 
 %description ui
-Graphical interface for preupgrade assistant. This can be used
+Graphical interface for Preupgrade Assistant. This can be used
 for inspecting results.
-%endif # with_ui
+%endif # build_ui
 
-%if 0%{?with_tools}
 %package tools
-Summary:    Preupgrade Assistant tools for generating contents
+Summary:    Preupgrade Assistant tools for generating modules
 Group:      System Environment/Libraries
 Provides:   preupg-xccdf-compose = %{version}-%{release}
 Provides:   preupg-create-group-xml = %{version}-%{release}
 Requires:   %{name} = %{version}-%{release}
 Obsoletes:  %{name}-tools < 2.1.3-1
 %description tools
-Tools for generating contents used by preupgrade assistant. User
-can specify only INI file and scripts and other stuff needed by
+Tools for building/generating modules used by Preupgrade Assistant.
+User can specify only INI file and scripts and other stuff needed by
 OpenSCAP is generated automatically.
-%endif # with_tools
 
 %prep
-# Update timestamps on the files touched by a patch, to avoid non-equal
-# .pyc/.pyo files across the multilib peers within a build, where "Level"
-# is the patch prefix option (e.g. -p1)
-UpdateTimestamps() {
-    Level=$1
-    PatchFile=$2
-    # Locate the affected files:
-    for f in $(diffstat $Level -l $PatchFile); do
-        # Set the files to have the same timestamp as that of the patch:
-        touch -r $PatchFile $f
-    done
-}
-
 %setup -n %{name}-%{version} -q
-%setup -n %{name}-%{version} -D -T -a 1
-%setup -n %{name}-%{version} -D -T -a 2
+
+%if %{build_ui}
+# Unpack UI-related tarballs
+%setup -q -n %{name}-%{version} -D -T -a 1
+%setup -q -n %{name}-%{version} -D -T -a 2
+%endif # not Fedora
 
 %build
 %{__python} setup.py build
 
-%if 0%{?with_ui}
+%if %{build_ui}
 pushd Django-%{django_version}
 %{__python} setup.py build
 popd
 pushd South-%{south_version}
 %{__python} setup.py build
 popd
-%endif # with_ui
+%endif # build_ui
 
 %check
-# Swith off tests until issue with finding /etc/preupgrade-assistant.conf
+# Switch off tests until issue with finding /etc/preupgrade-assistant.conf
 # is resolved
 #%%{__python} setup.py test
 
 %install
-install -d -m 755 $RPM_BUILD_ROOT%{_localstatedir}/log/preupgrade
-
 %{__python} setup.py install --skip-build --root=$RPM_BUILD_ROOT
 
+install -d -m 755 $RPM_BUILD_ROOT%{_localstatedir}/log/preupgrade
 install -d -m 755 $RPM_BUILD_ROOT%{_mandir}/man1
 install -p man/preupg.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupgrade-assistant-api.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupg-content-creator.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 
-####################
-# WEB-UI packaging #
-####################
-%if 0%{?with_ui}
+%if %{not_fedora}
+cp %{SOURCE3} $RPM_BUILD_ROOT%{_datadir}/preupgrade/data/preassessment/
+%endif # not_fedora
 
+%if %{build_ui}
+######### UI packaging #######################################
 mkdir -m 644 -p ${RPM_BUILD_ROOT}%{_sharedstatedir}/preupgrade/{results,upload,static}
 touch ${RPM_BUILD_ROOT}%{_sharedstatedir}/preupgrade/{db.sqlite,secret_key}
 
@@ -148,10 +135,6 @@ sed \
     -e 's;WSGI_PATH;%{python_sitelib}/preupg/ui/wsgi.py;g' \
     -e 's;STATIC_PATH;%{_sharedstatedir}/preupgrade/static;g' \
     -i ${RPM_BUILD_ROOT}%{_sysconfdir}/httpd/conf.d/99-preup-httpd.conf.{private,public}
-
-##############################
-# Django and South packaging #
-##############################
 
 # install django
 pushd Django-%{django_version}
@@ -174,57 +157,47 @@ mkdir   ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/ui/lib
 mv      ${RPM_BUILD_ROOT}%{python_sitelib}/{django,south} \
         ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/ui/lib/
 
-%else # with_ui
-
-# If UI is not build up
+######### END UI packaging ################################
+%else # do not build UI
+# remove UI-related files
 rm -rf  ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/ui/
 rm -f   ${RPM_BUILD_ROOT}%{_bindir}/preupg-ui-manage
+rm -f   ${RPM_BUILD_ROOT}%{_sysconfdir}/httpd/conf.d/99-preup-httpd.conf.*
+rm -f   ${RPM_BUILD_ROOT}%{_datadir}/preupgrade/README.ui
+%endif # build_ui
 
-%endif # with_ui
+######### FILELISTS #######################################
+# generate file lists for cleaner files section
+get_file_list() {
+    find ${RPM_BUILD_ROOT} -type $1 | grep -o $2 \
+        | grep -vE "$3" | sed "$4" >> $5
+}
+### preupgrade-assistant ###
+get_file_list f %{python_sitelib}/.*$  "preupg/(ui|creator)|\.pyc$" \
+    "s/\.py$/\.py\*/" preupg-filelist
+get_file_list d %{python_sitelib}/.*$ "preupg/(ui|creator)|\.pyc$" \
+    "s/^/\%dir /" preupg-filelist
+%if %{build_ui}
+### preupgrade-assistant-ui ###
+get_file_list f %{python_sitelib}/preupg/ui.*$ "/ui/settings.py|\.pyc$" \
+    "s/\.py$/\.py\*/" preupg-ui-filelist
+get_file_list d %{python_sitelib}/preupg/ui.*$ " " \
+    "s/^/\%dir /" preupg-ui-filelist
+%endif # build_ui
+######### END FILELISTS ###################################
 
-###########################################################
-## make special file lists for cleaner files section below
-## - only for files under %%{python_sitelib}/preupg
-########## preupgrade-assistant ###########################
-# now just files
-find ${RPM_BUILD_ROOT} -type f \
-    | grep -o "%{python_sitelib}/.*$" \
-    | grep -vE "preupg/(ui|creator)|\.pyc$" \
-    | sed "s/\.py$/\.py\*/" > preupg-filelist
-
-# now directories
-find ${RPM_BUILD_ROOT} -type d \
-    | grep -o "%{python_sitelib}/.*$" \
-    | grep -vE "preupg/(ui|creator)" \
-    | sed "s/^/\%dir /" >> preupg-filelist
-
-########## preupgrade-assistant-ui ########################
-# files
-find ${RPM_BUILD_ROOT} -type f \
-    | grep -o "%{python_sitelib}/preupg/ui.*$" \
-    | grep -vE "/ui/settings.py|\.pyc$" \
-    | sed "s/\.py$/\.py\*/" > preupg-ui-filelist
-
-# directories
-find ${RPM_BUILD_ROOT} -type d \
-    | grep -o "%{python_sitelib}/preupg/ui.*$" \
-    | sed "s/^/\%dir /" >> preupg-ui-filelist
-
-##########################################################
-# END FILELISTS
-##########################################################
-
+%if %{not_fedora}
+# clean section should not be used on Fedora per Guidelines
 %clean
 rm -rf $RPM_BUILD_ROOT
+%endif not_fedora
 
 %post
 /sbin/ldconfig
 
-######### IF WITH-UI ##############################
-%if 0%{?with_ui}
-
+######### UI (UN)INSTALLATION scriplets ###################
+%if %{build_ui}
 %post ui
-
 # populate DB and/or apply DB migrations
 su apache - -s /bin/bash -c "preupg-ui-manage syncdb --migrate --noinput" >/dev/null || :
 # collect static files
@@ -237,18 +210,17 @@ fi
 service httpd condrestart
 
 %postun ui
-
-# $1 holds the number of preupgrade-assistant-ui packages which will
-# be left on the system when the uninstallation completes.
+# $1 holds the number of preupgrade-assistant-ui
+# packages which will be left on the system when
+# the uninstallation completes.
 if [ "$1" == 0 ]; then
     # disallow httpd to run preupgrade ui
     setsebool httpd_run_preupgrade off
     # restart apache
     service httpd condrestart
 fi
-
-%endif # with_ui
-######### ENDIF WITH-UI ###########################
+%endif # build_ui
+######### END UI (UN)INSTALLATION scriplets ###############
 
 
 %postun -p /sbin/ldconfig
@@ -263,7 +235,6 @@ fi
 %dir %{_docdir}/%{name}
 %config(noreplace) %{_sysconfdir}/preupgrade-assistant.conf
 %{_sysconfdir}/bash_completion.d/preupg.bash
-#%%{python_sitelib}/*.egg-info
 %{_datadir}/preupgrade/data
 %{_datadir}/preupgrade/common.sh
 %doc %{_datadir}/preupgrade/README
@@ -272,7 +243,7 @@ fi
 %license %{_docdir}/%{name}/LICENSE
 %attr(0644,root,root) %{_mandir}/man1/preupg.*
 
-%if 0%{?with_ui}
+%if %{build_ui}
 %files ui -f preupg-ui-filelist
 %defattr(-,root,root,-)
 %attr(0755,root,root) %{_bindir}/preupg-ui-manage
@@ -283,9 +254,8 @@ fi
 %ghost %config(noreplace) %{_sharedstatedir}/preupgrade/db.sqlite
 %ghost %config(noreplace) %{_sharedstatedir}/preupgrade/secret_key
 %doc %{_datadir}/preupgrade/README.ui
-%endif # with_ui
+%endif # build_ui
 
-%if 0%{?with_tools}
 %files tools
 %defattr(-,root,root,-)
 %attr(0755,root,root) %{_bindir}/preupg-create-group-xml
@@ -294,7 +264,7 @@ fi
 %{python_sitelib}/preupg/creator/
 %attr(0644,root,root) %{_mandir}/man1/preupgrade-assistant-api.*
 %attr(0644,root,root) %{_mandir}/man1/preupg-content-creator.*
-%endif # with_tools
 
 %changelog
-
+* Wed Nov 16 2016 Michal Bocek <mbocek@redhat.com> - 2.2.0-1
+- Initial version of spec file in upstream
