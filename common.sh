@@ -212,40 +212,23 @@ _log() {
     #
     # general logging function
     #
-    # _log SEVERITY [COMPONENT] MESSAGE
+    # _log SEVERITY MESSAGE
     #
     # @SEVERITY: set it to one of INFO|ERROR|WARNING
-    # @COMPONENT: optional, relevant RHEL component
     # @MESSAGE: message to be logged
     #
-    # Note that if env variable $COMPONENT is defined, it may be omitted from
-    # parameters.
-    #
     local SEVERITY=$1 ; shift
-    if test -z "$COMPONENT"; then
-        # only message was passed
-        if test "$#" -eq 1; then
-            COMPONENT='[unknown-component]'
-        else
-            COMPONENT=$1 ; shift
-        fi
-    else
-        if test "$#" -eq 2; then
-            shift
-        fi
-    fi
 
-    echo "preupg.log.$SEVERITY: $COMPONENT: $1" >&2
+    echo "preupg.log.$SEVERITY: $1" >&2
 }
 
 log_debug() {
     #
     # log message to stdout with severity debug
     #
-    # log_debug(message, component_arg=None) -> None
+    # log_debug(message) -> None
     #
     # log message to stdout with severity debug
-    # if you would like to change component temporary, you may pass it as argument
     #
     # verbose information, may help with script debugging
     #
@@ -256,10 +239,9 @@ log_info() {
     #
     # log message to stdout with severity info
     #
-    # log_info(message, component_arg=None) -> None
+    # log_info(message) -> None
     #
     # log message to stdout with severity info
-    # if you would like to change component temporary, you may pass it as argument
     #
     # informational message
     #
@@ -270,10 +252,9 @@ log_error() {
     #
     # log message to stdout with severity error
     #
-    # log_error(message, component=None) -> None
+    # log_error(message) -> None
     #
     # log message to stdout with severity error
-    # if you would like to change component temporary, you may pass it as argument
     # use this severity if your script found something severe
     #
     # which may cause malfunction on new system
@@ -285,10 +266,9 @@ log_warning() {
     #
     # log message to stdout with severity warning
     #
-    # log_warning(message, component_arg=None) -> None
+    # log_warning(message) -> None
     #
     # log message to stdout with severity warning
-    # if you would like to change component temporary, you may pass it as argument
     #
     # important finding, administrator of system should be aware of this
     #
