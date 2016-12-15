@@ -1,0 +1,161 @@
+#!/bin/bash
+
+. /usr/share/preupgrade/common.sh
+
+#END GENERATED SECTION
+
+##
+# Long story short:
+#
+#    There are two ways to fix an issue automatically:
+#      1) Store modified config files in special directories to apply
+#         them later on the new system
+#         OR
+#      2) Create an executable script and store it in a special directory,
+#         so it will be executed during the post-upgrade phase
+#
+#      For both cases above you should log a message about the planned
+#          or completed action, so use "log_info" or "log_slight_risk".
+#      In the end (with no more issues present)
+#             exit by "exit_fixed".
+##
+
+##
+# Short story long:
+#
+# Do you remember the previous example about the required action? Could you
+# imagine that in such case (some options were deprecated or removed on the new
+# system and should have been removed from the configuration file), the action
+# can be done automatically? Of course only if you can do that safely.
+#
+# This module fixes a similar problem for the "naughty-foo" package:
+#  1) The option "obsoleted_option" has been renamed on the new system
+#     to "new_option"
+#     - nice, you can fix this in the config file safely.
+#  2) The second issue is about a "deprecated_option", which should be removed
+#     - you will just comment out such a line, but in that case the inspection
+#       is still recommended because you might need to modify your application
+#       because of the missing option.
+#  3) You found that for the correct functionality you need to install another
+#     package
+#     - you can resolve this by the post-upgrade script and say that the issue
+#       is fixed
+#
+
+###########################################################
+# FUNCTIONS AND VARIABLES                                 #
+###########################################################
+
+#
+# A special directory of the Preupgrade Assistant that should contain config
+# files that are compatible for the upgrade or migration to a new system
+# and you don't have to check it. See the manual.
+#
+PREUPG_CLEANCONFDIR="$VALUE_TMP_PREUPGRADE/cleanconf"
+
+#
+# The path to the config file
+#
+foo_conf="/etc/preupg-foo-example"
+
+#
+# The path to the backed up config file
+#
+dst_foo_conf="${PREUPG_CLEANCONFDIR}${foo_conf}"
+
+#
+# The name of the post-upgrade script
+#
+post_script="04_fix_issue_postupgrade.sh"
+
+#
+# The expected exit code
+#
+ret=$RESULT_PASS
+
+#
+# Set the expected exit code according to the given parameter and current value
+# of the $ret variable.
+#
+# @param  exit code; expected values are: $RESULT_FAIL, $RESULT_FIXED
+#
+set_result() {
+  case $1 in
+    $RESULT_FAIL)  ret=$1 ;;
+    $RESULT_FIXED) [ $ret -ne $RESULT_FAIL ] && ret=$1 ;;
+  esac
+}
+
+
+###########################################################
+# MAIN                                                    #
+###########################################################
+
+if [[ ! -e "$foo_conf" ]]; then
+  # The file is required, so log "error" and exit with "error" when the file doesn't
+  # exist.
+  log_error "The $foo_conf file doesn't exist but it is required by the naughty-foo package."
+  exit_error
+fi
+
+# case 1)
+if grep -q "obsoleted_option" "$foo_conf"; then
+  log_info "The 'obsoleted_option' in '$foo_conf' has been renamed on the new system to 'new_option'."
+
+  # Store the output file in a special directory together with its parents.
+  # Use the $PREUPG_CLEANCONFDIR directory for this purpose (see above). However,
+  # check first that the file hasn't been backed up already.
+  # (Provided that everything else is compatible; otherwise do
+  #  not use that directory and use the dirtyconf directory instead.)
+  [ -e "$dst_foo_conf" ] \
+    || cp -ar "$foo_conf" "$PREUPG_CLEANCONFDIR"
+  sed -ir 's/^[[:space:]]*obsoleted_option([[:space:]]|$)/new_option /' \
+    > "$dst_foo_conf"
+  {
+    echo -n "The \"obsoleted_option\" in the $foo_conf file has been renamed"
+    echo -n " to \"new_option\" on the new system. This has been fixed"
+    echo -n " and the fixed configuration file will be applied on the new"
+    echo    " system automatically."
+    echo
+  } >> "$SOLUTION_FILE"
+  set_result $RESULT_FIXED
+fi
+
+# case 2)
+if grep -q "deprecated_option" "$foo_conf"; then
+  log_medium_risk "The 'deprecated_option' is used inside '$foo_conf'."
+
+  if [ -e "$dst_foo_conf" ]; then
+    || cp -ar "$foo_conf" "$PREUPG_CLEANCONFDIR"
+  sed -ir 's/^[[:space:]]*deprecated_option([[:space:]]|$)/#deprecated_option /' \
+    > "$dst_foo_conf"
+  {
+    echo -n "The \"deprecated_option\" option has been removed from the new"
+    echo -n " system. The option has been commented out. Check the correct"
+    echo -n " functionality of your applications."
+    echo
+  } >> "$SOLUTION_FILE"
+  set_result $RESULT_FAIL
+fi
+
+# case 3)
+# ok, let's pretend that when a naughty-foo-cottage subpackage is installed,
+# we will want to install a naughty-foo-house on the new system
+if is_pkg_installed "naughty-foo-house"; then
+  log_info "Functionality of the 'naughty-foo-cottage' package has been split into 'naughty-foo-cottage' and 'naughty-foo-house'.  The 'naughty-foo-house' package will be installed to preserve all capabilities."
+  echo -n "The naughty-foo-cottage package has been split on the new system"
+  echo -n " and a part of the current funcionality is provided by the"
+  echo -n " naughty-foo-house package. The new package will be installed"
+  echo    " automatically by the post-upgrade script."
+  echo
+  cp -a "$post_script" "$POSTUPGRADE_DIR"
+  chmod +x "${POSTUPGRADE_DIR}/${post_script}"
+  set_result $RESULT_FIXED
+fi
+
+
+#
+# Use the expected exit code to provide the info about the script result.
+#
+exit $ret
+

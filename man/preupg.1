@@ -71,19 +71,11 @@ Specifies the destination architecture for migrations. Allowed options are: i386
 
 Possible return values are:
 
-\fB0\fP - preupg works properly and the modules exit with results PASS.
+\fB0\fP - preupg works properly and modules exit with the following results: PASS, FIXED, INFORMATIONAL, NEEDS_INSPECTION, NOT_APPLICABLE.
 
-\fB10\fP - preupg works properly but modules finish with 10. Modules exit with results NOT_APPLICABLE, NOT_CHECKED, NOT_SELECTED.
+\fB1\fP - preupg works properly but at least one module finishes with NEEDS_ACTION result.
 
-\fB11\fP - preupg works properly but modules finish with 11. Modules exit with results INFORMATIONAL.
-
-\fB12\fP - preupg works properly but modules finish with 12. Modules exit with results FIXED, NEEDS_INSPECTION or NEEDS_ACTION.
-
-\fB13\fP - preupg works properly but modules finish with 13. Modules exit with results FAILED.
-
-\fB14\fP - preupg works properly but modules finish with 14. Modules exit with results UNKNOWN.
-
-\fB15\fP - preupg works properly but modules finish with 15. Modules exit with results ERROR.
+\fB2\fP - preupg works properly but at least one module finishes with FAIL or ERROR result.
 
 \fB20\fP - preupg cannot find a proper upgrade scenario.
 
@@ -99,7 +91,7 @@ Possible return values are:
 
 \fB26\fP - You specified a text convertor which is not allowed. Allowed convertors are \fBw3m\fP, \fBlynx\fP and \fBelinks\fP.
 
-\fB27\fP - The \fB/usr/share/preupgrade/common/scripts.txt\fP file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
+\fB27\fP - The \fB/usr/share/preupgrade/data/preassessment/scripts.txt\fP file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
 
 \fB28\fP - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
 

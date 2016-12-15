@@ -1,0 +1,27 @@
+#!/usr/bin/python2 -tt
+# -*- coding: utf-8 -*-
+
+
+import sys
+from preupg.kickstart.cli import CLIKickstart
+from preupg.kickstart.conf import ConfKickstart
+from preupg.kickstart.application import KickstartGenerator
+from preupg import settings
+
+
+def main():
+    cli_kickstart = CLIKickstart()
+    conf = ConfKickstart(cli_kickstart.opts, settings, cli_kickstart)
+    app = KickstartGenerator(conf, settings.KS_DIR,
+                             settings.KS_PATH)
+    ret = 0
+    try:
+        app.main()
+    except KeyboardInterrupt:
+        print ('\nKickstart generation was interrupted by user.\n')
+        return 1
+    return ret
+
+
+if __name__ == "__main__":
+    sys.exit(main())

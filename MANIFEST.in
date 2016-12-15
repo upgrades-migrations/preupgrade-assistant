@@ -1,27 +1,19 @@
-include MANIFEST.in
-include Makefile
 include common.sh
-include README*
 include LICENSE
-include preupg premigrate
-include preupg.bash
-include preupg-content-creator
+include MANIFEST.in
 
-recursive-include common *
-recursive-include kickstart *
-recursive-include man *
-recursive-include preuputils *
-recursive-include postupgrade.d *
-recursive-include scripts *.sh
+include           bin/*
+recursive-include data *
+recursive-include doc *
+recursive-include etc *
+include           man/*
+include           preupg/*.py
+include           preupg/creator/*
+recursive-include preupg/kickstart *
+include           preupg/ui/licenses/*
+include           preupg/ui/report/fixtures/initial_data.json
+recursive-include preupg/ui/static *
+recursive-include preupg/ui/templates *
+include           preupg/xmlgen/*
 recursive-include tests *
-recursive-include preup_creator *
-recursive-include openscap *
-recursive-include templates *
-
-include preup_ui/licenses/*
-include preup_ui/report/fixtures/initial_data.json
-include preup-conf/preupgrade-assistant.conf
-include ui-conf/99-preup-httpd.conf.private
-include ui-conf/99-preup-httpd.conf.public
-recursive-include preup_ui/static *
-recursive-include preup_ui/templates *
+include           tools/*

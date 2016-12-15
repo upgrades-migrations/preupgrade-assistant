@@ -1,0 +1,106 @@
+#!/usr/bin/python2
+from __future__ import print_function
+import os
+import sys
+import optparse
+import shutil
+from xml.etree import ElementTree
+
+from distutils import dir_util
+from preupg.xmlgen.compose import ComposeXML
+from preupg import settings
+from preupg.utils import FileHelper, SystemIdentification
+from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.logger import *
+
+try:
+    from xml.etree.ElementTree import ParseError
+except ImportError:
+    from xml.parsers.expat import ExpatError as ParseError
+
+
+def main():
+    parser = optparse.OptionParser(usage="%prog [options] dirname", description="Create XML files for OpenSCAP")
+    parser.add_option('-g', '--group',
+                      help='Generate only group.xml file.',
+                      action='store_true'
+                      )
+    opts, args = parser.parse_args()
+
+    if len(args) > 1 or len(args) == 0:
+        print('Specify just one directory with INI file.')
+        parser.print_help()
+        sys.exit(1)
+
+    if not os.path.exists(args[0]):
+        print('Dir %s does not exists.' % args[0])
+        sys.exit(1)
+
+    try:
+        LoggerHelper.add_file_handler(logger_debug,
+                                      settings.preupg_log,
+                                      formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+                                                                  ":%(lineno)s %(funcName)s: %(message)s"),
+                                      level=logging.DEBUG)
+    except (IOError, OSError):
+        logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+
+    if args[0].endswith('/'):
+        args[0] = args[0][:-1]
+    # License text will not be pregenerated
+    found = 0
+    for d in os.listdir(args[0]):
+        if d.endswith(".ini"):
+            found = 1
+    if not found:
+        print ('In directory %s was not found any INI file.' % args[0])
+        sys.exit(1)
+
+    dir_name = SystemIdentification.get_valid_scenario(args[0])
+    if dir_name is None:
+        print ('Dir does not contain proper scenario.')
+        sys.exit(1)
+    index = 0
+    for i, d in enumerate(args[0].split(os.path.sep)):
+        if d == dir_name:
+            index = i
+            break
+    dir_name = '/'.join(args[0].split(os.path.sep)[:index+1])
+    logger_debug.debug(dir_name)
+    result_dirname = dir_name + settings.results_postfix
+    logger_debug.debug("Result dir_name '%s'", result_dirname)
+    if os.path.exists(result_dirname):
+        shutil.rmtree(result_dirname)
+    dir_util.copy_tree(dir_name, result_dirname)
+    dir_name = args[0].replace(dir_name, result_dirname)
+    filename = "all-xccdf.xml"
+    settings.autocomplete = False
+    template_file = ComposeXML.get_template_file()
+    target_tree = None
+    try:
+        target_tree = ElementTree.parse(template_file).getroot()
+    except IOError:
+        print ('Problem with reading template.xml file')
+        sys.exit(1)
+    try:
+        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name), content=os.path.basename(dir_name))
+    except MissingHeaderCheckScriptError:
+        sys.exit(1)
+    except MissingFileInContentError:
+        sys.exit(1)
+    except MissingTagsIniFileError:
+        sys.exit(1)
+
+    try:
+        # must be encoded by ElementTree!
+        data = ElementTree.tostring(target_tree, "utf-8")
+        FileHelper.write_to_file(os.path.join(dir_name, filename), "wb", data, False)
+        print ('Generated report file for preupgrade-assistant is: %s' % ''.join(os.path.join(dir_name, filename)))
+    except IOError:
+        print ("Problem with writing file %s." % filename)
+
+
+    #oscap_group.write_profile_xml(target_tree)
+
+if __name__ == "__main__":
+    main()

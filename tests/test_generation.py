@@ -6,10 +6,9 @@ import shutil
 
 import os
 
-from preuputils.compose import XCCDFCompose, ComposeXML
-from preuputils import variables
-from preup.utils import FileHelper
-from preup import settings
+from preupg.xmlgen.compose import XCCDFCompose, ComposeXML
+from preupg.utils import FileHelper
+from preupg import settings
 
 try:
     import base
@@ -17,7 +16,7 @@ except ImportError:
     import tests.base as base
 
 FOO_DIR = 'FOOBAR6_7'
-FOO_RESULTS = FOO_DIR + variables.result_prefix
+FOO_RESULTS = FOO_DIR + settings.results_postfix
 
 
 class TestContentGenerate(base.TestCase):

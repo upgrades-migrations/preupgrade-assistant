@@ -6,22 +6,14 @@ import shutil
 import stat
 import tempfile
 
-from xml.etree import ElementTree
-try:
-    from xml.etree.ElementTree import ParseError
-except ImportError:
-    from xml.parsers.expat import ExpatError as ParseError
-
-from preuputils.compose import ComposeXML
-from preup import xccdf
-from preup import settings
-from preuputils import variables
-from preuputils.xml_utils import XmlUtils
-from preuputils.oscap_group_xml import OscapGroupXml
-from preup.utils import FileHelper
-from preup.xml_manager import html_escape, html_escape_string
-from preup.exception import MissingFileInContentError, MissingTagsIniFileError, EmptyTagIniFileError
-
+from preupg.xmlgen.compose import ComposeXML
+from preupg import xccdf
+from preupg import settings
+from preupg.xmlgen.xml_utils import XmlUtils
+from preupg.xmlgen.oscap_group_xml import OscapGroupXml
+from preupg.utils import FileHelper
+from preupg.xml_manager import html_escape, html_escape_string
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 try:
     import base
 except ImportError:
@@ -38,13 +30,14 @@ class TestXMLCompose(base.TestCase):
 
     def setUp(self):
         dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
-        self.result_dir = os.path.join(dir_name+variables.result_prefix)
+        self.result_dir = os.path.join(dir_name + settings.results_postfix)
         dir_name = os.path.join(dir_name, 'dummy')
         if os.path.exists(self.result_dir):
             shutil.rmtree(self.result_dir)
         shutil.copytree(dir_name, self.result_dir)
 
         settings.autocomplete = False
+        settings.data_dir = os.path.join(os.getcwd(), "data")
         self.target_tree = ComposeXML.run_compose(self.result_dir)
 
     def tearDown(self):
@@ -114,7 +107,9 @@ class TestScriptGenerator(base.TestCase):
     test_ini = []
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests",
+                                    "FOOBAR6_7" + settings.results_postfix,
+                                    "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -212,7 +207,9 @@ class TestXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dirname = os.path.join("tests", "FOOBAR6_7" + variables.result_prefix, "test")
+        self.dirname = os.path.join("tests",
+                                    "FOOBAR6_7" + settings.results_postfix,
+                                    "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)

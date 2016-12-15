@@ -70,8 +70,6 @@ There are several directories located in \fB/root/preupgrade\fP which are used b
 
 \fBexit_fixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility. No manual review is expected but the user should be notified..
 
-\fBexit_unknown\fP - Could not tell what happened. Do not know when this should be used ;).
-
 \fBexit_error\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in an "assert way", not as a common result.
 
 \fBexit_fail\fP - The test failed. Moving to a new release with this configuration will result in malfunction. Use when you expect some action from the user - when the migration solution was not completed automatically.
@@ -86,8 +84,6 @@ Your script should also tell the administrator how risky it is to upgrade your c
 \fBinformational\fP - The rule was evaluated by the checking engine, but is not to be scored. Ideal for informational results, which have a "migration guide" chapter style.
 
 \fBfixed\fP - The rule failed but was fixed later. Ideal if you automatically fixed some configuration file/incompatibility. No manual review is expected but the user should be notified.
-
-\fBunknown\fP - Could not tell what happened. Do not know when this should be used ;).
 
 \fBerror\fP - An error occurred and the test could not be completed because the script failed while doing its job. Should be used in an "assert way", not as a common result.
 

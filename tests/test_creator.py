@@ -10,8 +10,8 @@ try:
 except ImportError:
     import tests.base as base
 
-from preup.creator.ui_helper import UIHelper
-from preup.utils import FileHelper
+from preupg.creator.ui_helper import UIHelper
+from preupg.utils import FileHelper
 
 
 def load_file(filename):
@@ -113,7 +113,7 @@ class TestCreator(base.TestCase):
                       '# -*- Mode: Python; python-indent: 8; indent-tabs-mode: t -*-', '',
                       'import sys',
                       'import os', '',
-                      'from preup.script_api import *', '',
+                      'from preupg.script_api import *', '',
                       '#END GENERATED SECTION', '',
                       "### For more information see 'man preupg-content-creator' or 'man preupgrade-assistant-api'."]
         self.assertTrue(exp_script, lines)

@@ -1,0 +1,30 @@
+#!/usr/bin/python2 -tt
+# -*- coding: utf-8 -*-
+
+
+import sys
+from preupg.cli import CLI
+from preupg.application import Application
+from preupg.conf import Conf
+from preupg import settings
+
+#preupgrade_binary="/usr/bin/preupgrade-oscap"
+
+
+def main():
+    cli = CLI()
+    conf = Conf(cli.opts, settings, cli)
+    app = Application(conf)
+    ret = 0
+    if cli.opts.debug:
+        ret = app.run()
+    else:
+        try:
+            ret = app.run()
+        except Exception as ex:
+            cli.parser.error(str(ex))
+    return ret
+
+
+if __name__ == "__main__":
+    sys.exit(main())
