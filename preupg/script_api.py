@@ -9,12 +9,6 @@ Best way is to import all functions from this module:
 
 from script_api import *
 
-First thing to do is to set component:
-
-set_component('httpd')
-
-This is used when logging.
-
 These functions are available:
 
 * logging functions -- log_*
@@ -22,7 +16,6 @@ These functions are available:
 * logging risk functions -- log_*_risk
  * log risk level -- so administrator know how risky is to inplace upgrade
 * get_dest_dir -- get dir for storing configuration files
-* set_component -- set component's name (for logging purposes)
 * exit_* -- terminate execution with appropriate exit code
 """
 
@@ -52,7 +45,6 @@ __all__ = (
     'log_slight_risk',
 
     'get_dest_dir',
-    'set_component',
 
     'exit_error',
     'exit_fail',
@@ -286,9 +278,6 @@ USER_CONFIG_FILE = 0
 #
 PREUPG_API_VERSION = 1
 
-component = "[unknown-component]"
-
-
 ################
 # RISK LOGGING #
 ################
@@ -341,70 +330,60 @@ def log_slight_risk(message):
 # STDOUT LOGGING #
 ##################
 
-def _log(severity, message, component_arg=None):
+def _log(severity, message):
     """
     general logging function
 
     :param severity: set it to one of INFO|ERROR|WARNING
     :param message:message to be logged
-    :param component_arg: optional, relevant RHEL component
     :return:
-
-    Note that if env variable $COMPONENT is defined, it may be omitted from
-    parameters.
     """
-    global component
-    comp_show = component_arg or component
-    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
+    print("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
 
 
-def log_error(message, component_arg=None):
+def log_error(message):
     """
-    log_error(message, component=None) -> None
+    log_error(message) -> None
 
     log message to stdout with severity error
-    if you would like to change component temporary, you may pass it as argument
 
     use this severity if your script found something severe
     which may cause malfunction on new system
     """
-    _log('ERROR', message, component_arg)
+    _log('ERROR', message)
 
 
-def log_warning(message, component_arg=None):
+def log_warning(message):
     """
-    log_warning(message, component_arg=None) -> None
+    log_warning(message) -> None
 
     log message to stdout with severity warning
-    if you would like to change component temporary, you may pass it as argument
 
     important finding, administrator of system should be aware of this
     """
-    _log('WARNING', message, component_arg)
+    _log('WARNING', message)
 
 
-def log_info(message, component_arg=None):
+def log_info(message):
     """
-    log_info(message, component_arg=None) -> None
+    log_info(message) -> None
 
     log message to stdout with severity info
-    if you would like to change component temporary, you may pass it as argument
 
     informational message
     """
-    _log('INFO', message, component_arg)
+    _log('INFO', message)
 
 
-def log_debug(message, component_arg=None):
+def log_debug(message):
     """
-    log_debug(message, component_arg=None) -> None
+    log_debug(message) -> None
 
     log message to stdout with severity debug
-    if you would like to change component temporary, you may pass it as argument
 
     verbose information, may help with script debugging
     """
-    _log('DEBUG', message, component_arg)
+    _log('DEBUG', message)
 
 
 #########
@@ -428,12 +407,6 @@ def shorten_envs():
         for prefix in prefixes:
             if env_key.startswith(prefix):
                 os.environ[env_key.replace(prefix, '')] = env_value
-
-
-def set_component(c):
-    """configure name of component globally (it will be used in logging)"""
-    global component
-    component = c
 
 
 # These are shortcut functions for:

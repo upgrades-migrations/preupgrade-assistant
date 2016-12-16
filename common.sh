@@ -224,8 +224,6 @@ _log() {
 
 log_debug() {
     #
-    # log message to stdout with severity debug
-    #
     # log_debug(message) -> None
     #
     # log message to stdout with severity debug
@@ -236,8 +234,6 @@ log_debug() {
 }
 
 log_info() {
-    #
-    # log message to stdout with severity info
     #
     # log_info(message) -> None
     #
@@ -250,21 +246,17 @@ log_info() {
 
 log_error() {
     #
-    # log message to stdout with severity error
-    #
     # log_error(message) -> None
     #
     # log message to stdout with severity error
-    # use this severity if your script found something severe
     #
+    # use this severity if your script found something severe
     # which may cause malfunction on new system
     #
     _log "ERROR" "$@"
 }
 
 log_warning() {
-    #
-    # log message to stdout with severity warning
     #
     # log_warning(message) -> None
     #
