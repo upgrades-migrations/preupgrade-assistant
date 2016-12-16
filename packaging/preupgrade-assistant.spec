@@ -1,15 +1,13 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
+%if 0%{?rhel} && 0%{?rhel} > 5
+%global         build_ui 1
 %global         django_version  1.5.5
 %global         south_version   0.8.4
-%if ! 0%{?fedora:1}
-%global         not_fedora 1
-%global         build_ui 1
 %else
-%global         not_fedora 0
 %global         build_ui 0
-%endif
+%endif # RHEL > 5
 
 Name:           preupgrade-assistant
 Version:        2.2.0
@@ -18,11 +16,13 @@ Summary:        Preupgrade Assistant advises on feasibility of system upgrade or
 Group:          System Environment/Libraries
 License:        GPLv3+
 Source0:        %{name}-%{version}.tar.gz
-%if %{not_fedora}
+%if %{build_ui}
 Source1:        Django-%{django_version}.tar.gz
 Source2:        south-%{south_version}.tar.gz
-Source3:        scripts.txt
-%endif # not_fedora
+%endif # build_ui
+%if 0%{?rhel}
+Patch0:         preupgrade-assistant-scripts.patch
+%endif # RHEL
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
@@ -95,7 +95,7 @@ OpenSCAP is generated automatically.
 # Unpack UI-related tarballs
 %setup -q -n %{name}-%{version} -D -T -a 1
 %setup -q -n %{name}-%{version} -D -T -a 2
-%endif # not Fedora
+%endif # build_ui
 
 %build
 %{__python} setup.py build
@@ -122,10 +122,6 @@ install -d -m 755 $RPM_BUILD_ROOT%{_mandir}/man1
 install -p man/preupg.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupgrade-assistant-api.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupg-content-creator.1 $RPM_BUILD_ROOT%{_mandir}/man1/
-
-%if %{not_fedora}
-cp %{SOURCE3} $RPM_BUILD_ROOT%{_datadir}/preupgrade/data/preassessment/
-%endif # not_fedora
 
 %if %{build_ui}
 ######### UI packaging #######################################
@@ -191,11 +187,11 @@ get_file_list d %{python_sitelib}/preupg/ui.*$ " " \
 %endif # build_ui
 ######### END FILELISTS ###################################
 
-%if %{not_fedora}
+%if ! 0%{?fedora:1}
 # clean section should not be used on Fedora per Guidelines
 %clean
 rm -rf $RPM_BUILD_ROOT
-%endif not_fedora
+%endif # not Fedora
 
 %post
 /sbin/ldconfig
