@@ -3,8 +3,13 @@
 
 %global         django_version  1.5.5
 %global         south_version   0.8.4
-%global         not_fedora ! 0%{?fedora:1}
-%global         build_ui %{not_fedora}
+%if ! 0%{?fedora:1}
+%global         not_fedora 1
+%global         build_ui 1
+%else
+%global         not_fedora 0
+%global         build_ui 0
+%endif
 
 Name:           preupgrade-assistant
 Version:        2.2.0
