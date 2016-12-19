@@ -608,7 +608,7 @@ class TestLogMixin(object):
         create hostruns for list of hosts specified as Query in variable hosts
         """
         testlog_list = []
-        keys = ['component', 'date', 'level', 'message']
+        keys = ['date', 'level', 'message']
 
         for testlog in testlogs:
             testlog_dict = dict((key, testlog[key]) for key in keys if key in testlog)
@@ -630,14 +630,13 @@ class TestLogManager(models.Manager, TestLogMixin):
 class TestLog(models.Model):
     message = models.TextField()
     level = models.CharField(max_length=32)
-    component = models.CharField(max_length=255, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
     result = models.ForeignKey(TestResult)
 
     objects = TestLogManager()
 
     def __unicode__(self):
-        return u"%s %s %s %s" % (self.level, self.component, self.date, self.message)
+        return u"%s %s %s" % (self.level, self.date, self.message)
 
 
 class RiskMixin(object):

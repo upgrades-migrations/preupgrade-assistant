@@ -135,14 +135,6 @@ class ModuleHelper(object):
                 new_line = '\n'.join(generated_section)
                 new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
                 output_text += new_line+'\n'
-                if 'check_applies' in updates:
-                    component = updates['check_applies']
-                else:
-                    component = "distribution"
-                if script_type == "sh":
-                    output_text += 'COMPONENT="'+component+'"\n'
-                else:
-                    output_text += 'set_component("'+component+'")\n'
             output_text += line
         FileHelper.write_to_file(self.full_path_name, "wb", output_text)
 
