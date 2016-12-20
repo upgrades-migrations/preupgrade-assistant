@@ -1,0 +1,851 @@
+diff --git a/bin/premigrate b/bin/premigrate
+index e377165..c8282b7 100755
+--- a/bin/premigrate
++++ b/bin/premigrate
+@@ -21,7 +21,7 @@ def main():
+     else:
+         try:
+             ret = app.run()
+-        except Exception as ex:
++        except Exception, ex:
+             cli.parser.error(str(ex))
+     return ret
+ 
+diff --git a/bin/preupg b/bin/preupg
+index fa2e957..07a08b2 100755
+--- a/bin/preupg
++++ b/bin/preupg
+@@ -26,7 +26,7 @@ def main():
+         except KeyboardInterrupt:
+             print ('\nAssessment interrupted.')
+             return 1
+-        except Exception as ex:
++        except Exception, ex:
+             cli.parser.error(str(ex))
+     return ret
+ 
+diff --git a/preupg/application.py b/preupg/application.py
+index 9976225..5287f5b 100644
+--- a/preupg/application.py
++++ b/preupg/application.py
+@@ -3,7 +3,6 @@
+ The application module serves for running oscap binary and reporting results to UI
+ """
+ 
+-from __future__ import unicode_literals, print_function
+ import shutil
+ import datetime
+ import os
+@@ -106,11 +105,12 @@ class Application(object):
+         Add the special report log file
+         :return:
+         """
++        formatter = logging.Formatter("%(asctime)s %(filename)s"
++                                      ":%(lineno)s %(message)s")
+         try:
+             LoggerHelper.add_file_handler(logger_report,
+                                           settings.preupg_report_log,
+-                                          formatter=logging.Formatter("%(asctime)s %(filename)s"
+-                                                                      ":%(lineno)s %(funcName)s: %(message)s"),
++                                          formatter=formatter,
+                                           level=logging.DEBUG)
+         except (IOError, OSError):
+             logger.warning("Can not create report log '%s'", settings.preupg_report_log)
+@@ -122,11 +122,12 @@ class Application(object):
+         Add the special report log file
+         :return:
+         """
++        formatter = logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
++                                      ":%(lineno)s %(message)s")
+         try:
+             LoggerHelper.add_file_handler(logger_debug,
+                                           settings.preupg_log,
+-                                          formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+-                                                            ":%(lineno)s %(funcName)s: %(message)s"),
++                                          formatter=formatter,
+                                           level=logging.DEBUG)
+         except (IOError, OSError):
+             logger.warning("Can not create debug log '%s'", settings.preupg_log)
+@@ -152,7 +153,7 @@ class Application(object):
+         if self.conf.upload is True:
+             # lets try default configuration
+             log_message('Specify the server where to upload the results.')
+-            log_message(settings.ui_command.format(self.conf.results))
++            log_message(settings.ui_command % self.conf.results)
+             return False
+         else:
+             if self.conf.upload[-1] == '/':
+@@ -163,7 +164,7 @@ class Application(object):
+         try:
+             proxy = xmlrpclib.ServerProxy(url)
+             proxy.submit.ping()
+-        except Exception as ex:
++        except Exception, ex:
+             message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
+                       'Please ensure that package preupgrade-assistant-ui ' \
+                       'has been installed on target system and firewall is set up ' \
+@@ -385,7 +386,7 @@ class Application(object):
+         """
+         for self.third_party, content in list_contents(dir_name).iteritems():
+             third_party_name = self.third_party = third_party
+-            log_message("Execution {0} assessments:".format(third_party))
++            log_message("Execution %s assessments:" % self.third_party)
+             self.report_parser.reload_xml(content)
+             self.content = content
+             self.run_scan_process()
+@@ -396,7 +397,7 @@ class Application(object):
+ 
+     def get_cmd_convertor(self):
+         """Function returns cmd with text convertor string"""
+-        cmd = settings.text_converters[self.text_convertor].format(
++        cmd = settings.text_converters[self.text_convertor] % (
+             self.text_convertor,
+             self.openscap_helper.get_default_html_result_path(),
+             self.openscap_helper.get_default_txt_result_path()
+@@ -475,7 +476,7 @@ class Application(object):
+         try:
+             self.report_parser = ReportParser(self.content)
+         except IOError:
+-            log_message("The module {0} does not exist.".format(self.content))
++            log_message("The module %s does not exist" % self.content)
+             return ReturnValues.SCENARIO
+         if not self.conf.contents:
+             version = SystemIdentification.get_assessment_version(self.conf.scan)
+@@ -526,20 +527,18 @@ class Application(object):
+ 
+     def summary_report(self, tarball_path):
+         """Function prints a summary report"""
+-        command = settings.ui_command.format(tarball_path)
++        command = settings.ui_command % tarball_path
+         if self.conf.text:
+             path = self.openscap_helper.get_default_txt_result_path()
+         else:
+             path = self.openscap_helper.get_default_html_result_path()
+ 
+         report_dict = {
+-            0: settings.message.format(path),
+-            1: settings.message.format(path),
+-            2: 'We found some critical issues. In-place upgrade is not advised.\n' +
+-            "Read the file {0} for more details.".
+-            format(path),
++            0: settings.message % path,
++            1: settings.message % path,
++            2: 'We found some critical issues. In-place upgrade is not advised.\n' + "Read the file %s for more details." % path,
+             3: 'We found some error issues. In-place upgrade is not advised.\n' +
+-               "Read the file {0} for more details.".format(path)
++               "Read the file %s for more details."% path
+ 
+         }
+         self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
+@@ -559,9 +558,8 @@ class Application(object):
+             log_message('Summary of the third party providers:')
+             for target, dummy_report in self.report_data.iteritems():
+                 self.third_party = target
+-                log_message("Read the third party content {0} {1} for more details.".
+-                            format(target, path))
+-        log_message("Upload results to UI by the command:\ne.g. {0} .".format(command))
++                log_message("Read the 3rd party content %s %s for more details." % (target, path))
++        log_message("Upload results to UI by command:\ne.g. %s ." % command)
+ 
+     def _set_devel_mode(self):
+         # Check for devel_mode
+@@ -661,11 +659,11 @@ class Application(object):
+                     found = True
+                     break
+             if not found:
+-                log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
++                log_message(settings.converter_message % (' '.join(SystemIdentification.get_convertors())))
+                 return ReturnValues.MISSING_TEXT_CONVERTOR
+ 
+         if os.geteuid() != 0:
+-            print("Need to be root", end="\n")
++            print "Need to be root"
+             if not self.conf.debug:
+                 return ReturnValues.ROOT
+ 
+diff --git a/preupg/cli.py b/preupg/cli.py
+index e3d942d..41d53e9 100644
+--- a/preupg/cli.py
++++ b/preupg/cli.py
+@@ -1,7 +1,5 @@
+ # -*- coding: utf-8 -*-
+ 
+-from __future__ import print_function, unicode_literals
+-#import argparse
+ import optparse
+ from optparse import OptionValueError
+ 
+@@ -171,7 +169,8 @@ Upload results to preupgrade assistant WEB-UI"
+             "--old-report-style",
+             action="store_true",
+             metavar="OLDREPORTSTYLE",
+-            help="Use old report style without CSS issues."
++            help="Use old report style without CSS issues. (Ignored when"
++                 " OpenSCAP < 0:1.2.8-1)"
+         )
+ 
+ if __name__ == '__main__':
+diff --git a/preupg/common.py b/preupg/common.py
+index 60286ae..4424bba 100644
+--- a/preupg/common.py
++++ b/preupg/common.py
+@@ -4,7 +4,6 @@ generating common logs, coping these common logs
+ to assessment
+ """
+ 
+-from __future__ import unicode_literals
+ import os
+ import platform
+ import datetime
+diff --git a/preupg/conf.py b/preupg/conf.py
+index 43bec13..b76c21d 100644
+--- a/preupg/conf.py
++++ b/preupg/conf.py
+@@ -1,7 +1,5 @@
+ # -*- coding: utf-8 -*-
+ 
+-from __future__ import unicode_literals
+-
+ class DummyConf(object):
+     """
+     Dummy conf class for Conf
+diff --git a/preupg/constants.py b/preupg/constants.py
+index 379b181..7414f5a 100644
+--- a/preupg/constants.py
++++ b/preupg/constants.py
+@@ -1,4 +1,3 @@
+ # -*- coding: utf-8 -*-
+-from __future__ import unicode_literals
+ PROGRAM_DESCRIPTION = "OS upgrade helper"
+ USAGE = "%prog [options]"
+diff --git a/preupg/creator/ui_helper.py b/preupg/creator/ui_helper.py
+index cef8a3a..cf9344f 100644
+--- a/preupg/creator/ui_helper.py
++++ b/preupg/creator/ui_helper.py
+@@ -29,9 +29,9 @@ def get_user_input(message, default_yes=True, any_input=False):
+     choice = '[Y/n]'
+ 
+     if any_input:
+-        msg = '{0} '.format(message)
++        msg = '%s ' % message
+     else:
+-        msg = '{0} {1}? '.format(message, choice)
++        msg = '%s %s? ' % (message, choice)
+ 
+     while True:
+         if int(sys.version_info[0]) == 2:
+diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
+index 0a7c9a8..e0db0df 100644
+--- a/preupg/kickstart/application.py
++++ b/preupg/kickstart/application.py
+@@ -1,6 +1,4 @@
+ # -*- coding: utf-8 -*-
+-from __future__ import print_function, unicode_literals
+-
+ """
+ Class creates a kickstart for migration scenario
+ """
+@@ -51,11 +49,12 @@ class KickstartGenerator(object):
+         Add the special report log file
+         :return:
+         """
++        formatter = logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
++                                      ":%(lineno)s %(message)s")
+         try:
+             LoggerHelper.add_file_handler(logger_debug,
+                                           settings.preupg_log,
+-                                          formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+-                                                            ":%(lineno)s %(funcName)s: %(message)s"),
++                                          formatter=formatter,
+                                           level=logging.DEBUG)
+         except (IOError, OSError):
+             logger.warning("Can not create debug log '%s'", settings.preupg_log)
+@@ -86,7 +85,7 @@ class KickstartGenerator(object):
+                     for i in injs:
+                         obj = i(self.ks.handler)
+                         plugin_checkers[modname] = obj
+-                except AttributeError as ae:
++                except AttributeError, ae:
+                     print (ae)
+                     print ("Module '%s' does not implement `register(context)`" % modname)
+         return plugin_checkers
+@@ -152,7 +151,7 @@ class KickstartGenerator(object):
+             return
+         script_str = FileHelper.get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
+         if not script_str:
+-            log_message("Cannot open the script template: {0}.".format(script_path))
++            log_message("Cannot open the script template: %s." % script_path)
+             return
+         if tarball_content is not None:
+             script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
+diff --git a/preupg/logger.py b/preupg/logger.py
+index 8f12b78..ed61f22 100644
+--- a/preupg/logger.py
++++ b/preupg/logger.py
+@@ -1,5 +1,4 @@
+ 
+-from __future__ import unicode_literals, print_function
+ import logging
+ import sys
+ from preupg import settings
+@@ -68,8 +67,11 @@ def log_message(message, new_line=True, level=logging.INFO):
+             sys.stdout.write("\n")
+             sys.stdout.flush()
+     else:
+-        endline = "\n" if new_line else ""
+-        print(message, end=endline, file=sys.stdout, flush=True)
++        if new_line:
++            endline = "\n"
++        else:
++            endline = ""
++        print(message)
+ 
+     logger_debug.log(level, message)
+ 
+@@ -84,8 +86,11 @@ def log_report_message(message, new_line=True, level=logging.INFO):
+             sys.stdout.write("\n")
+             sys.stdout.flush()
+     else:
+-        endline = "\n" if new_line else ""
+-        print(message, end=endline, file=sys.stdout, flush=True)
++        if new_line:
++            endline = "\n"
++        else:
++            endline = ""
++        print(message)
+ 
+     logger_report.log(level, message)
+ 
+diff --git a/preupg/report_parser.py b/preupg/report_parser.py
+index 9d8eb2b..1a9047c 100644
+--- a/preupg/report_parser.py
++++ b/preupg/report_parser.py
+@@ -1,4 +1,3 @@
+-from __future__ import print_function, unicode_literals
+ import re
+ import os
+ import shutil
+@@ -212,9 +211,9 @@ class ReportParser(object):
+                 res.text = ReportHelper.get_needs_action()
+             for index, row in enumerate(scanning_progress.output_data):
+                 if self.get_nodes_text(rule, "title") in row:
+-                    scanning_progress.output_data[index] = "{0}:{1}".format(
+-                        self.get_nodes_text(rule, "title"),
+-                        res.text)
++                    scanning_progress.output_data[index] = \
++                        "%s:%s" % (self.get_nodes_text(rule, "title"),
++                                   res.text)
+ 
+     def replace_inplace_risk(self, scanning_results=None):
+         """
+diff --git a/preupg/scanning.py b/preupg/scanning.py
+index f107f36..7bccafc 100644
+--- a/preupg/scanning.py
++++ b/preupg/scanning.py
+@@ -1,5 +1,4 @@
+ 
+-from __future__ import unicode_literals
+ import os
+ from preupg.logger import settings, logger_report, log_message, logging
+ 
+@@ -36,7 +35,7 @@ class ScanningHelper(object):
+             return
+         max_title_length = max(x for x in [len(l.split(':')[0]) for l in output_data]) + 5
+         max_result_length = max(x for x in [len(l.split(':')[2]) for l in output_data]) + 2
+-        log_message(settings.result_text.format(content))
++        log_message(settings.result_text % content)
+         message = '-' * (max_title_length + max_result_length + 4)
+         log_message(message)
+         for data in sorted(output_data, key=ScanningHelper.compare_data, reverse=True):
+@@ -98,7 +97,7 @@ class ScanProgress(object):
+         except ValueError:
+             print (stdout_data)
+             return
+-        self.output_data.append(u'{0}:{1}'.format(self.names[xccdf_rule], stdout_data.strip()))
++        self.output_data.append(u'%s:%s' % (self.names[xccdf_rule], stdout_data.strip()))
+         self.current_count += 1
+         old_width = self.width_size
+         self.width_size -= 21
+diff --git a/preupg/script_api.py b/preupg/script_api.py
+index 023d6e7..246caf5 100644
+--- a/preupg/script_api.py
++++ b/preupg/script_api.py
+@@ -26,7 +26,6 @@ These functions are available:
+ * exit_* -- terminate execution with appropriate exit code
+ """
+ 
+-from __future__ import unicode_literals, print_function
+ import os
+ import sys
+ import re
+@@ -297,7 +296,7 @@ def _log_risk(severity, message):
+     """
+     log risk level to stderr
+     """
+-    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
++    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)))
+ 
+ 
+ def log_extreme_risk(message):
+@@ -355,7 +354,7 @@ def _log(severity, message, component_arg=None):
+     """
+     global component
+     comp_show = component_arg or component
+-    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
++    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)))
+ 
+ 
+ def log_error(message, component_arg=None):
+@@ -810,13 +809,13 @@ def deploy_hook(*args):
+                     exit_error()
+                 try:
+                     shutil.copytree(arg, hook_arg)
+-                except OSError as exc:
++                except OSError, exc:
+                     if exc.errno == errno.ENOTDIR:
+                         shutil.copyfile(arg, hook_arg)
+                     else:
+                         log_error("Copying failed: %s" % exc)
+                         exit_error()
+-        except IOError as e:
++        except IOError, e:
+             log_error("Copying of hook script failed: %s" % e)
+             exit_error()
+ 
+diff --git a/preupg/settings.py b/preupg/settings.py
+index d702c6c..c4b1c77 100644
+--- a/preupg/settings.py
++++ b/preupg/settings.py
+@@ -1,4 +1,3 @@
+-from __future__ import unicode_literals
+ import sys
+ import os
+ 
+@@ -8,7 +7,10 @@ if os.path.basename(sys.argv[0]) == "premigrate":
+ else:
+     prefix = "preupgrade"
+ 
+-defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
++if sys.getdefaultencoding() == "ascii":
++    defenc = "utf-8"
++else:
++    defenc = sys.getdefaultencoding()
+ 
+ # dir where results of analysis are stored
+ assessment_results_dir = os.path.join("/root", prefix)
+@@ -24,7 +26,7 @@ result_prefix = "result"
+ 
+ tarball_base = result_prefix + 's'
+ tarball_prefix = "preupg_"
+-tarball_name = tarball_prefix + tarball_base + "-{0}"
++tarball_name = tarball_prefix + tarball_base + "-%s"
+ 
+ xml_result_name = result_prefix + '.xml'
+ html_result_name = result_prefix + '.html'
+@@ -142,10 +144,10 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
+                  "See help --dst-arch option.\n"
+ migration_options = ['x86_64', 'ppc64']
+ assessment_text = "Assessment of the system, running checks / SCE scripts"
+-result_text = "Result table with checks and their results for '{0}':"
++result_text = "Result table with checks and their results for '%s':"
+ message = "We found some potential in-place upgrade risks.\n" \
+-          "Read the full report file '{0}' for more details."
+-converter_message = "At least one of these converters ({0}) needs to be installed."
++          "Read the full report file '%s' for more details."
++converter_message = "At least one of these converters (%s) needs to be installed."
+ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
+                  "The Kickstart file contains:\n" \
+                  "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
+@@ -161,13 +163,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
+ 
+ options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
+ unknown_rules = "These rules do not exist:\n%s\n"
+-text_converters = {'w3m': '{0} -T text/html -dump {1} > {2}',
+-                   'lynx': '{0} -nonumbers -nolist -force_html -dump -nolist -width=255 {1} > {2}',
+-                   'elinks': '{0} --no-references -dump-width 255 --no-numbering -dump {1} > {2}',
++text_converters = {'w3m': '%s -T text/html -dump %s > %s',
++                   'lynx': '%s -nonumbers -nolist -force_html -dump -nolist -width=255 %s > %s',
++                   'elinks': '%s --no-references -dump-width 255 --no-numbering -dump %s > %s',
+                    }
+ 
+-ui_command = "preupg -u http://example.com:8099/submit/ -r {0}"
+-openssl_command = "openssl x509 -text -in {0} | grep -A1 1.3.6.1.4.1.2312.9.1"
++ui_command = "preupg -u http://example.com:8099/submit/ -r %s"
++openssl_command = "openssl x509 -text -in %s | grep -A1 1.3.6.1.4.1.2312.9.1"
+ 
+ UPGRADE_PATH = ""
+ KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
+diff --git a/preupg/utils.py b/preupg/utils.py
+index 60aeb25..511a416 100644
+--- a/preupg/utils.py
++++ b/preupg/utils.py
+@@ -1,5 +1,4 @@
+ # -*- coding: utf-8 -*-
+-from __future__ import print_function, unicode_literals
+ import datetime
+ import re
+ import subprocess
+@@ -185,7 +184,10 @@ class FileHelper(object):
+             else:
+                 f = codecs.open(full_path, perms)
+             try:
+-                data = f.read() if not method else f.readlines()
++                if not method:
++                    data = f.read()
++                else:
++                    data = f.readlines()
+             finally:
+                 f.close()
+         except IOError:
+@@ -365,12 +367,12 @@ class ProcessHelper(object):
+                               shell=shell,
+                               bufsize=1)
+         stdout = str() # FIXME should't be this bytes()?
+-        for stdout_data in iter(sp.stdout.readline, b''):
++        for stdout_data in iter(sp.stdout.readline, ''):
+             # communicate() method buffers everything in memory, we will read stdout directly
+             stdout += stdout_data
+             if function is None:
+                 if print_output:
+-                    print (stdout_data, end="")
++                    print stdout_data,
+                 else:
+                     pass
+             else:
+@@ -489,7 +491,7 @@ class TarballHelper(object):
+ 
+     @staticmethod
+     def _get_tarball_name(result_file, time):
+-        return result_file.format(time)
++        return result_file % time
+ 
+     @staticmethod
+     def _get_tarball_result_path(root_dir, filename):
+@@ -669,7 +671,7 @@ class PostupgradeHelper(object):
+     def get_hash_file(filename, hasher):
+         """Function gets a hash from file"""
+         content = FileHelper.get_file_content(filename, "rb", False, False)
+-        hasher.update(b'preupgrade-assistant' + content)
++        hasher.update('preupgrade-assistant' + content)
+         return hasher.hexdigest()
+ 
+     @staticmethod
+@@ -696,7 +698,7 @@ class PostupgradeHelper(object):
+             if interpreter is None:
+                 continue
+             log_message('Executing script %s' % scr)
+-            cmd = "{0} {1}".format(interpreter, scr)
++            cmd = "%s %s" % (interpreter, scr)
+             ProcessHelper.run_subprocess(cmd, print_output=False, shell=True)
+             log_message("Executing script %s ...done" % scr)
+ 
+@@ -800,11 +802,7 @@ class OpenSCAPHelper(object):
+     @staticmethod
+     def get_xsl_stylesheet(old_style=False):
+         """Return full XSL stylesheet path"""
+-        if old_style:
+-            subfolder = "simple"
+-        else:
+-            subfolder = "complex"
+-        return os.path.join(settings.data_dir, "report", subfolder,
++        return os.path.join(settings.data_dir, "report", "simple",
+                             settings.xsl_sheet)
+ 
+     @staticmethod
+diff --git a/preupg/xccdf.py b/preupg/xccdf.py
+index 4363cb8..84540e5 100644
+--- a/preupg/xccdf.py
++++ b/preupg/xccdf.py
+@@ -1,10 +1,11 @@
+ # -*- coding: utf-8 -*-
+-
+-from __future__ import unicode_literals
+ import re
+ import os
+ from operator import itemgetter
+-from xml.etree import ElementTree
++try:
++    from xml.etree import ElementTree
++except ImportError:
++    from elementtree import ElementTree
+ 
+ from preupg import settings
+ from preupg.settings import ModuleValues
+diff --git a/preupg/xml_manager.py b/preupg/xml_manager.py
+index 0db550d..39a438b 100644
+--- a/preupg/xml_manager.py
++++ b/preupg/xml_manager.py
+@@ -1,6 +1,5 @@
+ # -*- coding: utf-8 -*-
+ 
+-from __future__ import unicode_literals, print_function
+ import os
+ import re
+ try:
+@@ -52,18 +51,17 @@ def link_update(value, extension, inplace):
+         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
+     possible_links = ['http', 'https', 'ftp']
+     if [x for x in possible_links if x in value]:
+-        return '<{1}a{2}href="{0}">{0}</{1}a>'.format(value.strip(),
+-                                                      prefix,
+-                                                      postfix)
++        return '<%sa%shref="%s">%s</%sa>' % (prefix, postfix, value.strip(),
++                                             value.strip(), prefix)
+     else:
+         if inplace:
+             return os.path.join('/root', settings.prefix, value.strip())
+         if value.strip().startswith("/"):
+             return ""
+         else:
+-            return '<{1}a{2}href="./{0}">{0}</{1}a>'.format(value.strip(),
+-                                                            prefix,
+-                                                            postfix)
++            return '<%sa%shref="./%s">%s</%sa>' % (prefix, postfix,
++                                                   value.strip(), value.strip(),
++                                                   prefix)
+ 
+ 
+ def bold_update(value, extension, inplace):
+@@ -75,9 +73,8 @@ def bold_update(value, extension, inplace):
+     if extension != "html":
+         prefix = "html:"
+         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
+-    return '<{1}b{2}>{0}</{1}b>'.format(value,
+-                                        prefix,
+-                                        postfix)
++    return '<%sb%s>%s</%sb>' % (prefix, postfix,
++                                value, prefix)
+ 
+ 
+ def tag_formating(text, extension):
+@@ -126,8 +123,14 @@ def remove_lines(string, regex_t, post_regex_t):
+     e_search = re.search(e_re, string)
+     if not s_search or not e_search:
+         return string
+-    s_pos = s_search.start() if remove_start else s_search.end()
+-    e_pos = e_search.start() if remove_end else e_search.end()
++    if remove_start:
++        s_pos = s_search.start()
++    else:
++        s_pos = s_search.end()
++    if remove_end:
++        e_pos = e_search.start()
++    else:
++        e_pos = e_search.end()
+ 
+     return string[:s_pos] + string[e_pos:]
+ 
+diff --git a/preupg/xmlgen/compose.py b/preupg/xmlgen/compose.py
+index e934c82..876cff9 100644
+--- a/preupg/xmlgen/compose.py
++++ b/preupg/xmlgen/compose.py
+@@ -1,5 +1,5 @@
+-from __future__ import print_function, unicode_literals
+ import os
++from posixpath import commonprefix, abspath, curdir, sep, pardir, join
+ import sys
+ import re
+ import datetime
+@@ -27,6 +27,20 @@ XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-frag
+ SCE = "http://open-scap.org/page/SCE"
+ 
+ 
++def relpath(path, start=os.curdir):
++    """Return a relative version of a path"""
++    if not path:
++        raise ValueError("no path specified")
++    start_list = abspath(start).split(sep)
++    path_list = abspath(path).split(sep)
++    # Work out how much of the filepath is shared by start and path.
++    i = len(commonprefix([start_list, path_list]))
++    rel_list = [pardir] * (len(start_list)-i) + path_list[i:]
++    if not rel_list:
++        return os.curdir
++    return join(*rel_list)
++
++
+ class XCCDFCompose(object):
+     dir_name = ""
+     result_dir = ""
+@@ -106,7 +120,7 @@ class ComposeXML(object):
+             try:
+                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
+                                 cls.collect_group_xmls(new_dir, level=level + 1, generate_from_ini=generate_from_ini))
+-            except ParseError as e:
++            except ParseError, e:
+                 print ("Encountered a parse error in file ", group_file_path, " details: ", e)
+         return ret
+ 
+@@ -171,7 +185,7 @@ class ComposeXML(object):
+ 
+             old_base_dir = os.path.join(source_dir, f)
+ 
+-            path_prefix = os.path.relpath(old_base_dir, new_base_dir)
++            path_prefix = relpath(old_base_dir, start=new_base_dir)
+             for element in tree.findall(".//" + xccdf.XMLNS + "check-content-ref"):
+                 old_href = element.get("href")
+                 assert(old_href is not None)
+diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
+index fc40369..3f753cc 100644
+--- a/preupg/xmlgen/oscap_group_xml.py
++++ b/preupg/xmlgen/oscap_group_xml.py
+@@ -3,8 +3,6 @@
+ This class will ready the YAML file as INI file.
+ So no change is needed from maintainer point of view
+ """
+-
+-from __future__ import print_function, unicode_literals
+ import os
+ import codecs
+ 
+@@ -79,7 +77,7 @@ class OscapGroupXml(object):
+         # load content without decoding to unicode - ElementTree requests this
+         try:
+             self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
+-        except ParseError as par_err:
++        except ParseError, par_err:
+             print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
+         return self.ret
+ 
+@@ -92,7 +90,7 @@ class OscapGroupXml(object):
+         file_name = os.path.join(self.dirname, "group.xml")
+         try:
+             FileHelper.write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
+-        except IOError as ior:
++        except IOError, ior:
+             print ('Problem with write data to the file ', file_name, ior.message)
+ 
+     def write_profile_xml(self, target_tree):
+@@ -104,7 +102,7 @@ class OscapGroupXml(object):
+             # as html entities instead, which are unsusable for us
+             data = ElementTree.tostring(target_tree, "utf-8")
+             FileHelper.write_to_file(file_name, "wb", data, False)
+-        except IOError as ioe:
++        except IOError, ioe:
+             print ('Problem with writing to file ', file_name, ioe.message)
+ 
+     def write_list_rules(self):
+diff --git a/preupg/xmlgen/script_utils.py b/preupg/xmlgen/script_utils.py
+index b23409e..aa4b1e1 100644
+--- a/preupg/xmlgen/script_utils.py
++++ b/preupg/xmlgen/script_utils.py
+@@ -1,5 +1,3 @@
+-from __future__ import print_function, unicode_literals
+-
+ import os
+ import re
+ 
+diff --git a/preupg/xmlgen/xml_tags.py b/preupg/xmlgen/xml_tags.py
+index 640c978..3969d36 100644
+--- a/preupg/xmlgen/xml_tags.py
++++ b/preupg/xmlgen/xml_tags.py
+@@ -1,4 +1,3 @@
+-from __future__ import unicode_literals
+ TAG_GROUP = "xccdf_preupg_group_"
+ TAG_VALUE = "xccdf_preupg_value_"
+ TAG_RULE = "xccdf_preupg_rule_"
+diff --git a/preupg/xmlgen/xml_utils.py b/preupg/xmlgen/xml_utils.py
+index b98ed43..3b86568 100644
+--- a/preupg/xmlgen/xml_utils.py
++++ b/preupg/xmlgen/xml_utils.py
+@@ -1,5 +1,3 @@
+-from __future__ import print_function, unicode_literals
+-
+ import re
+ import os
+ import copy
+@@ -71,23 +69,23 @@ class XmlUtils(object):
+         new_text = []
+         lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
+ 
+-        bold = '<xhtml:b>{0}</xhtml:b>'
++        bold = '<xhtml:b>%s</xhtml:b>'
+         br = '<xhtml:br/>'
+         table_begin = '<xhtml:table>'
+         table_end = '</xhtml:table>'
+         table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>Description</xhtml:th></xhtml:tr>'
+-        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}</xhtml:td></xhtml:tr>'
+-        new_text.append(br + br + '\n' + bold.format('Details:') + br)
++        table_row = '<xhtml:tr><xhtml:td>%s</xhtml:td><xhtml:td>%s</xhtml:td></xhtml:tr>'
++        new_text.append(br + br + '\n' + bold % 'Details:' + br)
+         results = False
+         for line in lines:
+             if '=' in line:
+                 if not results:
+-                    new_text.append(bold.format('Expected results:') + br)
++                    new_text.append(bold % 'Expected results:' + br)
+                     new_text.append(table_begin + '\n' + table_header)
+                     results = True
+                 try:
+                     exp_results = line.strip().split('=')
+-                    new_text.append(table_row.format(exp_results[0], exp_results[1]) + '\n')
++                    new_text.append(table_row % (exp_results[0], exp_results[1]) + '\n')
+                 except IndexError:
+                     pass
+             else:
+@@ -265,9 +263,9 @@ class XmlUtils(object):
+         :return:
+         """
+ 
+-        content = "{rule}{main_dir}_{name}".format(rule=xml_tags.TAG_RULE,
+-                                                   main_dir='_'.join(get_full_xml_tag(self.dirname)),
+-                                                   name=key.split('.')[0])
++        content = "%s%s_%s" % (xml_tags.TAG_RULE,
++                               '_'.join(get_full_xml_tag(self.dirname)),
++                               key.split('.')[0])
+         if not name:
+             self.update_files('migrate', content)
+             self.update_files('upgrade', content)
+@@ -334,7 +332,7 @@ class XmlUtils(object):
+                 for k, function in update_fnc.iteritems():
+                     try:
+                         function(key, k)
+-                    except IOError as e:
++                    except IOError, e:
+                         e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
+                         e_msg = "'%s': %s" % (key[k], e.strerror)
+                         MessageHelper.print_error_msg(title=e_title, msg=e_msg)
+diff --git a/tools/preupg-create-group-xml b/tools/preupg-create-group-xml
+index eefc6e4..8377942 100755
+--- a/tools/preupg-create-group-xml
++++ b/tools/preupg-create-group-xml
+@@ -1,10 +1,12 @@
+ #!/usr/bin/python2
+-from __future__ import print_function
+ import os
+ import sys
+ import optparse
+ import shutil
+-from xml.etree import ElementTree
++try:
++    from xml.etree import ElementTree
++except ImportError:
++    from elementtree import ElementTree
+ 
+ from distutils import dir_util
+ from preupg.xmlgen.compose import ComposeXML
+@@ -36,11 +38,12 @@ def main():
+         print('Dir %s does not exists.' % args[0])
+         sys.exit(1)
+ 
++    formatter = logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
++                                  ":%(lineno)s %(message)s")
+     try:
+         LoggerHelper.add_file_handler(logger_debug,
+                                       settings.preupg_log,
+-                                      formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
+-                                                                  ":%(lineno)s %(funcName)s: %(message)s"),
++                                      formatter=formatter,
+                                       level=logging.DEBUG)
+     except (IOError, OSError):
+         logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+diff --git a/tools/preupg-xccdf-compose b/tools/preupg-xccdf-compose
+index 838acd6..2ef25a5 100755
+--- a/tools/preupg-xccdf-compose
++++ b/tools/preupg-xccdf-compose
+@@ -1,5 +1,4 @@
+ #!/usr/bin/python2
+-from __future__ import print_function
+ import optparse
+ import os
+ import shutil

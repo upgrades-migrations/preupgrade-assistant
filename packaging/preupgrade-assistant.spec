@@ -1,13 +1,16 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
-%if 0%{?rhel} && 0%{?rhel} > 5
+%if 0%{?rhel} > 5
 %global         build_ui 1
 %global         django_version  1.5.5
 %global         south_version   0.8.4
 %else
 %global         build_ui 0
 %endif # RHEL > 5
+%if 0%{?rhel} && 0%{?rhel} <= 5
+%global         pykickstart_version 1.74.20
+%endif # RHEL <= 5
 
 Name:           preupgrade-assistant
 Version:        2.2.0
@@ -15,14 +18,36 @@ Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
 License:        GPLv3+
+
 Source0:        %{name}-%{version}.tar.gz
 %if %{build_ui}
 Source1:        Django-%{django_version}.tar.gz
 Source2:        south-%{south_version}.tar.gz
 %endif # build_ui
+%if 0%{?rhel} && 0%{?rhel} <= 5
+Source10:       pykickstart-%{pykickstart_version}.tar.gz
+Source20:       btrfs.py
+Source21:       cdrom.py
+Source22:       eula.py
+Source23:       harddrive.py
+Source24:       liveimg.py
+Source25:       nfs.py
+Source26:       ostreesetup.py
+Source27:       realm.py
+Source28:       reqpart.py
+Source29:       url.py
+Source40:       rhel7.py
+Source50:       ConfigParser.py
+%endif # RHEL <= 5
+
 %if 0%{?rhel}
 Patch0:         preupgrade-assistant-scripts.patch
 %endif # RHEL
+%if 0%{?rhel} && 0%{?rhel} <= 5
+Patch100:       preupgrade-assistant-six.patch
+Patch101:       preupgrade-assistant-python-2.4.patch
+Patch102:       preupgrade-assistant-pykickstart.patch
+%endif # RHEL <= 5
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
@@ -31,23 +56,31 @@ BuildRequires:  python-devel
 BuildRequires:  python-setuptools
 BuildRequires:  rpm-python
 BuildRequires:  diffstat
-BuildRequires:  openscap%{?_isa} >= 0:1.2.8-1
-BuildRequires:  openscap-engine-sce%{?_isa} >= 0:1.2.8-1
-BuildRequires:  openscap-utils%{?_isa} >= 0:1.2.8-1
-BuildRequires:  pykickstart
+%if ! 0%{?dist:1}
+BuildRequires:  buildsys-macros
+%endif # dist macro not defined
+%if 0%{?rhel} > 5
 BuildRequires:  python-six
+BuildRequires:  pykickstart
+%endif # RHEL > 5
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 Requires:       coreutils grep gawk
 Requires:       sed findutils bash
+Requires:       rpm-python
+Requires:       redhat-release
+Requires:       yum-utils
+%if 0%{?rhel} > 5
 Requires:       openscap%{?_isa} >= 0:1.2.8-1
 Requires:       openscap-engine-sce%{?_isa} >= 0:1.2.8-1
 Requires:       openscap-utils%{?_isa} >= 0:1.2.8-1
-Requires:       rpm-python
-Requires:       redhat-release
 Requires:       pykickstart
-Requires:       yum-utils
 Requires:       python-six
+%else
+Requires:       openscap%{?_isa} >= 0:1.0.8-1
+Requires:       openscap-engine-sce%{?_isa} >= 0:1.0.8-1
+Requires:       openscap-utils%{?_isa} >= 0:1.0.8-1
+%endif # RHEL > 5
 Conflicts:      %{name}-tools < 2.1.0-1
 Obsoletes:      %{name} < 2.1.3-1
 
@@ -91,14 +124,30 @@ OpenSCAP is generated automatically.
 %prep
 %setup -n %{name}-%{version} -q
 
+%if 0%{?rhel}
+%patch0 -p1
+%endif # RHEL
+%if 0%{?rhel} && 0%{?rhel} <= 5
+%setup -n %{name}-%{version} -D -T -a 10
+%patch100 -p1
+%patch101 -p1
+%patch102 -p1
+%endif # RHEL <= 5
+
 %if %{build_ui}
 # Unpack UI-related tarballs
 %setup -q -n %{name}-%{version} -D -T -a 1
 %setup -q -n %{name}-%{version} -D -T -a 2
-%endif # build_ui
+%endif # not Fedora
 
 %build
 %{__python} setup.py build
+
+%if 0%{?rhel} && 0%{?rhel} <= 5
+pushd pykickstart-%{pykickstart_version}
+%{__python} setup.py build
+popd
+%endif # RHEL <= 5
 
 %if %{build_ui}
 pushd Django-%{django_version}
@@ -116,6 +165,32 @@ popd
 
 %install
 %{__python} setup.py install --skip-build --root=$RPM_BUILD_ROOT
+
+%if 0%{?rhel} && 0%{?rhel} <= 5
+pushd pykickstart-%{pykickstart_version}
+%{__python} setup.py install --skip-build --root=$RPM_BUILD_ROOT
+popd
+
+rm -f ${RPM_BUILD_ROOT}%{_bindir}/ksflatten
+mv ${RPM_BUILD_ROOT}%{_bindir}/ksvalidator ${RPM_BUILD_ROOT}%{_bindir}/preupg_ksvalidator
+mv ${RPM_BUILD_ROOT}%{_bindir}/ksverdiff ${RPM_BUILD_ROOT}%{_bindir}/preupg_ksverdiff
+mv ${RPM_BUILD_ROOT}%{python_sitelib}/pykickstart \
+   ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart
+rm -rf ${RPM_BUILD_ROOT}%{python_sitelib}/pykickstart-%{pykickstart_version}-py*.egg-info
+
+cp -af %{SOURCE20} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE21} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE22} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE23} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE24} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE25} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE26} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE27} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE28} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE29} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
+cp -af %{SOURCE40} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/handlers/
+cp -af %{SOURCE50} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/
+%endif # RHEL <= 5
 
 install -d -m 755 $RPM_BUILD_ROOT%{_localstatedir}/log/preupgrade
 install -d -m 755 $RPM_BUILD_ROOT%{_mandir}/man1
@@ -174,9 +249,9 @@ get_file_list() {
         | grep -vE "$3" | sed "$4" >> $5
 }
 ### preupgrade-assistant ###
-get_file_list f %{python_sitelib}/.*$  "preupg/(ui|creator)|\.pyc$" \
+get_file_list f %{python_sitelib}/.*$  "preupg_pykickstart|preupg/(ui|creator)|\.pyc$" \
     "s/\.py$/\.py\*/" preupg-filelist
-get_file_list d %{python_sitelib}/.*$ "preupg/(ui|creator)|\.pyc$" \
+get_file_list d %{python_sitelib}/.*$ "preupg_pykickstart|preupg/(ui|creator)|\.pyc$" \
     "s/^/\%dir /" preupg-filelist
 %if %{build_ui}
 ### preupgrade-assistant-ui ###
@@ -191,7 +266,7 @@ get_file_list d %{python_sitelib}/preupg/ui.*$ " " \
 # clean section should not be used on Fedora per Guidelines
 %clean
 rm -rf $RPM_BUILD_ROOT
-%endif # not Fedora
+%endif not Fedora
 
 %post
 /sbin/ldconfig
@@ -256,6 +331,12 @@ fi
 %ghost %config(noreplace) %{_sharedstatedir}/preupgrade/secret_key
 %doc %{_datadir}/preupgrade/README.ui
 %endif # build_ui
+
+%if 0%{?rhel} && 0%{?rhel} <= 5
+%{python_sitelib}/preupg_pykickstart/
+%{_bindir}/preupg_ksvalidator
+%{_bindir}/preupg_ksverdiff
+%endif # RHEL <= 5
 
 %files tools
 %defattr(-,root,root,-)
