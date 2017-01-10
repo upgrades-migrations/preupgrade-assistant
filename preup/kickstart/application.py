@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
 
 """
 Class creates a kickstart for migration scenario
@@ -15,7 +16,7 @@ from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import makeVersion
 
 from preup.logger import logger, logging, LoggerHelper, logger_debug, log_message
-from preup.utils import FileHelper, ProcessHelper
+from preup.utils import FileHelper, ProcessHelper, MessageHelper
 from preup import settings
 
 
@@ -196,13 +197,14 @@ class KickstartGenerator(object):
         list_issues = [' --', 'group', 'user ', 'repo', 'url', 'rootpw']
         kickstart_data = []
         try:
-            kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kick_start_name),
+            kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR,
+                                                                      self.kick_start_name),
                                                          'rb',
                                                          method=True,
                                                          decode_flag=False)
         except IOError:
-            log_message("The %s file is missing. The partitioning layout might not be complete." % self.kick_start_name,
-                        level=logging.WARNING)
+            log_message("The %s file is missing. The partitioning layout "
+                        "might not be complete." % self.kick_start_name, level=logging.WARNING)
             return None
         for index, row in enumerate(kickstart_data):
             tag = [com for com in list_issues if row.startswith(com)]
@@ -210,9 +212,27 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         FileHelper.write_to_file(self.kick_start_name, 'wb', kickstart_data)
 
+    def check_postmigrate_dir(self):
+        if not FileHelper.get_list_executable_files_in_dir(os.path.join(settings.result_dir,
+                                                                        settings.postmigrate_dir)):
+            if not self.conf.assumeyes:
+                accept = ['y', 'yes']
+                log_message("The '%s' folder is empty - scripts to be executed "
+                            "after the migration should be placed "
+                            "here." % os.path.join(settings.result_dir,
+                                                   settings.postmigrate_dir))
+                message = "Do you want to continue with kickstart " \
+                          "generation without any postmigration scripts?"
+                choice = MessageHelper.get_message(message=message, prompt="(Y/n)")
+                if choice.lower() not in accept:
+                    return None
+        return True
+
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
+            return None
+        if not self.check_postmigrate_dir():
             return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
