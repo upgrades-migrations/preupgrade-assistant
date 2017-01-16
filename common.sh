@@ -540,7 +540,7 @@ conf_get_section() {
     while read line; do
         [ -z "$line" ] && continue
         echo "$line" | grep -q "^\[..*\]$" && {
-            _section="$(echo "$line" | sed -E "s/^\[(.+)\]$/\1/")"
+            _section="$(echo "$line" | sed -r "s/^\[(.+)\]$/\1/")"
             continue # that's new section
         }
         [ -z "$_section" ] && continue
