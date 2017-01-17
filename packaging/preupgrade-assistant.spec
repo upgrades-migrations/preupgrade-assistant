@@ -1,7 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
-%if 0%{?rhel} > 5
+%if 0%{?rhel} && 0%{?rhel} > 5
 %global         build_ui 1
 %global         django_version  1.5.5
 %global         south_version   0.8.4
@@ -124,21 +124,21 @@ OpenSCAP is generated automatically.
 %prep
 %setup -n %{name}-%{version} -q
 
-%if 0%{?rhel}
-%patch0 -p1
-%endif # RHEL
-%if 0%{?rhel} && 0%{?rhel} <= 5
-%setup -n %{name}-%{version} -D -T -a 10
-%patch100 -p1
-%patch101 -p1
-%patch102 -p1
-%endif # RHEL <= 5
-
 %if %{build_ui}
 # Unpack UI-related tarballs
 %setup -q -n %{name}-%{version} -D -T -a 1
 %setup -q -n %{name}-%{version} -D -T -a 2
-%endif # not Fedora
+%endif # build_ui
+
+%if 0%{?rhel}
+%patch0 -p1
+%endif # RHEL
+%if 0%{?rhel} && 0%{?rhel} <= 5
+%setup -q -n %{name}-%{version} -D -T -a 10
+%patch100 -p1
+%patch101 -p1
+%patch102 -p1
+%endif # RHEL <= 5
 
 %build
 %{__python} setup.py build
