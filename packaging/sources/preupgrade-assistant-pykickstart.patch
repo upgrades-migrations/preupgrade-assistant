@@ -1,8 +1,8 @@
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index e0db0df..d9a3d13 100644
+index 0c58b0b..1f4cb28 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
-@@ -8,9 +8,9 @@ import shutil
+@@ -10,9 +10,9 @@ import shutil
  import os
  import imp
  
@@ -1237,7 +1237,7 @@ index 1350d19..0852297 100644
          pass
  
 diff --git a/pykickstart-1.74.20/pykickstart/parser.py b/pykickstart-1.74.20/pykickstart/parser.py
-index f71de9f..3c5b7d4 100644
+index f71de9f..1236a4f 100644
 --- a/pykickstart-1.74.20/pykickstart/parser.py
 +++ b/pykickstart-1.74.20/pykickstart/parser.py
 @@ -167,7 +167,7 @@ class Script(KickstartObject):
@@ -1276,6 +1276,16 @@ index f71de9f..3c5b7d4 100644
          # excluded groups so whatever tool doing package/group installation can
          # take appropriate action.
          self.excludedGroupList.extend(excludedGroupList)
+@@ -664,9 +664,6 @@ class KickstartParser:
+ 
+             elif self._state == STATE_PACKAGES:
+                 if not args and self._includeDepth == 0:
+-                    if self.version >= F8 :
+-                        warnings.warn(_("%s does not end with %%end.  This syntax has been deprecated.  It may be removed from future releases, which will result in a fatal error from kickstart.  Please modify your kickstart file to use this updated syntax.") % "%packages", DeprecationWarning)
+-
+                     self._state = STATE_END
+                 elif args[0] == "%end":
+                     self._state = STATE_COMMANDS
 diff --git a/pykickstart-1.74.20/pykickstart/version.py b/pykickstart-1.74.20/pykickstart/version.py
 index 1ccf5f6..c6a75bf 100644
 --- a/pykickstart-1.74.20/pykickstart/version.py

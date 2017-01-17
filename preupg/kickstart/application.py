@@ -147,9 +147,9 @@ class KickstartGenerator(object):
             tarball_name = os.path.splitext(os.path.splitext(os.path.basename(tarball))[0])[0]
         script_str = ''
         try:
-            script_path = settings.KS_TEMPLATE_POSTSCRIPT
+            script_path = settings.KS_POSTSCRIPT_TEMPLATE
         except AttributeError:
-            log_message('KS_TEMPLATE_POSTSCRIPT is not defined in settings.py.')
+            log_message('KS_POSTSCRIPT_TEMPLATE is not defined in settings.py.')
             return
         script_str = FileHelper.get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
         if not script_str:
@@ -217,10 +217,11 @@ class KickstartGenerator(object):
                                                                         settings.postmigrate_dir)):
             if not self.conf.assumeyes:
                 accept = ['y', 'yes']
-                log_message("The '%s' folder is empty - scripts to be executed "
-                            "after the migration should be placed "
-                            "here." % os.path.join(settings.result_dir,
-                                                   settings.postmigrate_dir))
+                log_message("The '%s' folder is empty - scripts to be"
+                            " executed after the migration should be placed"
+                            " here." % os.path.join(
+                                settings.assessment_results_dir,
+                                settings.postmigrate_dir))
                 message = "Do you want to continue with kickstart " \
                           "generation without any postmigration scripts?"
                 choice = MessageHelper.get_message(message=message, prompt="(Y/n)")
