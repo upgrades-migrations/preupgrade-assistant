@@ -164,7 +164,7 @@ index 9976225..5287f5b 100644
                  return ReturnValues.ROOT
  
 diff --git a/preupg/cli.py b/preupg/cli.py
-index e3d942d..41d53e9 100644
+index e3d942d..8e9b6a3 100644
 --- a/preupg/cli.py
 +++ b/preupg/cli.py
 @@ -1,7 +1,5 @@
@@ -175,16 +175,20 @@ index e3d942d..41d53e9 100644
  import optparse
  from optparse import OptionValueError
  
-@@ -171,7 +169,8 @@ Upload results to preupgrade assistant WEB-UI"
-             "--old-report-style",
-             action="store_true",
-             metavar="OLDREPORTSTYLE",
--            help="Use old report style without CSS issues."
-+            help="Use old report style without CSS issues. (Ignored when"
-+                 " OpenSCAP < 0:1.2.8-1)"
+@@ -167,12 +165,7 @@ Upload results to preupgrade assistant WEB-UI"
+                  (e.g.: x86_64). Use of the option is expected on 32b systems.
+                  """
          )
+-        self.parser.add_option(
+-            "--old-report-style",
+-            action="store_true",
+-            metavar="OLDREPORTSTYLE",
+-            help="Use old report style without CSS issues."
+-        )
++
  
  if __name__ == '__main__':
+     x = CLI()
 diff --git a/preupg/common.py b/preupg/common.py
 index 60286ae..4424bba 100644
 --- a/preupg/common.py
@@ -413,7 +417,7 @@ index 023d6e7..246caf5 100644
              exit_error()
  
 diff --git a/preupg/settings.py b/preupg/settings.py
-index d702c6c..c4b1c77 100644
+index d702c6c..0ff6d2e 100644
 --- a/preupg/settings.py
 +++ b/preupg/settings.py
 @@ -1,4 +1,3 @@
@@ -433,7 +437,7 @@ index d702c6c..c4b1c77 100644
  
  # dir where results of analysis are stored
  assessment_results_dir = os.path.join("/root", prefix)
-@@ -24,7 +26,7 @@ result_prefix = "result"
+@@ -24,11 +26,14 @@ result_prefix = "result"
  
  tarball_base = result_prefix + 's'
  tarball_prefix = "preupg_"
@@ -442,7 +446,14 @@ index d702c6c..c4b1c77 100644
  
  xml_result_name = result_prefix + '.xml'
  html_result_name = result_prefix + '.html'
-@@ -142,10 +144,10 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
+ 
++# OpenSCAP on RHEL 5 supports only the only report style
++old_report_style = True
++
+ xsl_sheet = "xccdf-report.xsl"
+ 
+ share_dir = "/usr/share"
+@@ -142,10 +147,10 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
                   "See help --dst-arch option.\n"
  migration_options = ['x86_64', 'ppc64']
  assessment_text = "Assessment of the system, running checks / SCE scripts"
@@ -456,7 +467,7 @@ index d702c6c..c4b1c77 100644
  kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
                   "The Kickstart file contains:\n" \
                   "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
-@@ -161,13 +163,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
+@@ -161,13 +166,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
  
  options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
  unknown_rules = "These rules do not exist:\n%s\n"
@@ -476,7 +487,7 @@ index d702c6c..c4b1c77 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 60aeb25..511a416 100644
+index 60aeb25..9467750 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
@@ -539,19 +550,6 @@ index 60aeb25..511a416 100644
              ProcessHelper.run_subprocess(cmd, print_output=False, shell=True)
              log_message("Executing script %s ...done" % scr)
  
-@@ -800,11 +802,7 @@ class OpenSCAPHelper(object):
-     @staticmethod
-     def get_xsl_stylesheet(old_style=False):
-         """Return full XSL stylesheet path"""
--        if old_style:
--            subfolder = "simple"
--        else:
--            subfolder = "complex"
--        return os.path.join(settings.data_dir, "report", subfolder,
-+        return os.path.join(settings.data_dir, "report", "simple",
-                             settings.xsl_sheet)
- 
-     @staticmethod
 diff --git a/preupg/xccdf.py b/preupg/xccdf.py
 index 4363cb8..84540e5 100644
 --- a/preupg/xccdf.py
