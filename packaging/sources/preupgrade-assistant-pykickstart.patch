@@ -1,0 +1,1338 @@
+diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
+index e0db0df..d9a3d13 100644
+--- a/preupg/kickstart/application.py
++++ b/preupg/kickstart/application.py
+@@ -8,9 +8,9 @@ import shutil
+ import os
+ import imp
+ 
+-from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
+-from pykickstart.parser import KickstartParser, KickstartError, Script
+-from pykickstart.version import makeVersion
++from preupg_pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
++from preupg_pykickstart.parser import KickstartParser, KickstartError, Script
++from preupg_pykickstart.version import makeVersion
+ 
+ from preupg.logger import logger, logging, LoggerHelper, logger_debug, log_message
+ from preupg.utils import FileHelper, ProcessHelper, MessageHelper
+diff --git a/preupg/kickstart/plugins/partitioning.py b/preupg/kickstart/plugins/partitioning.py
+index b43be9d..aa586f1 100644
+--- a/preupg/kickstart/plugins/partitioning.py
++++ b/preupg/kickstart/plugins/partitioning.py
+@@ -6,7 +6,7 @@ Class creates a kickstart for migration scenario
+ 
+ import os
+ 
+-from pykickstart.constants import CLEARPART_TYPE_ALL
++from preupg_pykickstart.constants import CLEARPART_TYPE_ALL
+ from preupg.kickstart.application import BaseKickstart
+ from preupg.utils import FileHelper
+ from preupg.logger import log_message, logging
+diff --git a/pykickstart-1.74.20/pykickstart/base.py b/pykickstart-1.74.20/pykickstart/base.py
+index ac17f22..f1a4834 100644
+--- a/pykickstart-1.74.20/pykickstart/base.py
++++ b/pykickstart-1.74.20/pykickstart/base.py
+@@ -43,10 +43,10 @@ gettext.textdomain("pykickstart")
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+ 
+ import warnings
+-from pykickstart.errors import *
+-from pykickstart.ko import *
+-from pykickstart.parser import Packages
+-from pykickstart.version import versionToString
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.ko import *
++from preupg_pykickstart.parser import Packages
++from preupg_pykickstart.version import versionToString
+ 
+ ###
+ ### COMMANDS
+@@ -234,11 +234,11 @@ class BaseHandler(KickstartObject):
+                        manipulated internally and called through dispatcher.
+            currentLine -- The current unprocessed line from the input file
+                           that caused this handler to be run.
+-           packages -- An instance of pykickstart.parser.Packages which
++           packages -- An instance of preupg_pykickstart.parser.Packages which
+                        describes the packages section of the input file.
+            platform -- A string describing the hardware platform, which is
+                        needed only by system-config-kickstart.
+-           scripts  -- A list of pykickstart.parser.Script instances, which is
++           scripts  -- A list of preupg_pykickstart.parser.Script instances, which is
+                        populated by KickstartParser.addScript and describes the
+                        %pre/%post/%traceback script section of the input file.
+         """
+@@ -332,13 +332,13 @@ class BaseHandler(KickstartObject):
+     def _registerCommands(self, mapping={}, dataMapping={}, commandUpdates={},
+                           dataUpdates={}):
+         if mapping == {}:
+-            from pykickstart.handlers.control import commandMap
++            from preupg_pykickstart.handlers.control import commandMap
+             cMap = commandMap[self.version]
+         else:
+             cMap = mapping
+ 
+         if dataMapping == {}:
+-            from pykickstart.handlers.control import dataMap
++            from preupg_pykickstart.handlers.control import dataMap
+             dMap = dataMap[self.version]
+         else:
+             dMap = dataMapping
+diff --git a/pykickstart-1.74.20/pykickstart/commands/__init__.py b/pykickstart-1.74.20/pykickstart/commands/__init__.py
+index 9066dd1..cd022fb 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/__init__.py
++++ b/pykickstart-1.74.20/pykickstart/commands/__init__.py
+@@ -17,11 +17,11 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-__pychecker__ = "no-import"
+-import authconfig, autopart, autostep, bootloader, clearpart, device
+-import deviceprobe, displaymode, dmraid, driverdisk, fcoe, firewall, firstboot
+-import group, ignoredisk, interactive, iscsi, iscsiname, key, keyboard, lang
+-import langsupport, lilocheck, logging, logvol, mediacheck, method, monitor
+-import mouse, multipath, network, partition, raid, reboot, repo, rescue, rootpw
+-import selinux, services, skipx, sshpw, timezone, updates, upgrade, user
+-import unsupported_hardware, vnc, volgroup, xconfig, zerombr, zfcp
++from  preupg_pykickstart.commands import \
++    authconfig, autopart, autostep, bootloader, clearpart, device, \
++    deviceprobe, displaymode, dmraid, driverdisk, fcoe, firewall, firstboot, \
++    group, ignoredisk, interactive, iscsi, iscsiname, key, keyboard, lang, \
++    langsupport, lilocheck, logging, logvol, mediacheck, method, monitor, \
++    mouse, multipath, network, partition, raid, reboot, repo, rescue, rootpw, \
++    selinux, services, skipx, sshpw, timezone, updates, upgrade, user, \
++    unsupported_hardware, vnc, volgroup, xconfig, zerombr, zfcp
+diff --git a/pykickstart-1.74.20/pykickstart/commands/authconfig.py b/pykickstart-1.74.20/pykickstart/commands/authconfig.py
+index 9af9c0f..cc90116 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/authconfig.py
++++ b/pykickstart-1.74.20/pykickstart/commands/authconfig.py
+@@ -17,7 +17,7 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
++from preupg_pykickstart.base import *
+ 
+ class FC3_Authconfig(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/autopart.py b/pykickstart-1.74.20/pykickstart/commands/autopart.py
+index eb7f3d4..775c700 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/autopart.py
++++ b/pykickstart-1.74.20/pykickstart/commands/autopart.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/autostep.py b/pykickstart-1.74.20/pykickstart/commands/autostep.py
+index e6ae71c..5bfce6f 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/autostep.py
++++ b/pykickstart-1.74.20/pykickstart/commands/autostep.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_AutoStep(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/bootloader.py b/pykickstart-1.74.20/pykickstart/commands/bootloader.py
+index 7049d20..83deb5d 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/bootloader.py
++++ b/pykickstart-1.74.20/pykickstart/commands/bootloader.py
+@@ -19,8 +19,8 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_Bootloader(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/clearpart.py b/pykickstart-1.74.20/pykickstart/commands/clearpart.py
+index 23537a1..e76fa9a 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/clearpart.py
++++ b/pykickstart-1.74.20/pykickstart/commands/clearpart.py
+@@ -19,10 +19,10 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_ClearPart(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/device.py b/pykickstart-1.74.20/pykickstart/commands/device.py
+index 321410e..eb425f6 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/device.py
++++ b/pykickstart-1.74.20/pykickstart/commands/device.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/deviceprobe.py b/pykickstart-1.74.20/pykickstart/commands/deviceprobe.py
+index b653860..ade4210 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/deviceprobe.py
++++ b/pykickstart-1.74.20/pykickstart/commands/deviceprobe.py
+@@ -19,7 +19,7 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
++from preupg_pykickstart.base import *
+ 
+ class FC3_DeviceProbe(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/displaymode.py b/pykickstart-1.74.20/pykickstart/commands/displaymode.py
+index 6a12d58..ef8902d 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/displaymode.py
++++ b/pykickstart-1.74.20/pykickstart/commands/displaymode.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/dmraid.py b/pykickstart-1.74.20/pykickstart/commands/dmraid.py
+index 993575a..f32bea5 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/dmraid.py
++++ b/pykickstart-1.74.20/pykickstart/commands/dmraid.py
+@@ -18,9 +18,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/driverdisk.py b/pykickstart-1.74.20/pykickstart/commands/driverdisk.py
+index 93d9d54..64c1148 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/driverdisk.py
++++ b/pykickstart-1.74.20/pykickstart/commands/driverdisk.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/fcoe.py b/pykickstart-1.74.20/pykickstart/commands/fcoe.py
+index cf0ff04..297074d 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/fcoe.py
++++ b/pykickstart-1.74.20/pykickstart/commands/fcoe.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/firewall.py b/pykickstart-1.74.20/pykickstart/commands/firewall.py
+index 6a05f43..39424c5 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/firewall.py
++++ b/pykickstart-1.74.20/pykickstart/commands/firewall.py
+@@ -19,9 +19,9 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/firstboot.py b/pykickstart-1.74.20/pykickstart/commands/firstboot.py
+index 05c0ac1..95040aa 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/firstboot.py
++++ b/pykickstart-1.74.20/pykickstart/commands/firstboot.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_Firstboot(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/group.py b/pykickstart-1.74.20/pykickstart/commands/group.py
+index 80ba5bd..6fce4f3 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/group.py
++++ b/pykickstart-1.74.20/pykickstart/commands/group.py
+@@ -17,10 +17,10 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/ignoredisk.py b/pykickstart-1.74.20/pykickstart/commands/ignoredisk.py
+index 83e1048..3391757 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/ignoredisk.py
++++ b/pykickstart-1.74.20/pykickstart/commands/ignoredisk.py
+@@ -19,8 +19,8 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/interactive.py b/pykickstart-1.74.20/pykickstart/commands/interactive.py
+index 366e4a5..fdcbd51 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/interactive.py
++++ b/pykickstart-1.74.20/pykickstart/commands/interactive.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/iscsi.py b/pykickstart-1.74.20/pykickstart/commands/iscsi.py
+index 944f13c..6844df0 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/iscsi.py
++++ b/pykickstart-1.74.20/pykickstart/commands/iscsi.py
+@@ -18,9 +18,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc.
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/iscsiname.py b/pykickstart-1.74.20/pykickstart/commands/iscsiname.py
+index a87d063..f051ab4 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/iscsiname.py
++++ b/pykickstart-1.74.20/pykickstart/commands/iscsiname.py
+@@ -18,9 +18,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/key.py b/pykickstart-1.74.20/pykickstart/commands/key.py
+index 00e1e37..c09f13e 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/key.py
++++ b/pykickstart-1.74.20/pykickstart/commands/key.py
+@@ -17,10 +17,10 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/keyboard.py b/pykickstart-1.74.20/pykickstart/commands/keyboard.py
+index babc2ac..69437f0 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/keyboard.py
++++ b/pykickstart-1.74.20/pykickstart/commands/keyboard.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/lang.py b/pykickstart-1.74.20/pykickstart/commands/lang.py
+index cf5e46c..d946c41 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/lang.py
++++ b/pykickstart-1.74.20/pykickstart/commands/lang.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/langsupport.py b/pykickstart-1.74.20/pykickstart/commands/langsupport.py
+index 73a9e53..edb499c 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/langsupport.py
++++ b/pykickstart-1.74.20/pykickstart/commands/langsupport.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_LangSupport(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/lilocheck.py b/pykickstart-1.74.20/pykickstart/commands/lilocheck.py
+index 92b3f93..27ead23 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/lilocheck.py
++++ b/pykickstart-1.74.20/pykickstart/commands/lilocheck.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/logging.py b/pykickstart-1.74.20/pykickstart/commands/logging.py
+index 6985619..b35e740 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/logging.py
++++ b/pykickstart-1.74.20/pykickstart/commands/logging.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/logvol.py b/pykickstart-1.74.20/pykickstart/commands/logvol.py
+index 7755d8c..e2b4700 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/logvol.py
++++ b/pykickstart-1.74.20/pykickstart/commands/logvol.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/mediacheck.py b/pykickstart-1.74.20/pykickstart/commands/mediacheck.py
+index 388823a..5d9490e 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/mediacheck.py
++++ b/pykickstart-1.74.20/pykickstart/commands/mediacheck.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/method.py b/pykickstart-1.74.20/pykickstart/commands/method.py
+index e21064a..2f735fb 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/method.py
++++ b/pykickstart-1.74.20/pykickstart/commands/method.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc.
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/monitor.py b/pykickstart-1.74.20/pykickstart/commands/monitor.py
+index 8c8c2c4..6c88452 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/monitor.py
++++ b/pykickstart-1.74.20/pykickstart/commands/monitor.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/mouse.py b/pykickstart-1.74.20/pykickstart/commands/mouse.py
+index c643bce..4afb3e3 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/mouse.py
++++ b/pykickstart-1.74.20/pykickstart/commands/mouse.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc.
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/multipath.py b/pykickstart-1.74.20/pykickstart/commands/multipath.py
+index 3941c89..b9da32a 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/multipath.py
++++ b/pykickstart-1.74.20/pykickstart/commands/multipath.py
+@@ -18,9 +18,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/network.py b/pykickstart-1.74.20/pykickstart/commands/network.py
+index 7b154d9..93f7ecb 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/network.py
++++ b/pykickstart-1.74.20/pykickstart/commands/network.py
+@@ -17,10 +17,10 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/partition.py b/pykickstart-1.74.20/pykickstart/commands/partition.py
+index 822225e..9ff0ea1 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/partition.py
++++ b/pykickstart-1.74.20/pykickstart/commands/partition.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/raid.py b/pykickstart-1.74.20/pykickstart/commands/raid.py
+index 3c929bb..f150c7e 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/raid.py
++++ b/pykickstart-1.74.20/pykickstart/commands/raid.py
+@@ -19,9 +19,9 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/reboot.py b/pykickstart-1.74.20/pykickstart/commands/reboot.py
+index 391af14..4eeb021 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/reboot.py
++++ b/pykickstart-1.74.20/pykickstart/commands/reboot.py
+@@ -17,10 +17,10 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_Reboot(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/repo.py b/pykickstart-1.74.20/pykickstart/commands/repo.py
+index 99c22ad..6381beb 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/repo.py
++++ b/pykickstart-1.74.20/pykickstart/commands/repo.py
+@@ -17,10 +17,10 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import string
+diff --git a/pykickstart-1.74.20/pykickstart/commands/rescue.py b/pykickstart-1.74.20/pykickstart/commands/rescue.py
+index 16cd4e7..b2e077f 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/rescue.py
++++ b/pykickstart-1.74.20/pykickstart/commands/rescue.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/rootpw.py b/pykickstart-1.74.20/pykickstart/commands/rootpw.py
+index e038b45..db08c9c 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/rootpw.py
++++ b/pykickstart-1.74.20/pykickstart/commands/rootpw.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/selinux.py b/pykickstart-1.74.20/pykickstart/commands/selinux.py
+index 9f8059c..46b063f 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/selinux.py
++++ b/pykickstart-1.74.20/pykickstart/commands/selinux.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_SELinux(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/services.py b/pykickstart-1.74.20/pykickstart/commands/services.py
+index 72f59b8..da24a58 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/services.py
++++ b/pykickstart-1.74.20/pykickstart/commands/services.py
+@@ -19,9 +19,9 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/skipx.py b/pykickstart-1.74.20/pykickstart/commands/skipx.py
+index 36d1a8d..d2ee2bb 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/skipx.py
++++ b/pykickstart-1.74.20/pykickstart/commands/skipx.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/sshpw.py b/pykickstart-1.74.20/pykickstart/commands/sshpw.py
+index e7867eb..80dc1db 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/sshpw.py
++++ b/pykickstart-1.74.20/pykickstart/commands/sshpw.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/timezone.py b/pykickstart-1.74.20/pykickstart/commands/timezone.py
+index f5441de..07bce53 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/timezone.py
++++ b/pykickstart-1.74.20/pykickstart/commands/timezone.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/unsupported_hardware.py b/pykickstart-1.74.20/pykickstart/commands/unsupported_hardware.py
+index 5776ce6..e88523e 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/unsupported_hardware.py
++++ b/pykickstart-1.74.20/pykickstart/commands/unsupported_hardware.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc.
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/updates.py b/pykickstart-1.74.20/pykickstart/commands/updates.py
+index 53ec49f..8834bbf 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/updates.py
++++ b/pykickstart-1.74.20/pykickstart/commands/updates.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/upgrade.py b/pykickstart-1.74.20/pykickstart/commands/upgrade.py
+index bb43136..56a0935 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/upgrade.py
++++ b/pykickstart-1.74.20/pykickstart/commands/upgrade.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/user.py b/pykickstart-1.74.20/pykickstart/commands/user.py
+index 093dada..4ee75d3 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/user.py
++++ b/pykickstart-1.74.20/pykickstart/commands/user.py
+@@ -19,10 +19,10 @@
+ #
+ import string
+ 
+-from pykickstart.base import *
+-from pykickstart.constants import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.constants import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/vnc.py b/pykickstart-1.74.20/pykickstart/commands/vnc.py
+index 200ccfb..c58b4a9 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/vnc.py
++++ b/pykickstart-1.74.20/pykickstart/commands/vnc.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ class FC3_Vnc(KickstartCommand):
+     removedKeywords = KickstartCommand.removedKeywords
+diff --git a/pykickstart-1.74.20/pykickstart/commands/volgroup.py b/pykickstart-1.74.20/pykickstart/commands/volgroup.py
+index 01e9767..9919e68 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/volgroup.py
++++ b/pykickstart-1.74.20/pykickstart/commands/volgroup.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/commands/xconfig.py b/pykickstart-1.74.20/pykickstart/commands/xconfig.py
+index d427331..1a84e35 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/xconfig.py
++++ b/pykickstart-1.74.20/pykickstart/commands/xconfig.py
+@@ -17,9 +17,9 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/zerombr.py b/pykickstart-1.74.20/pykickstart/commands/zerombr.py
+index 79555a9..e09fe5c 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/zerombr.py
++++ b/pykickstart-1.74.20/pykickstart/commands/zerombr.py
+@@ -19,8 +19,8 @@
+ #
+ import warnings
+ 
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+diff --git a/pykickstart-1.74.20/pykickstart/commands/zfcp.py b/pykickstart-1.74.20/pykickstart/commands/zfcp.py
+index b455a81..d39a45f 100644
+--- a/pykickstart-1.74.20/pykickstart/commands/zfcp.py
++++ b/pykickstart-1.74.20/pykickstart/commands/zfcp.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.options import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.options import *
+ 
+ import gettext
+ import warnings
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/control.py b/pykickstart-1.74.20/pykickstart/handlers/control.py
+index 6721be2..d0084c1 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/control.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/control.py
+@@ -17,11 +17,11 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.version import *
+-from pykickstart.commands import *
++from preupg_pykickstart.version import *
++from preupg_pykickstart.commands import *
+ 
+ """This map is keyed on kickstart syntax version as provided by
+-   pykickstart.version.  Within each sub-dict is a mapping from command name
++   preupg_pykickstart.version.  Within each sub-dict is a mapping from command name
+    to the class that handles it.  This is an onto mapping - that is, multiple
+    command names can map to the same class.  However, the Handler will ensure
+    that only one instance of each class ever exists.
+@@ -874,7 +874,7 @@ commandMap = {
+ }
+ 
+ """This map is keyed on kickstart syntax version as provided by
+-   pykickstart.version.  Within each sub-dict is a mapping from a data object
++   preupg_pykickstart.version.  Within each sub-dict is a mapping from a data object
+    name to the class that provides it.  This is a bijective mapping - that is,
+    each name maps to exactly one data class and all data classes have a name.
+    More than one instance of each class is allowed to exist, however.
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f10.py b/pykickstart-1.74.20/pykickstart/handlers/f10.py
+index 17c8211..327b058 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f10.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f10.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F10Handler(BaseHandler):
+     version = F10
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f11.py b/pykickstart-1.74.20/pykickstart/handlers/f11.py
+index d21aee3..06895d2 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f11.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f11.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F11Handler(BaseHandler):
+     version = F11
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f12.py b/pykickstart-1.74.20/pykickstart/handlers/f12.py
+index cea3ece..ba237ba 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f12.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f12.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F12Handler(BaseHandler):
+     version = F12
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f13.py b/pykickstart-1.74.20/pykickstart/handlers/f13.py
+index b94c738..3c6375e 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f13.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f13.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F13Handler(BaseHandler):
+     version = F13
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f7.py b/pykickstart-1.74.20/pykickstart/handlers/f7.py
+index 5e856ea..67d4087 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f7.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f7.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F7Handler(BaseHandler):
+     version = F7
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f8.py b/pykickstart-1.74.20/pykickstart/handlers/f8.py
+index 1a97881..b682944 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f8.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f8.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F8Handler(BaseHandler):
+     version = F8
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/f9.py b/pykickstart-1.74.20/pykickstart/handlers/f9.py
+index 116f1b5..bc19a65 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/f9.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/f9.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class F9Handler(BaseHandler):
+     version = F9
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/fc3.py b/pykickstart-1.74.20/pykickstart/handlers/fc3.py
+index a115dc2..75d0e79 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/fc3.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/fc3.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class FC3Handler(BaseHandler):
+     version = FC3
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/fc4.py b/pykickstart-1.74.20/pykickstart/handlers/fc4.py
+index fd47b73..40e05d1 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/fc4.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/fc4.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class FC4Handler(BaseHandler):
+     version = FC4
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/fc5.py b/pykickstart-1.74.20/pykickstart/handlers/fc5.py
+index bcdc29d..eb4d081 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/fc5.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/fc5.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class FC5Handler(BaseHandler):
+     version = FC5
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/fc6.py b/pykickstart-1.74.20/pykickstart/handlers/fc6.py
+index c83a929..81e9f05 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/fc6.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/fc6.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class FC6Handler(BaseHandler):
+     version = FC6
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/rhel3.py b/pykickstart-1.74.20/pykickstart/handlers/rhel3.py
+index 131763c..eba1364 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/rhel3.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/rhel3.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class RHEL3Handler(BaseHandler):
+     version = RHEL3
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/rhel4.py b/pykickstart-1.74.20/pykickstart/handlers/rhel4.py
+index 3496c43..061552f 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/rhel4.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/rhel4.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class RHEL4Handler(BaseHandler):
+     version = RHEL4
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/rhel5.py b/pykickstart-1.74.20/pykickstart/handlers/rhel5.py
+index abb7a8d..ae54f9f 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/rhel5.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/rhel5.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class RHEL5Handler(BaseHandler):
+     version = RHEL5
+diff --git a/pykickstart-1.74.20/pykickstart/handlers/rhel6.py b/pykickstart-1.74.20/pykickstart/handlers/rhel6.py
+index 7202419..779ea2b 100644
+--- a/pykickstart-1.74.20/pykickstart/handlers/rhel6.py
++++ b/pykickstart-1.74.20/pykickstart/handlers/rhel6.py
+@@ -17,8 +17,8 @@
+ # subject to the GNU General Public License and may only be used or replicated
+ # with the express permission of Red Hat, Inc. 
+ #
+-from pykickstart.base import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.version import *
+ 
+ class RHEL6Handler(BaseHandler):
+     version = RHEL6
+diff --git a/pykickstart-1.74.20/pykickstart/ko.py b/pykickstart-1.74.20/pykickstart/ko.py
+index 1350d19..0852297 100644
+--- a/pykickstart-1.74.20/pykickstart/ko.py
++++ b/pykickstart-1.74.20/pykickstart/ko.py
+@@ -18,18 +18,18 @@
+ # with the express permission of Red Hat, Inc. 
+ #
+ """
+-Base classes for internal pykickstart use.
++Base classes for internal preupg_pykickstart use.
+ 
+ The module exports the following important classes:
+ 
+-    KickstartObject - The base class for all classes in pykickstart
++    KickstartObject - The base class for all classes in preupg_pykickstart
+ """
+ 
+ class KickstartObject(object):
+-    """The base class for all other classes in pykickstart."""
++    """The base class for all other classes in preupg_pykickstart."""
+     def __init__(self, *args, **kwargs):
+         """Create a new KickstartObject instance.  All other classes in
+-           pykickstart should be derived from this one.  Instance attributes:
++           preupg_pykickstart should be derived from this one.  Instance attributes:
+         """
+         pass
+ 
+diff --git a/pykickstart-1.74.20/pykickstart/parser.py b/pykickstart-1.74.20/pykickstart/parser.py
+index f71de9f..3c5b7d4 100644
+--- a/pykickstart-1.74.20/pykickstart/parser.py
++++ b/pykickstart-1.74.20/pykickstart/parser.py
+@@ -167,7 +167,7 @@ class Script(KickstartObject):
+            logfile     -- Where all messages from the script should be logged.
+            script      -- A string containing all the lines of the script.
+            type        -- The type of the script, which can be KS_SCRIPT_* from
+-                          pykickstart.constants.
++                          preupg_pykickstart.constants.
+         """
+         KickstartObject.__init__(self, *args, **kwargs)
+         self.script = string.join(script, "")
+@@ -221,7 +221,7 @@ class Group:
+ 
+            name    -- The group's identifier
+            include -- The level of how much of the group should be included.
+-                      Values can be GROUP_* from pykickstart.constants.
++                      Values can be GROUP_* from preupg_pykickstart.constants.
+         """
+         self.name = name
+         self.include = include
+@@ -266,7 +266,7 @@ class Packages(KickstartObject):
+                                 -@ symbols.
+            handleMissing -- If unknown packages are specified in the %packages
+                             section, should it be ignored or not?  Values can
+-                            be KS_MISSING_* from pykickstart.constants.
++                            be KS_MISSING_* from preupg_pykickstart.constants.
+            packageList   -- A list of all the packages specified in the
+                             %packages section.
+            instLangs     -- A list of languages to install.
+@@ -387,7 +387,7 @@ class Packages(KickstartObject):
+         self.groupList = filter(lambda g: g.name not in excludedGroupNames, self.groupList)
+ 
+         # Second, the package list could have included globs which are not
+-        # processed by pykickstart.  In that case we need to preserve a list of
++        # processed by preupg_pykickstart.  In that case we need to preserve a list of
+         # excluded groups so whatever tool doing package/group installation can
+         # take appropriate action.
+         self.excludedGroupList.extend(excludedGroupList)
+diff --git a/pykickstart-1.74.20/pykickstart/version.py b/pykickstart-1.74.20/pykickstart/version.py
+index 1ccf5f6..c6a75bf 100644
+--- a/pykickstart-1.74.20/pykickstart/version.py
++++ b/pykickstart-1.74.20/pykickstart/version.py
+@@ -49,7 +49,7 @@ from urlgrabber import urlopen
+ import gettext
+ _ = lambda x: gettext.ldgettext("pykickstart", x)
+ 
+-from pykickstart.errors import KickstartVersionError
++from preupg_pykickstart.errors import KickstartVersionError
+ 
+ # Symbolic names for internal version numbers.
+ RHEL3 = 900
+@@ -171,8 +171,8 @@ def returnClassForVersion(version=DEVEL):
+     module = module.lower()
+ 
+     try:
+-        import pykickstart.handlers
+-        sys.path.extend(pykickstart.handlers.__path__)
++        import preupg_pykickstart.handlers
++        sys.path.extend(preupg_pykickstart.handlers.__path__)
+         found = imputil.imp.find_module(module)
+         loaded = imputil.imp.load_module(module, found[0], found[1], found[2])
+ 
+diff --git a/pykickstart-1.74.20/tools/ksvalidator b/pykickstart-1.74.20/tools/ksvalidator
+index 722bba3..b1dd857 100755
+--- a/pykickstart-1.74.20/tools/ksvalidator
++++ b/pykickstart-1.74.20/tools/ksvalidator
+@@ -26,9 +26,9 @@ import warnings
+ import tempfile
+ import urlgrabber
+ import shutil
+-from pykickstart.errors import *
+-from pykickstart.parser import *
+-from pykickstart.version import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.parser import *
++from preupg_pykickstart.version import *
+ 
+ import gettext
+ gettext.install("pykickstart", unicode=True)
+diff --git a/pykickstart-1.74.20/tools/ksverdiff b/pykickstart-1.74.20/tools/ksverdiff
+index 3135fc8..19c2fa5 100755
+--- a/pykickstart-1.74.20/tools/ksverdiff
++++ b/pykickstart-1.74.20/tools/ksverdiff
+@@ -23,10 +23,10 @@ import optparse
+ import os
+ import sys
+ import warnings
+-from pykickstart.base import *
+-from pykickstart.errors import *
+-from pykickstart.parser import *
+-from pykickstart.version import *
++from preupg_pykickstart.base import *
++from preupg_pykickstart.errors import *
++from preupg_pykickstart.parser import *
++from preupg_pykickstart.version import *
+ 
+ import gettext
+ gettext.textdomain("pykickstart")
