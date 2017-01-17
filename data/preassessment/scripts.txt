@@ -1,4 +1,4 @@
-rpm -qa --qf "%{NAME}\t%{VENDOR}\t%|RSAHEADER?{%{RSAHEADER:pgpsig}}:{(none)}|\n"=rpm_qa.log=RPM_QA=All installed packages=YES=RHEL6_All_installed_packages
+rpm -qa --qf "%{NAME}\t%{VENDOR}\t%|DSAHEADER?{%{DSAHEADER:pgpsig}}:{%|RSAHEADER?{%{RSAHEADER:pgpsig}}:{(none)}|}|\n"=rpm_qa.log=RPM_QA=All installed packages=YES=All_installed_packages
 rpm -Va=rpm_Va.log=ALLCHANGED=All changed files=YES=All_changed_files
 grep -e "c /" rpm_Va.log=rpm_etc_Va.log=CONFIGCHANGED=Changed config files=NO
 getent passwd=passwd.log=PASSWD=All users=YES=Users
