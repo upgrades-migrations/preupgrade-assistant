@@ -371,10 +371,10 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index 023d6e7..246caf5 100644
+index f7d2923..292ef34 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
-@@ -26,7 +26,6 @@ These functions are available:
+@@ -19,7 +19,6 @@ These functions are available:
  * exit_* -- terminate execution with appropriate exit code
  """
  
@@ -382,7 +382,7 @@ index 023d6e7..246caf5 100644
  import os
  import sys
  import re
-@@ -297,7 +296,7 @@ def _log_risk(severity, message):
+@@ -286,7 +285,7 @@ def _log_risk(severity, message):
      """
      log risk level to stderr
      """
@@ -391,16 +391,16 @@ index 023d6e7..246caf5 100644
  
  
  def log_extreme_risk(message):
-@@ -355,7 +354,7 @@ def _log(severity, message, component_arg=None):
+@@ -338,7 +337,7 @@ def _log(severity, message):
+     :param message:message to be logged
+     :return:
      """
-     global component
-     comp_show = component_arg or component
--    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)), end="", file=sys.stderr)
-+    print("preupg.log.%s: %s: %s\n" % (severity, comp_show, message.encode(settings.defenc)))
+-    print("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
++    print("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)))
  
  
- def log_error(message, component_arg=None):
-@@ -810,13 +809,13 @@ def deploy_hook(*args):
+ def log_error(message):
+@@ -783,13 +782,13 @@ def deploy_hook(*args):
                      exit_error()
                  try:
                      shutil.copytree(arg, hook_arg)
