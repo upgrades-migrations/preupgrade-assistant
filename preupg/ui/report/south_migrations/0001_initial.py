@@ -126,7 +126,6 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('message', self.gf('django.db.models.fields.TextField')()),
             ('level', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('component', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
             ('result', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['report.TestResult'])),
         ))
@@ -273,7 +272,6 @@ class Migration(SchemaMigration):
         },
         u'report.testlog': {
             'Meta': {'object_name': 'TestLog'},
-            'component': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'level': ('django.db.models.fields.CharField', [], {'max_length': '32'}),

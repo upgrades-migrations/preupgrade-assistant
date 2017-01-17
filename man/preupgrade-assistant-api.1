@@ -91,7 +91,7 @@ Your script should also tell the administrator how risky it is to upgrade your c
 
 \fBneeds_action\fP - The test failed with the exit_fail return code but the module developer added the log_high_risk before exit_fail.
 
-\fBfail\fP - The test failed. The in-place upgrade is not recommended and marked as an EXTERME risk. 
+\fBfail\fP - The test failed. The in-place upgrade is not recommended and marked as an EXTERME risk.
 
 .SH RISK ASSESSMENT LEVELS
 The available risk assessment levels are:
@@ -110,11 +110,11 @@ The levels None, Slight and Medium change return code exit_fail to exit_needs_in
 
 There are several functions which do logging:
 
-\fBlog_{debug,info,warning,error} <component> <message>\fP
+\fBlog_{debug,info,warning,error} <message>\fP
 
 The function creates logs in the format:
 
-<SEVERITIES> <component> <TIMESTAMP> <MESSAGE>
+<SEVERITIES> <TIMESTAMP> <MESSAGE>
 
 .SH INI FILE EXAMPLE
 

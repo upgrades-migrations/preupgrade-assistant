@@ -184,7 +184,7 @@ class ReportParser(object):
         """
         parse test's logs; result is list of dicts:
         [
-            {'level': '', 'date': '', 'component': '', 'message': ''}
+            {'level': '', 'date': '', 'message': ''}
         ]
         """
         if not text:
@@ -192,7 +192,7 @@ class ReportParser(object):
         text = text.strip()
         lines = text.split('\n')
 
-        log_regex = "preupg\.log\.(?P<level>(ERROR|WARNING|INFO|DEBUG)): (?P<component>\S+): (?P<date_str>\S+) (?P<time>\S+) (?P<message>.+)"
+        log_regex = "preupg\.log\.(?P<level>(ERROR|WARNING|INFO|DEBUG)): (?P<date_str>\S+) (?P<time>\S+) (?P<message>.+)"
         risk_regex = "preupg\.risk\.(?P<level>\w+): (?P<message>.+)"
         date_format = '%Y-%m-%d %H:%M'
         logs = []
