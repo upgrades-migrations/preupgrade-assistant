@@ -77,7 +77,7 @@ index f21c038..cef8a3a 100644
                  config.set(section, key, val)
  
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 48d61e1..0a7c9a8 100644
+index d364cb6..0c58b0b 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -9,7 +9,6 @@ import base64
@@ -88,7 +88,7 @@ index 48d61e1..0a7c9a8 100644
  
  from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
  from pykickstart.parser import KickstartParser, KickstartError, Script
-@@ -236,7 +235,7 @@ class KickstartGenerator(object):
+@@ -237,7 +236,7 @@ class KickstartGenerator(object):
              return None
          self.ks.handler.packages.excludedList = []
          self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
@@ -200,7 +200,7 @@ index 4309f6e..902bca1 100644
  
      def run_module(self, *args, **kwargs):
 diff --git a/preupg/kickstart/plugins/users_groups.py b/preupg/kickstart/plugins/users_groups.py
-index 7d8d96d..862134c 100644
+index 7d8d96d..4dc8a93 100644
 --- a/preupg/kickstart/plugins/users_groups.py
 +++ b/preupg/kickstart/plugins/users_groups.py
 @@ -4,7 +4,6 @@
@@ -238,7 +238,7 @@ index 7d8d96d..862134c 100644
 -        for key, value in six.iteritems(groups):
 -            for gid in six.iterkeys(value):
 +        for key, value in groups.iteritems():
-+            for gid in value.iteritems():
++            for gid in value.iterkeys():
                  self.handler.group.dataList().append(self.handler.GroupData(name=key, gid=gid))
  
      def filter_kickstart_users(self):
