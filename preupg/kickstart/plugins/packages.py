@@ -251,7 +251,7 @@ class PackagesHandling(BaseKickstart):
         except IOError:
             self.obsoleted = []
         try:
-            self.special_pkg_list = PackagesHandling.get_package_list('specifal_pkg_list')
+            self.special_pkg_list = PackagesHandling.get_package_list('special_pkg_list')
         except IOError:
             self.special_pkg_list = []
 
