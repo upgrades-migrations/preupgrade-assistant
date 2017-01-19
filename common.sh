@@ -230,7 +230,7 @@ log_debug() {
     #
     # verbose information, may help with script debugging
     #
-    _log "DEBUG" "$@"
+    _log "DEBUG" "$1"
 }
 
 log_info() {
@@ -241,7 +241,7 @@ log_info() {
     #
     # informational message
     #
-    _log "INFO" "$@"
+    _log "INFO" "$1"
 }
 
 log_error() {
@@ -253,7 +253,7 @@ log_error() {
     # use this severity if your script found something severe
     # which may cause malfunction on new system
     #
-    _log "ERROR" "$@"
+    _log "ERROR" "$1"
 }
 
 log_warning() {
@@ -264,7 +264,7 @@ log_warning() {
     #
     # important finding, administrator of system should be aware of this
     #
-    _log "WARNING" "$@"
+    _log "WARNING" "$1"
 }
 
 _log_risk() {
