@@ -1,0 +1,41 @@
+diff --git a/preupg/common.py b/preupg/common.py
+index 60286ae..55358fd 100644
+--- a/preupg/common.py
++++ b/preupg/common.py
+@@ -9,8 +9,10 @@ import os
+ import platform
+ import datetime
+ import shutil
++import sys
+ from distutils import dir_util
+ from preupg.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
++from preupg.exception import MissingFileInContentError
+ from preupg.logger import log_message
+ from preupg import settings
+ 
+@@ -184,9 +186,23 @@ class Common(object):
+         if not os.path.exists(i686_x64_dir) and os.path.exists(i386_x64_dir):
+             os.symlink(i386_x64_dir, i686_x64_dir)
+         dir_name = os.path.join(self.common_result_dir,
+-                                SystemIdentification.get_arch())
++                                self._get_required_arch_dirname())
+         if not os.path.exists(dir_name):
+-            return
++            # This check applies to RHEL only - the data are needed by modules
++            # for RHEL. Creating the symlinks will be moved to modules once the
++            # https://bugzilla.redhat.com/show_bug.cgi?id=1381198 is worked
++            sys.stderr.write("There are no data required by certain RHEL"
++                             " modules. They are expected in directory: %s.\n"
++                             % dir_name)
++            if self.conf.dst_arch:
++                sys.stderr.write("The migration is most problably not"
++                                 " supported from %s to %s architecture.\n"
++                                 % (SystemIdentification.get_arch(),
++                                    self.conf.dst_arch))
++            sys.stderr.write("Please see https://access.redhat.com/solutions/"
++                             "799813 for description of the supported"
++                             " migration or upgrade scenarios.\n")
++            raise MissingFileInContentError
+         server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant) or files.startswith("Common")]
+         self.copy_kickstart_files(self.common_result_dir, server_variant)
+         for files in server_variant_files:
