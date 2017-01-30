@@ -8,6 +8,7 @@ import fnmatch
 import os
 import sys
 import shutil
+import tempfile
 import mimetypes
 import platform
 import random
@@ -871,11 +872,11 @@ class OpenSCAPHelper(object):
         which was modified by preupgrade assistant
         """
         cmd = self.build_generate_command(xml_file, html_file, old_style=old_style)
-        generate_tempfile = os.path.join('/tmp', ''.join(random.SystemRandom().choice(string.ascii_letters)))
-        ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=generate_tempfile)
-        if os.path.exists(generate_tempfile):
-            lines = FileHelper.get_file_content(generate_tempfile, 'r', method=True)
-            logger.debug('%s', '\n'.join(lines))
+        out_path = tempfile.mktemp(prefix='prefix.run_generate.')
+        ret_val = ProcessHelper.run_subprocess(cmd, print_output=False, output=out_path)
+        lines = FileHelper.get_file_content(out_path, 'r', method=True)
+        logger.debug('%s', '\n'.join(lines))
+        os.remove(out_path)
         return ret_val
 
 
