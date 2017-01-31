@@ -24,9 +24,12 @@ from preupg.utils import OpenSCAPHelper, ProcessHelper
 import os
 import sys
 
+diff_report_name = "result_diff"
+diff_report_name_xml = diff_report_name + ".xml"
+diff_report_name_html = diff_report_name + ".html"
+namespace = "http://checklists.nist.gov/xccdf/1.2"
 # Rule result attributes to be compared for equality
 rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
-diff_report_name = "result_diff"
 
 
 def parse_cli_opts():
@@ -112,7 +115,7 @@ class ResultXML(object):
                 remove_tag(group_tag)
 
     def write_to_file(self):
-        self.tree.write(diff_report_name + ".xml", pretty_print=True)
+        self.tree.write(diff_report_name_xml, pretty_print=True)
 
 
 """-----------------XML UTILS-----------------"""
@@ -142,8 +145,7 @@ def get_tag_with_ns(tag_name):
     looking for a tag. This function returns a tag name prepended by this
     namespace and the return value can be used directly for tag searches.
     """
-    ns0 = "http://checklists.nist.gov/xccdf/1.2"
-    return "{%s}%s" % (ns0, tag_name)
+    return "{%s}%s" % (namespace, tag_name)
 
 
 def remove_tag(tag_obj):
@@ -199,9 +201,29 @@ def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
 
 def write_diff_to_xml_and_html_file(diff_xml):
     diff_xml.write_to_file()
-    verbose_print("Diff XML generated: " + diff_report_name + ".xml")
+    fix_xml_for_simple_html()
+    verbose_print("Diff XML generated: " + diff_report_name_xml)
     generate_html()
-    verbose_print("Diff HTML generated: " + diff_report_name + ".html")
+    verbose_print("Diff HTML generated: " + diff_report_name_html)
+
+
+def fix_xml_for_simple_html():
+    """OpenSCAP requires version of XCCDF to be 1.1 in order to correctly
+    generate "simple" HTML.
+    """
+    if not parsed_opts.simple_html:
+        return
+    try:
+        with open(diff_report_name_xml, 'rt') as infile:
+            first_line = infile.readline().replace(
+                namespace, namespace.replace("1.2", "1.1"))
+            rest = infile.read()
+    except OSError as exception:
+        sys.exit('ERROR: could not read file: %s' % exception)
+    else:
+        with open(diff_report_name_xml, 'wt') as outfile:
+            outfile.write(first_line)
+            outfile.write(rest)
 
 
 def verbose_print(message):
@@ -210,11 +232,11 @@ def verbose_print(message):
 
 
 def generate_html():
-    if not os.path.exists(diff_report_name + ".xml"):
+    if not os.path.exists(diff_report_name_xml):
         sys.exit("Error: HTML generation failed: source %s not found" %
-                 diff_report_name + ".xml")
-    cmd = OpenSCAPHelper.build_generate_command(diff_report_name + ".xml",
-                                                diff_report_name + ".html",
+                 diff_report_name_xml)
+    cmd = OpenSCAPHelper.build_generate_command(diff_report_name_xml,
+                                                diff_report_name_html,
                                                 parsed_opts.simple_html)
     log = "html.log"  # log for text printed during html generation
     ret_val = ProcessHelper.run_subprocess(cmd, print_output=True,
