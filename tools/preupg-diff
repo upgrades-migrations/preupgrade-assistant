@@ -19,6 +19,8 @@
 from __future__ import print_function
 
 import argparse
+import fnmatch
+import glob
 from lxml import etree as ET
 from preupg.utils import OpenSCAPHelper, ProcessHelper
 import os
@@ -40,10 +42,13 @@ def parse_cli_opts():
         " second XML by outputting a report with only those results that"
         " are new or different from the analyzed XML. The output is in both"
         " XML and HTML format and named %s.xml/html." % diff_report_name)
-    parser.add_argument("first_xml", help="XML report with all issues already"
-                                          " analyzed")
-    parser.add_argument("second_xml", help="New XML report with possibly"
-                                           " new issues")
+    parser.add_argument("analyzed_xml", help="XML report with all issues"
+                        " already analyzed. Enter either path to the XML or a"
+                        " directory, that contains multiple XMLs. Possible to"
+                        " enter multiple XMLs - separate them by a whitespace"
+                        ".", nargs='+', metavar="analyzed_XML/folder")
+    parser.add_argument("new_xml", help="New XML report with possibly"
+                        " new issues", metavar="new_XML")
     parser.add_argument("-s", "--simple-html", help="Generate simpler HTML"
                         " than the default, without clickable buttons, just"
                         " long scrollable document.", action="store_true")
@@ -95,6 +100,7 @@ class ResultXML(object):
     def remove_same_result_rules(self, same_result_rules):
         for rule_id in same_result_rules.keys():
             self.remove_rule(rule_id)
+            del self.rules[rule_id]
 
     def remove_rule(self, rule_id):
         """Remove all references to a rule from the whole XML."""
@@ -164,42 +170,93 @@ def has_no_subtags_recursive(tag_obj, subtag_name):
 """-----------------END XML UTILS-----------------"""
 
 
-def get_diff_xml(first_xml, second_xml):
-    same_result_rules = get_rules_w_same_result(first_xml.rules,
-                                                second_xml.rules)
-    second_xml.remove_same_result_rules(same_result_rules)
-    second_xml.remove_empty_group_tags()
+def get_analyzed_xml_paths(cli_paths):
+    """User can enter multiple XMLs and also directory in which there are
+    multiple XMLs. This function returns a list of all the XMLs.
+    """
+    analyzed_xml_paths = []
+    for path in cli_paths:
+        if os.path.isfile(path):
+            analyzed_xml_paths.append(path)
+        if os.path.isdir(path):
+            xmls_within_dir = get_xmls_within_dir(path)
+            analyzed_xml_paths += xmls_within_dir
+    return analyzed_xml_paths
 
-    diff_xml = second_xml
 
-    print_difference_status(diff_xml.rules, same_result_rules)
+def get_xmls_within_dir(dir):
+    dir_with_asterisk = os.path.join(dir, "*")
+    return fnmatch.filter(glob.glob(dir_with_asterisk), '*.[Xx][Mm][Ll]')
+
+
+def load_analyzed_xmls(xml_paths):
+    loaded_xmls = []
+    for xml_path in xml_paths:
+        loaded_xml = ResultXML(xml_path)
+        loaded_xmls.append(loaded_xml)
+    return loaded_xmls
+
+
+def get_diff_xml(analyzed_xmls, new_xml):
+    # Number of rules in the new XML
+    num_new_xml_rules = len(new_xml.rules.keys())
+
+    for analyzed_xml in analyzed_xmls:
+        same_result_rules = get_rules_w_same_result(analyzed_xml.rules,
+                                                    new_xml.rules)
+        new_xml.remove_same_result_rules(same_result_rules)
+
+    diff_xml = new_xml
+    diff_xml.remove_empty_group_tags()
+
+    # Number of rules left in the diff xml - subset of rules from the new XML
+    num_diff_xml_rules = len(new_xml.rules.keys())
+
+    print_difference_status(num_new_xml_rules, num_diff_xml_rules)
     return diff_xml
 
 
-def get_rules_w_same_result(first_xml_rules, second_xml_rules):
+def get_rules_w_same_result(first_xml_rules, new_xml_rules):
     same_result_rules = {}
-    for rule_id in second_xml_rules.keys():
+    for rule_id in new_xml_rules.keys():
         if rule_id not in first_xml_rules:
             continue
         # Save those new XML rules that have the same result as in the old XML
         if are_results_same(first_xml_rules[rule_id],
-                            second_xml_rules[rule_id]):
-            same_result_rules[rule_id] = second_xml_rules[rule_id]
+                            new_xml_rules[rule_id]):
+            same_result_rules[rule_id] = new_xml_rules[rule_id]
 
     return same_result_rules
 
 
-def are_results_same(first_xml_rule_attrs, second_xml_rule_attrs):
+def are_results_same(first_xml_rule_attrs, new_xml_rule_attrs):
     for rule_attr in rule_attrs_to_compare:
         if rule_attr not in first_xml_rule_attrs or \
-                rule_attr not in second_xml_rule_attrs:
+                rule_attr not in new_xml_rule_attrs:
             continue
-        if first_xml_rule_attrs[rule_attr] != second_xml_rule_attrs[rule_attr]:
+        if first_xml_rule_attrs[rule_attr] != new_xml_rule_attrs[rule_attr]:
             return False
     return True
 
 
-def write_diff_to_xml_and_html_file(diff_xml):
+def print_difference_status(num_new_xml_rules, num_diff_xml_rules):
+    if num_diff_xml_rules:
+        if num_new_xml_rules == num_diff_xml_rules:
+            verbose_print("All the rules have different results. The diff XML"
+                          " is the same as the second XML.")
+        else:
+            verbose_print("Removed %d rules (out of %d) from the new XML."
+                          "\nNote: The removed rules had exactly the same"
+                          " result in one of the analyzed XMLs and in the"
+                          " new XML."
+                          % (num_new_xml_rules - num_diff_xml_rules,
+                             num_new_xml_rules))
+    else:
+        verbose_print("Every rule from the second XML has exactly the same"
+                      " result as in the first XML.")
+
+
+def save_diff_to_xml_and_html_file(diff_xml):
     diff_xml.write_to_file()
     fix_xml_for_simple_html()
     verbose_print("Diff XML generated: " + diff_report_name_xml)
@@ -247,30 +304,14 @@ def generate_html():
         os.remove(log)
 
 
-def print_difference_status(second_xml_rules, same_result_rules):
-    num_new_rules = len(second_xml_rules.keys())
-    num_same_rules = len(same_result_rules.keys())
-    if num_same_rules:
-        if num_same_rules == num_new_rules:
-            verbose_print("Every rule from the second XML has exactly the same"
-                          " result as in the first XML.")
-        else:
-            verbose_print("Removed %d rules (out of %d) from the second XML."
-                          "\nNote: The removed rules had exactly the same"
-                          " result in both XMLs."
-                          % (num_same_rules, num_new_rules))
-    else:
-        verbose_print("All the rules have different results. The diff XML is"
-                      " the same as the second XML.")
-
-
 def main():
     global parsed_opts
     parsed_opts = parse_cli_opts()
-    first_xml = ResultXML(parsed_opts.first_xml)
-    second_xml = ResultXML(parsed_opts.second_xml)
-    diff_xml = get_diff_xml(first_xml, second_xml)
-    write_diff_to_xml_and_html_file(diff_xml)
+    analyzed_xml_paths = get_analyzed_xml_paths(parsed_opts.analyzed_xml)
+    analyzed_xmls = load_analyzed_xmls(analyzed_xml_paths)
+    new_xml = ResultXML(parsed_opts.new_xml)
+    diff_xml = get_diff_xml(analyzed_xmls, new_xml)
+    save_diff_to_xml_and_html_file(diff_xml)
 
 
 if __name__ == "__main__":
