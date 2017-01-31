@@ -1,0 +1,84 @@
+diff --git a/preupg/common.py b/preupg/common.py
+index 60286ae..7b485b3 100644
+--- a/preupg/common.py
++++ b/preupg/common.py
+@@ -9,9 +9,11 @@ import os
+ import platform
+ import datetime
+ import shutil
++import sys
+ from distutils import dir_util
+ from preupg.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
+-from preupg.logger import log_message
++from preupg.exception import MissingFileInContentError
++from preupg.logger import log_message, logger_debug, LoggerHelper
+ from preupg import settings
+ 
+ 
+@@ -159,6 +161,16 @@ class Common(object):
+             if not os.path.exists(target_file) and os.path.exists(source_name):
+                 shutil.copyfile(source_name, target_file)
+ 
++    @staticmethod
++    def get_system_versions(modules_common_dir):
++        """Returns versions of system to be upgraded - source and destination
++        version. E.g. ["6.9", "7.3"]
++        """
++        content = FileHelper.get_file_content(os.path.join(modules_common_dir,
++                                                           "release_version"),
++                                              "r", True)
++        return [x.strip() for x in content]
++
+     def prep_symlinks(self, assessment_dir, scenario=""):
+         """Prepare a symlinks for relevant architecture and Server Variant"""
+         server_variant = SystemIdentification.get_variant()
+@@ -184,9 +196,24 @@ class Common(object):
+         if not os.path.exists(i686_x64_dir) and os.path.exists(i386_x64_dir):
+             os.symlink(i386_x64_dir, i686_x64_dir)
+         dir_name = os.path.join(self.common_result_dir,
+-                                SystemIdentification.get_arch())
++                                self._get_required_arch_dirname())
+         if not os.path.exists(dir_name):
+-            return
++            # This check applies to RHEL only - the data are needed by modules
++            # for RHEL. Creating the symlinks will be moved to modules once the
++            # https://bugzilla.redhat.com/show_bug.cgi?id=1381198 is worked
++            LoggerHelper.log_to_file(logger_debug, "There are no data"
++                                     " available for the migration. The '%s'"
++                                     " directory doesn't exist.\n"
++                                     % dir_name, "error")
++            curr_arch = dst_arch = SystemIdentification.get_arch()
++            if self.conf.dst_arch:
++                dst_arch = self.conf.dst_arch
++            versions = Common.get_system_versions(self.common_result_dir)
++            sys.stderr.write("The migration from Red Hat Enterprise Linux"
++                             " (RHEL) %s %s to RHEL %s %s is not supported"
++                             ".\n" % (versions[0], curr_arch,
++                                      versions[1], dst_arch))
++            raise MissingFileInContentError
+         server_variant_files = [files for files in os.listdir(dir_name) if files.startswith(server_variant) or files.startswith("Common")]
+         self.copy_kickstart_files(self.common_result_dir, server_variant)
+         for files in server_variant_files:
+diff --git a/preupg/logger.py b/preupg/logger.py
+index 8f12b78..7d6a20a 100644
+--- a/preupg/logger.py
++++ b/preupg/logger.py
+@@ -37,6 +37,18 @@ class LoggerHelper(object):
+         logger_name.addHandler(console_handler)
+ 
+     @staticmethod
++    def log_to_file(logger, msg, level_str="debug"):
++        """Log message to file only."""
++        orig_handlers = logger.handlers
++        logger.handlers = []
++        for handler in orig_handlers:
++            if isinstance(handler, logging.FileHandler):
++                logger.handlers.append(handler)
++        level_num = getattr(logging, level_str.upper())
++        logger.log(level_num, msg)
++        logger.handlers = orig_handlers
++
++    @staticmethod
+     def add_file_handler(logger_name, path, formatter=None, level=None):
+         """
+         Adds FileHandler to a given logger

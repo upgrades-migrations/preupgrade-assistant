@@ -42,6 +42,7 @@ Source50:       ConfigParser.py
 
 %if 0%{?rhel}
 Patch0:         preupgrade-assistant-scripts.patch
+Patch1:         crossarch_migration_support_check.patch
 %endif # RHEL
 %if 0%{?rhel} && 0%{?rhel} <= 5
 Patch100:       preupgrade-assistant-six.patch
@@ -132,6 +133,7 @@ OpenSCAP is generated automatically.
 
 %if 0%{?rhel}
 %patch0 -p1
+%patch1 -p1
 %endif # RHEL
 %if 0%{?rhel} && 0%{?rhel} <= 5
 %setup -q -n %{name}-%{version} -D -T -a 10
