@@ -158,7 +158,11 @@ popd
 pushd South-%{south_version}
 %{__python} setup.py build
 popd
+%else
+# Prevent from compiling UI
+rm -rf build/lib/preupg/ui
 %endif # build_ui
+
 
 %check
 # Switch off tests until issue with finding /etc/preupgrade-assistant.conf
@@ -350,5 +354,5 @@ fi
 %attr(0644,root,root) %{_mandir}/man1/preupg-content-creator.*
 
 %changelog
-* Wed Nov 16 2016 Michal Bocek <mbocek@redhat.com> - 2.2.0-1
+* Wed Nov 16 2016 Michal Bocek <mbocek@redhat.com> - %{version}-1
 - Initial version of spec file in upstream
