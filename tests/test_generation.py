@@ -24,12 +24,15 @@ class TestContentGenerate(base.TestCase):
     result_dir = None
 
     def setUp(self):
+        self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
         self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
-        self.result_dir = os.path.join(os.getcwd(), 'tests', FOO_RESULTS, 'dummy')
+        self.result_dir = os.path.join(self.temp_dir, 'tests', FOO_RESULTS,
+                                       'dummy')
+        shutil.copytree(self.dir_name, os.path.join(self.temp_dir, FOO_DIR))
+        self.dir_name = os.path.join(self.temp_dir, FOO_DIR)
 
     def tearDown(self):
-        if os.path.exists(os.path.join('tests', FOO_RESULTS)):
-            shutil.rmtree(os.path.join('tests', FOO_RESULTS))
+        shutil.rmtree(self.temp_dir)
         for d, subd, file_name in os.walk(self.dir_name):
             group_xml = [x for x in file_name if x == 'group.xml']
             if group_xml:
@@ -51,13 +54,16 @@ class TestGlobalContent(base.TestCase):
     result_dir = None
 
     def setUp(self):
-        self.temp_dir = tempfile.mktemp(prefix='preupgrade', dir='/tmp')
+        self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
         self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR)
         self.result_dir = os.path.join(self.temp_dir, FOO_DIR + '-results')
         shutil.copytree(self.dir_name, os.path.join(self.temp_dir, FOO_DIR))
+        self.data_dir_orig = settings.data_dir
+        settings.data_dir = os.path.join(os.getcwd(), "data")
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
+        settings.data_dir = self.data_dir_orig
 
     def test_final_compose(self):
         expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']

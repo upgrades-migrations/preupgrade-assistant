@@ -29,19 +29,25 @@ class TestXMLCompose(base.TestCase):
     tree = None
 
     def setUp(self):
-        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
-        self.result_dir = os.path.join(dir_name + settings.results_postfix)
-        dir_name = os.path.join(dir_name, 'dummy')
-        if os.path.exists(self.result_dir):
-            shutil.rmtree(self.result_dir)
+        self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
+        self.result_dir = os.path.join(self.temp_dir, 'FOOBAR6_7' +
+                                       settings.results_postfix)
+        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7', 'dummy')
         shutil.copytree(dir_name, self.result_dir)
 
+        self.autocomplete_orig = settings.autocomplete
         settings.autocomplete = False
+        self.data_dir_orig = settings.data_dir
         settings.data_dir = os.path.join(os.getcwd(), "data")
+        self.upgrade_path_orig = settings.UPGRADE_PATH
         self.target_tree = ComposeXML.run_compose(self.result_dir)
 
     def tearDown(self):
         shutil.rmtree(self.result_dir)
+        settings.autocomplete = self.autocomplete_orig
+        settings.data_dir = self.data_dir_orig
+        settings.UPGRADE_PATH = self.upgrade_path_orig
+        pass
 
     def test_compose(self):
         """Basic test of composing"""
