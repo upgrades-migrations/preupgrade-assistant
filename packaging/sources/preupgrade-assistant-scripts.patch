@@ -6,7 +6,7 @@ index 80e2e33..755285c 100644
  grep -e "c /" rpm_Va.log=rpm_etc_Va.log=CONFIGCHANGED=Changed config files=NO
  getent passwd=passwd.log=PASSWD=All users=YES=Users
  getent group=group.log=GROUP=All groups=YES=Groups
-+chkconfig=chkconfig.log=CHKCONFIG=Service statuses=NO
++chkconfig --list=chkconfig.log=CHKCONFIG=Service statuses=NO
 +rpm -qal | sort=rpmtrackedfiles.log=RPMTRACKEDFILES=All installed files=YES=All_installed_files
 +for i in `df --local | rev | cut -f1 -d' ' | rev | tail -n +2`;do find $i -xdev -print; done | sort=allmyfiles.log=ALLMYFILES=All local files=NO
 +for i in `df --local | rev | cut -f1 -d' ' | rev | tail -n +2`;do find $i -xdev -executable -print; done | sort=executable.log=EXECUTABLES=All executable files=NO
