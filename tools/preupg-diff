@@ -26,6 +26,7 @@ from preupg.utils import OpenSCAPHelper, ProcessHelper
 import os
 import sys
 
+version = 1.0  # version of the preupg-diff
 diff_report_name = "result_diff"
 diff_report_name_xml = diff_report_name + ".xml"
 diff_report_name_html = diff_report_name + ".html"
@@ -36,12 +37,13 @@ rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
 
 def parse_cli_opts():
     parser = argparse.ArgumentParser(
-        description="preupg-diff takes two Preupgrade Assistant XML reports"
-        " from which the first has been already analyzed and the second hasn't"
-        " been yet. preupg-diff helps to find new issues that emerged in the"
-        " second XML by outputting a report with only those results that"
-        " are new or different from the analyzed XML. The output is in both"
-        " XML and HTML format and named %s.xml/html." % diff_report_name)
+        description="preupg-diff compares multiple Preupgrade Assistant XML"
+        " reports from which one is new with unknown issues and the others"
+        " have been already analyzed. The tool helps to find new issues that"
+        " emerged in the new report by filtering out those results that are"
+        " the same in the new report and at least in one of the analyzed XMLs."
+        " The trimmed report is output in XML and HTML format and named"
+        " {0}.xml/html.".format(diff_report_name))
     parser.add_argument("analyzed_xml", help="XML report with all issues"
                         " already analyzed. Enter either path to the XML or a"
                         " directory, that contains multiple XMLs. Possible to"
@@ -55,6 +57,8 @@ def parse_cli_opts():
     parser.add_argument("-v", "--verbose", help="Print more detailed"
                         "information about the processing.",
                         action="store_true")
+    parser.add_argument("--version", action="version", version="%(prog)s {0}"
+                        .format(version))
     return parser.parse_args()
 
 
@@ -131,7 +135,7 @@ def get_xml_tree_object(xml_path):
     try:
         return ET.parse(xml_path)
     except OSError:
-        sys.exit("Error: Failed to read XML '%s'" % xml_path)
+        sys.exit("Error: Failed to read XML '{0}'".format(xml_path))
 
 
 def find_subtags_recursive(tag_obj, subtag_name):
@@ -276,7 +280,7 @@ def fix_xml_for_simple_html():
                 namespace, namespace.replace("1.2", "1.1"))
             rest = infile.read()
     except OSError as exception:
-        sys.exit('ERROR: could not read file: %s' % exception)
+        sys.exit("ERROR: could not read file: {0}".format(exception))
     else:
         with open(diff_report_name_xml, 'wt') as outfile:
             outfile.write(first_line)
@@ -290,8 +294,8 @@ def verbose_print(message):
 
 def generate_html():
     if not os.path.exists(diff_report_name_xml):
-        sys.exit("Error: HTML generation failed: source %s not found" %
-                 diff_report_name_xml)
+        sys.exit("Error: HTML generation failed: source {0} not found"
+                 .format(diff_report_name_xml))
     cmd = OpenSCAPHelper.build_generate_command(diff_report_name_xml,
                                                 diff_report_name_html,
                                                 parsed_opts.simple_html)
@@ -299,7 +303,8 @@ def generate_html():
     ret_val = ProcessHelper.run_subprocess(cmd, print_output=True,
                                            output=log)
     if ret_val != 0:
-        sys.exit("Error: HTML generation failed. See %s for details" % log)
+        sys.exit("Error: HTML generation failed. See {0} for details"
+                 .format(log))
     else:  # no error when generating html - safe to remove the log
         os.remove(log)
 
