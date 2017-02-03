@@ -35,9 +35,10 @@ def suite():
     from tests import test_creator
     suite.addTests(test_preupg.suite())
     suite.addTests(test_xml.suite())
+    suite.addTests(test_generation.suite())
+    suite.addTests(test_api.suite())
     suite.addTests(test_kickstart.suite())
     suite.addTests(test_inplace_risks.suite())
-    suite.addTests(test_api.suite())
     suite.addTests(test_creator.suite())
     return suite
 
