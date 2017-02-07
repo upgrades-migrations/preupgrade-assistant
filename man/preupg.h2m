@@ -1,0 +1,32 @@
+[NAME]
+Preupgrade Assistant - advises on feasibility of system upgrade or migration
+
+[RETURN VALUES]
+Preupgrade Assistant returns several return values.
+
+Possible return values are:
+
+0 - preupg works properly and modules exit with the following results: PASS, FIXED, INFORMATIONAL, NEEDS_INSPECTION, NOT_APPLICABLE.
+
+1 - preupg works properly but at least one module finishes with NEEDS_ACTION result.
+
+2 - preupg works properly but at least one module finishes with FAIL or ERROR result.
+
+20 - preupg cannot find a proper upgrade scenario.
+
+21 - preupg is executed with parameters mode and select-rules. This is not allowed.
+
+22 - preupg is executed with parameters riskcheck, cleanup and kickstart. These options are not allowed to be used together.
+
+23 - preupg has to be executed as root.
+
+24 - preupg has to be executed before the Kickstart generation.
+
+25 - openscap and openscap-engine-sce are not installed on the system.
+
+26 - You specified a text convertor which is not allowed. Allowed convertors are w3m, lynx and elinks.
+
+27 - The /usr/share/preupgrade/data/preassessment/scripts.txt file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
+
+28 - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
+

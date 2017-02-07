@@ -9,9 +9,7 @@ class CLICreator(object):
 
     def __init__(self, args=None):
         """parse arguments"""
-        self.parser = optparse.OptionParser(usage=USAGE, description=PROGRAM_DESCRIPTION)
-
-        #self.parser.usage = "%%prog [-v] <content_file>"
+        self.parser = optparse.OptionParser()
 
         self.add_args()
         if args:
