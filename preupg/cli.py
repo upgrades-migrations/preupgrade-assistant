@@ -199,11 +199,13 @@ class CLI(object):
         self.parser.add_option(
             "-D", "--dst-arch",
             metavar="DSTARCH",
-            help="Specify an architecture of the system to be migrate to."
-                 " Available option are: %s. Use of the option is expected on"
-                 " 32-bit systems as by the release of RHEL 7, 32-bit hardware"
-                 " support has been dropped."
-                 % ", ".join(settings.migration_options)
+            help=(
+                "Specify an architecture of the system to be migrate to."
+                " Available option are: %s. Use of the option is expected on"
+                " 32-bit systems as by the release of RHEL 7, 32-bit hardware"
+                " support has been dropped."
+                % ", ".join(settings.migration_options)
+            )
         )
         self.parser.add_option(
             "-o", "--old-report-style",
