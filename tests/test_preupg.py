@@ -194,7 +194,7 @@ class TestCLI(base.TestCase):
         dc = DummyConf(**conf)
         cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list-contents-set", "--verbose", "--text",
                    "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade",
-                   "--select-rules", "abc", "--list-rules", "--version", "--force",
+                   "--select-rules", "abc", "--list-rules", "--force",
                    "--riskcheck"])
         a = Application(Conf(cli.opts, dc, cli))
 
