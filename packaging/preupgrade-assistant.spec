@@ -48,6 +48,7 @@ Patch1:         crossarch_migration_support_check.patch
 Patch100:       preupgrade-assistant-six.patch
 Patch101:       preupgrade-assistant-python-2.4.patch
 Patch102:       preupgrade-assistant-pykickstart.patch
+Patch103:       preupgrade-assistant-xml-logs.patch
 %endif # RHEL <= 5
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -140,6 +141,7 @@ OpenSCAP is generated automatically.
 %patch100 -p1
 %patch101 -p1
 %patch102 -p1
+%patch103 -p1
 %endif # RHEL <= 5
 
 %build
