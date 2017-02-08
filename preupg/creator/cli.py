@@ -1,7 +1,5 @@
 import optparse
 
-from preupg.constants import *
-
 
 class CLICreator(object):
 
