@@ -44,9 +44,7 @@ class CLI(object):
         """parse arguments"""
         self.parser = optparse.OptionParser(
             add_help_option=False,
-            version="Preupgrade Assistant %s" % VERSION,
-            description="For Preupgrade Assistant tool description, return"
-                        " codes and examples, refer to the man page."
+            version="Preupgrade Assistant %s" % VERSION
         )
 
         self.add_args()
@@ -65,9 +63,11 @@ class CLI(object):
             "-S", "--skip-common",
             action="store_true",
             help="Skip generating files containing information about the"
-                 " system that are used by modules. For assessing the system"
-                 " these files are needed but they can be reused from the"
-                 " previous runs of Preupgrade Assistant."
+                 " system. For assessing the system these files are needed"
+                 " (by modules) but in the case the system remains the same"
+                 " (the same installed packages, configuration files not"
+                 " touched, etc.) they can be reused from the previous runs of"
+                 " Preupgrade Assistant."
         )
         self.parser.add_option(
             "-d", "--debug",
@@ -94,16 +94,16 @@ class CLI(object):
             "-l", "--list-contents-set",
             action="store_true",
             help="List all the available sets of modules. They are searched"
-                 " for in %s. Use one of the listed sets for the --scan"
-                 " option." % settings.source_dir
+                 " for in %s." % settings.source_dir
         )
         self.parser.add_option(
             "-s", "--scan",
             metavar="MODULE_SET",
             help="Provide name of the set of modules which are to be used for"
                  " assessing the system. By default, if there is just one set"
-                 " in %s, Preupgrade Assistant uses that one."
-                 % settings.source_dir
+                 " in %s, Preupgrade Assistant uses that one. Use"
+                 " --list-contents-set option to get a list of possible"
+                 " values." % settings.source_dir
         )
         self.parser.add_option(
             "-c", "--contents",
@@ -114,7 +114,7 @@ class CLI(object):
                  " Option --scan works similarly." % settings.source_dir
         )
         self.parser.add_option(
-            "-R", "--riskcheck",
+            "--riskcheck",
             action="store_true",
             default=False,
             help="Return the highest reported level of risk or result related"
@@ -125,7 +125,7 @@ class CLI(object):
                  " STDOUT. If the --verbose option is used once, just HIGH and"
                  " EXTREME risks are printed. If it is used twice, all the"
                  " risks are printed. " + " " * 30 +
-                 "Return codes:" + " " * 40 +
+                 "Return codes:" + " " * 45 +
                  "0 ... SLIGHT or MEDIUM risk or needs_inspection, fixed, "
                  "informational, not_applicable, not_selected, not_checked or"
                  " pass result." + " " * 50 +
@@ -133,13 +133,13 @@ class CLI(object):
                  "2 ... EXTREME risk or error or fail result."
         )
         self.parser.add_option(
-            "-f", "--force",
+            "--force",
             action="store_true",
             default=False,
             help="Suppress user interaction."
         )
         self.parser.add_option(
-            "-t", "--text",
+            "--text",
             action="store_true",
             default=False,
             help="Generate plain text assessment report alongside XML and HTML"
@@ -153,7 +153,7 @@ class CLI(object):
             help="Show more information during the assessment."
         )
         self.parser.add_option(
-            "-C", "--cleanup",
+            "--cleanup",
             action="store_true",
             default=False,
             help="Remove all the files created by previous runs of Preupgrade"
@@ -172,7 +172,7 @@ class CLI(object):
                  " behave the same no matter what mode is selected."
         )
         self.parser.add_option(
-            "-k", "--kickstart",
+            "--kickstart",
             action="store_true",
             default=False,
             help="Generate kickstart file that is to be used for migration."
@@ -188,14 +188,14 @@ class CLI(object):
                  " Multiple modules are to be separated by a comma."
         )
         self.parser.add_option(
-            "-L", "--list-rules",
+            "--list-rules",
             action="store_true",
             default=False,
             help="List all the modules available within a module set."
         )
         self.parser.add_option(
-            "-D", "--dst-arch",
-            metavar="DSTARCH",
+            "--dst-arch",
+            metavar="ARCH",
             help=(
                 "Specify an architecture of the system to be migrate to."
                 " Available option are: %s. Use of the option is expected on"
@@ -205,7 +205,7 @@ class CLI(object):
             )
         )
         self.parser.add_option(
-            "-o", "--old-report-style",
+            "--old-report-style",
             action="store_true",
             help="Generate report with simpler style than the default."
         )

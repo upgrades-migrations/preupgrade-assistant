@@ -12,15 +12,17 @@ preupg [--version]
 
 preupg [-l, --list-contents-set]
 
-preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [-f, --force] [-t, --text] [-D, --dst-arch DSTARCH] [-c, --contents ALL_XCCDF_PATH] [-o, --old-report-style] [--select-rules] [-L, --list-rules] [-v, --verbose]
+preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [--force] [--text] [--dst-arch ARCH] [-c, --contents ALL_XCCDF_PATH] [--old-report-style] [--select-rules] [-v, --verbose]
 
-preupg [-R, --riskcheck] [-v, --verbose]
+preupg [--list-rules] [-s, --scan MODULE_SET]
 
-preupg [-k, --kickstart]
+preupg [--riskcheck] [-v, --verbose]
+
+preupg [--kickstart]
 
 preupg [-u, --upload URL] [-r, --results TARBALL]
 
-preupg [-C, --cleanup]
+preupg [--cleanup]
 
 [DESCRIPTION]
 Preupgrade Assistant analyses the system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant can be used for the in-place upgrade or migration of the system, where the migration means a new system installation that retains as much of the old system setup as possible.

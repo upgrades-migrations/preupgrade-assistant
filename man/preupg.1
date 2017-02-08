@@ -9,20 +9,19 @@ preupg [--version]
 
 preupg [-l, --list-contents-set]
 
-preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [-f, --force] [-t, --text] [-D, --dst-arch DSTARCH] [-c, --contents ALL_XCCDF_PATH] [-o, --old-report-style] [--select-rules] [-L, --list-rules] [-v, --verbose]
+preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [--force] [--text] [--dst-arch ARCH] [-c, --contents ALL_XCCDF_PATH] [--old-report-style] [--select-rules] [-v, --verbose]
 
-preupg [-R, --riskcheck] [-v, --verbose]
+preupg [--list-rules] [-s, --scan MODULE_SET]
 
-preupg [-k, --kickstart]
+preupg [--riskcheck] [-v, --verbose]
+
+preupg [--kickstart]
 
 preupg [-u, --upload URL] [-r, --results TARBALL]
 
-preupg [-C, --cleanup]
+preupg [--cleanup]
 .SH DESCRIPTION
 Preupgrade Assistant analyses the system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant can be used for the in-place upgrade or migration of the system, where the migration means a new system installation that retains as much of the old system setup as possible.
-.PP
-For Preupgrade Assistant tool description, return codes and examples, refer to
-the man page.
 .SH OPTIONS
 .TP
 \fB\-\-version\fR
@@ -33,9 +32,11 @@ Show help message and exit.
 .TP
 \fB\-S\fR, \fB\-\-skip\-common\fR
 Skip generating files containing information about the
-system that are used by modules. For assessing the
-system these files are needed but they can be reused
-from the previous runs of Preupgrade Assistant.
+system. For assessing the system these files are
+needed (by modules) but in the case the system remains
+the same (the same installed packages, configuration
+files not touched, etc.) they can be reused from the
+previous runs of Preupgrade Assistant.
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
 Turn on debugging mode.
@@ -51,14 +52,14 @@ result tarballs can be found in /root/preupgrade.
 .TP
 \fB\-l\fR, \fB\-\-list\-contents\-set\fR
 List all the available sets of modules. They are
-searched for in /usr/share/preupgrade. Use one of the
-listed sets for the \fB\-\-scan\fR option.
+searched for in /usr/share/preupgrade.
 .TP
 \fB\-s\fR MODULE_SET, \fB\-\-scan\fR=\fIMODULE_SET\fR
 Provide name of the set of modules which are to be
 used for assessing the system. By default, if there is
 just one set in /usr/share/preupgrade, Preupgrade
-Assistant uses that one.
+Assistant uses that one. Use \fB\-\-list\-contents\-set\fR
+option to get a list of possible values.
 .TP
 \fB\-c\fR ALL_XCCDF_PATH, \fB\-\-contents\fR=\fIALL_XCCDF_PATH\fR
 Provide path to all\-xccdf.xml of the set of modules
@@ -67,7 +68,7 @@ default, if there is just one set in
 /usr/share/preupgrade, Preupgrade Assistant uses that
 one. Option \fB\-\-scan\fR works similarly.
 .TP
-\fB\-R\fR, \fB\-\-riskcheck\fR
+\fB\-\-riskcheck\fR
 Return the highest reported level of risk or result
 related to system upgrade. Run Preupgrade Assistant
 first \- assessment of the system needs to be performed
@@ -76,17 +77,17 @@ concert with \fB\-\-verbose\fR option, summary of the risks
 are printed to STDOUT. If the \fB\-\-verbose\fR option is used
 once, just HIGH and EXTREME risks are printed. If it
 is used twice, all the risks are printed.
-Return codes:                                        0
-\&... SLIGHT or MEDIUM risk or needs_inspection, fixed,
-informational, not_applicable, not_selected,
+Return codes:
+0 ... SLIGHT or MEDIUM risk or needs_inspection,
+fixed, informational, not_applicable, not_selected,
 not_checked or pass result.
 1 ... HIGH risk or needs_action result.
 2 ... EXTREME risk or error or fail result.
 .TP
-\fB\-f\fR, \fB\-\-force\fR
+\fB\-\-force\fR
 Suppress user interaction.
 .TP
-\fB\-t\fR, \fB\-\-text\fR
+\fB\-\-text\fR
 Generate plain text assessment report alongside XML
 and HTML reports. The text report is converted from
 HTML using elinks, lynx or w3m tool.
@@ -94,7 +95,7 @@ HTML using elinks, lynx or w3m tool.
 \fB\-v\fR, \fB\-\-verbose\fR
 Show more information during the assessment.
 .TP
-\fB\-C\fR, \fB\-\-cleanup\fR
+\fB\-\-cleanup\fR
 Remove all the files created by previous runs of
 Preupgrade Assistant.
 .TP
@@ -108,7 +109,7 @@ one mode is selected. Use one of these values:
 migrate, upgrade. It may be that modules behave the
 same no matter what mode is selected.
 .TP
-\fB\-k\fR, \fB\-\-kickstart\fR
+\fB\-\-kickstart\fR
 Generate kickstart file that is to be used for
 migration. Preupgrade Assistant system assessment
 needs to be performed before using this option. You
@@ -119,16 +120,16 @@ this option \- it does the same.
 Execute just a subset of modules out of a module set.
 Multiple modules are to be separated by a comma.
 .TP
-\fB\-L\fR, \fB\-\-list\-rules\fR
+\fB\-\-list\-rules\fR
 List all the modules available within a module set.
 .TP
-\fB\-D\fR DSTARCH, \fB\-\-dst\-arch\fR=\fIDSTARCH\fR
+\fB\-\-dst\-arch\fR=\fIARCH\fR
 Specify an architecture of the system to be migrate
 to. Available option are: x86_64, ppc64. Use of the
 option is expected on 32\-bit systems as by the release
 of RHEL 7, 32\-bit hardware support has been dropped.
 .TP
-\fB\-o\fR, \fB\-\-old\-report\-style\fR
+\fB\-\-old\-report\-style\fR
 Generate report with simpler style than the default.
 .SH EXAMPLES
 preupg -u http://example.com:8099/submit/ -r /root/preupgrade-results/preupg_results-161108001514.tar.gz
