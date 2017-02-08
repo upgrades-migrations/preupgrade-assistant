@@ -1,16 +1,12 @@
 import optparse
 
-from preupg.constants import *
-
 
 class CLIKickstart(object):
     """ Class for processing data from commandline """
 
     def __init__(self, args=None):
         """ parse arguments """
-        self.parser = optparse.OptionParser(usage=USAGE, description=PROGRAM_DESCRIPTION)
-
-        #self.parser.usage = "%%prog [-v] <content_file>"
+        self.parser = optparse.OptionParser()
 
         self.add_args()
         if args:
@@ -31,4 +27,3 @@ class CLIKickstart(object):
 if __name__ == '__main__':
     x = CLIKickstart()
     print (x.args.id)
-
