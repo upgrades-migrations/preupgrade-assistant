@@ -253,15 +253,15 @@ class ReportParser(object):
         self.write_xml()
 
     def remove_empty_check_import(self):
-        """This function remove check_import tag which are empty"""
+        """This function remove check-import tags which are empty"""
+        has_std_name = lambda x: x.get("import-name") in ["stdout", "stderr"]
+        is_empty = lambda x: x.text is None or x.text.strip() == ""
         for rule in self.get_all_result_rules():
             # Filter all check-import=stdout which are empty and remove them
             for check in self.get_nodes(rule, "check"):
-                result = [x for x in self.get_nodes(check, "check-import")
-                          if x.get('import-name') == "stdout" and x.text is None]
-                if result:
-                    for res in result:
-                        remove_node(check, res)
+                for node in self.get_nodes(check, "check-import"):
+                    if has_std_name(node) and is_empty(node):
+                        remove_node(check, node)
 
     def remove_debug_info(self):
         """Function removes debug information from report"""
@@ -278,6 +278,16 @@ class ReportParser(object):
                             new_check.append(check)
                     check_import.text = '\n'.join(new_check)
         self.write_xml()
+
+    def strip_whitespaces(self):
+        "Strip whitespaces from start and end of stderr/stdout of modules"
+        has_std_name=lambda x: x.get("import-name") in ["stdout", "stderr"]
+        for rule in self.get_all_result_rules():
+            for check in self.get_nodes(rule, "check"):
+                for node in self.get_nodes(check, "check-import"):
+                    if has_std_name(node) and node.text is not None:
+                        node.text = node.text.strip()
+
 
     @staticmethod
     def write_xccdf_version(file_name, direction=False):
