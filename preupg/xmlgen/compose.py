@@ -182,6 +182,7 @@ class ComposeXML(object):
                 ComposeXML.perform_autoqa(os.path.join(path_prefix, f),
                                           subgroups)
 
+    @staticmethod
     def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
         for f, t in six.iteritems(group_tree):
             tree, subgroups = t
