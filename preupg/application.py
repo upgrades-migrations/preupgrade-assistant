@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-The application module serves for running oscap binary and reporting results to UI
+The application module serves for running oscap binary and reporting results
+to UI.
 """
 
 from __future__ import unicode_literals, print_function
@@ -587,8 +588,9 @@ class Application(object):
                 cnt += 1
 
         if int(cnt) < 1:
-            log_message("There were no modules found in the %s directory. \
-        If you would like to use this tool, you have to install some." % settings.source_dir)
+            log_message("There were no modules found in the %s directory.\n"
+                        "If you would like to use this tool, you have to"
+                        " install some." % settings.source_dir)
             return ReturnValues.SCENARIO
         if int(cnt) > 1:
             log_message("Preupgrade Assistant detects more "

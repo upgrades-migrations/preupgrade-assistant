@@ -672,7 +672,8 @@ def load_pa_configuration():
     global RH_SIGNED_PKGS
 
     if not os.path.exists(PREUPGRADE_CONFIG):
-        log_error("Configuration file $PREUPGRADE_CONFIG is missing or is not readable!")
+        log_error("Configuration file %s is missing or is not readable!"
+                  % PREUPGRADE_CONFIG)
         exit_error()
 
     config = configparser.RawConfigParser(allow_no_value=True)

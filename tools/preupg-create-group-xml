@@ -10,7 +10,8 @@ from distutils import dir_util
 from preupg.xmlgen.compose import ComposeXML
 from preupg import settings
 from preupg.utils import FileHelper, SystemIdentification
-from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.exception import MissingHeaderCheckScriptError
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 from preupg.logger import *
 
 try:
@@ -75,21 +76,13 @@ def main():
     dir_name = args[0].replace(dir_name, result_dirname)
     filename = "all-xccdf.xml"
     settings.autocomplete = False
-    template_file = ComposeXML.get_template_file()
-    target_tree = None
+    target_tree = ComposeXML.get_xml_tree()
     try:
-        target_tree = ElementTree.parse(template_file).getroot()
-    except IOError:
-        print ('Problem with reading template.xml file')
-        sys.exit(1)
-    try:
-        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name), content=os.path.basename(dir_name))
-    except MissingHeaderCheckScriptError:
-        sys.exit(1)
-    except MissingFileInContentError:
-        sys.exit(1)
-    except MissingTagsIniFileError:
-        sys.exit(1)
+        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
+                                             os.path.basename(dir_name))
+    except (MissingHeaderCheckScriptError, MissingFileInContentError,
+            MissingTagsIniFileError) as err:
+        sys.exit(err)
 
     try:
         # must be encoded by ElementTree!

@@ -14,6 +14,8 @@ from preupg import settings
 from preupg import xccdf
 from preupg.logger import logger_debug
 from preupg.settings import ReturnValues
+from preupg.exception import MissingHeaderCheckScriptError
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 
 try:
     from xml.etree import ElementTree
@@ -24,7 +26,8 @@ try:
 except ImportError:
     from xml.parsers.expat import ExpatError as ParseError
 
-XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-fragment}"
+XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/" \
+                 "XCCDF-fragment}"
 SCE = "http://open-scap.org/page/SCE"
 
 
@@ -53,7 +56,12 @@ class XCCDFCompose(object):
             return ReturnValues.SCENARIO
 
         dir_util.copy_tree(self.result_dir, self.dir_name)
-        target_tree = ComposeXML.run_compose(self.dir_name, generate_from_ini=generate_from_ini)
+        try:
+            target_tree = ComposeXML.run_compose(
+                self.dir_name, generate_from_ini=generate_from_ini)
+        except (MissingHeaderCheckScriptError, MissingFileInContentError,
+                MissingTagsIniFileError) as err:
+            sys.exit(err)
 
         report_filename = os.path.join(self.dir_name, settings.content_file)
         try:
@@ -73,10 +81,9 @@ class XCCDFCompose(object):
 
 class ComposeXML(object):
 
-    upgrade_path = ""
-
-    @classmethod
-    def collect_group_xmls(cls, source_dir, content=None, level=0, generate_from_ini=True):
+    @staticmethod
+    def collect_group_xmls(source_dir, content=None, level=0,
+                           generate_from_ini=True):
         ret = {}
 
         for dirname in os.listdir(source_dir):
@@ -91,14 +98,17 @@ class ComposeXML(object):
             if not ini_files and generate_from_ini:
                 # Check if directory contains only subdirectories.
                 # Report to user that group.ini file could be missing
-                directories = [x for x in os.listdir(new_dir) if not os.path.isdir(os.path.join(new_dir, x))]
+                directories = [x for x in os.listdir(new_dir)
+                               if not os.path.isdir(os.path.join(new_dir, x))]
                 if not directories and 'postupgrade.d' not in dirname:
-                    print ("WARNING: It seems that group.ini file is missing %s. Please check if it is really missing." % new_dir)
+                    print ("WARNING: It seems that group.ini file is missing"
+                           " in %s. Please check if it is really missing."
+                           % new_dir)
             if ini_files and generate_from_ini:
                 oscap_group = OscapGroupXml(new_dir)
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
-                cls.perform_autoqa(new_dir, return_list)
+                ComposeXML.perform_autoqa(new_dir, return_list)
 
             group_file_path = os.path.join(new_dir, "group.xml")
             if not os.path.isfile(group_file_path):
@@ -106,13 +116,16 @@ class ComposeXML(object):
                 continue
             try:
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
-                                cls.collect_group_xmls(new_dir, level=level + 1, generate_from_ini=generate_from_ini))
+                                ComposeXML.collect_group_xmls(new_dir,
+                                level=level + 1,
+                                generate_from_ini=generate_from_ini))
             except ParseError as e:
-                print ("Encountered a parse error in file ", group_file_path, " details: ", e)
+                print ("Encountered a parse error in file ", group_file_path,
+                       " details: ", e)
         return ret
 
-    @classmethod
-    def perform_autoqa(cls, path_prefix, group_tree):
+    @staticmethod
+    def perform_autoqa(path_prefix, group_tree):
         for f, t in six.iteritems(group_tree):
             b_subgroups = True
             try:
@@ -144,14 +157,16 @@ class ComposeXML(object):
 
                 if check.get("system") != SCE:
                     print ("Rule of id '", element.get("id", ""),
-                           "' from ", group_xml_path, " has system name different from the SCE system name ",
+                           "' from ", group_xml_path, " has system name"
+                           " different from the SCE system name ",
                            "('", SCE, "')!")
 
                 crefs = check.findall(xccdf.XMLNS + "check-content-ref")
                 if len(crefs) != 1:
                     print("Rule of id '", element.get("id", ""),
                           "' from '", group_xml_path,
-                          "' doesn't have exactly one check-content-ref inside its check element!")
+                          "' doesn't have exactly one check-content-ref inside"
+                          " its check element!")
                     continue
 
                 # cref = crefs[0]
@@ -159,46 +174,53 @@ class ComposeXML(object):
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
-                    print ("Rule ", element.get("id", ""), " missing a description")
+                    print ("Rule ", element.get("id", ""),
+                           " missing a description")
                     continue
 
             if b_subgroups:
-                cls.perform_autoqa(os.path.join(path_prefix, f), subgroups)
+                ComposeXML.perform_autoqa(os.path.join(path_prefix, f),
+                                          subgroups)
 
-    @classmethod
-    def repath_group_xml_tree(cls, source_dir, new_base_dir, group_tree):
+    def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
         for f, t in six.iteritems(group_tree):
             tree, subgroups = t
 
             old_base_dir = os.path.join(source_dir, f)
 
             path_prefix = os.path.relpath(old_base_dir, new_base_dir)
-            for element in tree.findall(".//" + xccdf.XMLNS + "check-content-ref"):
+            for element in tree.findall(".//" + xccdf.XMLNS +
+                                        "check-content-ref"):
                 old_href = element.get("href")
                 assert(old_href is not None)
                 element.set("href", os.path.join(path_prefix, old_href))
 
-            cls.repath_group_xml_tree(old_base_dir, new_base_dir, subgroups)
+            ComposeXML.repath_group_xml_tree(old_base_dir, new_base_dir,
+                                             subgroups)
 
-    @classmethod
-    def merge_trees(cls, target_tree, target_element, group_tree):
+    @staticmethod
+    def merge_trees(target_tree, target_element, group_tree):
         def get_sorting_key_for_tree(group_tree, tree_key):
             prefix = 100
             tree, dummy_subgroups = group_tree[tree_key]
             try:
-                prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")[-1].text)
+                prefix = int(tree.findall(XCCDF_FRAGMENT + "sort-prefix")
+                             [-1].text)
             except:
                 pass
 
             return prefix, tree_key
 
-        for f in sorted(six.iterkeys(group_tree), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
+        for f in sorted(six.iterkeys(group_tree),
+                        key=lambda tree_key:
+                        get_sorting_key_for_tree(group_tree, tree_key)):
             t = group_tree[f]
             tree, subgroups = t
 
             groups = tree.findall(xccdf.XMLNS + "Group")
             if len(groups) != 1:
-                print("There are %i groups in '%s/group.xml' file. Exactly 1 group is expected! Skipping..." % (len(groups), f))
+                print("There are %i groups in '%s/group.xml' file. Exactly 1"
+                      " group is expected! Skipping..." % (len(groups), f))
                 continue
             target_element.append(groups[0])
             for child in tree.findall(xccdf.XMLNS + "Profile"):
@@ -215,12 +237,14 @@ class ComposeXML(object):
                         break
 
                 if not merged:
-                    print("Found profile of id '%s' that doesn't match any profiles in template, skipped!" % (child.get("id")), sys.stderr)
+                    print("Found profile of id '%s' that doesn't match any"
+                          " profiles in template, skipped!"
+                          % (child.get("id")), sys.stderr)
 
-            cls.merge_trees(target_tree, groups[0], subgroups)
+            ComposeXML.merge_trees(target_tree, groups[0], subgroups)
 
-    @classmethod
-    def resolve_selects(cls, target_tree):
+    @staticmethod
+    def resolve_selects(target_tree):
         default_selected_rules = set([])
         all_rules = set([])
 
@@ -268,8 +292,8 @@ class ComposeXML(object):
                     elem.set("selected", "false")
                     profile.append(elem)
 
-    @classmethod
-    def update_content_ref(cls, target_tree, content):
+    @staticmethod
+    def update_content_ref(target_tree, content):
         if not content:
             return target_tree
         for content_ref in target_tree.findall(".//" + xccdf.XMLNS + "check"):
@@ -280,60 +304,61 @@ class ComposeXML(object):
 
         return target_tree
 
-    @classmethod
-    def refresh_status(cls, target_tree):
+    @staticmethod
+    def refresh_status(target_tree):
         for status in target_tree.findall(xccdf.XMLNS + "status"):
             if status.get("date", "") == "${CURRENT_DATE}":
                 status.set("date", datetime.date.today().strftime("%Y-%m-%d"))
 
     # taken from http://effbot.org/zone/element-lib.htm#prettyprint
-    @classmethod
-    def indent(cls, elem, level=0):
-        i = "\n" + level*"  "
+    @staticmethod
+    def indent(elem, level=0):
+        i = "\n" + level * "  "
         if len(elem):
             if not elem.text or not elem.text.strip():
                 elem.text = i + "  "
             if not elem.tail or not elem.tail.strip():
                 elem.tail = i
             for elem in elem:
-                cls.indent(elem, level+1)
+                ComposeXML.indent(elem, level + 1)
             if not elem.tail or not elem.tail.strip():
                 elem.tail = i
         else:
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i
 
-    @classmethod
-    def get_template_file(cls):
+    @staticmethod
+    def get_template_file():
         return os.path.join(settings.data_dir, "templates",
                             settings.xccdf_template)
 
-    @classmethod
-    def get_xml_tree(cls):
+    @staticmethod
+    def get_xml_tree():
         template_file = ComposeXML.get_template_file()
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
-            print('Problem with reading %s file' % settings.xccdf_template)
-            return None
+            sys.exit('Problem with reading %s file'
+                     % settings.xccdf_template)
         return target_tree
 
-    @classmethod
-    def run_compose(cls, dir_name, content=None, generate_from_ini=True):
+    @staticmethod
+    def run_compose(dir_name, content=None, generate_from_ini=True):
         target_tree = ComposeXML.get_xml_tree()
         settings.UPGRADE_PATH = dir_name
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
-        group_xmls = cls.collect_group_xmls(dir_name, content=content, level=0, generate_from_ini=generate_from_ini)
+        group_xmls = ComposeXML.collect_group_xmls(dir_name, content, 0,
+                                                   generate_from_ini)
         logger_debug.debug("Group xmls '%s'", group_xmls)
         if generate_from_ini:
-            cls.perform_autoqa(dir_name, group_xmls)
+            ComposeXML.perform_autoqa(dir_name, group_xmls)
         new_base_dir = dir_name
-        cls.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
-        cls.merge_trees(target_tree, target_tree, group_xmls)
-        target_tree = cls.update_content_ref(target_tree, content)
-        cls.resolve_selects(target_tree)
-        cls.refresh_status(target_tree)
-        cls.indent(target_tree)
+        ComposeXML.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
+        ComposeXML.merge_trees(target_tree, target_tree, group_xmls)
+        target_tree = ComposeXML.update_content_ref(target_tree, content)
+        ComposeXML.resolve_selects(target_tree)
+        ComposeXML.refresh_status(target_tree)
+        ComposeXML.indent(target_tree)
 
         return target_tree
