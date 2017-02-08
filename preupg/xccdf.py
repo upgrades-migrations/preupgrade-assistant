@@ -72,7 +72,7 @@ class XccdfHelper(object):
         """
         The function read the content of the file
         and finds out all "preupg.risk" rows in TestResult tree.
-        return value is get from function get_and_print_inplace_risk
+        return code is get from function get_and_print_inplace_risk
         """
         message = "'preupg' command was not run yet. Run 'preupg' before getting list of risks."
         try:
@@ -89,7 +89,7 @@ class XccdfHelper(object):
         target_tree = ElementTree.fromstring(content)
         results = {}
         for profile in target_tree.findall(XMLNS + "TestResult"):
-            # Collect all inplace risk for each return values
+            # Collect all inplace risk for each return code
             for rule_result in profile.findall(XMLNS + "rule-result"):
                 result_value = None
                 for check in rule_result.findall(XMLNS + "result"):
