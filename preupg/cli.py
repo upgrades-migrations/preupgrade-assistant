@@ -42,9 +42,12 @@ class CLI(object):
 
     def __init__(self, args=None):
         """parse arguments"""
-        self.parser = optparse.OptionParser(add_help_option=False,
-                                            version="Preupgrade Assistant %s"
-                                            % VERSION)
+        self.parser = optparse.OptionParser(
+            add_help_option=False,
+            version="Preupgrade Assistant %s" % VERSION,
+            description="For Preupgrade Assistant tool description, return"
+                        " codes and examples, refer to the man page."
+        )
 
         self.add_args()
         if args:
@@ -78,8 +81,7 @@ class CLI(object):
             action="callback",
             callback=upload_callback,
             help="Upload a system assessment result to Preupgrade Assistant"
-                 " WEB-UI." + " " * 30 +
-                 " Example: --upload http://example.com:8099/submit/"
+                 " WEB-UI."
         )
         self.parser.add_option(
             "-r", "--results",
@@ -101,7 +103,7 @@ class CLI(object):
             help="Provide name of the set of modules which are to be used for"
                  " assessing the system. By default, if there is just one set"
                  " in %s, Preupgrade Assistant uses that one."
-                 % settings.source_dir + " " * 35 + "Example: -s RHEL5_7"
+                 % settings.source_dir
         )
         self.parser.add_option(
             "-c", "--contents",
@@ -109,9 +111,7 @@ class CLI(object):
             help="Provide path to all-xccdf.xml of the set of modules which is"
                  " to be used for assesing the system. By default, if there is"
                  " just one set in %s, Preupgrade Assistant uses that one."
-                 " Option --scan works similarly." % settings.source_dir +
-                 " " * 40 +
-                 "Example: -c /usr/share/preupgrade/RHEL5_7/all-xccdf.xml"
+                 " Option --scan works similarly." % settings.source_dir
         )
         self.parser.add_option(
             "-R", "--riskcheck",
@@ -125,12 +125,12 @@ class CLI(object):
                  " STDOUT. If the --verbose option is used once, just HIGH and"
                  " EXTREME risks are printed. If it is used twice, all the"
                  " risks are printed. " + " " * 30 +
-                 "Return values:" + " " * 40 +
-                 "0 ... SLIGHT/MEDIUM risk or needs_inspection/fixed/"
-                 "informational/not_applicable/not_selected/not_checked/pass"
-                 " result" + " " * 50 +
-                 "1 ... HIGH risk or needs_action result" + " " * 25 +
-                 "2 ... EXTREME risk or error/fail result"
+                 "Return codes:" + " " * 40 +
+                 "0 ... SLIGHT or MEDIUM risk or needs_inspection, fixed, "
+                 "informational, not_applicable, not_selected, not_checked or"
+                 " pass result." + " " * 50 +
+                 "1 ... HIGH risk or needs_action result." + " " * 25 +
+                 "2 ... EXTREME risk or error or fail result."
         )
         self.parser.add_option(
             "-f", "--force",
@@ -185,10 +185,7 @@ class CLI(object):
             "--select-rules",
             metavar="RULES",
             help="Execute just a subset of modules out of a module set."
-                 " Multiple modules are to be separated by a comma." +
-                 " " * 5 +
-                 "Example:  --select-rules xccdf_preupg_rule_networking_vsftpd"
-                 "_check,xccdf_preupg_rule_networking_bind_configuration_check"
+                 " Multiple modules are to be separated by a comma."
         )
         self.parser.add_option(
             "-L", "--list-rules",

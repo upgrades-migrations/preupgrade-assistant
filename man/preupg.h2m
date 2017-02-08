@@ -1,6 +1,6 @@
 # This file contains information (complement to the help message of the Preupgrade Assistant) that is to be used by help2man tool to generate a man page.
 # The following is a command to generate the man page:
-# help2man preupg --no-info -o preupg.man -i preupg.h2m
+# help2man preupg --no-info -o preupg.1 -i preupg.h2m
 
 [NAME]
 Preupgrade Assistant - advises on the feasibility of system upgrade or migration
@@ -25,10 +25,8 @@ preupg [-C, --cleanup]
 [DESCRIPTION]
 Preupgrade Assistant analyses the system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant can be used for the in-place upgrade or migration of the system, where the migration means a new system installation that retains as much of the old system setup as possible.
 
-[RETURN VALUES]
-Preupgrade Assistant returns several return values.
-
-Possible return values are:
+[RETURN CODES]
+Possible return codes are:
 
 0 - preupg works properly and modules exit with the following results: PASS, FIXED, INFORMATIONAL, NEEDS_INSPECTION, NOT_APPLICABLE.
 
@@ -54,8 +52,14 @@ Possible return values are:
 
 28 - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
 
-[NOTE]
-This man page is generated. Do not edit it manually.
+[EXAMPLES]
+preupg -u http://example.com:8099/submit/ -r /root/preupgrade-results/preupg_results-161108001514.tar.gz
+
+preupg -s RHEL5_7
+
+preupg -c /usr/share/preupgrade/RHEL5_7/all-xccdf.xml
+
+preupg --select-rules xccdf_preupg_rule_networking_vsftpd_check,xccdf_preupg_rule_networking_bind_configuration_check
 
 [REPORTING BUGS]
 Preferably use https://github.com/upgrades-migrations/preupgrade-assistant/issues OR try to contact us on a freenode.net IRC channel #preupgrade.
