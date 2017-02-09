@@ -9,8 +9,6 @@ from preupg.conf import Conf
 from preupg import settings
 from preupg.logger import logger_debug
 
-#preupgrade_binary="/usr/bin/preupgrade-oscap"
-
 
 def main():
     cli = CLI()
@@ -22,7 +20,7 @@ def main():
     else:
         try:
             ret = app.run()
-            logger_debug.debug("Return value is '%s'", ret)
+            logger_debug.debug("Return code is '%s'", ret)
         except KeyboardInterrupt:
             print ('\nAssessment interrupted.')
             return 1

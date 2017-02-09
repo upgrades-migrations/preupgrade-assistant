@@ -206,7 +206,7 @@ class ReportParser(object):
         if inplace_risk:
             logger_report.debug("Update_inplace_risk '%s'", inplace_risk)
             return_value = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
-            logger_report.debug("Get and print inplace risk return value '%s'", return_value)
+            logger_report.debug("Get and print inplace risk return code '%s'", return_value)
             if int(return_value)/2 == 1:
                 res.text = ReportHelper.get_needs_inspection()
             elif int(return_value)/2 == 2:
