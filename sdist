@@ -8,7 +8,7 @@
 
 # NOTE:
 # Production (released) tarballs should be taken from github:
-# http://github.srcurl.net/phracek/%{name}/%{version}/%{name}-%{version}.tar.gz
+# https://github.com/upgrades-migrations/%{name}/%{version}/%{name}-%{version}.tar.gz
 # It is our responsibility to update setup.py before we create version tag.
 
 set -e

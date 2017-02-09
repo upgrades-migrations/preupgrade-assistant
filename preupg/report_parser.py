@@ -7,7 +7,6 @@ import six
 from preupg.utils import FileHelper
 from preupg.xccdf import XccdfHelper
 from preupg import settings
-from preupg.settings import ModuleValues
 from preupg.logger import logger_report, log_message
 try:
     from xml.etree import ElementTree

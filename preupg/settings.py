@@ -154,7 +154,7 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
                  "- the firewall rules which were enabled on this system.\n" \
                  "The Kickstart file is pre-generated from this system and is not to be used directly for \n" \
                  "the installation of Red Hat Enterprise Linux 7.\n" \
-                 "The Kickstart file needs to be modified by the administator.\n" \
+                 "The Kickstart file needs to be modified by the administrator.\n" \
                  "These directories exist on the migration system:\n" \
                  "- %s/cleanconf - configuration files which can be used on the migrated system.\n" \
                  "- %s/dirtyconf - configuration files which need to be clarified by the administrator.\n"
