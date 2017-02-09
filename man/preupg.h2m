@@ -38,9 +38,9 @@ Possible return codes are:
 
 20 - preupg cannot find a proper upgrade scenario.
 
-21 - preupg is executed with parameters mode and select-rules. This is not allowed.
+21 - preupg is executed with options --mode and --select-rules. This is not allowed.
 
-22 - preupg is executed with parameters riskcheck, cleanup and kickstart. These options are not allowed to be used together.
+22 - preupg is executed with an invalid command line option.
 
 23 - preupg has to be executed as root.
 
@@ -53,6 +53,10 @@ Possible return codes are:
 27 - The /usr/share/preupgrade/data/preassessment/scripts.txt file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
 
 28 - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
+
+29 - Internal problem.
+
+30 - User aborted the assesment.
 
 [EXAMPLES]
 preupg -u http://example.com:8099/submit/ -r /root/preupgrade-results/preupg_results-161108001514.tar.gz

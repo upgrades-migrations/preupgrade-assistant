@@ -3,9 +3,10 @@ from __future__ import print_function, unicode_literals
 import os
 import re
 
-from preupg.utils import FileHelper, MessageHelper
+from preupg.utils import FileHelper
 from preupg import settings
-from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.exception import MissingHeaderCheckScriptError
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 
 
 class ModuleHelper(object):
@@ -15,7 +16,8 @@ class ModuleHelper(object):
         self.script_name = script_name
         self.solution_name = solution_name
         self.full_path_name = os.path.join(self.dir_name, self.script_name)
-        self.full_path_name_solution = os.path.join(self.dir_name, self.solution_name)
+        self.full_path_name_solution = os.path.join(self.dir_name,
+                                                    self.solution_name)
 
     def get_full_path_name(self):
         return self.full_path_name
@@ -29,11 +31,8 @@ class ModuleHelper(object):
         If check_script exists then the script checks whether it is executable
         """
         if not os.path.exists(self.full_path_name):
-            print ("ERROR: ", self.full_path_name, "Script name does not exists")
-            print ("List of directory (", self.dir_name, ") is:")
-            for file_name in os.listdir(self.dir_name):
-                print (file_name)
-            raise MissingFileInContentError
+            raise MissingFileInContentError(file=self.full_path_name,
+                                            dir=self.dir_name)
         if type_name != 'solution':
             FileHelper.check_executable(self.full_path_name)
 
@@ -125,8 +124,7 @@ class ModuleHelper(object):
                                                                           script_type)
         lines = FileHelper.get_file_content(self.full_path_name, "rb", method=True)
         if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-            MessageHelper.print_error_msg("#END GENERATED SECTION is missing in check_script %s" % self.full_path_name)
-            raise MissingHeaderCheckScriptError
+            raise MissingHeaderCheckScriptError(self.full_path_name)
         for func in functions:
             lines = [x for x in lines if func not in x.strip()]
         output_text = ""
@@ -158,25 +156,20 @@ class ModuleHelper(object):
             if not tags:
                 continue
 
-    def check_recommended_fields(self, keys=None):
+    @staticmethod
+    def check_required_fields(ini_filepath, fields_in_ini):
         """
-        The function checks whether all fields in INI file are fullfiled
-        If solution_type is mentioned than HTML page can be used.
-        HTML solution type can contain standard HTML tags
-
-        field are needed by YAML file
+        The function checks whether all the required fields are used in an INI
+        file.
         """
-        fields = ['content_title', 'check_script', 'solution', 'applies_to']
-        unused = [x for x in fields if not keys.get(x)]
-        if unused:
-            title = 'Following tags are missing in INI file %s\n' % self.script_name
-            if 'applies_to' not in unused:
-                MessageHelper.print_error_msg(title=title, msg=' '.join(unused))
-                raise MissingTagsIniFileError
-        if 'solution_type' in keys:
-            if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
-                pass
-            else:
-                MessageHelper.print_error_msg(title="Wrong solution_type. Allowed are 'html' or 'text' %s" % self.script_name)
-                os.sys.exit(0)
-
+        required_fields = ['content_title', 'content_description',
+                           'check_script', 'solution']
+        not_in_ini = [x for x in required_fields if not fields_in_ini.get(x)]
+        if not_in_ini:
+            raise MissingTagsIniFileError(tags=', '.join(not_in_ini),
+                                          ini_file=ini_filepath)
+        if 'solution_type' in fields_in_ini and \
+                fields_in_ini.get('solution_type') != "html" and \
+                fields_in_ini.get('solution_type') != "text":
+            raise ValueError("Error: Wrong solution_type in %s. Allowed are"
+                             " 'html' or 'text'" % ini_filepath)

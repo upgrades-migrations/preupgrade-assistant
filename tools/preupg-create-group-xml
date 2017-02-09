@@ -10,14 +10,7 @@ from distutils import dir_util
 from preupg.xmlgen.compose import ComposeXML
 from preupg import settings
 from preupg.utils import FileHelper, SystemIdentification
-from preupg.exception import MissingHeaderCheckScriptError
-from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 from preupg.logger import *
-
-try:
-    from xml.etree.ElementTree import ParseError
-except ImportError:
-    from xml.parsers.expat import ExpatError as ParseError
 
 
 def main():
@@ -80,8 +73,7 @@ def main():
     try:
         target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
                                              os.path.basename(dir_name))
-    except (MissingHeaderCheckScriptError, MissingFileInContentError,
-            MissingTagsIniFileError) as err:
+    except Exception, err:
         sys.exit(err)
 
     try:

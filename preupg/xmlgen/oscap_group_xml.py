@@ -6,7 +6,6 @@ So no change is needed from maintainer point of view
 
 from __future__ import print_function, unicode_literals
 import os
-import six
 import codecs
 
 try:
@@ -15,7 +14,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preupg.xmlgen.xml_utils import XmlUtils
-from preupg.utils import MessageHelper, FileHelper, SystemIdentification
+from preupg.utils import FileHelper, SystemIdentification
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -55,33 +54,28 @@ class OscapGroupXml(object):
         for file_name in self.lists:
             if FileHelper.check_file(file_name, "r") is False:
                 continue
-            try:
-                config = configparser.ConfigParser()
-                filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
-                config.readfp(filehander)
-                fields = {}
-                if config.has_section('premigrate'):
-                    section = 'premigrate'
-                else:
-                    section = 'preupgrade'
-                for option in config.options(section):
-                    fields[option] = config.get(section, option)
-                self.loaded[file_name] = [fields]
-            except configparser.MissingSectionHeaderError:
-                MessageHelper.print_error_msg(title="Missing section header")
-            except configparser.NoSectionError:
-                MessageHelper.print_error_msg(title="Missing section header")
-            except configparser.ParsingError:
-                MessageHelper.print_error_msg(title="Incorrect INI file\n", msg=file_name)
-                os.sys.exit(1)
+            config = configparser.ConfigParser()
+            filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
+            config.readfp(filehander)
+            fields = {}
+            if config.has_section('premigrate'):
+                section = 'premigrate'
+            else:
+                section = 'preupgrade'
+            for option in config.options(section):
+                fields[option] = config.get(section, option)
+            self.loaded[file_name] = fields
 
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
         # load content without decoding to unicode - ElementTree requests this
+        xml_path = os.path.join(self.dirname, "group.xml")
         try:
-            self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
-        except ParseError as par_err:
-            print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
+            self.ret[self.dirname] = ElementTree.parse(xml_path).getroot()
+        except ParseError, par_err:
+            raise ParseError(
+                "Encountered a parse error in file %s.\nDetails: %s"
+                % (os.path.join(self.dirname, "group.xml"), par_err))
         return self.ret
 
     def write_xml(self):
@@ -92,35 +86,43 @@ class OscapGroupXml(object):
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
-            FileHelper.write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
-        except IOError as ior:
-            print ('Problem with write data to the file ', file_name, ior.message)
+            FileHelper.write_to_file(file_name, "wb",
+                                     ["%s" % item for item in self.rule])
+        except IOError, ior:
+            raise IOError('Problem with writing to file %s.\nDetails: %s'
+                          % (file_name, ior.message))
 
     def write_profile_xml(self, target_tree):
         """The function stores all-xccdf.xml file into content directory"""
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
-        print ('File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name))
+        print ('File which can be used by Preupgrade-Assistant is: %s'
+               % file_name)
         try:
-            # encoding must be set! otherwise ElementTree return non-ascii characters
-            # as html entities instead, which are unsusable for us
+            # encoding must be set! otherwise ElementTree return non-ascii
+            # characters as html entities instead, which are unsusable for us
             data = ElementTree.tostring(target_tree, "utf-8")
             FileHelper.write_to_file(file_name, "wb", data, False)
-        except IOError as ioe:
-            print ('Problem with writing to file ', file_name, ioe.message)
+        except IOError, ioe:
+            raise IOError('Problem with writing to file %s.\nDetails: %s'
+                          % (file_name, ioe.message))
 
     def write_list_rules(self):
-        end_point = self.dirname.find(SystemIdentification.get_valid_scenario(self.dirname))
+        end_point = self.dirname.find(
+            SystemIdentification.get_valid_scenario(self.dirname))
         rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
-        file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
+        file_list_rules = os.path.join(settings.UPGRADE_PATH,
+                                       settings.file_list_rules)
         lines = []
         if os.path.exists(file_list_rules):
-            lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
+            lines = FileHelper.get_file_content(file_list_rules, "rb",
+                                                method=True)
         else:
             lines = []
-        for values in six.itervalues(self.loaded):
-            check_script = [v for k, v in six.iteritems(values[0]) if k == 'check_script']
+        for values in iter(self.loaded.values()):
+            check_script = [v for k, v in iter(values.items())
+                            if k == 'check_script']
             if check_script:
                 check_script = os.path.splitext(''.join(check_script))[0]
-                lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
+                lines.append(settings.xccdf_tag + rule_name + '_' +
+                             check_script + '\n')
         FileHelper.write_to_file(file_list_rules, "wb", lines)
-

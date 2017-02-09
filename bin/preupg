@@ -1,7 +1,8 @@
-#!/usr/bin/python2 -tt
+#!/usr/bin/python -tt
 # -*- coding: utf-8 -*-
 
 
+import traceback
 import sys
 from preupg.cli import CLI
 from preupg.application import Application
@@ -14,20 +15,19 @@ def main():
     cli = CLI()
     conf = Conf(cli.opts, settings, cli)
     app = Application(conf)
-    ret = 0
-    if cli.opts.debug:
+    try:
         ret = app.run()
-    else:
-        try:
-            ret = app.run()
-            logger_debug.debug("Return code is '%s'", ret)
-        except KeyboardInterrupt:
-            print ('\nAssessment interrupted.')
-            return 1
-        except Exception as ex:
-            cli.parser.error(str(ex))
-    return ret
+        logger_debug.debug("preupg returned '%s'" % ret)
+        sys.exit(ret)
+    except KeyboardInterrupt:
+        sys.exit(settings.ReturnValues.USER_ABORT)
+    except Exception, ex:
+        if cli.opts.debug:
+            traceback.print_exc(file=sys.stderr)
+        else:
+            sys.stderr.write(str(ex) + "\n")
+        sys.exit(settings.ReturnValues.INTERNAL_EXCEPTION)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
