@@ -164,33 +164,30 @@ index 6e7ccfa..12103c1 100644
                  return ReturnValues.ROOT
  
 diff --git a/preupg/cli.py b/preupg/cli.py
-index e3d942d..8e9b6a3 100644
+index 5858db8..150bba7 100644
 --- a/preupg/cli.py
 +++ b/preupg/cli.py
-@@ -1,7 +1,5 @@
+@@ -1,6 +1,5 @@
  # -*- coding: utf-8 -*-
  
 -from __future__ import print_function, unicode_literals
--#import argparse
  import optparse
  from optparse import OptionValueError
  
-@@ -167,12 +165,7 @@ Upload results to preupgrade assistant WEB-UI"
-                  (e.g.: x86_64). Use of the option is expected on 32b systems.
-                  """
+@@ -204,11 +203,6 @@ class CLI(object):
+                 % ", ".join(settings.migration_options)
+             )
          )
 -        self.parser.add_option(
 -            "--old-report-style",
 -            action="store_true",
--            metavar="OLDREPORTSTYLE",
--            help="Use old report style without CSS issues."
+-            help="Generate report with simpler style than the default."
 -        )
-+
+ 
  
  if __name__ == '__main__':
-     x = CLI()
 diff --git a/preupg/common.py b/preupg/common.py
-index 60286ae..4424bba 100644
+index 7b485b3..9e07e1a 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -213,15 +210,6 @@ index 43bec13..b76c21d 100644
  class DummyConf(object):
      """
      Dummy conf class for Conf
-diff --git a/preupg/constants.py b/preupg/constants.py
-index 379b181..7414f5a 100644
---- a/preupg/constants.py
-+++ b/preupg/constants.py
-@@ -1,4 +1,3 @@
- # -*- coding: utf-8 -*-
--from __future__ import unicode_literals
- PROGRAM_DESCRIPTION = "OS upgrade helper"
- USAGE = "%prog [options]"
 diff --git a/preupg/creator/ui_helper.py b/preupg/creator/ui_helper.py
 index cef8a3a..cf9344f 100644
 --- a/preupg/creator/ui_helper.py

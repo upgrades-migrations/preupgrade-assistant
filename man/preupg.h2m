@@ -1,0 +1,67 @@
+# This file contains information (complement to the help message of the Preupgrade Assistant) that is to be used by help2man tool to generate a man page.
+# The following is a command to generate the man page:
+# help2man preupg --no-info -o preupg.1 -i preupg.h2m
+
+[NAME]
+Preupgrade Assistant - advises on the feasibility of system upgrade or migration
+
+[SYNOPSIS]
+preupg [-h, --help]
+
+preupg [--version]
+
+preupg [-l, --list-contents-set]
+
+preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [--force] [--text] [--dst-arch ARCH] [-c, --contents ALL_XCCDF_PATH] [--old-report-style] [--select-rules] [-v, --verbose]
+
+preupg [--list-rules] [-s, --scan MODULE_SET]
+
+preupg [--riskcheck] [-v, --verbose]
+
+preupg [--kickstart]
+
+preupg [-u, --upload URL] [-r, --results TARBALL]
+
+preupg [--cleanup]
+
+[DESCRIPTION]
+Preupgrade Assistant analyses the system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant can be used for the in-place upgrade or migration of the system, where the migration means a new system installation that retains as much of the old system setup as possible.
+
+[RETURN CODES]
+Possible return codes are:
+
+0 - preupg works properly and modules exit with the following results: PASS, FIXED, INFORMATIONAL, NEEDS_INSPECTION, NOT_APPLICABLE.
+
+1 - preupg works properly but at least one module finishes with NEEDS_ACTION result.
+
+2 - preupg works properly but at least one module finishes with FAIL or ERROR result.
+
+20 - preupg cannot find a proper upgrade scenario.
+
+21 - preupg is executed with parameters mode and select-rules. This is not allowed.
+
+22 - preupg is executed with parameters riskcheck, cleanup and kickstart. These options are not allowed to be used together.
+
+23 - preupg has to be executed as root.
+
+24 - preupg has to be executed before the Kickstart generation.
+
+25 - openscap and openscap-engine-sce are not installed on the system.
+
+26 - You specified a text convertor which is not allowed. Allowed convertors are w3m, lynx and elinks.
+
+27 - The /usr/share/preupgrade/data/preassessment/scripts.txt file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
+
+28 - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
+
+[EXAMPLES]
+preupg -u http://example.com:8099/submit/ -r /root/preupgrade-results/preupg_results-161108001514.tar.gz
+
+preupg -s RHEL5_7
+
+preupg -c /usr/share/preupgrade/RHEL5_7/all-xccdf.xml
+
+preupg --select-rules xccdf_preupg_rule_networking_vsftpd_check,xccdf_preupg_rule_networking_bind_configuration_check
+
+[REPORTING BUGS]
+Preferably use https://github.com/upgrades-migrations/preupgrade-assistant/issues OR try to contact us on a freenode.net IRC channel #preupgrade.
