@@ -25,7 +25,7 @@ index fa2e957..07a08b2 100755
      return ret
  
 diff --git a/preupg/application.py b/preupg/application.py
-index 6e7ccfa..12103c1 100644
+index 7a20c1e..9aef5f4 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
 @@ -4,7 +4,6 @@ The application module serves for running oscap binary and reporting results
@@ -36,7 +36,7 @@ index 6e7ccfa..12103c1 100644
  import shutil
  import datetime
  import os
-@@ -107,11 +106,12 @@ class Application(object):
+@@ -108,11 +107,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -51,7 +51,7 @@ index 6e7ccfa..12103c1 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create report log '%s'", settings.preupg_report_log)
-@@ -123,11 +123,12 @@ class Application(object):
+@@ -124,11 +124,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -66,7 +66,7 @@ index 6e7ccfa..12103c1 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create debug log '%s'", settings.preupg_log)
-@@ -153,7 +154,7 @@ class Application(object):
+@@ -154,7 +155,7 @@ class Application(object):
          if self.conf.upload is True:
              # lets try default configuration
              log_message('Specify the server where to upload the results.')
@@ -75,7 +75,7 @@ index 6e7ccfa..12103c1 100644
              return False
          else:
              if self.conf.upload[-1] == '/':
-@@ -164,7 +165,7 @@ class Application(object):
+@@ -165,7 +166,7 @@ class Application(object):
          try:
              proxy = xmlrpclib.ServerProxy(url)
              proxy.submit.ping()
@@ -84,7 +84,7 @@ index 6e7ccfa..12103c1 100644
              message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
                        'Please ensure that package preupgrade-assistant-ui ' \
                        'has been installed on target system and firewall is set up ' \
-@@ -386,7 +387,7 @@ class Application(object):
+@@ -387,7 +388,7 @@ class Application(object):
          """
          for self.third_party, content in list_contents(dir_name).iteritems():
              third_party_name = self.third_party = third_party
@@ -93,7 +93,7 @@ index 6e7ccfa..12103c1 100644
              self.report_parser.reload_xml(content)
              self.content = content
              self.run_scan_process()
-@@ -397,7 +398,7 @@ class Application(object):
+@@ -398,7 +399,7 @@ class Application(object):
  
      def get_cmd_convertor(self):
          """Function returns cmd with text convertor string"""
@@ -102,7 +102,7 @@ index 6e7ccfa..12103c1 100644
              self.text_convertor,
              self.openscap_helper.get_default_html_result_path(),
              self.openscap_helper.get_default_txt_result_path()
-@@ -476,7 +477,7 @@ class Application(object):
+@@ -480,7 +481,7 @@ class Application(object):
          try:
              self.report_parser = ReportParser(self.content)
          except IOError:
@@ -111,7 +111,7 @@ index 6e7ccfa..12103c1 100644
              return ReturnValues.SCENARIO
          if not self.conf.contents:
              version = SystemIdentification.get_assessment_version(self.conf.scan)
-@@ -527,20 +528,18 @@ class Application(object):
+@@ -531,20 +532,18 @@ class Application(object):
  
      def summary_report(self, tarball_path):
          """Function prints a summary report"""
@@ -137,7 +137,7 @@ index 6e7ccfa..12103c1 100644
  
          }
          self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
-@@ -560,9 +559,8 @@ class Application(object):
+@@ -564,9 +563,8 @@ class Application(object):
              log_message('Summary of the third party providers:')
              for target, dummy_report in self.report_data.iteritems():
                  self.third_party = target
@@ -149,7 +149,7 @@ index 6e7ccfa..12103c1 100644
  
      def _set_devel_mode(self):
          # Check for devel_mode
-@@ -663,11 +661,11 @@ class Application(object):
+@@ -671,11 +669,11 @@ class Application(object):
                      found = True
                      break
              if not found:
@@ -187,7 +187,7 @@ index 5858db8..150bba7 100644
  
  if __name__ == '__main__':
 diff --git a/preupg/common.py b/preupg/common.py
-index 7b485b3..9e07e1a 100644
+index 60286ae..4424bba 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -227,7 +227,7 @@ index cef8a3a..cf9344f 100644
      while True:
          if int(sys.version_info[0]) == 2:
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 1f4cb28..cc0a313 100644
+index 0c58b0b..91db549 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -324,7 +324,7 @@ index 8f12b78..349e402 100644
      logger_report.log(level, message)
  
 diff --git a/preupg/report_parser.py b/preupg/report_parser.py
-index 717afc8..5735d16 100644
+index 748f72e..65ffad7 100644
 --- a/preupg/report_parser.py
 +++ b/preupg/report_parser.py
 @@ -1,4 +1,3 @@
@@ -374,7 +374,7 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index f7d2923..ca39e35 100644
+index a1eef27..f08c9c6 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
 @@ -19,7 +19,6 @@ These functions are available:
@@ -403,7 +403,7 @@ index f7d2923..ca39e35 100644
  
  
  def log_error(message):
-@@ -784,13 +783,13 @@ def deploy_hook(*args):
+@@ -785,13 +784,13 @@ def deploy_hook(*args):
                      exit_error()
                  try:
                      shutil.copytree(arg, hook_arg)
@@ -420,7 +420,7 @@ index f7d2923..ca39e35 100644
              exit_error()
  
 diff --git a/preupg/settings.py b/preupg/settings.py
-index 7a64462..7e1607a 100644
+index 1ccd0ec..79477c8 100644
 --- a/preupg/settings.py
 +++ b/preupg/settings.py
 @@ -1,4 +1,3 @@
@@ -490,7 +490,7 @@ index 7a64462..7e1607a 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 60aeb25..c21dc1f 100644
+index 8af2996..c39eaf5 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
@@ -554,7 +554,7 @@ index 60aeb25..c21dc1f 100644
              log_message("Executing script %s ...done" % scr)
  
 diff --git a/preupg/xccdf.py b/preupg/xccdf.py
-index 4363cb8..84540e5 100644
+index 626d815..cc748f8 100644
 --- a/preupg/xccdf.py
 +++ b/preupg/xccdf.py
 @@ -1,10 +1,11 @@
@@ -637,7 +637,7 @@ index 0db550d..39a438b 100644
      return string[:s_pos] + string[e_pos:]
  
 diff --git a/preupg/xmlgen/compose.py b/preupg/xmlgen/compose.py
-index 62b8d07..4c271e8 100644
+index 61b81b2..d2f87ac 100644
 --- a/preupg/xmlgen/compose.py
 +++ b/preupg/xmlgen/compose.py
 @@ -1,5 +1,5 @@
@@ -647,7 +647,7 @@ index 62b8d07..4c271e8 100644
  import sys
  import re
  import datetime
-@@ -30,6 +30,20 @@ XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/" \
+@@ -28,6 +28,20 @@ XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/" \
  SCE = "http://open-scap.org/page/SCE"
  
  
@@ -668,16 +668,7 @@ index 62b8d07..4c271e8 100644
  class XCCDFCompose(object):
      dir_name = ""
      result_dir = ""
-@@ -59,7 +73,7 @@ class XCCDFCompose(object):
-             target_tree = ComposeXML.run_compose(
-                 self.dir_name, generate_from_ini=generate_from_ini)
-         except (MissingHeaderCheckScriptError, MissingFileInContentError,
--                MissingTagsIniFileError) as err:
-+                MissingTagsIniFileError), err:
-             sys.exit(err)
- 
-         report_filename = os.path.join(self.dir_name, settings.content_file)
-@@ -118,7 +132,7 @@ class ComposeXML(object):
+@@ -114,7 +128,7 @@ class ComposeXML(object):
                                  ComposeXML.collect_group_xmls(new_dir,
                                  level=level + 1,
                                  generate_from_ini=generate_from_ini))
@@ -686,7 +677,7 @@ index 62b8d07..4c271e8 100644
                  print ("Encountered a parse error in file ", group_file_path,
                         " details: ", e)
          return ret
-@@ -188,7 +202,7 @@ class ComposeXML(object):
+@@ -184,7 +198,7 @@ class ComposeXML(object):
  
              old_base_dir = os.path.join(source_dir, f)
  
@@ -696,7 +687,7 @@ index 62b8d07..4c271e8 100644
                                          "check-content-ref"):
                  old_href = element.get("href")
 diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
-index fc40369..3f753cc 100644
+index bf1632f..131f4c4 100644
 --- a/preupg/xmlgen/oscap_group_xml.py
 +++ b/preupg/xmlgen/oscap_group_xml.py
 @@ -3,8 +3,6 @@
@@ -736,7 +727,7 @@ index fc40369..3f753cc 100644
  
      def write_list_rules(self):
 diff --git a/preupg/xmlgen/script_utils.py b/preupg/xmlgen/script_utils.py
-index cd0e608..f34638c 100644
+index 22e646d..3c5f00d 100644
 --- a/preupg/xmlgen/script_utils.py
 +++ b/preupg/xmlgen/script_utils.py
 @@ -1,5 +1,3 @@
@@ -755,7 +746,7 @@ index 640c978..3969d36 100644
  TAG_VALUE = "xccdf_preupg_value_"
  TAG_RULE = "xccdf_preupg_rule_"
 diff --git a/preupg/xmlgen/xml_utils.py b/preupg/xmlgen/xml_utils.py
-index b98ed43..3b86568 100644
+index ea8e623..91a3bc3 100644
 --- a/preupg/xmlgen/xml_utils.py
 +++ b/preupg/xmlgen/xml_utils.py
 @@ -1,5 +1,3 @@
@@ -763,8 +754,8 @@ index b98ed43..3b86568 100644
 -
  import re
  import os
- import copy
-@@ -71,23 +69,23 @@ class XmlUtils(object):
+ import sys
+@@ -72,23 +70,23 @@ class XmlUtils(object):
          new_text = []
          lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
  
@@ -816,7 +807,7 @@ index b98ed43..3b86568 100644
                          e_msg = "'%s': %s" % (key[k], e.strerror)
                          MessageHelper.print_error_msg(title=e_title, msg=e_msg)
 diff --git a/tools/preupg-create-group-xml b/tools/preupg-create-group-xml
-index b7d2e47..0c1349c 100755
+index e784853..dc91649 100755
 --- a/tools/preupg-create-group-xml
 +++ b/tools/preupg-create-group-xml
 @@ -1,10 +1,12 @@
@@ -834,7 +825,7 @@ index b7d2e47..0c1349c 100755
  
  from distutils import dir_util
  from preupg.xmlgen.compose import ComposeXML
-@@ -37,11 +39,12 @@ def main():
+@@ -30,11 +32,12 @@ def main():
          print('Dir %s does not exists.' % args[0])
          sys.exit(1)
  
@@ -859,7 +850,7 @@ index b7d2e47..0c1349c 100755
  
      try:
 diff --git a/tools/preupg-xccdf-compose b/tools/preupg-xccdf-compose
-index fba3553..ebb416a 100755
+index 298e8a1..4f2e68c 100755
 --- a/tools/preupg-xccdf-compose
 +++ b/tools/preupg-xccdf-compose
 @@ -1,5 +1,4 @@

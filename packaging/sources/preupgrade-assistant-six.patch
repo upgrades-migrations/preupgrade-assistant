@@ -1,5 +1,5 @@
 diff --git a/preupg/application.py b/preupg/application.py
-index ca882fa..6e7ccfa 100644
+index 9e59b8b..7a20c1e 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
 @@ -8,7 +8,6 @@ from __future__ import unicode_literals, print_function
@@ -7,10 +7,10 @@ index ca882fa..6e7ccfa 100644
  import datetime
  import os
 -import six
+ import sys
  import logging
  from distutils import dir_util
- 
-@@ -221,7 +220,7 @@ class Application(object):
+@@ -222,7 +221,7 @@ class Application(object):
              DirHelper.check_or_create_temp_dir(dir_name)
  
          # Copy README files into proper directories
@@ -19,7 +19,7 @@ index ca882fa..6e7ccfa 100644
              shutil.copyfile(os.path.join(settings.source_dir, key),
                              os.path.join(self.conf.assessment_results_dir, val))
  
-@@ -385,7 +384,7 @@ class Application(object):
+@@ -386,7 +385,7 @@ class Application(object):
          3rd party contents are stored in
          /usr/share/preupgrade/RHEL6_7/3rdparty directory
          """
@@ -28,7 +28,7 @@ index ca882fa..6e7ccfa 100644
              third_party_name = self.third_party = third_party
              log_message("Execution {0} assessments:".format(third_party))
              self.report_parser.reload_xml(content)
-@@ -517,7 +516,7 @@ class Application(object):
+@@ -521,7 +520,7 @@ class Application(object):
  
          # It prints out result in table format
          ScanningHelper.format_rules_to_table(main_report, "main contents")
@@ -37,7 +37,7 @@ index ca882fa..6e7ccfa 100644
              ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
  
          self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
-@@ -559,7 +558,7 @@ class Application(object):
+@@ -563,7 +562,7 @@ class Application(object):
              pass
          if self.report_data:
              log_message('Summary of the third party providers:')
@@ -46,7 +46,7 @@ index ca882fa..6e7ccfa 100644
                  self.third_party = target
                  log_message("Read the third party content {0} {1} for more details.".
                              format(target, path))
-@@ -610,7 +609,7 @@ class Application(object):
+@@ -614,7 +613,7 @@ class Application(object):
  
          logger_debug.debug(version_msg)
          if self.conf.list_contents_set:
@@ -271,7 +271,7 @@ index 7d8d96d..4dc8a93 100644
              kickstart_groups[group] = ids
          if not kickstart_groups:
 diff --git a/preupg/report_parser.py b/preupg/report_parser.py
-index 8153c89..717afc8 100644
+index ce04484..748f72e 100644
 --- a/preupg/report_parser.py
 +++ b/preupg/report_parser.py
 @@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
@@ -339,7 +339,7 @@ index 93619e9..8af2996 100644
                                         settings.postupgrade_dir, key)
              if os.path.exists(source_file):
 diff --git a/preupg/xccdf.py b/preupg/xccdf.py
-index d3e2589..4363cb8 100644
+index cca3988..626d815 100644
 --- a/preupg/xccdf.py
 +++ b/preupg/xccdf.py
 @@ -3,7 +3,6 @@
@@ -381,7 +381,7 @@ index 92f3a94..0db550d 100644
                                         "").replace("/", "_")
              solution_text = section + "_SOLUTION_MSG"
 diff --git a/preupg/xmlgen/compose.py b/preupg/xmlgen/compose.py
-index 2b7a497..62b8d07 100644
+index 7562e04..61b81b2 100644
 --- a/preupg/xmlgen/compose.py
 +++ b/preupg/xmlgen/compose.py
 @@ -5,7 +5,6 @@ import re
@@ -392,7 +392,7 @@ index 2b7a497..62b8d07 100644
  from distutils import dir_util
  
  from preupg.utils import FileHelper, SystemIdentification
-@@ -126,7 +125,7 @@ class ComposeXML(object):
+@@ -122,7 +121,7 @@ class ComposeXML(object):
  
      @staticmethod
      def perform_autoqa(path_prefix, group_tree):
@@ -401,7 +401,7 @@ index 2b7a497..62b8d07 100644
              b_subgroups = True
              try:
                  tree, subgroups = t
-@@ -184,7 +183,7 @@ class ComposeXML(object):
+@@ -180,7 +179,7 @@ class ComposeXML(object):
  
      @staticmethod
      def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
@@ -410,7 +410,7 @@ index 2b7a497..62b8d07 100644
              tree, subgroups = t
  
              old_base_dir = os.path.join(source_dir, f)
-@@ -214,7 +213,7 @@ class ComposeXML(object):
+@@ -210,7 +209,7 @@ class ComposeXML(object):
  
          def sort_key(t_key):
              return get_sorting_key_for_tree(group_tree, t_key)
@@ -419,63 +419,3 @@ index 2b7a497..62b8d07 100644
              t = group_tree[f]
              tree, subgroups = t
  
-diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
-index 075de9b..fc40369 100644
---- a/preupg/xmlgen/oscap_group_xml.py
-+++ b/preupg/xmlgen/oscap_group_xml.py
-@@ -6,7 +6,6 @@ So no change is needed from maintainer point of view
- 
- from __future__ import print_function, unicode_literals
- import os
--import six
- import codecs
- 
- try:
-@@ -117,8 +116,8 @@ class OscapGroupXml(object):
-             lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
-         else:
-             lines = []
--        for values in six.itervalues(self.loaded):
--            check_script = [v for k, v in six.iteritems(values[0]) if k == 'check_script']
-+        for values in self.loaded.itervalues():
-+            check_script = [v for k, v in values[0].iteritems() if k == 'check_script']
-             if check_script:
-                 check_script = os.path.splitext(''.join(check_script))[0]
-                 lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
-diff --git a/preupg/xmlgen/xml_utils.py b/preupg/xmlgen/xml_utils.py
-index 74fc69e..b98ed43 100644
---- a/preupg/xmlgen/xml_utils.py
-+++ b/preupg/xmlgen/xml_utils.py
-@@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
- 
- import re
- import os
--import six
- import copy
- 
- from preupg.xml_manager import html_escape_string
-@@ -40,13 +39,13 @@ class XmlUtils(object):
-         allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
-                         'author', 'binary_req', 'solution', 'bugzilla', 'config_file',
-                         'group_title', 'mode', 'requires', 'solution_type']
--        for ini, content in six.iteritems(test_dict):
-+        for ini, content in test_dict.iteritems():
-             content_dict = content[0]
-             for tag in allowed_tags:
-                 if tag in content_dict:
-                     del content_dict[tag]
-             if content_dict:
--                tags = ','. join(six.iterkeys(content_dict))
-+                tags = ','. join(content_dict.iterkeys())
-                 MessageHelper.print_error_msg(title="The tag '%s' is not allowed in INI file %s." % (tags, ini),
-                                               msg="\nAllowed tags for contents are %s" % ','.join(allowed_tags),
-                                               level=' WARNING ')
-@@ -332,7 +331,7 @@ class XmlUtils(object):
-             self.update_values_list(self.rule, "{group_value}", ''.join(value_tag))
- 
-             try:
--                for k, function in six.iteritems(update_fnc):
-+                for k, function in update_fnc.iteritems():
-                     try:
-                         function(key, k)
-                     except IOError as e:
