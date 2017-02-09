@@ -1,8 +1,8 @@
 diff --git a/preupg/application.py b/preupg/application.py
-index 90e79ac..9976225 100644
+index ca882fa..6e7ccfa 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
-@@ -7,7 +7,6 @@ from __future__ import unicode_literals, print_function
+@@ -8,7 +8,6 @@ from __future__ import unicode_literals, print_function
  import shutil
  import datetime
  import os
@@ -10,7 +10,7 @@ index 90e79ac..9976225 100644
  import logging
  from distutils import dir_util
  
-@@ -220,7 +219,7 @@ class Application(object):
+@@ -221,7 +220,7 @@ class Application(object):
              DirHelper.check_or_create_temp_dir(dir_name)
  
          # Copy README files into proper directories
@@ -19,7 +19,7 @@ index 90e79ac..9976225 100644
              shutil.copyfile(os.path.join(settings.source_dir, key),
                              os.path.join(self.conf.assessment_results_dir, val))
  
-@@ -384,7 +383,7 @@ class Application(object):
+@@ -385,7 +384,7 @@ class Application(object):
          3rd party contents are stored in
          /usr/share/preupgrade/RHEL6_7/3rdparty directory
          """
@@ -28,7 +28,7 @@ index 90e79ac..9976225 100644
              third_party_name = self.third_party = third_party
              log_message("Execution {0} assessments:".format(third_party))
              self.report_parser.reload_xml(content)
-@@ -516,7 +515,7 @@ class Application(object):
+@@ -517,7 +516,7 @@ class Application(object):
  
          # It prints out result in table format
          ScanningHelper.format_rules_to_table(main_report, "main contents")
@@ -37,7 +37,7 @@ index 90e79ac..9976225 100644
              ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
  
          self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
-@@ -558,7 +557,7 @@ class Application(object):
+@@ -559,7 +558,7 @@ class Application(object):
              pass
          if self.report_data:
              log_message('Summary of the third party providers:')
@@ -46,7 +46,7 @@ index 90e79ac..9976225 100644
                  self.third_party = target
                  log_message("Read the third party content {0} {1} for more details.".
                              format(target, path))
-@@ -608,7 +607,7 @@ class Application(object):
+@@ -610,7 +609,7 @@ class Application(object):
  
          logger_debug.debug(version_msg)
          if self.conf.list_contents_set:
@@ -98,7 +98,7 @@ index d364cb6..0c58b0b 100644
          self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
          self.ks.handler.keyboard.keyboard = 'us'
 diff --git a/preupg/kickstart/plugins/packages.py b/preupg/kickstart/plugins/packages.py
-index 3711241..43d0654 100644
+index 2b7f6b8..f8ebbc0 100644
 --- a/preupg/kickstart/plugins/packages.py
 +++ b/preupg/kickstart/plugins/packages.py
 @@ -4,7 +4,6 @@
@@ -271,7 +271,7 @@ index 7d8d96d..4dc8a93 100644
              kickstart_groups[group] = ids
          if not kickstart_groups:
 diff --git a/preupg/report_parser.py b/preupg/report_parser.py
-index 3859f16..9d8eb2b 100644
+index 8153c89..717afc8 100644
 --- a/preupg/report_parser.py
 +++ b/preupg/report_parser.py
 @@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
@@ -282,7 +282,7 @@ index 3859f16..9d8eb2b 100644
  
  from preupg.utils import FileHelper
  from preupg.xccdf import XccdfHelper
-@@ -410,7 +409,7 @@ class ReportParser(object):
+@@ -409,7 +408,7 @@ class ReportParser(object):
  
          for child in self.get_nodes(self.target_tree, self.profile):
              last_child = child
@@ -292,7 +292,7 @@ index 3859f16..9d8eb2b 100644
                      continue
                  if key == "tmp_preupgrade":
 diff --git a/preupg/utils.py b/preupg/utils.py
-index b686fd7..60aeb25 100644
+index 93619e9..8af2996 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,6 +1,5 @@
@@ -302,7 +302,7 @@ index b686fd7..60aeb25 100644
  import datetime
  import re
  import subprocess
-@@ -91,7 +90,7 @@ class FileHelper(object):
+@@ -92,7 +91,7 @@ class FileHelper(object):
          with open mode)
          """
          intern_mode = 0
@@ -311,7 +311,7 @@ index b686fd7..60aeb25 100644
              if 'w' in mode or 'a' in mode:
                  intern_mode += W_OK
              if 'r' in mode:
-@@ -157,7 +156,7 @@ class FileHelper(object):
+@@ -158,7 +157,7 @@ class FileHelper(object):
          script_types = {'/bin/bash': '.sh',
                          '/usr/bin/python': '.py',
                          '/usr/bin/perl': '.pl'}
@@ -320,7 +320,7 @@ index b686fd7..60aeb25 100644
          content = FileHelper.get_file_content(filename, 'rb')
          if inter and content.startswith('#!'+inter[0]):
              return inter
-@@ -216,7 +215,7 @@ class FileHelper(object):
+@@ -217,7 +216,7 @@ class FileHelper(object):
                      f.writelines(data)
                  else:
                      # TODO: May we should print warn w
@@ -329,7 +329,7 @@ index b686fd7..60aeb25 100644
                          f.write(data.encode(settings.defenc))
                      else:
                          f.write(data)
-@@ -365,7 +364,7 @@ class ProcessHelper(object):
+@@ -366,7 +365,7 @@ class ProcessHelper(object):
                                stderr=subprocess.STDOUT,
                                shell=shell,
                                bufsize=1)
@@ -338,7 +338,7 @@ index b686fd7..60aeb25 100644
          for stdout_data in iter(sp.stdout.readline, b''):
              # communicate() method buffers everything in memory, we will read stdout directly
              stdout += stdout_data
-@@ -769,7 +768,7 @@ class PostupgradeHelper(object):
+@@ -770,7 +769,7 @@ class PostupgradeHelper(object):
          postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
                              "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
  
@@ -390,7 +390,7 @@ index 92f3a94..0db550d 100644
                                         "").replace("/", "_")
              solution_text = section + "_SOLUTION_MSG"
 diff --git a/preupg/xmlgen/compose.py b/preupg/xmlgen/compose.py
-index eb44f2a..e934c82 100644
+index 2b7a497..62b8d07 100644
 --- a/preupg/xmlgen/compose.py
 +++ b/preupg/xmlgen/compose.py
 @@ -5,7 +5,6 @@ import re
@@ -401,30 +401,30 @@ index eb44f2a..e934c82 100644
  from distutils import dir_util
  
  from preupg.utils import FileHelper, SystemIdentification
-@@ -113,7 +112,7 @@ class ComposeXML(object):
+@@ -126,7 +125,7 @@ class ComposeXML(object):
  
-     @classmethod
-     def perform_autoqa(cls, path_prefix, group_tree):
+     @staticmethod
+     def perform_autoqa(path_prefix, group_tree):
 -        for f, t in six.iteritems(group_tree):
 +        for f, t in group_tree.iteritems():
              b_subgroups = True
              try:
                  tree, subgroups = t
-@@ -167,7 +166,7 @@ class ComposeXML(object):
+@@ -184,7 +183,7 @@ class ComposeXML(object):
  
-     @classmethod
-     def repath_group_xml_tree(cls, source_dir, new_base_dir, group_tree):
+     @staticmethod
+     def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
 -        for f, t in six.iteritems(group_tree):
 +        for f, t in group_tree.iteritems():
              tree, subgroups = t
  
              old_base_dir = os.path.join(source_dir, f)
-@@ -192,7 +191,7 @@ class ComposeXML(object):
+@@ -214,7 +213,7 @@ class ComposeXML(object):
  
-             return prefix, tree_key
- 
--        for f in sorted(six.iterkeys(group_tree), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
-+        for f in sorted(group_tree.iterkeys(), key=lambda tree_key: get_sorting_key_for_tree(group_tree, tree_key)):
+         def sort_key(t_key):
+             return get_sorting_key_for_tree(group_tree, t_key)
+-        for f in sorted(six.iterkeys(group_tree), key=sort_key):
++        for f in sorted(group_tree.iterkeys(), key=sort_key):
              t = group_tree[f]
              tree, subgroups = t
  
