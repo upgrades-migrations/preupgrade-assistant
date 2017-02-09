@@ -239,7 +239,7 @@ index cef8a3a..cf9344f 100644
      while True:
          if int(sys.version_info[0]) == 2:
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 0c58b0b..91db549 100644
+index 1f4cb28..cc0a313 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -371,7 +371,7 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index 2b3c0f9..24771d9 100644
+index f7d2923..ca39e35 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
 @@ -19,7 +19,6 @@ These functions are available:
@@ -487,7 +487,7 @@ index 7a64462..7e1607a 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 8af2996..6605bf8 100644
+index 60aeb25..c21dc1f 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
