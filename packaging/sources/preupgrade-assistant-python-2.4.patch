@@ -164,33 +164,30 @@ index 9976225..5287f5b 100644
                  return ReturnValues.ROOT
  
 diff --git a/preupg/cli.py b/preupg/cli.py
-index e3d942d..8e9b6a3 100644
+index 5858db8..150bba7 100644
 --- a/preupg/cli.py
 +++ b/preupg/cli.py
-@@ -1,7 +1,5 @@
+@@ -1,6 +1,5 @@
  # -*- coding: utf-8 -*-
  
 -from __future__ import print_function, unicode_literals
--#import argparse
  import optparse
  from optparse import OptionValueError
  
-@@ -167,12 +165,7 @@ Upload results to preupgrade assistant WEB-UI"
-                  (e.g.: x86_64). Use of the option is expected on 32b systems.
-                  """
+@@ -204,11 +203,6 @@ class CLI(object):
+                 % ", ".join(settings.migration_options)
+             )
          )
 -        self.parser.add_option(
 -            "--old-report-style",
 -            action="store_true",
--            metavar="OLDREPORTSTYLE",
--            help="Use old report style without CSS issues."
+-            help="Generate report with simpler style than the default."
 -        )
-+
+ 
  
  if __name__ == '__main__':
-     x = CLI()
 diff --git a/preupg/common.py b/preupg/common.py
-index 60286ae..4424bba 100644
+index 7b485b3..9e07e1a 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -213,15 +210,6 @@ index 43bec13..b76c21d 100644
  class DummyConf(object):
      """
      Dummy conf class for Conf
-diff --git a/preupg/constants.py b/preupg/constants.py
-index 379b181..7414f5a 100644
---- a/preupg/constants.py
-+++ b/preupg/constants.py
-@@ -1,4 +1,3 @@
- # -*- coding: utf-8 -*-
--from __future__ import unicode_literals
- PROGRAM_DESCRIPTION = "OS upgrade helper"
- USAGE = "%prog [options]"
 diff --git a/preupg/creator/ui_helper.py b/preupg/creator/ui_helper.py
 index cef8a3a..cf9344f 100644
 --- a/preupg/creator/ui_helper.py
@@ -239,7 +227,7 @@ index cef8a3a..cf9344f 100644
      while True:
          if int(sys.version_info[0]) == 2:
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 0a7c9a8..e0db0df 100644
+index 0c58b0b..91db549 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -283,7 +271,7 @@ index 0a7c9a8..e0db0df 100644
          if tarball_content is not None:
              script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 8f12b78..ed61f22 100644
+index 7d6a20a..4c1ad0b 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -1,5 +1,4 @@
@@ -292,7 +280,7 @@ index 8f12b78..ed61f22 100644
  import logging
  import sys
  from preupg import settings
-@@ -68,8 +67,11 @@ def log_message(message, new_line=True, level=logging.INFO):
+@@ -80,8 +79,11 @@ def log_message(message, new_line=True, level=logging.INFO):
              sys.stdout.write("\n")
              sys.stdout.flush()
      else:
@@ -306,7 +294,7 @@ index 8f12b78..ed61f22 100644
  
      logger_debug.log(level, message)
  
-@@ -84,8 +86,11 @@ def log_report_message(message, new_line=True, level=logging.INFO):
+@@ -96,8 +98,11 @@ def log_report_message(message, new_line=True, level=logging.INFO):
              sys.stdout.write("\n")
              sys.stdout.flush()
      else:
@@ -487,7 +475,7 @@ index d702c6c..0ff6d2e 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 60aeb25..9467750 100644
+index 8af2996..6605bf8 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
@@ -496,7 +484,7 @@ index 60aeb25..9467750 100644
  import datetime
  import re
  import subprocess
-@@ -185,7 +184,10 @@ class FileHelper(object):
+@@ -186,7 +185,10 @@ class FileHelper(object):
              else:
                  f = codecs.open(full_path, perms)
              try:
@@ -508,7 +496,7 @@ index 60aeb25..9467750 100644
              finally:
                  f.close()
          except IOError:
-@@ -365,12 +367,12 @@ class ProcessHelper(object):
+@@ -366,12 +368,12 @@ class ProcessHelper(object):
                                shell=shell,
                                bufsize=1)
          stdout = str() # FIXME should't be this bytes()?
@@ -523,7 +511,7 @@ index 60aeb25..9467750 100644
                  else:
                      pass
              else:
-@@ -489,7 +491,7 @@ class TarballHelper(object):
+@@ -490,7 +492,7 @@ class TarballHelper(object):
  
      @staticmethod
      def _get_tarball_name(result_file, time):
@@ -532,7 +520,7 @@ index 60aeb25..9467750 100644
  
      @staticmethod
      def _get_tarball_result_path(root_dir, filename):
-@@ -669,7 +671,7 @@ class PostupgradeHelper(object):
+@@ -670,7 +672,7 @@ class PostupgradeHelper(object):
      def get_hash_file(filename, hasher):
          """Function gets a hash from file"""
          content = FileHelper.get_file_content(filename, "rb", False, False)
@@ -541,7 +529,7 @@ index 60aeb25..9467750 100644
          return hasher.hexdigest()
  
      @staticmethod
-@@ -696,7 +698,7 @@ class PostupgradeHelper(object):
+@@ -697,7 +699,7 @@ class PostupgradeHelper(object):
              if interpreter is None:
                  continue
              log_message('Executing script %s' % scr)
@@ -724,7 +712,7 @@ index fc40369..3f753cc 100644
  
      def write_list_rules(self):
 diff --git a/preupg/xmlgen/script_utils.py b/preupg/xmlgen/script_utils.py
-index b23409e..aa4b1e1 100644
+index cd0e608..f34638c 100644
 --- a/preupg/xmlgen/script_utils.py
 +++ b/preupg/xmlgen/script_utils.py
 @@ -1,5 +1,3 @@
