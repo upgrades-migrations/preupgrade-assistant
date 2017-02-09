@@ -10,13 +10,12 @@ from preupg import settings
 
 
 def main():
-    parser = optparse.OptionParser(usage="%prog dirname",
-                                   description="Create XML files for OpenSCAP")
+    parser = optparse.OptionParser(description="Create XML files for OpenSCAP")
+    parser.add_argument("module_set_path", help="Path to a module set.")
     opts, args = parser.parse_args()
     if len(args) > 1 or len(args) == 0:
-        print ('Specify just one directory')
         parser.print_help()
-        sys.exit(0)
+        sys.exit('Use one argument - path to a module set.')
 
     modules_dir_name = os.path.abspath(args[0])
     result_dir_name = modules_dir_name + settings.results_postfix

@@ -16,18 +16,18 @@ def main():
     conf = Conf(cli.opts, settings, cli)
     app = Application(conf)
     try:
-        ret = app.run()
-        logger_debug.debug("preupg returned '%s'" % ret)
-        sys.exit(ret)
+        return_code = app.run()
+        logger_debug.debug("preupg returned '%s'" % return_code)
+        return return_code
     except KeyboardInterrupt:
-        sys.exit(settings.ReturnValues.USER_ABORT)
+        return settings.ReturnValues.USER_ABORT
     except Exception, ex:
         if cli.opts.debug:
             traceback.print_exc(file=sys.stderr)
         else:
             sys.stderr.write(str(ex) + "\n")
-        sys.exit(settings.ReturnValues.INTERNAL_EXCEPTION)
+        return settings.ReturnValues.INTERNAL_EXCEPTION
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
