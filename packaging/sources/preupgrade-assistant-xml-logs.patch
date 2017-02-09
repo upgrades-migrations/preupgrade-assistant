@@ -32,7 +32,7 @@ index 1a9047c..7223bf4 100644
          """
          #Filter all rule-result in TestResult
          changed_fields = []
-+        self.fix_stderr(self) # it is ugly but command below too
++        self.fix_stderr() # it is ugly but command below too
          self.remove_empty_check_import()
          inplace_dict = {
              0: ReportHelper.upd_inspection,
