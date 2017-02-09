@@ -38,7 +38,7 @@ class EmptyTagIniFileError(RuntimeError):
     """
     def __init__(self, tag="", ini_file=""):
         if tag and ini_file:
-            message = "Tag {} in the {0} file can't be replaced with an" \
+            message = "Tag {0} in the {1} file can't be replaced with an" \
                       " empty string".format(tag, ini_file)
         message = "Replacing a tag in an INI file with an empty string - not" \
                   " allowed"

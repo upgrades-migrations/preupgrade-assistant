@@ -212,9 +212,9 @@ class ComposeXML(object):
 
             return prefix, tree_key
 
-        for f in sorted(six.iterkeys(group_tree),
-                        key=lambda tree_key:
-                        get_sorting_key_for_tree(group_tree, tree_key)):
+        def sort_key(t_key):
+            return get_sorting_key_for_tree(group_tree, t_key)
+        for f in sorted(six.iterkeys(group_tree), key=sort_key):
             t = group_tree[f]
             tree, subgroups = t
 
