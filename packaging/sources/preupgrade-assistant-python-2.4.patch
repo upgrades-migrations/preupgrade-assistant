@@ -668,6 +668,15 @@ index 62b8d07..4c271e8 100644
  class XCCDFCompose(object):
      dir_name = ""
      result_dir = ""
+@@ -59,7 +73,7 @@ class XCCDFCompose(object):
+             target_tree = ComposeXML.run_compose(
+                 self.dir_name, generate_from_ini=generate_from_ini)
+         except (MissingHeaderCheckScriptError, MissingFileInContentError,
+-                MissingTagsIniFileError) as err:
++                MissingTagsIniFileError), err:
+             sys.exit(err)
+ 
+         report_filename = os.path.join(self.dir_name, settings.content_file)
 @@ -118,7 +132,7 @@ class ComposeXML(object):
                                  ComposeXML.collect_group_xmls(new_dir,
                                  level=level + 1,
@@ -840,6 +849,15 @@ index b7d2e47..0c1349c 100755
                                        level=logging.DEBUG)
      except (IOError, OSError):
          logger.warning("Can not create debug log '%s'" % settings.preupg_log)
+@@ -81,7 +84,7 @@ def main():
+         target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
+                                              os.path.basename(dir_name))
+     except (MissingHeaderCheckScriptError, MissingFileInContentError,
+-            MissingTagsIniFileError) as err:
++            MissingTagsIniFileError), err:
+         sys.exit(err)
+ 
+     try:
 diff --git a/tools/preupg-xccdf-compose b/tools/preupg-xccdf-compose
 index fba3553..ebb416a 100755
 --- a/tools/preupg-xccdf-compose
