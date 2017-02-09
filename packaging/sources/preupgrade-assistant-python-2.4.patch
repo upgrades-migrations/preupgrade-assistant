@@ -239,7 +239,7 @@ index cef8a3a..cf9344f 100644
      while True:
          if int(sys.version_info[0]) == 2:
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 0a7c9a8..e0db0df 100644
+index 1f4cb28..cc0a313 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -283,7 +283,7 @@ index 0a7c9a8..e0db0df 100644
          if tarball_content is not None:
              script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 8f12b78..ed61f22 100644
+index 8f12b78..349e402 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -1,5 +1,4 @@
@@ -292,31 +292,46 @@ index 8f12b78..ed61f22 100644
  import logging
  import sys
  from preupg import settings
-@@ -68,8 +67,11 @@ def log_message(message, new_line=True, level=logging.INFO):
-             sys.stdout.write("\n")
-             sys.stdout.flush()
-     else:
+@@ -60,32 +59,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
+ 
+ def log_message(message, new_line=True, level=logging.INFO):
+     """ if verbose, log `msg % args` to stdout """
+-    if int(sys.version_info[0]) == 2:
+-        sys.stdout.write(message.encode(settings.defenc))
+-        sys.stdout.flush()
+-        # This is used in case that we do not want to print the new line
+-        if new_line:
+-            sys.stdout.write("\n")
+-            sys.stdout.flush()
+-    else:
 -        endline = "\n" if new_line else ""
 -        print(message, end=endline, file=sys.stdout, flush=True)
-+        if new_line:
-+            endline = "\n"
-+        else:
-+            endline = ""
-+        print(message)
++    sys.stdout.write(message.encode(settings.defenc))
++    # This is used in case that we do not want to print the new line
++    if new_line:
++        sys.stdout.write("\n")
++    sys.stdout.flush()
  
      logger_debug.log(level, message)
  
-@@ -84,8 +86,11 @@ def log_report_message(message, new_line=True, level=logging.INFO):
-             sys.stdout.write("\n")
-             sys.stdout.flush()
-     else:
+ 
+ def log_report_message(message, new_line=True, level=logging.INFO):
+     """ if verbose, log `msg % args` to stdout """
+-    if int(sys.version_info[0]) == 2:
+-        sys.stdout.write(message.encode(settings.defenc))
+-        sys.stdout.flush()
+-        # This is used in case that we do not want to print the new line
+-        if new_line:
+-            sys.stdout.write("\n")
+-            sys.stdout.flush()
+-    else:
 -        endline = "\n" if new_line else ""
 -        print(message, end=endline, file=sys.stdout, flush=True)
-+        if new_line:
-+            endline = "\n"
-+        else:
-+            endline = ""
-+        print(message)
++    sys.stdout.write(message.encode(settings.defenc))
++    # This is used in case that we do not want to print the new line
++    if new_line:
++        sys.stdout.write("\n")
++    sys.stdout.flush()
  
      logger_report.log(level, message)
  
@@ -371,7 +386,7 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index f7d2923..292ef34 100644
+index f7d2923..ca39e35 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
 @@ -19,7 +19,6 @@ These functions are available:
@@ -387,7 +402,7 @@ index f7d2923..292ef34 100644
      log risk level to stderr
      """
 -    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
-+    print("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)))
++    sys.stderr.write("preupg.risk.%s: %s\n" % (severity, message.encode(settings.defenc)))
  
  
  def log_extreme_risk(message):
@@ -396,7 +411,7 @@ index f7d2923..292ef34 100644
      :return:
      """
 -    print("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)), end="", file=sys.stderr)
-+    print("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)))
++    sys.stderr.write("preupg.log.%s: %s\n" % (severity, message.encode(settings.defenc)))
  
  
  def log_error(message):
@@ -487,7 +502,7 @@ index d702c6c..0ff6d2e 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 60aeb25..9467750 100644
+index 60aeb25..c21dc1f 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
@@ -519,7 +534,7 @@ index 60aeb25..9467750 100644
              if function is None:
                  if print_output:
 -                    print (stdout_data, end="")
-+                    print stdout_data,
++                    sys.stdout.write(stdout_data)
                  else:
                      pass
              else:
@@ -724,7 +739,7 @@ index fc40369..3f753cc 100644
  
      def write_list_rules(self):
 diff --git a/preupg/xmlgen/script_utils.py b/preupg/xmlgen/script_utils.py
-index b23409e..aa4b1e1 100644
+index cd0e608..f34638c 100644
 --- a/preupg/xmlgen/script_utils.py
 +++ b/preupg/xmlgen/script_utils.py
 @@ -1,5 +1,3 @@
