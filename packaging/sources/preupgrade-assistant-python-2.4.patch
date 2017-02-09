@@ -25,18 +25,18 @@ index fa2e957..07a08b2 100755
      return ret
  
 diff --git a/preupg/application.py b/preupg/application.py
-index 9976225..5287f5b 100644
+index 6e7ccfa..12103c1 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
-@@ -3,7 +3,6 @@
- The application module serves for running oscap binary and reporting results to UI
+@@ -4,7 +4,6 @@ The application module serves for running oscap binary and reporting results
+ to UI.
  """
  
 -from __future__ import unicode_literals, print_function
  import shutil
  import datetime
  import os
-@@ -106,11 +105,12 @@ class Application(object):
+@@ -107,11 +106,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -51,7 +51,7 @@ index 9976225..5287f5b 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create report log '%s'", settings.preupg_report_log)
-@@ -122,11 +122,12 @@ class Application(object):
+@@ -123,11 +123,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -66,7 +66,7 @@ index 9976225..5287f5b 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create debug log '%s'", settings.preupg_log)
-@@ -152,7 +153,7 @@ class Application(object):
+@@ -153,7 +154,7 @@ class Application(object):
          if self.conf.upload is True:
              # lets try default configuration
              log_message('Specify the server where to upload the results.')
@@ -75,7 +75,7 @@ index 9976225..5287f5b 100644
              return False
          else:
              if self.conf.upload[-1] == '/':
-@@ -163,7 +164,7 @@ class Application(object):
+@@ -164,7 +165,7 @@ class Application(object):
          try:
              proxy = xmlrpclib.ServerProxy(url)
              proxy.submit.ping()
@@ -84,7 +84,7 @@ index 9976225..5287f5b 100644
              message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
                        'Please ensure that package preupgrade-assistant-ui ' \
                        'has been installed on target system and firewall is set up ' \
-@@ -385,7 +386,7 @@ class Application(object):
+@@ -386,7 +387,7 @@ class Application(object):
          """
          for self.third_party, content in list_contents(dir_name).iteritems():
              third_party_name = self.third_party = third_party
@@ -93,7 +93,7 @@ index 9976225..5287f5b 100644
              self.report_parser.reload_xml(content)
              self.content = content
              self.run_scan_process()
-@@ -396,7 +397,7 @@ class Application(object):
+@@ -397,7 +398,7 @@ class Application(object):
  
      def get_cmd_convertor(self):
          """Function returns cmd with text convertor string"""
@@ -102,7 +102,7 @@ index 9976225..5287f5b 100644
              self.text_convertor,
              self.openscap_helper.get_default_html_result_path(),
              self.openscap_helper.get_default_txt_result_path()
-@@ -475,7 +476,7 @@ class Application(object):
+@@ -476,7 +477,7 @@ class Application(object):
          try:
              self.report_parser = ReportParser(self.content)
          except IOError:
@@ -111,7 +111,7 @@ index 9976225..5287f5b 100644
              return ReturnValues.SCENARIO
          if not self.conf.contents:
              version = SystemIdentification.get_assessment_version(self.conf.scan)
-@@ -526,20 +527,18 @@ class Application(object):
+@@ -527,20 +528,18 @@ class Application(object):
  
      def summary_report(self, tarball_path):
          """Function prints a summary report"""
@@ -137,7 +137,7 @@ index 9976225..5287f5b 100644
  
          }
          self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
-@@ -559,9 +558,8 @@ class Application(object):
+@@ -560,9 +559,8 @@ class Application(object):
              log_message('Summary of the third party providers:')
              for target, dummy_report in self.report_data.iteritems():
                  self.third_party = target
@@ -149,7 +149,7 @@ index 9976225..5287f5b 100644
  
      def _set_devel_mode(self):
          # Check for devel_mode
-@@ -661,11 +659,11 @@ class Application(object):
+@@ -663,11 +661,11 @@ class Application(object):
                      found = True
                      break
              if not found:
@@ -239,7 +239,7 @@ index cef8a3a..cf9344f 100644
      while True:
          if int(sys.version_info[0]) == 2:
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index 0a7c9a8..e0db0df 100644
+index 0c58b0b..91db549 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -321,7 +321,7 @@ index 8f12b78..ed61f22 100644
      logger_report.log(level, message)
  
 diff --git a/preupg/report_parser.py b/preupg/report_parser.py
-index 9d8eb2b..1a9047c 100644
+index 717afc8..5735d16 100644
 --- a/preupg/report_parser.py
 +++ b/preupg/report_parser.py
 @@ -1,4 +1,3 @@
@@ -329,7 +329,7 @@ index 9d8eb2b..1a9047c 100644
  import re
  import os
  import shutil
-@@ -212,9 +211,9 @@ class ReportParser(object):
+@@ -211,9 +210,9 @@ class ReportParser(object):
                  res.text = ReportHelper.get_needs_action()
              for index, row in enumerate(scanning_progress.output_data):
                  if self.get_nodes_text(rule, "title") in row:
@@ -371,7 +371,7 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index f7d2923..292ef34 100644
+index 2b3c0f9..24771d9 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
 @@ -19,7 +19,6 @@ These functions are available:
@@ -400,7 +400,7 @@ index f7d2923..292ef34 100644
  
  
  def log_error(message):
-@@ -783,13 +782,13 @@ def deploy_hook(*args):
+@@ -784,13 +783,13 @@ def deploy_hook(*args):
                      exit_error()
                  try:
                      shutil.copytree(arg, hook_arg)
@@ -417,7 +417,7 @@ index f7d2923..292ef34 100644
              exit_error()
  
 diff --git a/preupg/settings.py b/preupg/settings.py
-index d702c6c..0ff6d2e 100644
+index 7a64462..7e1607a 100644
 --- a/preupg/settings.py
 +++ b/preupg/settings.py
 @@ -1,4 +1,3 @@
@@ -487,7 +487,7 @@ index d702c6c..0ff6d2e 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 60aeb25..9467750 100644
+index 8af2996..6605bf8 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,5 +1,4 @@
@@ -496,7 +496,7 @@ index 60aeb25..9467750 100644
  import datetime
  import re
  import subprocess
-@@ -185,7 +184,10 @@ class FileHelper(object):
+@@ -186,7 +185,10 @@ class FileHelper(object):
              else:
                  f = codecs.open(full_path, perms)
              try:
@@ -508,7 +508,7 @@ index 60aeb25..9467750 100644
              finally:
                  f.close()
          except IOError:
-@@ -365,12 +367,12 @@ class ProcessHelper(object):
+@@ -366,12 +368,12 @@ class ProcessHelper(object):
                                shell=shell,
                                bufsize=1)
          stdout = str() # FIXME should't be this bytes()?
@@ -523,7 +523,7 @@ index 60aeb25..9467750 100644
                  else:
                      pass
              else:
-@@ -489,7 +491,7 @@ class TarballHelper(object):
+@@ -490,7 +492,7 @@ class TarballHelper(object):
  
      @staticmethod
      def _get_tarball_name(result_file, time):
@@ -532,7 +532,7 @@ index 60aeb25..9467750 100644
  
      @staticmethod
      def _get_tarball_result_path(root_dir, filename):
-@@ -669,7 +671,7 @@ class PostupgradeHelper(object):
+@@ -670,7 +672,7 @@ class PostupgradeHelper(object):
      def get_hash_file(filename, hasher):
          """Function gets a hash from file"""
          content = FileHelper.get_file_content(filename, "rb", False, False)
@@ -541,7 +541,7 @@ index 60aeb25..9467750 100644
          return hasher.hexdigest()
  
      @staticmethod
-@@ -696,7 +698,7 @@ class PostupgradeHelper(object):
+@@ -697,7 +699,7 @@ class PostupgradeHelper(object):
              if interpreter is None:
                  continue
              log_message('Executing script %s' % scr)
@@ -634,7 +634,7 @@ index 0db550d..39a438b 100644
      return string[:s_pos] + string[e_pos:]
  
 diff --git a/preupg/xmlgen/compose.py b/preupg/xmlgen/compose.py
-index e934c82..876cff9 100644
+index 62b8d07..4c271e8 100644
 --- a/preupg/xmlgen/compose.py
 +++ b/preupg/xmlgen/compose.py
 @@ -1,5 +1,5 @@
@@ -644,7 +644,7 @@ index e934c82..876cff9 100644
  import sys
  import re
  import datetime
-@@ -27,6 +27,20 @@ XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/XCCDF-frag
+@@ -30,6 +30,20 @@ XCCDF_FRAGMENT = "{http://fedorahosted.org/sce-community-content/wiki/" \
  SCE = "http://open-scap.org/page/SCE"
  
  
@@ -665,24 +665,24 @@ index e934c82..876cff9 100644
  class XCCDFCompose(object):
      dir_name = ""
      result_dir = ""
-@@ -106,7 +120,7 @@ class ComposeXML(object):
-             try:
-                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
-                                 cls.collect_group_xmls(new_dir, level=level + 1, generate_from_ini=generate_from_ini))
+@@ -118,7 +132,7 @@ class ComposeXML(object):
+                                 ComposeXML.collect_group_xmls(new_dir,
+                                 level=level + 1,
+                                 generate_from_ini=generate_from_ini))
 -            except ParseError as e:
 +            except ParseError, e:
-                 print ("Encountered a parse error in file ", group_file_path, " details: ", e)
+                 print ("Encountered a parse error in file ", group_file_path,
+                        " details: ", e)
          return ret
- 
-@@ -171,7 +185,7 @@ class ComposeXML(object):
+@@ -188,7 +202,7 @@ class ComposeXML(object):
  
              old_base_dir = os.path.join(source_dir, f)
  
 -            path_prefix = os.path.relpath(old_base_dir, new_base_dir)
 +            path_prefix = relpath(old_base_dir, start=new_base_dir)
-             for element in tree.findall(".//" + xccdf.XMLNS + "check-content-ref"):
+             for element in tree.findall(".//" + xccdf.XMLNS +
+                                         "check-content-ref"):
                  old_href = element.get("href")
-                 assert(old_href is not None)
 diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
 index fc40369..3f753cc 100644
 --- a/preupg/xmlgen/oscap_group_xml.py
@@ -724,7 +724,7 @@ index fc40369..3f753cc 100644
  
      def write_list_rules(self):
 diff --git a/preupg/xmlgen/script_utils.py b/preupg/xmlgen/script_utils.py
-index b23409e..aa4b1e1 100644
+index cd0e608..f34638c 100644
 --- a/preupg/xmlgen/script_utils.py
 +++ b/preupg/xmlgen/script_utils.py
 @@ -1,5 +1,3 @@
@@ -804,7 +804,7 @@ index b98ed43..3b86568 100644
                          e_msg = "'%s': %s" % (key[k], e.strerror)
                          MessageHelper.print_error_msg(title=e_title, msg=e_msg)
 diff --git a/tools/preupg-create-group-xml b/tools/preupg-create-group-xml
-index eefc6e4..8377942 100755
+index b7d2e47..0c1349c 100755
 --- a/tools/preupg-create-group-xml
 +++ b/tools/preupg-create-group-xml
 @@ -1,10 +1,12 @@
@@ -822,7 +822,7 @@ index eefc6e4..8377942 100755
  
  from distutils import dir_util
  from preupg.xmlgen.compose import ComposeXML
-@@ -36,11 +38,12 @@ def main():
+@@ -37,11 +39,12 @@ def main():
          print('Dir %s does not exists.' % args[0])
          sys.exit(1)
  
@@ -838,7 +838,7 @@ index eefc6e4..8377942 100755
      except (IOError, OSError):
          logger.warning("Can not create debug log '%s'" % settings.preupg_log)
 diff --git a/tools/preupg-xccdf-compose b/tools/preupg-xccdf-compose
-index 838acd6..2ef25a5 100755
+index fba3553..ebb416a 100755
 --- a/tools/preupg-xccdf-compose
 +++ b/tools/preupg-xccdf-compose
 @@ -1,5 +1,4 @@
