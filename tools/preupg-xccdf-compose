@@ -4,18 +4,24 @@ import optparse
 import os
 import shutil
 import sys
+import traceback
 
 from preupg.xmlgen.compose import XCCDFCompose
 from preupg import settings
 
 
 def main():
-    parser = optparse.OptionParser(description="Create XML files for OpenSCAP")
-    parser.add_argument("module_set_path", help="Path to a module set.")
+    parser = optparse.OptionParser(
+        usage="%prog [options] module_set_path",
+        description="Create XML files for OpenSCAP. Specify one argument -"
+                    " a path to a module set.")
+    parser.add_option("-d", "--debug",
+                      action="store_true",
+                      help="Print traceback information on an error.")
     opts, args = parser.parse_args()
     if len(args) > 1 or len(args) == 0:
         parser.print_help()
-        sys.exit('Use one argument - path to a module set.')
+        sys.exit('Specify path to a module set as an argument.')
 
     modules_dir_name = os.path.abspath(args[0])
     result_dir_name = modules_dir_name + settings.results_postfix
@@ -23,8 +29,12 @@ def main():
         shutil.rmtree(result_dir_name)
     try:
         generate_xccdf_xml(modules_dir_name)
-    except Exception, err:
-        sys.exit(str(err))
+    except Exception as err:
+        if opts.debug:
+            traceback.print_exc(file=sys.stderr)
+            sys.exit()
+        else:
+            sys.exit(str(err))
 
 
 def generate_xccdf_xml(modules_dir_name):

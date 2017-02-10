@@ -1,9 +1,9 @@
-#!/usr/bin/python -tt
+#!/usr/bin/python2 -tt
 # -*- coding: utf-8 -*-
 
 
-import traceback
 import sys
+import traceback
 from preupg.cli import CLI
 from preupg.application import Application
 from preupg.conf import Conf
@@ -21,7 +21,7 @@ def main():
         return return_code
     except KeyboardInterrupt:
         return settings.ReturnValues.USER_ABORT
-    except Exception, ex:
+    except Exception as ex:
         if cli.opts.debug:
             traceback.print_exc(file=sys.stderr)
         else:

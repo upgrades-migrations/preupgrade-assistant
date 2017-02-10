@@ -6,7 +6,8 @@ class MissingHeaderCheckScriptError(RuntimeError):
     def __init__(self, script=""):
         if script:
             message = "A header missing in the %s check script" % script
-        message = "A header missing in a check script"
+        else:
+            message = "A header missing in a check script"
         RuntimeError.__init__(self, "Error: " + message)
 
 
@@ -18,7 +19,8 @@ class MissingFileInContentError(RuntimeError):
         if file and dir:
             message = "File %s missing in the module directory %s" \
                       % (file, dir)
-        message = "File(s) missing in a module"
+        else:
+            message = "File(s) missing in a module"
         RuntimeError.__init__(self, "Error: " + message)
 
 
@@ -29,7 +31,8 @@ class MissingTagsIniFileError(RuntimeError):
     def __init__(self, tags="", ini_file=""):
         if tags and ini_file:
             message = "Tag(s) %s missing in the %s file" % (tags, ini_file)
-        message = "Tag(s) missing in an INI file"
+        else:
+            message = "Tag(s) missing in an INI file"
         RuntimeError.__init__(self, "Error: " + message)
 
 
@@ -41,5 +44,6 @@ class EmptyTagGroupXMLError(ValueError):
     def __init__(self, tag=""):
         if tag:
             message = "Tag %s in a group.xml can't be empty" % tag
-        message = "A tag in a group.xml can't be empty"
+        else:
+            message = "A tag in a group.xml can't be empty"
         ValueError.__init__(self, "Error: " + message)

@@ -9,7 +9,6 @@ import shutil
 import datetime
 import os
 import six
-import sys
 import logging
 from distutils import dir_util
 
@@ -493,13 +492,10 @@ class Application(object):
                 return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
-            try:
-                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
-                                                                                      self.conf.mode),
-                                                                         'rb',
-                                                                         method=True)]
-            except IOError:
-                raise
+            lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
+                                                                                  self.conf.mode),
+                                                                     'rb',
+                                                                     method=True)]
             self.report_parser.select_rules(lines)
         if self.conf.select_rules:
             lines = [i.strip() for i in self.conf.select_rules.split(',')]
@@ -653,8 +649,7 @@ class Application(object):
                             % ", ".join(settings.migration_options)
                         )
                         return ReturnValues.INVALID_CLI_OPTION
-                if SystemIdentification.get_arch() == "i386" or \
-                        SystemIdentification.get_arch() == "i686":
+                if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
                     if not self.conf.dst_arch:
                         text = '\n' + settings.migration_text
                 logger_debug.debug("Architecture '%s'. Text '%s'.",

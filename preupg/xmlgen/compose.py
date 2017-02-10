@@ -58,17 +58,17 @@ class XCCDFCompose(object):
             self.dir_name, generate_from_ini=generate_from_ini)
 
         report_filename = os.path.join(self.dir_name, settings.content_file)
-        try:
-            if generate_from_ini:
+        if generate_from_ini:
+            try:
                 FileHelper.write_to_file(
                     report_filename, "wb",
                     ElementTree.tostring(target_tree, "utf-8"), False
                 )
                 print('Generated report file for Preupgrade Assistant is: %s'
                       % report_filename)
-        except IOError:
-            raise IOError("Error: Problem with writing file %s"
-                          % report_filename)
+            except IOError:
+                raise IOError("Error: Problem with writing file %s"
+                              % report_filename)
         return 0
 
     def get_compose_dir_name(self):

@@ -5,6 +5,10 @@ import unittest
 import shutil
 import stat
 import tempfile
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 from preupg.xmlgen.compose import ComposeXML
 from preupg import xccdf
@@ -530,18 +534,18 @@ A solution text for test suite"
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_tag_solution_script(self):
-        """Test of missing tag 'solution' - SystemExit should be raised"""
+        """Test of missing tag 'solution' - MissingTagsIniFileError should be raised"""
         self.test_ini.pop('solution', None)
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_solution_not_exists(self):
-        """Test of missing 'solution' file - SystemExit should be raised"""
+        """Test of missing 'solution' file - IOError should be raised"""
         self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_check_script_not_exists(self):
         """Test of missing 'check_script' file"""
@@ -558,7 +562,7 @@ A solution text for test suite"
         self.test_ini['check_script'] = '.'
         self.loaded_ini[self.filename].append(self.test_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
+        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_incorrect_tag(self):
         """
@@ -570,7 +574,7 @@ A solution text for test suite"
         text_ini += '\n[]\neliskk\n'
         FileHelper.write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.dir_name)
-        self.assertRaises(SystemExit, oscap.find_all_ini)
+        self.assertRaises(configparser.ParsingError, oscap.find_all_ini)
 
     def test_secret_check_script(self):
         """Check occurrence of secret file for check script"""

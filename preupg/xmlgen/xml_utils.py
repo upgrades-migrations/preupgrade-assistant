@@ -2,6 +2,7 @@ from __future__ import print_function, unicode_literals
 
 import re
 import os
+import six
 import sys
 import copy
 
@@ -10,7 +11,7 @@ from preupg.utils import SystemIdentification, FileHelper
 from preupg import settings
 from preupg.xmlgen import xml_tags
 from preupg.xmlgen.script_utils import ModuleHelper
-from preupg.exception import EmptyTagGroupXMLError
+from preupg.exception import MissingTagsIniFileError, EmptyTagGroupXMLError
 
 
 def get_full_xml_tag(dirname):
@@ -27,6 +28,7 @@ def get_full_xml_tag(dirname):
 class XmlUtils(object):
     """Class generate a XML from xml_tags and loaded INI file"""
     def __init__(self, dir_name, ini_files):
+        self.keys = {}
         self.select_rules = []
         self.rule = []
         self.dirname = dir_name
@@ -36,25 +38,24 @@ class XmlUtils(object):
 
     def _test_init_file(self):
         test_dict = copy.deepcopy(self.ini_files)
-        allowed_tags = ['check_script', 'content_description', 'content_title',
-                        'applies_to', 'author', 'binary_req', 'solution',
-                        'bugzilla', 'config_file', 'group_title', 'mode',
-                        'requires', 'solution_type']
-        for ini, content in iter(test_dict.items()):
-            content_dict = content
+        allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
+                        'author', 'binary_req', 'solution', 'bugzilla', 'config_file',
+                        'group_title', 'mode', 'requires', 'solution_type']
+        for ini, content in six.iteritems(test_dict):
+            content_dict = content[0]
             for tag in allowed_tags:
                 if tag in content_dict:
                     del content_dict[tag]
             if content_dict:
-                tags = ', '. join(iter(content_dict.keys()))
+                tags = ','. join(six.iterkeys(content_dict))
                 sys.stderr.write("Warning: The tag(s) '%s' not allowed in INI"
                                  " file %s.\nAllowed tags are %s.\n"
                                  % (tags, ini, ', '.join(allowed_tags)))
 
     def update_files(self, file_name, content):
-        """Function updates file_name <migrate or update> according to INI
-        file.
+        """Function updates file_name <migrate or update> according to INI file."""
 
+        """
         :param file_name: specified in INI file like mode: upgrade, migrate
         :param content: name of the content like xccdf_rule_...
         :return: Nothing
@@ -201,17 +202,16 @@ class XmlUtils(object):
         self.update_values_list(self.rule, "{"+k+"}", key[k])
 
     def prepare_sections(self):
-        """The function prepares all tags needed for generation group.xml file.
-        """
-        for ini_filepath, ini_file_content in iter(self.ini_files.items()):
-            if ini_filepath.endswith("group.ini"):
+        """The function prepares all tags needed for generation group.xml file."""
+        for main, self.keys in self.ini_files.items():
+            if main.endswith("group.ini"):
                 self.rule.append(xml_tags.GROUP_INI)
-                self.update_values_list(self.rule, '{group_title}',
-                                        ini_file_content['group_title'])
-                self.update_values_list(self.rule, '{group_value}', "")
+                for k in self.keys:
+                    self.update_values_list(self.rule, '{group_title}', k['group_title'])
+                    self.update_values_list(self.rule, '{group_value}', "")
             else:
                 self.rule.append(xml_tags.CONTENT_INI)
-                self.create_xml_from_ini(ini_filepath, ini_file_content)
+                self.create_xml_from_ini(main)
                 self.update_values_list(self.rule,
                                         "{select_rules}",
                                         ' '.join(self.select_rules))
@@ -257,6 +257,7 @@ class XmlUtils(object):
                                     SystemIdentification.get_assessment_version(self.dirname)[1])
 
     def fnc_update_mode(self, key, name):
+
         """
         Function update <upgrade_path>/<migrate.conf|update.conf> files
         migrate_xccdf_path
@@ -280,12 +281,15 @@ class XmlUtils(object):
 
     def update_text(self, key, name):
         """Function updates a text."""
-        if key[name] is not None:
-            # escape values so they can be loaded as XMLs
-            escaped_text = html_escape_string(key[name])
-            self.update_values_list(self.rule, "{" + name + "}", escaped_text)
+        try:
+            if key[name] is not None:
+                # escape values so they can be loaded as XMLs
+                escaped_text = html_escape_string(key[name])
+                self.update_values_list(self.rule, "{"+name+"}", escaped_text)
+        except KeyError:
+            raise MissingTagsIniFileError
 
-    def create_xml_from_ini(self, ini_filepath, ini_content):
+    def create_xml_from_ini(self, main):
         """
         The function creates group.xml file from INI file.
         All tag are replaced by function update_value_list
@@ -303,44 +307,43 @@ class XmlUtils(object):
             'content_title': self.update_text,
             'content_description': self.update_text,
         }
-        ModuleHelper.check_required_fields(ini_filepath, ini_content)
-        self.mh = ModuleHelper(os.path.dirname(ini_filepath),
-                               ini_content['check_script'],
-                               ini_content['solution'])
-        # Add solution text into value
-        xml_tags.DIC_VALUES['solution_file'] = ini_content['solution']
+        for key in self.keys:
+            if 'check_script' not in key:
+                raise MissingTagsIniFileError(tags="check_script", ini_file=main)
+            if 'solution' not in key:
+                raise MissingTagsIniFileError(tags="solution", ini_file=main)
+            self.mh = ModuleHelper(os.path.dirname(main), key['check_script'], key['solution'])
+            self.mh.check_recommended_fields(key, main)
+            # Add solution text into value
+            if 'solution' in key:
+                xml_tags.DIC_VALUES['solution_file'] = key['solution']
+            else:
+                xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
 
-        # Add flag where will be shown content if in admin part or in user
-        # part
-        if 'result_part' in ini_content:
-            xml_tags.DIC_VALUES['result_part'] = ini_content['result_part']
-        else:
-            xml_tags.DIC_VALUES['result_part'] = 'admin'
+            # Add flag where will be shown content if in admin part or in user part
+            if 'result_part' in key:
+                xml_tags.DIC_VALUES['result_part'] = key['result_part']
+            else:
+                xml_tags.DIC_VALUES['result_part'] = 'admin'
 
-        self.update_values_list(self.rule, "{rule_tag}",
-                                ''.join(xml_tags.RULE_SECTION))
-        value_tag, check_export_tag = self.add_value_tag()
-        self.update_values_list(self.rule, "{check_export}",
-                                ''.join(check_export_tag))
-        self.update_values_list(self.rule, "{group_value}",
-                                ''.join(value_tag))
+            self.update_values_list(self.rule, "{rule_tag}", ''.join(xml_tags.RULE_SECTION))
+            value_tag, check_export_tag = self.add_value_tag()
+            self.update_values_list(self.rule, "{check_export}", ''.join(check_export_tag))
+            self.update_values_list(self.rule, "{group_value}", ''.join(value_tag))
 
-        for k, function in iter(update_fnc.items()):
+            for k, function in six.iteritems(update_fnc):
+                try:
+                    function(key, k)
+                except IOError as e:
+                    err_msg = "Invalid value of the field '%s' in INI file '%s'\n'%s': %s\n" \
+                              % (k, main, key[k], e.strerror)
+                    raise IOError(err_msg)
+
+            self.update_values_list(self.rule, '{group_title}', html_escape_string(key['content_title']))
             try:
-                function(ini_content, k)
-            except IOError, e:
-                sys.stderr.write(
-                    "Wrong value for tag '%s' in INI file.\n'%s'\n'%s': %s\n"
-                    % (k, ini_filepath, ini_content[k], e.strerror))
-                raise ValueError
-
-        self.update_values_list(
-            self.rule, '{group_title}',
-            html_escape_string(ini_content['content_title'])
-        )
-        if 'mode' not in ini_content:
-            self.fnc_update_mode(ini_content['check_script'],
-                                 'migrate, upgrade')
-        else:
-            self.fnc_update_mode(ini_content['check_script'],
-                                 ini_content['mode'])
+                if 'mode' not in key:
+                    self.fnc_update_mode(key['check_script'], 'migrate, upgrade')
+                else:
+                    self.fnc_update_mode(key['check_script'], key['mode'])
+            except KeyError:
+                pass

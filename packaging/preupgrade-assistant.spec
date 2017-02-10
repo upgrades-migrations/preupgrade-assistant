@@ -15,7 +15,7 @@
 
 Name:           preupgrade-assistant
 Version:        2.3.0
-Release:        1%{?dist}
+Release:        0.devel.exceptions%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
 %if 0%{?rhel} && 0%{?rhel} <= 5
@@ -52,7 +52,6 @@ Patch0:         preupgrade-assistant-scripts.patch
 Patch1:         crossarch_migration_support_check.patch
 %endif # RHEL
 %if 0%{?rhel} && 0%{?rhel} <= 5
-Patch100:       preupgrade-assistant-six.patch
 Patch101:       preupgrade-assistant-python-2.4.patch
 Patch102:       preupgrade-assistant-pykickstart.patch
 Patch103:       preupgrade-assistant-xml-logs.patch
@@ -145,7 +144,6 @@ OpenSCAP is generated automatically.
 %endif # RHEL
 %if 0%{?rhel} && 0%{?rhel} <= 5
 %setup -q -n %{name}-%{version} -D -T -a 10
-%patch100 -p1
 %patch101 -p1
 %patch102 -p1
 %patch103 -p1
