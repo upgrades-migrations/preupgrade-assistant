@@ -9,6 +9,7 @@ import shutil
 import datetime
 import os
 import six
+import sys
 import logging
 from distutils import dir_util
 

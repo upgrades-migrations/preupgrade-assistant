@@ -281,13 +281,10 @@ class XmlUtils(object):
 
     def update_text(self, key, name):
         """Function updates a text."""
-        try:
-            if key[name] is not None:
-                # escape values so they can be loaded as XMLs
-                escaped_text = html_escape_string(key[name])
-                self.update_values_list(self.rule, "{"+name+"}", escaped_text)
-        except KeyError:
-            raise MissingTagsIniFileError
+        if key[name] is not None:
+            # escape values so they can be loaded as XMLs
+            escaped_text = html_escape_string(key[name])
+            self.update_values_list(self.rule, "{" + name + "}", escaped_text)
 
     def create_xml_from_ini(self, main):
         """
