@@ -327,7 +327,7 @@ class ComposeXML(object):
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
             raise IOError('Error: Problem with reading %s file'
-                          % settings.xccdf_template)
+                          % template_file)
         return target_tree
 
     @staticmethod

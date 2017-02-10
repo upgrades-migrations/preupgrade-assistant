@@ -161,23 +161,20 @@ class ModuleHelper(object):
             if not tags:
                 continue
 
-    def check_recommended_fields(self, keys=None, ini_file="unknown INI file"):
+    @staticmethod
+    def check_required_fields(ini_filepath, fields_in_ini):
         """
-        The function checks whether all fields in INI file are fullfiled
-        If solution_type is mentioned than HTML page can be used.
-        HTML solution type can contain standard HTML tags
-
-        field are needed by YAML file
+        The function checks whether all the required fields are used in an INI
+        file.
         """
-        fields = ['content_title', 'check_script', 'solution', 'applies_to']
-        unused = [x for x in fields if not keys.get(x)]
-        if unused:
-            if 'applies_to' not in unused:
-                raise MissingTagsIniFileError(tags=', '.join(unused),
-                                              ini_file=ini_file)
-        if 'solution_type' in keys:
-            if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
-                pass
-            else:
-                raise ValueError("Error: Wrong solution_type in %s. Allowed are"
-                                 " 'html' or 'text'" % ini_file)
+        required_fields = ['content_title', 'content_description',
+                           'check_script', 'solution']
+        not_in_ini = [x for x in required_fields if not fields_in_ini.get(x)]
+        if not_in_ini:
+            raise MissingTagsIniFileError(tags=', '.join(not_in_ini),
+                                          ini_file=ini_filepath)
+        if 'solution_type' in fields_in_ini and \
+                fields_in_ini.get('solution_type') != "html" and \
+                fields_in_ini.get('solution_type') != "text":
+            raise ValueError("Error: Wrong solution_type in %s. Allowed are"
+                             " 'html' or 'text'" % ini_filepath)

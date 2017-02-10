@@ -158,24 +158,21 @@ A solution text for test suite"
 
     def test_applies_to(self):
         self.test_ini['applies_to'] = 'test_rpm'
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
 
     def test_check_bin(self):
         self.test_ini['binary_req'] = 'cpf'
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "" "cpf"'))
 
     def test_check_rpm(self):
         self.test_ini['requires'] = 'test_rpm'
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "test_rpm" ""'))
@@ -183,8 +180,7 @@ A solution text for test suite"
     def test_check_rpm_bin(self):
         self.test_ini['binary_req'] = 'cpf'
         self.test_ini['requires'] = 'test_rpm'
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "test_rpm" "cpf"'))
@@ -192,8 +188,7 @@ A solution text for test suite"
     def test_applies_to_bin(self):
         self.test_ini['applies_to'] = 'test_rpm'
         self.test_ini['binary_req'] = 'cpf'
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
@@ -237,8 +232,7 @@ class TestXML(base.TestCase):
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(test_ini)
+        self.loaded_ini[self.filename] = test_ini
         self.check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
@@ -291,14 +285,14 @@ A solution text for test suite"
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_text(self):
-        self.loaded_ini[self.filename][0]['solution_type'] = "text"
+        self.loaded_ini[self.filename]['solution_type'] = "text"
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_html(self):
-        self.loaded_ini[self.filename][0]['solution_type'] = "html"
+        self.loaded_ini[self.filename]['solution_type'] = "html"
         self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x]
@@ -352,8 +346,7 @@ A solution text for test suite"
         ini = {}
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
-        ini[self.filename] = []
-        ini[self.filename].append(test_ini)
+        ini[self.filename] = test_ini
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
@@ -381,8 +374,7 @@ A solution text for test suite"
         ini = {}
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
-        ini[self.filename] = []
-        ini[self.filename].append(test_ini)
+        ini[self.filename] = test_ini
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
         upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
@@ -410,8 +402,7 @@ A solution text for test suite"
         ini = {}
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
-        ini[self.filename] = []
-        ini[self.filename].append(test_ini)
+        ini[self.filename] = test_ini
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
@@ -436,8 +427,7 @@ A solution text for test suite"
         ini = {}
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
-        ini[self.filename] = []
-        ini[self.filename].append(test_ini)
+        ini[self.filename] = test_ini
         xml_utils = XmlUtils(self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
@@ -502,7 +492,6 @@ class TestIncorrectINI(base.TestCase):
         self.rule = []
         self.test_solution = "test_solution.sh"
         self.check_script = "check_script.sh"
-        self.loaded_ini[self.filename] = []
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
                          'author': 'test <test@redhat.com>',
@@ -529,28 +518,28 @@ A solution text for test suite"
     def test_missing_tag_check_script(self):
         """Basic test for whole program"""
         self.test_ini.pop('check_script', None)
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_tag_solution_script(self):
         """Test of missing tag 'solution' - MissingTagsIniFileError should be raised"""
         self.test_ini.pop('solution', None)
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_solution_not_exists(self):
         """Test of missing 'solution' file - IOError should be raised"""
         self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_check_script_not_exists(self):
         """Test of missing 'check_script' file"""
         self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
@@ -560,7 +549,8 @@ A solution text for test suite"
         Tests issue #29
         """
         self.test_ini['check_script'] = '.'
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
+        print(self.loaded_ini)
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
@@ -581,7 +571,7 @@ A solution text for test suite"
         self.test_ini['check_script'] = '.minicheck'
         text = """#!/usr/bin/sh\necho 'ahojky'\n"""
         FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
-        self.loaded_ini[self.filename].append(self.test_ini)
+        self.loaded_ini[self.filename] = self.test_ini
         self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
         self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
@@ -602,8 +592,7 @@ class TestGroupXML(base.TestCase):
         self.filename = os.path.join(self.dir_name, 'group.ini')
         test_ini = {'group_title': 'Testing content title'}
         self.assertTrue(test_ini)
-        self.loaded_ini[self.filename] = []
-        self.loaded_ini[self.filename].append(test_ini)
+        self.loaded_ini[self.filename] = test_ini
 
     def tearDown(self):
         shutil.rmtree(self.dir_name)
