@@ -302,15 +302,6 @@ index 93619e9..8af2996 100644
  import datetime
  import re
  import subprocess
-@@ -92,7 +91,7 @@ class FileHelper(object):
-         with open mode)
-         """
-         intern_mode = 0
--        if isinstance(mode, six.text_type):
-+        if isinstance(mode, unicode):
-             if 'w' in mode or 'a' in mode:
-                 intern_mode += W_OK
-             if 'r' in mode:
 @@ -158,7 +157,7 @@ class FileHelper(object):
          script_types = {'/bin/bash': '.sh',
                          '/usr/bin/python': '.py',
