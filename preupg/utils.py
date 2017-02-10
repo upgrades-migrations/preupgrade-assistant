@@ -11,8 +11,6 @@ import shutil
 import tempfile
 import mimetypes
 import platform
-import random
-import string
 import codecs
 
 try:
@@ -83,10 +81,9 @@ class FileHelper(object):
         """
         Check if file exists and has set right mode
 
-        mode can be in string format as for function open (available letters: wrax)
-        or int number (in that case prefered are os constants W_OK, R_OK, X_OK)
-        (letter 'a' has same signification as 'w', is here due to compatibility
-        with open mode)
+        mode can be in string format as for function open (available letters:
+        wrax) or int number (in that case prefered are os constants W_OK, 
+        R_OK, X_OK). Letter 'a' has same signification as 'w', is here due to compatibility with open mode.
         """
         intern_mode = 0
         if isinstance(mode, int):
@@ -142,7 +139,8 @@ class FileHelper(object):
         if is_valid:
             return xml_file
         else:
-            log_message("The provided file is not a valid XML file", level=logging.ERROR)
+            log_message("The provided file is not a valid XML file",
+                        level=logging.ERROR)
             raise RuntimeError("The provided file is not a valid XML file")
 
     @staticmethod
@@ -155,13 +153,15 @@ class FileHelper(object):
         script_types = {'/bin/bash': '.sh',
                         '/usr/bin/python': '.py',
                         '/usr/bin/perl': '.pl'}
-        inter = list(k for k, v in six.iteritems(script_types) if filename.endswith(v))
+        inter = list(k for k, v in iter(script_types.items())
+                     if filename.endswith(v))
         content = FileHelper.get_file_content(filename, 'rb')
-        if inter and content.startswith('#!'+inter[0]):
+        if inter and content.startswith('#!' + inter[0]):
             return inter
         else:
             if verbose:
-                log_message("Problem with getting an interpreter", level=logging.ERROR)
+                log_message("Problem with getting an interpreter",
+                            level=logging.ERROR)
             return None
 
     @staticmethod
@@ -173,7 +173,8 @@ class FileHelper(object):
         if method is False then file is read by function read
         if method is True then file is read by function readlines
         When decode_flag is True, read string is decoded to unicode. Otherwise
-        only read. (Some libraries request non-unicode strings - as ElementTree)
+        only read. (Some libraries request non-unicode strings - as
+        ElementTree)
         """
 
         # data must be init due to possible troubles with binary data
@@ -187,7 +188,8 @@ class FileHelper(object):
         finally:
             f.close()
         if data is None:
-            raise ValueError("You are tring decode binary data to unicode: %s" % path)
+            raise ValueError("You are tring decode binary data to unicode: %s"
+                             % path)
         return data
 
     @staticmethod
@@ -756,7 +758,7 @@ class PostupgradeHelper(object):
         postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
                             "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
 
-        for key, val in six.iteritems(postupgrade_dict):
+        for key, val in iter(postupgrade_dict.items()):
             source_file = os.path.join(settings.data_dir,
                                        settings.postupgrade_dir, key)
             if os.path.exists(source_file):

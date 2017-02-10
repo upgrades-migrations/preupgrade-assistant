@@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
 import re
 import os
 import shutil
-import six
 
 from preupg.utils import FileHelper
 from preupg.xccdf import XccdfHelper
@@ -366,7 +365,7 @@ class ReportParser(object):
 
         for child in self.get_nodes(self.target_tree, self.profile):
             last_child = child
-            for key, val in six.iteritems(xml_tags.GLOBAL_DIC_VALUES):
+            for key, val in iter(xml_tags.GLOBAL_DIC_VALUES.items()):
                 if key == "tmp_preupgrade":
                     val = result_dir
                 elif key == "migrate" or key == "upgrade":

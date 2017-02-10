@@ -9,13 +9,13 @@ import base64
 import shutil
 import os
 import imp
-import six
 
 from pykickstart.constants import KS_MISSING_IGNORE, KS_SCRIPT_POST
 from pykickstart.parser import KickstartParser, KickstartError, Script
 from pykickstart.version import makeVersion
 
-from preupg.logger import logger, logging, LoggerHelper, logger_debug, log_message
+from preupg.logger import logger, logging, LoggerHelper, logger_debug
+from preupg.logger import log_message
 from preupg.utils import FileHelper, ProcessHelper, MessageHelper
 from preupg import settings
 
@@ -241,7 +241,7 @@ class KickstartGenerator(object):
             return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
-        for module in six.iterkeys(self.plugin_classes):
+        for module in iter(self.plugin_classes.keys()):
             self.plugin_classes[module].run_module()
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.ks.handler.keyboard.keyboard = 'us'

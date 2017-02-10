@@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
 
 import re
 import os
-import six
 import sys
 import copy
 
@@ -38,24 +37,25 @@ class XmlUtils(object):
 
     def _test_init_file(self):
         test_dict = copy.deepcopy(self.ini_files)
-        allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
-                        'author', 'binary_req', 'solution', 'bugzilla', 'config_file',
-                        'group_title', 'mode', 'requires', 'solution_type']
-        for ini, content in six.iteritems(test_dict):
+        allowed_tags = ['check_script', 'content_description', 'content_title',
+                        'applies_to', 'author', 'binary_req', 'solution',
+                        'bugzilla', 'config_file', 'group_title', 'mode',
+                        'requires', 'solution_type']
+        for ini, content in iter(test_dict.items()):
             content_dict = content[0]
             for tag in allowed_tags:
                 if tag in content_dict:
                     del content_dict[tag]
             if content_dict:
-                tags = ','. join(six.iterkeys(content_dict))
+                tags = ', '. join(iter(content_dict.keys()))
                 sys.stderr.write("Warning: The tag(s) '%s' not allowed in INI"
                                  " file %s.\nAllowed tags are %s.\n"
                                  % (tags, ini, ', '.join(allowed_tags)))
 
     def update_files(self, file_name, content):
-        """Function updates file_name <migrate or update> according to INI file."""
+        """Function updates file_name <migrate or update> according to INI
+        file.
 
-        """
         :param file_name: specified in INI file like mode: upgrade, migrate
         :param content: name of the content like xccdf_rule_...
         :return: Nothing
@@ -71,14 +71,17 @@ class XmlUtils(object):
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
+        lines = FileHelper.get_file_content(os.path.join(self.dirname,
+                                                         filename), "rb", True)
 
-        bold = '<b>{0}</b>'
-        br = '<br/>'
-        table_begin = '<table>'
-        table_end = '</table>'
-        table_header = '<tr><th>Result</th><th>Description</th></tr>'
-        table_row = '<tr><td>{0}</td><td>{1}</td></tr>'
+        bold = '<xhtml:b>{0}</xhtml:b>'
+        br = '<xhtml:br/>'
+        table_begin = '<xhtml:table>'
+        table_end = '</xhtml:table>'
+        table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>' \
+                       'Description</xhtml:th></xhtml:tr>'
+        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}' \
+                    '</xhtml:td></xhtml:tr>'
         new_text.append(br + br + '\n' + bold.format('Details:') + br)
         results = False
         for line in lines:
@@ -89,7 +92,8 @@ class XmlUtils(object):
                     results = True
                 try:
                     exp_results = line.strip().split('=')
-                    new_text.append(table_row.format(exp_results[0], exp_results[1]) + '\n')
+                    new_text.append(table_row.format(exp_results[0],
+                                                     exp_results[1]) + '\n')
                 except IndexError:
                     pass
             else:
@@ -112,10 +116,12 @@ class XmlUtils(object):
         elif search_exp == "{config_file}":
             new_text = ""
             for lines in replace_exp.split(','):
-                new_text = new_text+"<li>"+lines.strip()+"</li>"
+                new_text = new_text + "<xhtml:li>" + lines.strip() + \
+                    "</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
-            new_text = FileHelper.get_file_content(os.path.join(self.dirname, replace_exp), "rb", True)
+            new_text = FileHelper.get_file_content(os.path.join(
+                self.dirname, replace_exp), "rb", True)
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
@@ -145,11 +151,13 @@ class XmlUtils(object):
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
-            self.update_values_list(check_export_tag, "{value_name_upper}", key.upper())
+            self.update_values_list(check_export_tag, "{value_name_upper}",
+                                    key.upper())
             self.update_values_list(check_export_tag, "{val}", key.lower())
         for key, val in xml_tags.GLOBAL_DIC_VALUES.items():
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE_GLOBAL)
-            self.update_values_list(check_export_tag, "{value_name_upper}", key.upper())
+            self.update_values_list(check_export_tag, "{value_name_upper}",
+                                    key.upper())
             self.update_values_list(check_export_tag, "{value_name}", key)
 
         return value_tag, check_export_tag
@@ -159,7 +167,8 @@ class XmlUtils(object):
         fix_tag = []
         for k in key['solution'].split(','):
             self.mh.check_scripts('solution')
-            script_type = FileHelper.get_script_type(self.mh.get_full_path_name_solution())
+            script_type = FileHelper.get_script_type(
+                self.mh.get_full_path_name_solution())
             if script_type == "txt":
                 fix_tag.append(xml_tags.FIX_TEXT)
             else:
@@ -185,7 +194,8 @@ class XmlUtils(object):
                                 'exit_pass', 'exit_informational']
                       }
         for check in check_func:
-            self.mh.check_inplace_risk(prefix=check, check_func=check_func[check])
+            self.mh.check_inplace_risk(prefix=check,
+                                       check_func=check_func[check])
         self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[0])
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
@@ -199,7 +209,7 @@ class XmlUtils(object):
         else:
             author = None
         self.mh.update_check_script(updates, author=author)
-        self.update_values_list(self.rule, "{"+k+"}", key[k])
+        self.update_values_list(self.rule, "{" + k + "}", key[k])
 
     def prepare_sections(self):
         """The function prepares all tags needed for generation group.xml file."""
@@ -242,7 +252,8 @@ class XmlUtils(object):
         """ Function updates a check_description """
         if name in key and key[name] is not None:
             escaped_text = self._update_check_description(key[name])
-            self.update_values_list(self.rule, "{check_description}", escaped_text)
+            self.update_values_list(self.rule, "{check_description}",
+                                    escaped_text)
         else:
             self.update_values_list(self.rule, "{check_description}", "")
 
@@ -253,11 +264,11 @@ class XmlUtils(object):
         else:
             self.update_values_list(self.rule, "{fix}", xml_tags.FIX_TEXT)
             self.update_values_list(self.rule, "{solution_text}", "text")
-            self.update_values_list(self.rule, "{platform_id}",
-                                    SystemIdentification.get_assessment_version(self.dirname)[1])
+            self.update_values_list(
+                self.rule, "{platform_id}",
+                SystemIdentification.get_assessment_version(self.dirname)[1])
 
     def fnc_update_mode(self, key, name):
-
         """
         Function update <upgrade_path>/<migrate.conf|update.conf> files
         migrate_xccdf_path
@@ -266,9 +277,10 @@ class XmlUtils(object):
         :return:
         """
 
-        content = "{rule}{main_dir}_{name}".format(rule=xml_tags.TAG_RULE,
-                                                   main_dir='_'.join(get_full_xml_tag(self.dirname)),
-                                                   name=key.split('.')[0])
+        content = "{rule}{main_dir}_{name}".format(
+            rule=xml_tags.TAG_RULE,
+            main_dir='_'.join(get_full_xml_tag(self.dirname)),
+            name=key.split('.')[0])
         if not name:
             self.update_files('migrate', content)
             self.update_files('upgrade', content)
@@ -332,7 +344,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{check_export}", ''.join(check_export_tag))
             self.update_values_list(self.rule, "{group_value}", ''.join(value_tag))
 
-            for k, function in six.iteritems(update_fnc):
+            for k, function in iter(update_fnc.items()):
                 try:
                     function(key, k)
                 except IOError as e:

@@ -16,7 +16,8 @@ class ModuleHelper(object):
         self.script_name = script_name
         self.solution_name = solution_name
         self.full_path_name = os.path.join(self.dir_name, self.script_name)
-        self.full_path_name_solution = os.path.join(self.dir_name, self.solution_name)
+        self.full_path_name_solution = os.path.join(self.dir_name,
+                                                    self.solution_name)
 
     def get_full_path_name(self):
         return self.full_path_name
@@ -89,7 +90,7 @@ class ModuleHelper(object):
         if script_type == "sh":
             pre_comment = '#'
         else:
-            lic = '"""'+lic+'"""'
+            lic = '"""' + lic + '"""'
             begin_fnc = "("
             end_fnc = ")"
             sep = ","
@@ -102,11 +103,13 @@ class ModuleHelper(object):
             generated_section.append('. /usr/share/preupgrade/common.sh')
         if "check_applies" in updates:
             generated_section.append(
-                ModuleHelper.apply_function(updates, begin_fnc, end_fnc, sep, script_type)
-                )
+                ModuleHelper.apply_function(updates, begin_fnc,
+                                            end_fnc, sep, script_type)
+            )
         if "check_bin" in updates or "check_rpm" in updates:
             generated_section.append(
-                ModuleHelper.rpm_bin_function(updates, begin_fnc, end_fnc, sep, script_type)
+                ModuleHelper.rpm_bin_function(updates, begin_fnc,
+                                              end_fnc, sep, script_type)
             )
         return generated_section, functions
 
@@ -118,10 +121,10 @@ class ModuleHelper(object):
         script_type = FileHelper.get_script_type(self.full_path_name)
         if author is None:
             author = "<empty_line>"
-        generated_section, functions = ModuleHelper.generate_common_stuff(settings.license % author,
-                                                                          updates,
-                                                                          script_type)
-        lines = FileHelper.get_file_content(self.full_path_name, "rb", method=True)
+        generated_section, functions = ModuleHelper.generate_common_stuff(
+            settings.license % author, updates, script_type)
+        lines = FileHelper.get_file_content(self.full_path_name, "rb",
+                                            method=True)
         if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
             raise MissingHeaderCheckScriptError(self.full_path_name)
         for func in functions:
@@ -130,8 +133,9 @@ class ModuleHelper(object):
         for line in lines:
             if '#END GENERATED SECTION' in line:
                 new_line = '\n'.join(generated_section)
-                new_line = new_line.replace('<empty_line>', '').replace('<new_line>', '')
-                output_text += new_line+'\n'
+                new_line = new_line.replace('<empty_line>',
+                                            '').replace('<new_line>', '')
+                output_text += new_line + '\n'
             output_text += line
         FileHelper.write_to_file(self.full_path_name, "wb", output_text)
 
@@ -143,15 +147,17 @@ class ModuleHelper(object):
         if check_func is None:
             check_func = []
         lines = FileHelper.get_file_content(self.full_path_name, "rb")
-        compile_req = re.compile(r'^#', re.M|re.I)
+        compile_req = re.compile(r'^#', re.M | re.I)
         lines = [x for x in lines if not compile_req.search(x.strip())]
         inplace_lines = [x for x in lines if prefix in x]
         for line in inplace_lines:
-            tags = [x for x in check_func if re.findall('\\b'+x.split()[0]+'\\b', line)]
+            tags = [x for x in check_func
+                    if re.findall('\\b' + x.split()[0] + '\\b', line)]
             if not tags:
                 continue
             checks = [x for x in check_func if len(x.split()) > 1]
-            tags = [x for x in checks if re.findall('\\b'+x.split()[1]+'\\b', line)]
+            tags = [x for x in checks
+                    if re.findall('\\b' + x.split()[1] + '\\b', line)]
             if not tags:
                 continue
 

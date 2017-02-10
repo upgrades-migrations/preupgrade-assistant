@@ -4,11 +4,9 @@
 Class creates a set of packages for migration scenario
 """
 
-import six
 import os
 
 from preupg.utils import FileHelper
-from preupg.logger import *
 from preupg.kickstart.application import BaseKickstart
 from preupg import settings
 
@@ -30,10 +28,13 @@ class ReposHandling(BaseKickstart):
         :return: dictionary with enabled repolist
         """
         try:
-            lines = FileHelper.get_file_content(os.path.join(settings.KS_DIR, filename), 'rb', method=True)
+            lines = FileHelper.get_file_content(
+                os.path.join(settings.KS_DIR, filename), 'rb', method=True
+            )
         except IOError:
             return None
-        lines = [x for x in lines if not x.startswith('#') and not x.startswith(' ')]
+        lines = [x for x in lines
+                 if not x.startswith('#') and not x.startswith(' ')]
         if not lines:
             return None
         repo_dict = {}
@@ -44,8 +45,10 @@ class ReposHandling(BaseKickstart):
 
     def update_repositories(self):
         if self.repos:
-            for key, value in six.iteritems(self.repos):
-                self.handler.repo.dataList().append(self.handler.RepoData(name=key, baseurl=value.strip()))
+            for key, value in iter(self.repos.items()):
+                self.handler.repo.dataList().append(
+                    self.handler.RepoData(name=key, baseurl=value.strip())
+                )
 
     def run_module(self, *args, **kwargs):
         self.update_repositories()

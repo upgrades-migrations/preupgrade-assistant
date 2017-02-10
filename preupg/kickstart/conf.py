@@ -44,5 +44,4 @@ class ConfKickstart(object):
                 return value
             else:
                 continue
-        #return object.__getattribute__(self, name)
         return None

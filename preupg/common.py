@@ -6,11 +6,11 @@ to assessment
 
 from __future__ import unicode_literals
 import os
-import platform
 import datetime
 import shutil
 from distutils import dir_util
-from preupg.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
+from preupg.utils import FileHelper, DirHelper, ProcessHelper
+from preupg.utils import SystemIdentification
 from preupg.logger import log_message
 from preupg import settings
 
