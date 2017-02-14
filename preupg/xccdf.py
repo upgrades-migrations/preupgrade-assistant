@@ -154,7 +154,8 @@ class XccdfHelper(object):
             platform = settings.CPE_RHEL
         else:
             platform = settings.CPE_FEDORA
-        platform_id = SystemIdentification.get_assessment_version(full_path)
+        platform_id = SystemIdentification.get_assessment_version(
+            os.path.dirname(full_path))
         for index, line in enumerate(file_lines):
             if 'PLATFORM_NAME' in line:
                 line = line.replace('PLATFORM_NAME', platform)

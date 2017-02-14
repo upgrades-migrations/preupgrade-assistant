@@ -43,6 +43,9 @@ lock_file = "/var/run/preupgrade.pid"
 cache_dir = "/var/cache/preupgrade"
 log_dir = "/var/log/preupgrade"
 
+# file with meta info
+properties_ini = "properties.ini"
+
 # preupg log file
 preupg_log = os.path.join(log_dir, "preupg.log")
 

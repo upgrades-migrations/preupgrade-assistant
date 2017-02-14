@@ -412,26 +412,31 @@ class SystemIdentification(object):
 
     @staticmethod
     def get_assessment_version(dir_name):
-        if PreupgHelper.get_prefix() == "preupgrade":
-            matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(2)]
-            else:
-                return None
-        else:
-            matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(3)]
-            else:
-                return None
+        section_name = "preupgrade-assistant-modules"
+        properties_file = os.path.join(settings.source_dir,
+                                       dir_name,
+                                       settings.properties_ini)
+        src_os_ver = ConfigHelper.get_preupg_config_file(properties_file,
+                                                         key="srcMajorVersion",
+                                                         section=section_name)
+        dest_os_ver = ConfigHelper.get_preupg_config_file(properties_file,
+                                                          key="destMajorVersion",
+                                                          section=section_name)
+        if src_os_ver is None or dest_os_ver is None:
+            return None
+        return [src_os_ver, dest_os_ver]
 
     @staticmethod
     def get_valid_scenario(dir_name):
-        matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
-        if matched:
-            return matched[0]
-        else:
-            return None
+        """
+        dir_name - must be path ending with directory or '/'
+        >>> get_valid_scenario('/a/b/c')
+        'c'
+        >>> get_valid_scenario('/a/b/c/')
+        'c'
+        >>>
+        """
+        return os.path.basename(dir_name.rstrip(os.path.sep))
 
     @staticmethod
     def get_variant():
