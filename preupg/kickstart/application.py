@@ -138,6 +138,18 @@ class KickstartGenerator(object):
         """ Remove obsolete items which does not exist on RHEL-7 anymore"""
         self.ks.handler.bootloader.location = None
 
+    def mitigate_security_issues(self):
+        """It may pose a security risk to put the root password into the
+        kickstart, even if it is a hash because weak hash algorithm could have
+        been used.
+        Also, set the default hashing algorithm for user passwords to the
+        strong sha-512.
+        """
+        self.ks.handler.rootpw(isCrypted=False,
+                               password="<password_placeholder>")
+        self.ks.handler.authconfig(
+            authconfig="--enableshadow --passalgo=sha512")
+
     def embed_script(self, tarball):
         if tarball is None:
             return
@@ -243,6 +255,7 @@ class KickstartGenerator(object):
         self.ks.handler.keyboard.keyboard = 'us'
         self.embed_script(self.latest_tarball)
         self.delete_obsolete_issues()
+        self.mitigate_security_issues()
         self.save_kickstart()
         self.comment_kickstart_issues()
         return True
