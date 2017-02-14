@@ -62,6 +62,7 @@ __all__ = (
     'is_dist_native',
     'get_dist_native_list',
     'is_pkg_installed',
+    'add_pkg_to_kickstart',
     'deploy_hook',
 
     'PREUPGRADE_CACHE',
