@@ -10,8 +10,10 @@ halt
 timezone Etc/UTC
 # System language
 lang en_US
+# Root password
+rootpw <password_placeholder>
 # System authorization information
-auth  --useshadow  --passalgo=sha512
+auth  --enableshadow --passalgo=sha512
 # enable firstboot
 firstboot --enable
 # SELinux configuration
@@ -19,9 +21,6 @@ selinux --enforcing
 
 # configure your networking properly
 network --onboot yes --device eth0 --bootproto dhcp
-
-# set root's password
-rootpw changethis
 
 # configure firewall
 firewall --service=ssh
