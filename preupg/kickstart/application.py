@@ -134,6 +134,13 @@ class KickstartGenerator(object):
                 return None
         return ksparser
 
+    def set_autopart(self):
+        """Letting kickstart to do the partitioning automatically is the safe
+        option (as opposed to guessing the correct partitioning parameters for
+        the new system).
+        """
+        self.ks.handler.autopart(autopart=True)
+
     def delete_obsolete_issues(self):
         """ Remove obsolete items which does not exist on RHEL-7 anymore"""
         self.ks.handler.bootloader.location = None
@@ -195,7 +202,11 @@ class KickstartGenerator(object):
         return tarball
 
     def comment_kickstart_issues(self):
-        list_issues = [' --', 'group', 'user ', 'repo', 'url', 'rootpw']
+        """Comment out those line in kickstart that are to be reviewed
+        by user and uncommented by themself if necessary.
+        """
+        list_issues = [' --', 'group', 'user ', 'repo', 'url', 'rootpw',
+                       'part', 'volgroup', 'logvol', 'raid']
         kickstart_data = []
         try:
             kickstart_data = FileHelper.get_file_content(os.path.join(settings.KS_DIR, self.kickstart_name),
@@ -242,6 +253,7 @@ class KickstartGenerator(object):
         self.ks.handler.packages.handleMissing = KS_MISSING_IGNORE
         self.ks.handler.keyboard.keyboard = 'us'
         self.embed_script(self.latest_tarball)
+        self.set_autopart()
         self.delete_obsolete_issues()
         self.save_kickstart()
         self.comment_kickstart_issues()
