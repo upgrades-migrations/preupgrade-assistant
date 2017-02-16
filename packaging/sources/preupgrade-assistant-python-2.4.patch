@@ -11,8 +11,21 @@ index e377165..c8282b7 100755
              cli.parser.error(str(ex))
      return ret
  
+diff --git a/bin/preupg b/bin/preupg
+index 88c1d79..9b80a83 100755
+--- a/bin/preupg
++++ b/bin/preupg
+@@ -21,7 +21,7 @@ def main():
+         return return_code
+     except KeyboardInterrupt:
+         return settings.ReturnValues.USER_ABORT
+-    except Exception as ex:
++    except Exception, ex:
+         if cli.opts.debug:
+             traceback.print_exc(file=sys.stderr)
+         else:
 diff --git a/preupg/application.py b/preupg/application.py
-index 96401ee..f405131 100644
+index 42b2696..d786229 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
 @@ -4,11 +4,9 @@ The application module serves for running oscap binary and reporting results
@@ -24,10 +37,10 @@ index 96401ee..f405131 100644
  import datetime
  import os
 -import six
+ import sys
  import logging
  from distutils import dir_util
- 
-@@ -108,11 +106,12 @@ class Application(object):
+@@ -109,11 +107,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -42,7 +55,7 @@ index 96401ee..f405131 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create report log '%s'", settings.preupg_report_log)
-@@ -124,11 +123,12 @@ class Application(object):
+@@ -125,11 +124,12 @@ class Application(object):
          Add the special report log file
          :return:
          """
@@ -57,7 +70,7 @@ index 96401ee..f405131 100644
                                            level=logging.DEBUG)
          except (IOError, OSError):
              logger.warning("Can not create debug log '%s'", settings.preupg_log)
-@@ -154,7 +154,7 @@ class Application(object):
+@@ -155,7 +155,7 @@ class Application(object):
          if self.conf.upload is True:
              # lets try default configuration
              log_message('Specify the server where to upload the results.')
@@ -66,7 +79,7 @@ index 96401ee..f405131 100644
              return False
          else:
              if self.conf.upload[-1] == '/':
-@@ -165,7 +165,7 @@ class Application(object):
+@@ -166,7 +166,7 @@ class Application(object):
          try:
              proxy = xmlrpclib.ServerProxy(url)
              proxy.submit.ping()
@@ -75,7 +88,7 @@ index 96401ee..f405131 100644
              message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
                        'Please ensure that package preupgrade-assistant-ui ' \
                        'has been installed on target system and firewall is set up ' \
-@@ -221,7 +221,7 @@ class Application(object):
+@@ -222,7 +222,7 @@ class Application(object):
              DirHelper.check_or_create_temp_dir(dir_name)
  
          # Copy README files into proper directories
@@ -84,7 +97,7 @@ index 96401ee..f405131 100644
              shutil.copyfile(os.path.join(settings.source_dir, key),
                              os.path.join(self.conf.assessment_results_dir, val))
  
-@@ -385,9 +385,9 @@ class Application(object):
+@@ -386,9 +386,9 @@ class Application(object):
          3rd party contents are stored in
          /usr/share/preupgrade/RHEL6_7/3rdparty directory
          """
@@ -96,7 +109,7 @@ index 96401ee..f405131 100644
              self.report_parser.reload_xml(content)
              self.content = content
              self.run_scan_process()
-@@ -398,7 +398,7 @@ class Application(object):
+@@ -399,7 +399,7 @@ class Application(object):
  
      def get_cmd_convertor(self):
          """Function returns cmd with text convertor string"""
@@ -105,7 +118,7 @@ index 96401ee..f405131 100644
              self.text_convertor,
              self.openscap_helper.get_default_html_result_path(),
              self.openscap_helper.get_default_txt_result_path()
-@@ -480,7 +480,7 @@ class Application(object):
+@@ -481,7 +481,7 @@ class Application(object):
          try:
              self.report_parser = ReportParser(self.content)
          except IOError:
@@ -114,7 +127,7 @@ index 96401ee..f405131 100644
              return ReturnValues.SCENARIO
          if not self.conf.contents:
              version = SystemIdentification.get_assessment_version(self.conf.scan)
-@@ -517,7 +517,7 @@ class Application(object):
+@@ -518,7 +518,7 @@ class Application(object):
  
          # It prints out result in table format
          ScanningHelper.format_rules_to_table(main_report, "main contents")
@@ -123,7 +136,7 @@ index 96401ee..f405131 100644
              ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
  
          self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
-@@ -528,20 +528,18 @@ class Application(object):
+@@ -529,20 +529,18 @@ class Application(object):
  
      def summary_report(self, tarball_path):
          """Function prints a summary report"""
@@ -149,7 +162,7 @@ index 96401ee..f405131 100644
  
          }
          self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
-@@ -559,11 +557,10 @@ class Application(object):
+@@ -560,11 +558,10 @@ class Application(object):
              pass
          if self.report_data:
              log_message('Summary of the third party providers:')
@@ -164,7 +177,7 @@ index 96401ee..f405131 100644
  
      def _set_devel_mode(self):
          # Check for devel_mode
-@@ -610,7 +607,7 @@ class Application(object):
+@@ -611,7 +608,7 @@ class Application(object):
  
          logger_debug.debug(version_msg)
          if self.conf.list_contents_set:
@@ -173,7 +186,7 @@ index 96401ee..f405131 100644
                  log_message("%s" % dir_name)
              return 0
  
-@@ -667,11 +664,11 @@ class Application(object):
+@@ -668,11 +665,11 @@ class Application(object):
                      found = True
                      break
              if not found:
@@ -211,7 +224,7 @@ index 5858db8..150bba7 100644
  
  if __name__ == '__main__':
 diff --git a/preupg/common.py b/preupg/common.py
-index 60286ae..4424bba 100644
+index 7b485b3..9e07e1a 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -268,7 +281,7 @@ index f21c038..cf9344f 100644
                  config.set(section, key, val)
  
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index d364cb6..91db549 100644
+index e552e74..6a7e0bb 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -310,7 +323,7 @@ index d364cb6..91db549 100644
                      print (ae)
                      print ("Module '%s' does not implement `register(context)`" % modname)
          return plugin_checkers
-@@ -153,7 +151,7 @@ class KickstartGenerator(object):
+@@ -172,7 +170,7 @@ class KickstartGenerator(object):
              return
          script_str = FileHelper.get_file_content(os.path.join(settings.KS_DIR, script_path), 'rb')
          if not script_str:
@@ -319,7 +332,7 @@ index d364cb6..91db549 100644
              return
          if tarball_content is not None:
              script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
-@@ -237,7 +235,7 @@ class KickstartGenerator(object):
+@@ -260,7 +258,7 @@ class KickstartGenerator(object):
              return None
          self.ks.handler.packages.excludedList = []
          self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
@@ -502,7 +515,7 @@ index 7d8d96d..4dc8a93 100644
              kickstart_groups[group] = ids
          if not kickstart_groups:
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 8f12b78..349e402 100644
+index 7d6a20a..fa00951 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -1,5 +1,4 @@
@@ -511,7 +524,7 @@ index 8f12b78..349e402 100644
  import logging
  import sys
  from preupg import settings
-@@ -60,32 +59,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
+@@ -72,32 +71,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
  
  def log_message(message, new_line=True, level=logging.INFO):
      """ if verbose, log `msg % args` to stdout """
@@ -618,7 +631,7 @@ index f107f36..7bccafc 100644
          old_width = self.width_size
          self.width_size -= 21
 diff --git a/preupg/script_api.py b/preupg/script_api.py
-index a1eef27..f08c9c6 100644
+index 1f271ac..94685e1 100644
 --- a/preupg/script_api.py
 +++ b/preupg/script_api.py
 @@ -19,7 +19,6 @@ These functions are available:
@@ -629,7 +642,7 @@ index a1eef27..f08c9c6 100644
  import os
  import sys
  import re
-@@ -286,7 +285,7 @@ def _log_risk(severity, message):
+@@ -287,7 +286,7 @@ def _log_risk(severity, message):
      """
      log risk level to stderr
      """
@@ -638,7 +651,7 @@ index a1eef27..f08c9c6 100644
  
  
  def log_extreme_risk(message):
-@@ -338,7 +337,7 @@ def _log(severity, message):
+@@ -339,7 +338,7 @@ def _log(severity, message):
      :param message:message to be logged
      :return:
      """
@@ -647,7 +660,7 @@ index a1eef27..f08c9c6 100644
  
  
  def log_error(message):
-@@ -785,13 +784,13 @@ def deploy_hook(*args):
+@@ -786,13 +785,13 @@ def deploy_hook(*args):
                      exit_error()
                  try:
                      shutil.copytree(arg, hook_arg)
@@ -734,7 +747,7 @@ index 1ccd0ec..79477c8 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 93619e9..c39eaf5 100644
+index e945585..1e8ca77 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,6 +1,4 @@
@@ -744,15 +757,6 @@ index 93619e9..c39eaf5 100644
  import datetime
  import re
  import subprocess
-@@ -92,7 +90,7 @@ class FileHelper(object):
-         with open mode)
-         """
-         intern_mode = 0
--        if isinstance(mode, six.text_type):
-+        if isinstance(mode, unicode):
-             if 'w' in mode or 'a' in mode:
-                 intern_mode += W_OK
-             if 'r' in mode:
 @@ -158,7 +156,7 @@ class FileHelper(object):
          script_types = {'/bin/bash': '.sh',
                          '/usr/bin/python': '.py',
@@ -1025,48 +1029,47 @@ index 4ab16d2..3d2cafc 100644
              tree, subgroups = t
  
 diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
-index c7b3883..b400557 100644
+index c7b3883..3bd48bd 100644
 --- a/preupg/xmlgen/oscap_group_xml.py
 +++ b/preupg/xmlgen/oscap_group_xml.py
-@@ -3,8 +3,6 @@
- This class will ready the YAML file as INI file.
+@@ -4,9 +4,7 @@ This class will ready the YAML file as INI file.
  So no change is needed from maintainer point of view
  """
--
+ 
 -from __future__ import print_function, unicode_literals
  import os
 -import six
  import codecs
  
  try:
-@@ -79,7 +77,7 @@ class OscapGroupXml(object):
-         # load content without decoding to unicode - ElementTree requests this
+@@ -73,7 +71,7 @@ class OscapGroupXml(object):
+         xml_path = os.path.join(self.dirname, "group.xml")
          try:
-             self.ret[self.dirname] = (ElementTree.parse(os.path.join(self.dirname, "group.xml")).getroot())
+             self.ret[self.dirname] = ElementTree.parse(xml_path).getroot()
 -        except ParseError as par_err:
 +        except ParseError, par_err:
-             print("Encountered a parse error in file ", self.dirname, " details: ", par_err)
-         return self.ret
- 
-@@ -92,7 +90,7 @@ class OscapGroupXml(object):
-         file_name = os.path.join(self.dirname, "group.xml")
+             raise ParseError(
+                 "Encountered a parse error in file %s.\nDetails: %s"
+                 % (os.path.join(self.dirname, "group.xml"), par_err))
+@@ -89,7 +87,7 @@ class OscapGroupXml(object):
          try:
-             FileHelper.write_to_file(file_name, "wb", ["%s" % item for item in self.rule])
+             FileHelper.write_to_file(file_name, "wb",
+                                      ["%s" % item for item in self.rule])
 -        except IOError as ior:
 +        except IOError, ior:
-             print ('Problem with write data to the file ', file_name, ior.message)
+             raise IOError('Problem with writing to file %s.\nDetails: %s'
+                           % (file_name, ior.message))
  
-     def write_profile_xml(self, target_tree):
-@@ -104,7 +102,7 @@ class OscapGroupXml(object):
-             # as html entities instead, which are unsusable for us
+@@ -102,7 +100,7 @@ class OscapGroupXml(object):
+             # characters as html entities instead, which are unsusable for us
              data = ElementTree.tostring(target_tree, "utf-8")
              FileHelper.write_to_file(file_name, "wb", data, False)
 -        except IOError as ioe:
 +        except IOError, ioe:
-             print ('Problem with writing to file ', file_name, ioe.message)
+             raise IOError('Problem with writing to file %s.\nDetails: %s'
+                           % (file_name, ioe.message))
  
-     def write_list_rules(self):
-@@ -115,8 +114,8 @@ class OscapGroupXml(object):
+@@ -115,8 +113,8 @@ class OscapGroupXml(object):
              lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
          else:
              lines = []
@@ -1097,18 +1100,19 @@ index 640c978..3969d36 100644
  TAG_VALUE = "xccdf_preupg_value_"
  TAG_RULE = "xccdf_preupg_rule_"
 diff --git a/preupg/xmlgen/xml_utils.py b/preupg/xmlgen/xml_utils.py
-index d499bf3..75ab242 100644
+index 59de1ae..b406b75 100644
 --- a/preupg/xmlgen/xml_utils.py
 +++ b/preupg/xmlgen/xml_utils.py
-@@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
- 
+@@ -1,8 +1,5 @@
+-from __future__ import print_function, unicode_literals
+-
  import re
  import os
 -import six
  import sys
  import copy
  
-@@ -41,13 +40,13 @@ class XmlUtils(object):
+@@ -41,13 +38,13 @@ class XmlUtils(object):
          allowed_tags = ['check_script', 'content_description', 'content_title', 'applies_to',
                          'author', 'binary_req', 'solution', 'bugzilla', 'config_file',
                          'group_title', 'mode', 'requires', 'solution_type']
@@ -1124,7 +1128,7 @@ index d499bf3..75ab242 100644
                  sys.stderr.write("Warning: The tag(s) '%s' not allowed in INI"
                                   " file %s.\nAllowed tags are %s.\n"
                                   % (tags, ini, ', '.join(allowed_tags)))
-@@ -73,23 +72,23 @@ class XmlUtils(object):
+@@ -73,23 +70,23 @@ class XmlUtils(object):
          new_text = []
          lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
  
@@ -1153,7 +1157,7 @@ index d499bf3..75ab242 100644
                  except IndexError:
                      pass
              else:
-@@ -266,9 +265,9 @@ class XmlUtils(object):
+@@ -266,9 +263,9 @@ class XmlUtils(object):
          :return:
          """
  
@@ -1166,7 +1170,7 @@ index d499bf3..75ab242 100644
          if not name:
              self.update_files('migrate', content)
              self.update_files('upgrade', content)
-@@ -331,7 +330,7 @@ class XmlUtils(object):
+@@ -328,10 +325,10 @@ class XmlUtils(object):
              self.update_values_list(self.rule, "{check_export}", ''.join(check_export_tag))
              self.update_values_list(self.rule, "{group_value}", ''.join(value_tag))
  
@@ -1174,11 +1178,11 @@ index d499bf3..75ab242 100644
 +            for k, function in iter(update_fnc.items()):
                  try:
                      function(key, k)
--                    except IOError as e:
+-                except IOError as e:
 +                except IOError, e:
-                     e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
-                     e_msg = "'%s': %s" % (key[k], e.strerror)
-                     MessageHelper.print_error_msg(title=e_title, msg=e_msg)
+                     err_msg = "Invalid value of the field '%s' in INI file '%s'\n'%s': %s\n" \
+                               % (k, main, key[k], e.strerror)
+                     raise IOError(err_msg)
 diff --git a/tools/preupg-create-group-xml b/tools/preupg-create-group-xml
 index ff7e5b0..544c74e 100755
 --- a/tools/preupg-create-group-xml

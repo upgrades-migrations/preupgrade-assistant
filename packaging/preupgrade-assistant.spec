@@ -15,7 +15,7 @@
 
 Name:           preupgrade-assistant
 Version:        2.3.0
-Release:        0.devel.exceptions%{?dist}
+Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
 %if 0%{?rhel} && 0%{?rhel} <= 5
