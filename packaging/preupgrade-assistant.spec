@@ -7,9 +7,10 @@
 %global         south_version   0.8.4
 %else
 %global         build_ui 0
-%endif # RHEL > 5
+%endif
 %if 0%{?rhel} && 0%{?rhel} <= 5
-%global         pykickstart_version 1.74.20
+%global         pykickstart_version             1.74.20
+%global         bundled_pykickstart_dirname     preupg_pykickstart
 %endif # RHEL <= 5
 
 Name:           preupgrade-assistant
@@ -17,7 +18,13 @@ Version:        2.3.0
 Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
+%if 0%{?rhel} && 0%{?rhel} <= 5
+# All the code is GPLv3+ or GPLv3+ compatible, except the bundled
+# pykickstart library (used on RHEL 5 only) which is GPLv2
+License:        GPLv3+ and GPLv2
+%else
 License:        GPLv3+
+%endif # RHEL <= 5
 
 Source0:        %{name}-%{version}.tar.gz
 %if %{build_ui}
@@ -177,26 +184,27 @@ rm -rf build/lib/preupg/ui
 %if 0%{?rhel} && 0%{?rhel} <= 5
 pushd pykickstart-%{pykickstart_version}
 %{__python} setup.py install --skip-build --root=$RPM_BUILD_ROOT
+mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{bundled_pykickstart_dirname} && cp COPYING "$_"
 popd
 
 rm -f ${RPM_BUILD_ROOT}%{_bindir}/ksflatten
 mv ${RPM_BUILD_ROOT}%{_bindir}/ksvalidator ${RPM_BUILD_ROOT}%{_bindir}/preupg_ksvalidator
 mv ${RPM_BUILD_ROOT}%{_bindir}/ksverdiff ${RPM_BUILD_ROOT}%{_bindir}/preupg_ksverdiff
 mv ${RPM_BUILD_ROOT}%{python_sitelib}/pykickstart \
-   ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart
+   ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}
 rm -rf ${RPM_BUILD_ROOT}%{python_sitelib}/pykickstart-%{pykickstart_version}-py*.egg-info
 
-cp -af %{SOURCE20} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE21} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE22} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE23} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE24} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE25} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE26} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE27} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE28} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE29} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/commands/
-cp -af %{SOURCE40} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg_pykickstart/handlers/
+cp -af %{SOURCE20} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE21} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE22} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE23} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE24} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE25} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE26} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE27} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE28} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE29} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/commands/
+cp -af %{SOURCE40} ${RPM_BUILD_ROOT}%{python_sitelib}/%{bundled_pykickstart_dirname}/handlers/
 cp -af %{SOURCE50} ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/
 %endif # RHEL <= 5
 
@@ -257,9 +265,9 @@ get_file_list() {
         | grep -vE "$3" | sed "$4" >> $5
 }
 ### preupgrade-assistant ###
-get_file_list f %{python_sitelib}/.*$  "preupg_pykickstart|preupg/(ui|creator)|\.pyc$" \
+get_file_list f %{python_sitelib}/.*$  "%{bundled_pykickstart_dirname}|preupg/(ui|creator)|\.pyc$" \
     "s/\.py$/\.py\*/" preupg-filelist
-get_file_list d %{python_sitelib}/.*$ "preupg_pykickstart|preupg/(ui|creator)|\.pyc$" \
+get_file_list d %{python_sitelib}/.*$ "%{bundled_pykickstart_dirname}|preupg/(ui|creator)|\.pyc$" \
     "s/^/\%dir /" preupg-filelist
 %if %{build_ui}
 ### preupgrade-assistant-ui ###
@@ -341,9 +349,11 @@ fi
 %endif # build_ui
 
 %if 0%{?rhel} && 0%{?rhel} <= 5
-%{python_sitelib}/preupg_pykickstart/
+%{python_sitelib}/%{bundled_pykickstart_dirname}/
 %{_bindir}/preupg_ksvalidator
 %{_bindir}/preupg_ksverdiff
+dir %{_docdir}/%{bundled_pykickstart_dirname}
+%license %{_docdir}/%{bundled_pykickstart_dirname}/COPYING
 %endif # RHEL <= 5
 
 %files tools
