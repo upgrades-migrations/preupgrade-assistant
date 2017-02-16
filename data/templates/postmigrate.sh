@@ -13,6 +13,7 @@ tar --selinux -xzvf ${TAR_BALL}
 # create symlinks
 ln -s {RESULT_NAME}/cleanconf cleanconf
 ln -s {RESULT_NAME}/dirtyconf dirtyconf
+ln -s {RESULT_NAME}/kickstart kickstart
 ln -s {RESULT_NAME}/postmigrate.d postmigrate.d
 ln -s {RESULT_NAME}/noauto_postupgrade.d noauto_postupgrade.d
 
