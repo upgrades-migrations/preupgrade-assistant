@@ -92,15 +92,15 @@ class FileHelper(object):
         with open mode)
         """
         intern_mode = 0
-        if isinstance(mode, six.text_type):
+        if isinstance(mode, int):
+            intern_mode = mode
+        else:
             if 'w' in mode or 'a' in mode:
                 intern_mode += W_OK
             if 'r' in mode:
                 intern_mode += R_OK
             if 'x' in mode:
                 intern_mode += X_OK
-        else:
-            intern_mode = mode
         if path.exists(fp):
             if path.isfile(fp):
                 if access(fp, intern_mode):
