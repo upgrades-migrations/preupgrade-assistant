@@ -352,7 +352,7 @@ fi
 %{python_sitelib}/%{bundled_pykickstart_dirname}/
 %{_bindir}/preupg_ksvalidator
 %{_bindir}/preupg_ksverdiff
-dir %{_docdir}/%{bundled_pykickstart_dirname}
+%dir %{_docdir}/%{bundled_pykickstart_dirname}
 %license %{_docdir}/%{bundled_pykickstart_dirname}/COPYING
 %endif # RHEL <= 5
 
