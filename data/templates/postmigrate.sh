@@ -26,7 +26,7 @@ do
     SAVE_PATH="${ABS_PATH}.preupg_save"
     if [[ -f "${ABS_PATH}" ]]
     then
-        echo "INFO: Back up new configuration file to '${SAVE_PATH}'." >> ${PREUPGRADE_LOG}
+        echo "INFO: Backing up the clean system configuration file '${ABS_PATH}' to '${SAVE_PATH}'." >> ${PREUPGRADE_LOG}
         cp -a ${ABS_PATH} ${SAVE_PATH}
     fi
 
@@ -37,7 +37,7 @@ do
         mkdir -p "$(dirname "$ABS_PATH")"
     fi
 
-    echo "INFO: Restore configuration file '${ABS_PATH}'." >> ${PREUPGRADE_LOG}
+    echo "INFO: Restoring configuration file of the migrated system '${ABS_PATH}'." >> ${PREUPGRADE_LOG}
     cp -a ${file} ${ABS_PATH}
     restorecon ${ABS_PATH}
 done
