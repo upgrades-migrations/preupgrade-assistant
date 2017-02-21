@@ -25,7 +25,7 @@ index f59edfd..0b5cacf 100755
              traceback.print_exc(file=sys.stderr)
          else:
 diff --git a/preupg/application.py b/preupg/application.py
-index 9dd75e0..d5421fc 100644
+index 24f041e..321ece6 100644
 --- a/preupg/application.py
 +++ b/preupg/application.py
 @@ -4,11 +4,9 @@ The application module serves for running oscap binary and reporting results
@@ -136,7 +136,7 @@ index 9dd75e0..d5421fc 100644
              ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
  
          self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
-@@ -529,20 +529,18 @@ class Application(object):
+@@ -529,20 +529,17 @@ class Application(object):
  
      def summary_report(self, tarball_path):
          """Function prints a summary report"""
@@ -148,22 +148,22 @@ index 9dd75e0..d5421fc 100644
              path = self.openscap_helper.get_default_html_result_path()
  
          report_dict = {
--            0: settings.message.format(path),
--            1: settings.message.format(path),
--            2: 'We found some critical issues. In-place upgrade is not advised.\n' +
+-            0: settings.risks_found_warning.format(path),
+-            1: settings.risks_found_warning.format(path),
+-            2: 'We have found some critical issues. In-place upgrade or migration is not advised.\n' +
 -            "Read the file {0} for more details.".
 -            format(path),
-+            0: settings.message % path,
-+            1: settings.message % path,
-+            2: 'We found some critical issues. In-place upgrade is not advised.\n' + "Read the file %s for more details." % path,
-             3: 'We found some error issues. In-place upgrade is not advised.\n' +
+-            3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' +
 -               "Read the file {0} for more details.".format(path)
-+               "Read the file %s for more details."% path
- 
++            0: settings.risks_found_warning % path,
++            1: settings.risks_found_warning % path,
++            2: 'We have found some critical issues. In-place upgrade or migration is not advised.\n' + 'Read the file %s for more details.' % path,
++            3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' + 'Read the file %s for more details.' % path
          }
          self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
-@@ -560,11 +558,10 @@ class Application(object):
-             pass
+         try:
+@@ -564,11 +561,10 @@ class Application(object):
+             log_message(settings.upgrade_backup_warning)
          if self.report_data:
              log_message('Summary of the third party providers:')
 -            for target, dummy_report in six.iteritems(self.report_data):
@@ -177,7 +177,7 @@ index 9dd75e0..d5421fc 100644
  
      def _set_devel_mode(self):
          # Check for devel_mode
-@@ -611,7 +608,7 @@ class Application(object):
+@@ -615,7 +611,7 @@ class Application(object):
  
          logger_debug.debug(version_msg)
          if self.conf.list_contents_set:
@@ -186,7 +186,7 @@ index 9dd75e0..d5421fc 100644
                  log_message("%s" % dir_name)
              return 0
  
-@@ -668,11 +665,11 @@ class Application(object):
+@@ -672,11 +668,11 @@ class Application(object):
                      found = True
                      break
              if not found:
@@ -224,7 +224,7 @@ index 5858db8..150bba7 100644
  
  if __name__ == '__main__':
 diff --git a/preupg/common.py b/preupg/common.py
-index 7b485b3..9e07e1a 100644
+index 60286ae..4424bba 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -281,7 +281,7 @@ index f21c038..cf9344f 100644
                  config.set(section, key, val)
  
 diff --git a/preupg/kickstart/application.py b/preupg/kickstart/application.py
-index e552e74..6a7e0bb 100644
+index 235514e..849f216 100644
 --- a/preupg/kickstart/application.py
 +++ b/preupg/kickstart/application.py
 @@ -1,6 +1,4 @@
@@ -332,7 +332,7 @@ index e552e74..6a7e0bb 100644
              return
          if tarball_content is not None:
              script_str = script_str.replace('{tar_ball}', base64.b64encode(tarball_content))
-@@ -260,7 +258,7 @@ class KickstartGenerator(object):
+@@ -241,7 +239,7 @@ class KickstartGenerator(object):
              return None
          self.ks.handler.packages.excludedList = []
          self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
@@ -515,7 +515,7 @@ index 7d8d96d..4dc8a93 100644
              kickstart_groups[group] = ids
          if not kickstart_groups:
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 7d6a20a..fa00951 100644
+index 8f12b78..349e402 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -1,5 +1,4 @@
@@ -524,7 +524,7 @@ index 7d6a20a..fa00951 100644
  import logging
  import sys
  from preupg import settings
-@@ -72,32 +71,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
+@@ -60,32 +59,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
  
  def log_message(message, new_line=True, level=logging.INFO):
      """ if verbose, log `msg % args` to stdout """
@@ -568,7 +568,7 @@ index 7d6a20a..fa00951 100644
      logger_report.log(level, message)
  
 diff --git a/preupg/report_parser.py b/preupg/report_parser.py
-index d5ee66a..86cc2c0 100644
+index 9cbb8c9..e8d70d3 100644
 --- a/preupg/report_parser.py
 +++ b/preupg/report_parser.py
 @@ -1,8 +1,6 @@
@@ -580,7 +580,7 @@ index d5ee66a..86cc2c0 100644
  
  from preupg.utils import FileHelper
  from preupg.xccdf import XccdfHelper
-@@ -207,9 +205,9 @@ class ReportParser(object):
+@@ -211,9 +209,9 @@ class ReportParser(object):
                  res.text = ReportHelper.get_needs_action()
              for index, row in enumerate(scanning_progress.output_data):
                  if self.get_nodes_text(rule, "title") in row:
@@ -593,7 +593,7 @@ index d5ee66a..86cc2c0 100644
  
      def replace_inplace_risk(self, scanning_results=None):
          """
-@@ -404,7 +402,7 @@ class ReportParser(object):
+@@ -408,7 +406,7 @@ class ReportParser(object):
  
          for child in self.get_nodes(self.target_tree, self.profile):
              last_child = child
@@ -677,7 +677,7 @@ index 1f271ac..94685e1 100644
              exit_error()
  
 diff --git a/preupg/settings.py b/preupg/settings.py
-index 1ccd0ec..79477c8 100644
+index 8f068fa..f20454f 100644
 --- a/preupg/settings.py
 +++ b/preupg/settings.py
 @@ -1,4 +1,3 @@
@@ -713,21 +713,26 @@ index 1ccd0ec..79477c8 100644
  xsl_sheet = "xccdf-report.xsl"
  
  share_dir = "/usr/share"
-@@ -142,10 +147,10 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
+@@ -139,15 +144,15 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
                   "See help --dst-arch option.\n"
  migration_options = ['x86_64', 'ppc64']
  assessment_text = "Assessment of the system, running checks / SCE scripts"
 -result_text = "Result table with checks and their results for '{0}':"
 +result_text = "Result table with checks and their results for '%s':"
- message = "We found some potential in-place upgrade risks.\n" \
--          "Read the full report file '{0}' for more details."
+ risks_found_warning = "We have found some potential risks.\n" \
+-                      "Read the full report file '{0}' for more details."
++                      "Read the full report file '%s' for more details."
+ upgrade_backup_warning = \
+                "Please ensure you have backed up your system and/or data \n" \
+                "before doing a system upgrade to prevent loss of data in \n" \
+                "case the upgrade fails and full re-install of the system \n" \
+                "from installation media is needed."
 -converter_message = "At least one of these converters ({0}) needs to be installed."
-+          "Read the full report file '%s' for more details."
 +converter_message = "At least one of these converters (%s) needs to be installed."
  kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
                   "The Kickstart file contains:\n" \
                   "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
-@@ -161,13 +166,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
+@@ -163,13 +168,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
  
  options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
  unknown_rules = "These rules do not exist:\n%s\n"
@@ -747,7 +752,7 @@ index 1ccd0ec..79477c8 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 1783ae7..f58466d 100644
+index 80abea3..dc038bb 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,6 +1,4 @@
@@ -813,7 +818,7 @@ index 1783ae7..f58466d 100644
  
      @staticmethod
      def _get_tarball_result_path(root_dir, filename):
-@@ -664,7 +665,7 @@ class PostupgradeHelper(object):
+@@ -663,7 +664,7 @@ class PostupgradeHelper(object):
      def get_hash_file(filename, hasher):
          """Function gets a hash from file"""
          content = FileHelper.get_file_content(filename, "rb", False, False)
@@ -822,7 +827,7 @@ index 1783ae7..f58466d 100644
          return hasher.hexdigest()
  
      @staticmethod
-@@ -691,7 +692,7 @@ class PostupgradeHelper(object):
+@@ -690,7 +691,7 @@ class PostupgradeHelper(object):
              if interpreter is None:
                  continue
              log_message('Executing script %s' % scr)
@@ -831,7 +836,7 @@ index 1783ae7..f58466d 100644
              ProcessHelper.run_subprocess(cmd, print_output=False, shell=True)
              log_message("Executing script %s ...done" % scr)
  
-@@ -763,7 +764,7 @@ class PostupgradeHelper(object):
+@@ -762,7 +763,7 @@ class PostupgradeHelper(object):
          postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
                              "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
  
