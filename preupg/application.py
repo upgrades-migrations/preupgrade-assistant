@@ -536,14 +536,13 @@ class Application(object):
             path = self.openscap_helper.get_default_html_result_path()
 
         report_dict = {
-            0: settings.message.format(path),
-            1: settings.message.format(path),
-            2: 'We found some critical issues. In-place upgrade is not advised.\n' +
+            0: settings.risks_found_warning.format(path),
+            1: settings.risks_found_warning.format(path),
+            2: 'We have found some critical issues. In-place upgrade or migration is not advised.\n' +
             "Read the file {0} for more details.".
             format(path),
-            3: 'We found some error issues. In-place upgrade is not advised.\n' +
+            3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' +
                "Read the file {0} for more details.".format(path)
-
         }
         self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
         try:
@@ -558,6 +557,11 @@ class Application(object):
         except KeyError:
             # We do not want to print anything in case of testing contents
             pass
+        if not self.conf.mode or self.conf.mode == "upgrade":
+            # User either has not specied mode (upgrade and migration both
+            # together by default) or has chosen upgrade only = print warning
+            # to backup the system before doing the in-place upgrade
+            log_message(settings.upgrade_backup_warning)
         if self.report_data:
             log_message('Summary of the third party providers:')
             for target, dummy_report in six.iteritems(self.report_data):

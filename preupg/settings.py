@@ -134,17 +134,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 warning_text = "The Preupgrade Assistant is a diagnostics tool \n" \
-               "and does not perform the actual upgrade.\n" \
-               "Please ensure you have backed up your system and/or data \n" \
-               "in the event of a failed upgrade that would require \n" \
-               "a full re-install of the system from installation media."
+               "and does not perform the actual upgrade."
 migration_text = "The running system is 32bit. Migration is possible only to 64bit system.\n" \
                  "See help --dst-arch option.\n"
 migration_options = ['x86_64', 'ppc64']
 assessment_text = "Assessment of the system, running checks / SCE scripts"
 result_text = "Result table with checks and their results for '{0}':"
-message = "We found some potential in-place upgrade risks.\n" \
-          "Read the full report file '{0}' for more details."
+risks_found_warning = "We have found some potential risks.\n" \
+                      "Read the full report file '{0}' for more details."
+upgrade_backup_warning = \
+               "Please ensure you have backed up your system and/or data \n" \
+               "before doing a system upgrade to prevent loss of data in \n" \
+               "case the upgrade fails and full re-install of the system \n" \
+               "from installation media is needed."
 converter_message = "At least one of these converters ({0}) needs to be installed."
 kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
                  "The Kickstart file contains:\n" \
