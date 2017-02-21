@@ -59,13 +59,8 @@ class ReportParser(object):
     def __init__(self, report_path):
         self.path = report_path
         self.element_prefix = "{http://checklists.nist.gov/xccdf/1.2}"
-        try:
-            # ElementTree.fromstring can't parse safely unicode string
-            content = FileHelper.get_file_content(report_path, 'rb', False, False)
-        except IOError:
-            raise
-        if not content:
-            return None
+        # ElementTree.fromstring can't parse safely unicode string
+        content = FileHelper.get_file_content(report_path, 'rb', False, False)
         self.target_tree = ElementTree.fromstring(content)
         self.profile = "Profile"
         self.changed_results = {}

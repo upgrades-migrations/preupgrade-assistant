@@ -646,7 +646,7 @@ class Application(object):
                     if not correct_option:
                         sys.stderr.write(
                             "Error: Specify correct value for --dst-arch"
-                            " option.\nValid are: %s."
+                            " option.\nValid are: %s.\n"
                             % ", ".join(settings.migration_options)
                         )
                         return ReturnValues.INVALID_CLI_OPTION

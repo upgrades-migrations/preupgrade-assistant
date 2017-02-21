@@ -20,6 +20,7 @@ def main():
         logger_debug.debug("preupg returned '%s'" % return_code)
         return return_code
     except KeyboardInterrupt:
+        sys.stderr.write("\nAssessment interrupted.\n")
         return settings.ReturnValues.USER_ABORT
     except Exception as ex:
         if cli.opts.debug:
