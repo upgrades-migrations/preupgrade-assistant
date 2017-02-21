@@ -235,28 +235,9 @@ class KickstartGenerator(object):
                 kickstart_data[index] = "#" + row
         FileHelper.write_to_file(self.kickstart_name, 'wb', kickstart_data)
 
-    def check_postmigrate_dir(self):
-        if not FileHelper.get_list_executable_files_in_dir(os.path.join(settings.assessment_results_dir,
-                                                                        settings.postmigrate_dir)):
-            if not self.conf.assumeyes:
-                accept = ['y', 'yes']
-                log_message("The '%s' folder is empty - scripts to be"
-                            " executed after the migration should be placed"
-                            " here." % os.path.join(
-                                settings.assessment_results_dir,
-                                settings.postmigrate_dir))
-                message = "Do you want to continue with kickstart " \
-                          "generation without any postmigration scripts?"
-                choice = MessageHelper.get_message(message=message, prompt="(Y/n)")
-                if choice.lower() not in accept:
-                    return None
-        return True
-
     def generate(self):
         if not self.collect_data():
             log_message("Important data are missing for the Kickstart generation.", level=logging.ERROR)
-            return None
-        if not self.check_postmigrate_dir():
             return None
         self.ks.handler.packages.excludedList = []
         self.plugin_classes = self.load_plugins(os.path.dirname(__file__))
