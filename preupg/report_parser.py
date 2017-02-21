@@ -106,7 +106,11 @@ class ReportParser(object):
         content = FileHelper.get_file_content(self.path, 'rb', False, False)
         if not content:
             return None
-        self.target_tree = ElementTree.fromstring(content)
+
+        # remove the BEL characters from the loaded string, because
+        # this character causes crash of the parsing function of ElementTree
+        # when it occurs
+        self.target_tree = ElementTree.fromstring(content.replace("\a", ""))
 
     def get_select_rules(self):
         selected = self.filter_grandchildren(self.target_tree, self.profile, "select")
