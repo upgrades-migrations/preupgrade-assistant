@@ -3,9 +3,10 @@ from __future__ import print_function, unicode_literals
 import os
 import re
 
-from preupg.utils import FileHelper, MessageHelper
+from preupg.utils import FileHelper
 from preupg import settings
-from preupg.exception import MissingFileInContentError, MissingHeaderCheckScriptError, MissingTagsIniFileError
+from preupg.exception import MissingHeaderCheckScriptError
+from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 
 
 class ModuleHelper(object):
@@ -29,11 +30,8 @@ class ModuleHelper(object):
         If check_script exists then the script checks whether it is executable
         """
         if not os.path.exists(self.full_path_name):
-            print ("ERROR: ", self.full_path_name, "Script name does not exists")
-            print ("List of directory (", self.dir_name, ") is:")
-            for file_name in os.listdir(self.dir_name):
-                print (file_name)
-            raise MissingFileInContentError
+            raise MissingFileInContentError(file=self.full_path_name,
+                                            dir=self.dir_name)
         if type_name != 'solution':
             FileHelper.check_executable(self.full_path_name)
 
@@ -125,8 +123,7 @@ class ModuleHelper(object):
                                                                           script_type)
         lines = FileHelper.get_file_content(self.full_path_name, "rb", method=True)
         if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-            MessageHelper.print_error_msg("#END GENERATED SECTION is missing in check_script %s" % self.full_path_name)
-            raise MissingHeaderCheckScriptError
+            raise MissingHeaderCheckScriptError(self.full_path_name)
         for func in functions:
             lines = [x for x in lines if func not in x.strip()]
         output_text = ""
@@ -158,7 +155,7 @@ class ModuleHelper(object):
             if not tags:
                 continue
 
-    def check_recommended_fields(self, keys=None):
+    def check_recommended_fields(self, keys=None, ini_file="unknown INI file"):
         """
         The function checks whether all fields in INI file are fullfiled
         If solution_type is mentioned than HTML page can be used.
@@ -169,14 +166,12 @@ class ModuleHelper(object):
         fields = ['content_title', 'check_script', 'solution', 'applies_to']
         unused = [x for x in fields if not keys.get(x)]
         if unused:
-            title = 'Following tags are missing in INI file %s\n' % self.script_name
             if 'applies_to' not in unused:
-                MessageHelper.print_error_msg(title=title, msg=' '.join(unused))
-                raise MissingTagsIniFileError
+                raise MissingTagsIniFileError(tags=', '.join(unused),
+                                              ini_file=ini_file)
         if 'solution_type' in keys:
             if keys.get('solution_type') == "html" or keys.get('solution_type') == "text":
                 pass
             else:
-                MessageHelper.print_error_msg(title="Wrong solution_type. Allowed are 'html' or 'text' %s" % self.script_name)
-                os.sys.exit(0)
-
+                raise ValueError("Error: Wrong solution_type in %s. Allowed are"
+                                 " 'html' or 'text'" % ini_file)

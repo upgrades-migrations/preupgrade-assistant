@@ -14,8 +14,6 @@ from preupg import settings
 from preupg import xccdf
 from preupg.logger import logger_debug
 from preupg.settings import ReturnValues
-from preupg.exception import MissingHeaderCheckScriptError
-from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 
 try:
     from xml.etree import ElementTree
@@ -52,27 +50,25 @@ class XCCDFCompose(object):
 
     def generate_xml(self, generate_from_ini=True):
         if SystemIdentification.get_valid_scenario(self.dir_name) is None:
-            print ('Use valid scenario like RHEL6_7 or CENTOS6_RHEL6')
+            sys.stderr.write('Use scenario with valid name, e.g. RHEL6_7\n')
             return ReturnValues.SCENARIO
 
         dir_util.copy_tree(self.result_dir, self.dir_name)
-        try:
-            target_tree = ComposeXML.run_compose(
-                self.dir_name, generate_from_ini=generate_from_ini)
-        except (MissingHeaderCheckScriptError, MissingFileInContentError,
-                MissingTagsIniFileError) as err:
-            sys.exit(err)
+        target_tree = ComposeXML.run_compose(
+            self.dir_name, generate_from_ini=generate_from_ini)
 
         report_filename = os.path.join(self.dir_name, settings.content_file)
-        try:
-            FileHelper.write_to_file(report_filename, "wb",
-                                     ElementTree.tostring(target_tree, "utf-8"),
-                                     False)
-            if generate_from_ini:
-                print ('Generate report file for preupgrade-assistant is:', ''.join(report_filename))
-        except IOError:
-            print ("Problem with writing file ", report_filename)
-            raise
+        if generate_from_ini:
+            try:
+                FileHelper.write_to_file(
+                    report_filename, "wb",
+                    ElementTree.tostring(target_tree, "utf-8"), False
+                )
+                print('Generated report file for Preupgrade Assistant is: %s'
+                      % report_filename)
+            except IOError:
+                raise IOError("Error: Problem with writing file %s"
+                              % report_filename)
         return 0
 
     def get_compose_dir_name(self):
@@ -339,8 +335,8 @@ class ComposeXML(object):
         try:
             target_tree = ElementTree.parse(template_file).getroot()
         except IOError:
-            sys.exit('Problem with reading %s file'
-                     % settings.xccdf_template)
+            raise IOError('Error: Problem with reading %s file'
+                          % settings.xccdf_template)
         return target_tree
 
     @staticmethod

@@ -9,6 +9,7 @@ import shutil
 import datetime
 import os
 import six
+import sys
 import logging
 from distutils import dir_util
 
@@ -437,8 +438,9 @@ class Application(object):
         # Call xccdf_compose API for generating all-xccdf.xml
         if not self.conf.contents:
             xccdf_compose = XCCDFCompose(self.assessment_dir)
-            if xccdf_compose.generate_xml(generate_from_ini=False) != 0:
-                return ReturnValues.SCENARIO
+            ret_val = xccdf_compose.generate_xml(generate_from_ini=False)
+            if ret_val != 0:
+                return ret_val
             if os.path.isdir(self.assessment_dir):
                 shutil.rmtree(self.assessment_dir)
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
@@ -463,10 +465,12 @@ class Application(object):
     def scan_system(self):
         """The function is used for scanning system with all steps."""
         self._set_devel_mode()
-        if int(self.prepare_scan_system()) != 0:
-            return ReturnValues.SCENARIO
-        if int(self.generate_report()) != 0:
-            return ReturnValues.SCENARIO
+        ret_val = self.prepare_scan_system()
+        if ret_val != 0:
+            return ret_val
+        ret_val = self.generate_report()
+        if ret_val != 0:
+            return ret_val
         # Update source XML file in temporary directory
         self.content = os.path.join(self.assessment_dir, settings.content_file)
         self.openscap_helper.update_variables(self.conf.assessment_results_dir,
@@ -489,13 +493,10 @@ class Application(object):
                 return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
-            try:
-                lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
-                                                                                      self.conf.mode),
-                                                                         'rb',
-                                                                         method=True)]
-            except IOError:
-                return
+            lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
+                                                                                  self.conf.mode),
+                                                                     'rb',
+                                                                     method=True)]
             self.report_parser.select_rules(lines)
         if self.conf.select_rules:
             lines = [i.strip() for i in self.conf.select_rules.split(',')]
@@ -637,23 +638,26 @@ class Application(object):
             return ReturnValues.MODE_SELECT_RULES
 
         if not self.conf.riskcheck and not self.conf.cleanup and not self.conf.kickstart:
-            # If force option is not mentioned and user select NO then exits
+            # If force option is not mentioned and user selects NO then exit
             if not self.conf.force:
                 text = ""
                 if self.conf.dst_arch:
                     correct_option = [x for x in settings.migration_options if self.conf.dst_arch == x]
                     if not correct_option:
-                        log_message("Specify the correct --dst-arch option.")
-                        log_message("There are '%s' or '%s' available." % (settings.migration_options[0],
-                                                                    settings.migration_options[1]))
-                        return ReturnValues.RISK_CLEANUP_KICKSTART
+                        sys.stderr.write(
+                            "Error: Specify correct value for --dst-arch"
+                            " option.\nValid are: %s.\n"
+                            % ", ".join(settings.migration_options)
+                        )
+                        return ReturnValues.INVALID_CLI_OPTION
                 if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
                     if not self.conf.dst_arch:
                         text = '\n' + settings.migration_text
-                logger_debug.debug("Architecture '%s'. Text '%s'.", SystemIdentification.get_arch(), text)
+                logger_debug.debug("Architecture '%s'. Text '%s'.",
+                                   SystemIdentification.get_arch(), text)
                 if not show_message(settings.warning_text + text):
-                    # We do not want to continue
-                    return ReturnValues.RISK_CLEANUP_KICKSTART
+                    # User does not want to continue
+                    return ReturnValues.USER_ABORT
 
         if self.conf.text:
             # Test whether w3m, lynx and elinks packages are installed

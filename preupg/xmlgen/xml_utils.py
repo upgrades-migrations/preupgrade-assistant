@@ -3,14 +3,15 @@ from __future__ import print_function, unicode_literals
 import re
 import os
 import six
+import sys
 import copy
 
 from preupg.xml_manager import html_escape_string
-from preupg.utils import SystemIdentification, FileHelper, MessageHelper
+from preupg.utils import SystemIdentification, FileHelper
 from preupg import settings
 from preupg.xmlgen import xml_tags
 from preupg.xmlgen.script_utils import ModuleHelper
-from preupg.exception import MissingTagsIniFileError, EmptyTagIniFileError
+from preupg.exception import MissingTagsIniFileError, EmptyTagGroupXMLError
 
 
 def get_full_xml_tag(dirname):
@@ -20,7 +21,7 @@ def get_full_xml_tag(dirname):
     for index, dir_name in enumerate(dirname.split(os.path.sep)):
         if re.match(r'\D+(\d)_(\D*)(\d)-results', dir_name, re.I):
             found = index
-    main_dir = dirname.split(os.path.sep)[found+1:]
+    main_dir = dirname.split(os.path.sep)[found + 1:]
     return main_dir
 
 
@@ -47,9 +48,9 @@ class XmlUtils(object):
                     del content_dict[tag]
             if content_dict:
                 tags = ','. join(six.iterkeys(content_dict))
-                MessageHelper.print_error_msg(title="The tag '%s' is not allowed in INI file %s." % (tags, ini),
-                                              msg="\nAllowed tags for contents are %s" % ','.join(allowed_tags),
-                                              level=' WARNING ')
+                sys.stderr.write("Warning: The tag(s) '%s' not allowed in INI"
+                                 " file %s.\nAllowed tags are %s.\n"
+                                 % (tags, ini, ', '.join(allowed_tags)))
 
     def update_files(self, file_name, content):
         """Function updates file_name <migrate or update> according to INI file."""
@@ -123,8 +124,7 @@ class XmlUtils(object):
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
         if replace_exp == '' and search_exp in forbidden_empty:
-            MessageHelper.print_error_msg(title="Disapproved empty replacement for tag '%s'" % search_exp)
-            raise EmptyTagIniFileError
+            raise EmptyTagGroupXMLError(search_exp)
 
         for cnt, line in enumerate(section):
             if search_exp in line:
@@ -281,13 +281,10 @@ class XmlUtils(object):
 
     def update_text(self, key, name):
         """Function updates a text."""
-        try:
-            if key[name] is not None:
-                # escape values so they can be loaded as XMLs
-                escaped_text = html_escape_string(key[name])
-                self.update_values_list(self.rule, "{"+name+"}", escaped_text)
-        except KeyError:
-            raise MissingTagsIniFileError
+        if key[name] is not None:
+            # escape values so they can be loaded as XMLs
+            escaped_text = html_escape_string(key[name])
+            self.update_values_list(self.rule, "{" + name + "}", escaped_text)
 
     def create_xml_from_ini(self, main):
         """
@@ -309,11 +306,11 @@ class XmlUtils(object):
         }
         for key in self.keys:
             if 'check_script' not in key:
-                raise MissingTagsIniFileError
+                raise MissingTagsIniFileError(tags="check_script", ini_file=main)
             if 'solution' not in key:
-                raise MissingTagsIniFileError
+                raise MissingTagsIniFileError(tags="solution", ini_file=main)
             self.mh = ModuleHelper(os.path.dirname(main), key['check_script'], key['solution'])
-            self.mh.check_recommended_fields(key)
+            self.mh.check_recommended_fields(key, main)
             # Add solution text into value
             if 'solution' in key:
                 xml_tags.DIC_VALUES['solution_file'] = key['solution']
@@ -331,19 +328,13 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{check_export}", ''.join(check_export_tag))
             self.update_values_list(self.rule, "{group_value}", ''.join(value_tag))
 
-            try:
-                for k, function in six.iteritems(update_fnc):
-                    try:
-                        function(key, k)
-                    except IOError as e:
-                        e_title = "Wrong value for tag '%s' in INI file '%s'\n" % (k, main)
-                        e_msg = "'%s': %s" % (key[k], e.strerror)
-                        MessageHelper.print_error_msg(title=e_title, msg=e_msg)
-                        raise MissingTagsIniFileError
-            except MissingTagsIniFileError:
-                title = "Following tag '%s' is missing in INI File %s\n" % (k, main)
-                MessageHelper.print_error_msg(title=title)
-                raise MissingTagsIniFileError
+            for k, function in six.iteritems(update_fnc):
+                try:
+                    function(key, k)
+                except IOError as e:
+                    err_msg = "Invalid value of the field '%s' in INI file '%s'\n'%s': %s\n" \
+                              % (k, main, key[k], e.strerror)
+                    raise IOError(err_msg)
 
             self.update_values_list(self.rule, '{group_title}', html_escape_string(key['content_title']))
             try:

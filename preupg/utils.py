@@ -63,13 +63,10 @@ class MessageHelper(object):
         else:
             print (message)
         while True:
-            try:
-                if int(sys.version_info[0]) == 2:
-                    choice = raw_input()
-                else:
-                    choice = input()
-            except KeyboardInterrupt:
-                raise
+            if int(sys.version_info[0]) == 2:
+                choice = raw_input()
+            else:
+                choice = input()
             if not choice:
                 if default_yes:
                     return "yes"
@@ -181,17 +178,14 @@ class FileHelper(object):
 
         # data must be init due to possible troubles with binary data
         data = None
+        if decode_flag:
+            f = codecs.open(full_path, perms, settings.defenc)
+        else:
+            f = codecs.open(full_path, perms)
         try:
-            if decode_flag:
-                f = codecs.open(full_path, perms, settings.defenc)
-            else:
-                f = codecs.open(full_path, perms)
-            try:
-                data = f.read() if not method else f.readlines()
-            finally:
-                f.close()
-        except IOError:
-            raise
+            data = f.read() if not method else f.readlines()
+        finally:
+            f.close()
         if data is None:
             raise ValueError("You are tring decode binary data to unicode: %s" % path)
         return data
@@ -208,23 +202,20 @@ class FileHelper(object):
         to system default encoding before write. When you use encoded strings,
         set encode_flag to False to suppress second encodiding process.
         """
+        f = open(full_path, perms)
         try:
-            f = open(full_path, perms)
-            try:
-                if isinstance(data, list):
-                    if encode_flag is True:
-                        data = [line.encode(settings.defenc) for line in data]
-                    f.writelines(data)
+            if isinstance(data, list):
+                if encode_flag is True:
+                    data = [line.encode(settings.defenc) for line in data]
+                f.writelines(data)
+            else:
+                # TODO: May we should print warn w
+                if encode_flag is True and isinstance(data, six.text_type):
+                    f.write(data.encode(settings.defenc))
                 else:
-                    # TODO: May we should print warn w
-                    if encode_flag is True and isinstance(data, six.text_type):
-                        f.write(data.encode(settings.defenc))
-                    else:
-                        f.write(data)
-            finally:
-                f.close()
-        except IOError:
-            raise
+                    f.write(data)
+        finally:
+            f.close()
 
     @staticmethod
     def remove_home_issues():
@@ -547,10 +538,7 @@ class TarballHelper(object):
         ProcessHelper.run_subprocess(cmd, print_output=quiet)
         shutil.rmtree(bkp_tar_dir)
         if direction:
-            try:
-                shutil.copy(tarball, settings.tarball_result_dir + "/")
-            except IOError:
-                log_message("Problem with copying the tarball '%s' to /root/preupgrade-results", tarball)
+            shutil.copy(tarball, settings.tarball_result_dir + "/")
         os.chdir(current_dir)
 
         return os.path.join(settings.tarball_result_dir, tarball_name)
@@ -623,7 +611,8 @@ class ConfigFilesHelper(object):
         try:
             lines = FileHelper.get_file_content(etc_va_log, "rb", method=True)
         except IOError:
-            return
+            raise IOError("Error: File that lists modified configuration files"
+                          "'%s' is missing.\n" % etc_va_log)
         dirty_conf = os.path.join(result_dir, settings.dirty_conf_dir)
         clean_conf = os.path.join(result_dir, settings.clean_conf_dir)
         # Go through all changed config files
@@ -651,6 +640,9 @@ class ConfigFilesHelper(object):
                 try:
                     shutil.copyfile(check, dirtyconf_file_name)
                 except IOError:
+                    sys.stderr.write("Warning: Could not copy '%s' to '%s'.\n"
+                                     % (check,
+                                        os.path.dirname(dirtyconf_file_name)))
                     pass
 
 

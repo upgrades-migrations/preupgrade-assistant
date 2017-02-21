@@ -4,32 +4,31 @@ import os
 import sys
 import optparse
 import shutil
-from xml.etree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 
 from distutils import dir_util
 from preupg.xmlgen.compose import ComposeXML
 from preupg import settings
 from preupg.utils import FileHelper, SystemIdentification
-from preupg.exception import MissingHeaderCheckScriptError
-from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 from preupg.logger import *
-
-try:
-    from xml.etree.ElementTree import ParseError
-except ImportError:
-    from xml.parsers.expat import ExpatError as ParseError
 
 
 def main():
-    parser = optparse.OptionParser(usage="%prog [options] dirname", description="Create XML files for OpenSCAP")
+    parser = optparse.OptionParser(usage="%prog [options] ini_dirname", description="Create XML files for OpenSCAP")
     parser.add_option('-g', '--group',
                       help='Generate only group.xml file.',
                       action='store_true'
                       )
+    parser.add_option("-d", "--debug",
+                      action="store_true",
+                      help="Print traceback information on an error.")
     opts, args = parser.parse_args()
 
     if len(args) > 1 or len(args) == 0:
-        print('Specify just one directory with INI file.')
+        print('Specify a directory with INI file as an argument.')
         parser.print_help()
         sys.exit(1)
 
@@ -80,9 +79,12 @@ def main():
     try:
         target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
                                              os.path.basename(dir_name))
-    except (MissingHeaderCheckScriptError, MissingFileInContentError,
-            MissingTagsIniFileError) as err:
-        sys.exit(err)
+    except Exception as err:
+        if opts.debug:
+            traceback.print_exc(file=sys.stderr)
+            sys.exit()
+        else:
+            sys.exit(str(err))
 
     try:
         # must be encoded by ElementTree!
