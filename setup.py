@@ -16,7 +16,7 @@ package_name = "%s" % project_name
 package_module_name = project_name
 package_version = VERSION
 
-script_files = ['bin/preupg', 'bin/premigrate', 'tools/preupg-content-creator',
+script_files = ['bin/preupg', 'tools/preupg-content-creator',
                 'tools/preupg-kickstart-generator', 'tools/preupg-ui-manage',
                 'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml']
 
