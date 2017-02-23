@@ -21,10 +21,11 @@ from __future__ import print_function
 import argparse
 import fnmatch
 import glob
-from lxml import etree as ET
-from preupg.utils import OpenSCAPHelper, ProcessHelper
 import os
 import sys
+
+from lxml import etree as ET
+from preupg.utils import OpenSCAPHelper, ProcessHelper, FileHelper
 
 version = 1.0  # version of the preupg-diff
 diff_report_name = "result_diff"
@@ -46,16 +47,17 @@ def parse_cli_opts():
         " {0}.xml/html.".format(diff_report_name))
     parser.add_argument("analyzed_xml", help="XML report with all issues"
                         " already analyzed. Enter either path to the XML or a"
-                        " directory, that contains multiple XMLs. Possible to"
-                        " enter multiple XMLs - separate them by a whitespace"
-                        ".", nargs='+', metavar="analyzed_XML/folder")
+                        " directory, that contains multiple XMLs. Or enter"
+                        " multiple enter multiple XMLs - separate them by a"
+                        " whitespace.",
+                        nargs='+', metavar="ANALYZED_XML_OR_DIR")
     parser.add_argument("new_xml", help="New XML report with possibly"
-                        " new issues", metavar="new_XML")
+                        " new issues", metavar="NEW_XML")
     parser.add_argument("-s", "--simple-html", help="Generate simpler HTML"
                         " than the default, without clickable buttons, just"
                         " long scrollable document.", action="store_true")
     parser.add_argument("-v", "--verbose", help="Print more detailed"
-                        "information about the processing.",
+                        " information about the processing.",
                         action="store_true")
     parser.add_argument("--version", action="version", version="%(prog)s {0}"
                         .format(version))
@@ -117,7 +119,7 @@ class ResultXML(object):
             if select_tag.attrib["idref"] == rule_id:
                 return select_tag
         else:
-            sys.exit("Error: Can't find select tag: " + rule_id)
+            sys.exit("Error: Can't find select tag: {0}.".format(rule_id))
 
     def remove_empty_group_tags(self):
         for group_tag in find_subtags_recursive(self.root, "Group"):
@@ -135,7 +137,7 @@ def get_xml_tree_object(xml_path):
     try:
         return ET.parse(xml_path)
     except OSError:
-        sys.exit("Error: Failed to read XML '{0}'".format(xml_path))
+        sys.exit("Error: Failed to read XML '{0}'.".format(xml_path))
 
 
 def find_subtags_recursive(tag_obj, subtag_name):
@@ -170,6 +172,10 @@ def has_no_subtags_recursive(tag_obj, subtag_name):
     else:
         return True
 
+def check_files_are_readable(files):
+    for file in files:
+        if not FileHelper.check_file(file, "r"):
+            sys.exit("Error: Can't read '{0}'.".format(file))
 
 """-----------------END XML UTILS-----------------"""
 
@@ -182,15 +188,26 @@ def get_analyzed_xml_paths(cli_paths):
     for path in cli_paths:
         if os.path.isfile(path):
             analyzed_xml_paths.append(path)
-        if os.path.isdir(path):
+        elif os.path.isdir(path):
             xmls_within_dir = get_xmls_within_dir(path)
             analyzed_xml_paths += xmls_within_dir
+        else:
+            sys.exit("Error: Can't access '{0}'.".format(path))
+
+    if not analyzed_xml_paths:
+        sys.exit("Error: No analyzed XML found.".format(path))
+
+    check_files_are_readable(analyzed_xml_paths)
+    
     return analyzed_xml_paths
 
 
 def get_xmls_within_dir(dir):
+    """Returns list of XMLs (.xml/.XML extension) in the first level of the
+    directory."""
     dir_with_asterisk = os.path.join(dir, "*")
-    return fnmatch.filter(glob.glob(dir_with_asterisk), '*.[Xx][Mm][Ll]')
+    found_xmls = fnmatch.filter(glob.glob(dir_with_asterisk), '*.[Xx][Mm][Ll]')
+    return found_xmls
 
 
 def load_analyzed_xmls(xml_paths):
@@ -247,7 +264,7 @@ def print_difference_status(num_new_xml_rules, num_diff_xml_rules):
     if num_diff_xml_rules:
         if num_new_xml_rules == num_diff_xml_rules:
             verbose_print("All the rules have different results. The diff XML"
-                          " is the same as the second XML.")
+                          " is the same as the new XML.")
         else:
             verbose_print("Removed %d rules (out of %d) from the new XML."
                           "\nNote: The removed rules had exactly the same"
@@ -256,8 +273,8 @@ def print_difference_status(num_new_xml_rules, num_diff_xml_rules):
                           % (num_new_xml_rules - num_diff_xml_rules,
                              num_new_xml_rules))
     else:
-        verbose_print("Every rule from the second XML has exactly the same"
-                      " result as in the first XML.")
+        verbose_print("Every rule from the new XML has exactly the same"
+                      " result as in at least one of the analyzed XMLs.")
 
 
 def save_diff_to_xml_and_html_file(diff_xml):
@@ -280,7 +297,7 @@ def fix_xml_for_simple_html():
                 namespace, namespace.replace("1.2", "1.1"))
             rest = infile.read()
     except OSError as exception:
-        sys.exit("ERROR: could not read file: {0}".format(exception))
+        sys.exit("Error: Could not read file: {0}.".format(exception))
     else:
         with open(diff_report_name_xml, 'wt') as outfile:
             outfile.write(first_line)
@@ -294,7 +311,7 @@ def verbose_print(message):
 
 def generate_html():
     if not os.path.exists(diff_report_name_xml):
-        sys.exit("Error: HTML generation failed: source {0} not found"
+        sys.exit("Error: HTML generation failed: source {0} not found."
                  .format(diff_report_name_xml))
     cmd = OpenSCAPHelper.build_generate_command(diff_report_name_xml,
                                                 diff_report_name_html,
@@ -303,7 +320,7 @@ def generate_html():
     ret_val = ProcessHelper.run_subprocess(cmd, print_output=True,
                                            output=log)
     if ret_val != 0:
-        sys.exit("Error: HTML generation failed. See {0} for details"
+        sys.exit("Error: HTML generation failed. See {0} for details."
                  .format(log))
     else:  # no error when generating html - safe to remove the log
         os.remove(log)
