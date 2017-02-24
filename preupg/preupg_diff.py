@@ -39,20 +39,16 @@ rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
 def parse_cli_opts():
     parser = argparse.ArgumentParser(
         description="preupg-diff compares multiple Preupgrade Assistant XML"
-        " reports from which one is new with unknown issues and the others"
-        " have been already analyzed. The tool helps to find new issues that"
-        " emerged in the new report by filtering out those results that are"
-        " the same in the new report and at least in one of the analyzed XMLs."
+        " reports and shows issues that are unique to the last one."
         " The trimmed report is output in XML and HTML format and named"
         " {0}.xml/html.".format(diff_report_name))
-    parser.add_argument("analyzed_xml", help="XML report with all issues"
-                        " already analyzed. Enter either path to the XML or a"
-                        " directory, that contains multiple XMLs. Or enter"
-                        " multiple enter multiple XMLs - separate them by a"
-                        " whitespace.",
-                        nargs='+', metavar="ANALYZED_XML_OR_DIR")
+    parser.add_argument("analyzed_xml", help="One or more 'old' reports. Can be"
+                        " path to the XML or to directory containing several XML"
+                        " files. Risks found in these files will be filtered out
+                        " from the output.",
+                        nargs='+', metavar="ANALYZED")
     parser.add_argument("new_xml", help="New XML report with possibly"
-                        " new issues", metavar="NEW_XML")
+                        " new issues", metavar="NEW")
     parser.add_argument("-s", "--simple-html", help="Generate simpler HTML"
                         " than the default, without clickable buttons, just"
                         " long scrollable document.", action="store_true")
