@@ -87,7 +87,8 @@ class ResultXML(object):
         for rule_tag in find_subtags_recursive(self.root, "Rule"):
             rule = {}
             rule["rule_tag"] = rule_tag
-            rule["solution"] = find_first_subtag(rule_tag, "fixtext").text
+            rule["solution"] = stringify_children(
+                                    find_first_subtag(rule_tag,"fixtext"))
             self.rules[rule_tag.attrib["id"]] = rule
 
     def get_results_and_outputs(self):
@@ -138,6 +139,22 @@ def get_xml_tree_object(xml_path):
         return ET.parse(xml_path)
     except OSError:
         sys.exit("Error: Failed to read XML '{0}'.".format(xml_path))
+
+#TODO: write unit tests
+#NOTE: think about unicode characters - ET.tostring(child, encoding='unicode')
+def stringify_children(tag_obj):
+    """
+    Return body of the given node 'tag_obj'. For example, if the node contains
+    following text: 'str1<br />str2<b>str3</b>str4'
+    then tag_obj.text contains just 'str1' and rest of text is thrown away.
+    This function returns whole text inside the given node.
+    """
+    s = tag_obj.text
+    if s is None:
+        s = ''
+    for child in tag_obj:
+        s += ET.tostring(child)
+    return s
 
 
 def find_subtags_recursive(tag_obj, subtag_name):
