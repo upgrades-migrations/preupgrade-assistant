@@ -427,16 +427,19 @@ class SystemIdentification(object):
         return [src_os_ver, dest_os_ver]
 
     @staticmethod
-    def get_valid_scenario(dir_name):
+    def get_valid_scenario(scenario_path):
         """
-        dir_name - must be path ending with directory or '/'
-        >>> get_valid_scenario('/a/b/c')
-        'c'
-        >>> get_valid_scenario('/a/b/c/')
-        'c'
-        >>>
+        >>> get_valid_scenario('/dir1/dir2/file.xml')
+        'dir2'
+        >>> get_valid_scenario('/dir1/dir2/dir3/')
+        'dir3'
+        >>> get_valid_scenario('/dir1/dir2/dir3')
+        'dir3'
         """
-        return os.path.basename(dir_name.rstrip(os.path.sep))
+        if(os.path.isfile(scenario_path)):  # scenario_path ends with file
+            return os.path.basename(os.path.dirname(scenario_path))
+        else:  # scenario_path ends with directory
+            return os.path.basename(scenario_path.rstrip(os.path.sep))
 
     @staticmethod
     def get_variant():
