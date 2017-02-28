@@ -44,7 +44,7 @@ def parse_cli_opts():
         " {0}.xml/html.".format(diff_report_name))
     parser.add_argument("analyzed_xml", help="One or more 'old' reports. Can be"
                         " path to the XML or to directory containing several XML"
-                        " files. Risks found in these files will be filtered out
+                        " files. Risks found in these files will be filtered out"
                         " from the output.",
                         nargs='+', metavar="ANALYZED")
     parser.add_argument("new_xml", help="New XML report with possibly"
