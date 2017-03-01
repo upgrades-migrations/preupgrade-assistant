@@ -304,17 +304,13 @@ def fix_xml_for_simple_html():
     """
     if not parsed_opts.simple_html:
         return
-    try:
-        with open(diff_report_name_xml, 'rt') as infile:
-            first_line = infile.readline().replace(
-                namespace, namespace.replace("1.2", "1.1"))
-            rest = infile.read()
-    except OSError as exception:
-        sys.exit("Error: Could not read file: {0}.".format(exception))
-    else:
-        with open(diff_report_name_xml, 'wt') as outfile:
-            outfile.write(first_line)
-            outfile.write(rest)
+    with open(diff_report_name_xml, 'r') as infile:
+        first_line = infile.readline().replace(
+            namespace, namespace.replace("1.2", "1.1"))
+        rest = infile.read()
+    with open(diff_report_name_xml, 'w') as outfile:
+        outfile.write(first_line)
+        outfile.write(rest)
 
 
 def verbose_print(message):

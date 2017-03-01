@@ -40,48 +40,32 @@ def html_escape(text_list):
     return text_list
 
 
-def link_update(value, extension, inplace):
+def link_update(value, inplace):
     """
     Function replaces [link:sss] with either
     <a href="http:sss">sss</a> or
-    <a hred="./sss">sss</a> for file link
+    <a href="./sss">sss</a> for file link
     """
-    prefix = ""
-    postfix = " "
-    if extension != "html":
-        prefix = "html:"
-        postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
     possible_links = ['http', 'https', 'ftp']
     if [x for x in possible_links if x in value]:
-        return '<{1}a{2}href="{0}">{0}</{1}a>'.format(value.strip(),
-                                                      prefix,
-                                                      postfix)
+        return '<a href="{0}">{0}</a>'.format(value.strip())
     else:
         if inplace:
             return os.path.join('/root', settings.prefix, value.strip())
         if value.strip().startswith("/"):
             return ""
         else:
-            return '<{1}a{2}href="./{0}">{0}</{1}a>'.format(value.strip(),
-                                                            prefix,
-                                                            postfix)
+            return '<a href="./{0}">{0}</a>'.format(value.strip())
 
 
-def bold_update(value, extension, inplace):
+def bold_update(value, inplace):
     """
     Function replaces [bold:sss] with <b>sss</b>
     """
-    prefix = ""
-    postfix = ""
-    if extension != "html":
-        prefix = "html:"
-        postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
-    return '<{1}b{2}>{0}</{1}b>'.format(value,
-                                        prefix,
-                                        postfix)
+    return '<b>{0}</b>'.format(value)
 
 
-def tag_formating(text, extension):
+def tag_formating(text):
     """
     Format tags like:
     [bold: some text] -> <b>some text</b>
@@ -103,11 +87,10 @@ def tag_formating(text, extension):
         string_match = re.findall(expr_re, line)
         if string_match:
             for match in string_match:
-                # update = update_dict[string_match.group("tag")](match, extension)
                 inplace = False
                 if 'preupg.risk.' in line:
                     inplace = True
-                update = update_dict[match[0]](match[1], extension, inplace)
+                update = update_dict[match[0]](match[1], inplace)
                 if update != "":
                     line = re.sub(regular, update, line, count=1)
             text[index] = line
@@ -206,15 +189,12 @@ class XmlManager(object):
         self.scenario = scenario
         self.xml_solution_files = {}
 
-    def get_updated_text(self, solution_text, text, line, extension):
+    def get_updated_text(self, solution_text, text, line):
         """Function updates a text in XML file"""
         updated_text = []
         if solution_text + "_TEXT" in line.strip():
-            text = tag_formating(html_escape(text), extension)
-            if extension == "html":
-                new_line = "<br/>\n"
-            else:
-                new_line = "<html:br xmlns:html='http://www.w3.org/1999/xhtml/' />\n"
+            text = tag_formating(html_escape(text))
+            new_line = "<br/>\n"
             updated_text = [x.strip() + new_line for x in text]
             if updated_text:
                 updated_text = line.replace(solution_text + "_TEXT",
@@ -275,7 +255,7 @@ class XmlManager(object):
                 # to /root/pre{migrate,upgrade}/...
                 if 'preupg.risk.' in line.strip():
                     logger_report.debug(line.strip())
-                    lines[cnt] = tag_formating([line], extension)[0]
+                    lines[cnt] = tag_formating([line])[0]
                     continue
                 # Find correct block
                 if solution_text not in line.strip():
@@ -284,8 +264,7 @@ class XmlManager(object):
                 # Get updated text if it is HTML or TEXT
                 lines[cnt] = self.get_updated_text(solution_text,
                                                    text,
-                                                   line,
-                                                   extension)
+                                                   line)
 
         if extension == 'xml':
             for cnt, line in enumerate(lines):
