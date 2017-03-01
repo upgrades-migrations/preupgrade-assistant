@@ -38,14 +38,19 @@ rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
 
 def parse_cli_opts():
     parser = argparse.ArgumentParser(
-        description="preupg-diff compares multiple Preupgrade Assistant XML"
+        description="preupg-diff compares multiple Preupgrade Assistant"
         " reports and shows issues that are unique to the last one."
+        " For example, you have 3 reports, all of which you have already"
+        " analyzed and are aware of issues raised there, and one new"
+        " report.  Instead of reading through all items in the new report,"
+        " this tool will go through all rule results in the last report"
+        " and will hide those that have same content (e.g. solution"
+        " proposal and risks) as at least one of the previous reports."
         " The trimmed report is output in XML and HTML format and named"
         " {0}.xml/html.".format(diff_report_name))
-    parser.add_argument("analyzed_xml", help="One or more 'old' reports. Can be"
-                        " path to the XML or to directory containing several XML"
-                        " files. Risks found in these files will be filtered out"
-                        " from the output.",
+    parser.add_argument("analyzed_xml", help="One or more 'old' reports. Risks"
+                        " found in these files will be filtered out from the"
+                        " output.",
                         nargs='+', metavar="ANALYZED")
     parser.add_argument("new_xml", help="New XML report with possibly"
                         " new issues", metavar="NEW")
