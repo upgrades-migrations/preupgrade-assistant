@@ -752,7 +752,7 @@ index 8f068fa..f20454f 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index 80abea3..dc038bb 100644
+index ee3a850..df3f094 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,6 +1,4 @@
@@ -875,7 +875,7 @@ index cca3988..cc748f8 100644
              logger_report.debug(matched)
              if matched:
 diff --git a/preupg/xml_manager.py b/preupg/xml_manager.py
-index 92f3a94..39a438b 100644
+index 692b6e3..bafdf1a 100644
 --- a/preupg/xml_manager.py
 +++ b/preupg/xml_manager.py
 @@ -1,13 +1,11 @@
@@ -892,43 +892,32 @@ index 92f3a94..39a438b 100644
  from preupg.utils import FileHelper
  from preupg import settings
  from preupg.logger import logger_report
-@@ -53,18 +51,17 @@ def link_update(value, extension, inplace):
-         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
+@@ -48,21 +46,21 @@ def link_update(value, inplace):
+     """
      possible_links = ['http', 'https', 'ftp']
      if [x for x in possible_links if x in value]:
--        return '<{1}a{2}href="{0}">{0}</{1}a>'.format(value.strip(),
--                                                      prefix,
--                                                      postfix)
-+        return '<%sa%shref="%s">%s</%sa>' % (prefix, postfix, value.strip(),
-+                                             value.strip(), prefix)
+-        return '<a href="{0}">{0}</a>'.format(value.strip())
++        return '<a href="%s">%s</a>' % (value.strip(), value.strip())
      else:
          if inplace:
              return os.path.join('/root', settings.prefix, value.strip())
          if value.strip().startswith("/"):
              return ""
          else:
--            return '<{1}a{2}href="./{0}">{0}</{1}a>'.format(value.strip(),
--                                                            prefix,
--                                                            postfix)
-+            return '<%sa%shref="./%s">%s</%sa>' % (prefix, postfix,
-+                                                   value.strip(), value.strip(),
-+                                                   prefix)
+-            return '<a href="./{0}">{0}</a>'.format(value.strip())
++            return '<a href="./%s">%s</a>' % (value.strip(), value.strip())
  
  
- def bold_update(value, extension, inplace):
-@@ -76,9 +73,8 @@ def bold_update(value, extension, inplace):
-     if extension != "html":
-         prefix = "html:"
-         postfix = ' xmlns:html="http://www.w3.org/1999/xhtml/" '
--    return '<{1}b{2}>{0}</{1}b>'.format(value,
--                                        prefix,
--                                        postfix)
-+    return '<%sb%s>%s</%sb>' % (prefix, postfix,
-+                                value, prefix)
+ def bold_update(value, inplace):
+     """
+     Function replaces [bold:sss] with <b>sss</b>
+     """
+-    return '<b>{0}</b>'.format(value)
++    return '<b>%s</b>' % value
  
  
- def tag_formating(text, extension):
-@@ -127,8 +123,14 @@ def remove_lines(string, regex_t, post_regex_t):
+ def tag_formating(text):
+@@ -110,8 +108,14 @@ def remove_lines(string, regex_t, post_regex_t):
      e_search = re.search(e_re, string)
      if not s_search or not e_search:
          return string
@@ -945,7 +934,7 @@ index 92f3a94..39a438b 100644
  
      return string[:s_pos] + string[e_pos:]
  
-@@ -259,7 +261,7 @@ class XmlManager(object):
+@@ -239,7 +243,7 @@ class XmlManager(object):
          orig_file = os.path.join(self.dirname,
                                   result_name + "." + extension)
          lines = FileHelper.get_file_content(orig_file, "rb", method=True)
@@ -1096,7 +1085,7 @@ index 0cb0d4e..1c5ae29 100644
  import re
  
 diff --git a/preupg/xmlgen/xml_tags.py b/preupg/xmlgen/xml_tags.py
-index 640c978..3969d36 100644
+index b67af8e..6cbf04c 100644
 --- a/preupg/xmlgen/xml_tags.py
 +++ b/preupg/xmlgen/xml_tags.py
 @@ -1,4 +1,3 @@
@@ -1105,7 +1094,7 @@ index 640c978..3969d36 100644
  TAG_VALUE = "xccdf_preupg_value_"
  TAG_RULE = "xccdf_preupg_rule_"
 diff --git a/preupg/xmlgen/xml_utils.py b/preupg/xmlgen/xml_utils.py
-index 59de1ae..b406b75 100644
+index d5d0ab2..ae028b3 100644
 --- a/preupg/xmlgen/xml_utils.py
 +++ b/preupg/xmlgen/xml_utils.py
 @@ -1,8 +1,5 @@
@@ -1137,15 +1126,15 @@ index 59de1ae..b406b75 100644
          new_text = []
          lines = FileHelper.get_file_content(os.path.join(self.dirname, filename), "rb", True)
  
--        bold = '<xhtml:b>{0}</xhtml:b>'
-+        bold = '<xhtml:b>%s</xhtml:b>'
-         br = '<xhtml:br/>'
-         table_begin = '<xhtml:table>'
-         table_end = '</xhtml:table>'
-         table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>Description</xhtml:th></xhtml:tr>'
--        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}</xhtml:td></xhtml:tr>'
+-        bold = '<b>{0}</b>'
++        bold = '<b>%s</b>'
+         br = '<br/>'
+         table_begin = '<table>'
+         table_end = '</table>'
+         table_header = '<tr><th>Result</th><th>Description</th></tr>'
+-        table_row = '<tr><td>{0}</td><td>{1}</td></tr>'
 -        new_text.append(br + br + '\n' + bold.format('Details:') + br)
-+        table_row = '<xhtml:tr><xhtml:td>%s</xhtml:td><xhtml:td>%s</xhtml:td></xhtml:tr>'
++        table_row = '<tr><td>%s</td><td>%s</td></tr>'
 +        new_text.append(br + br + '\n' + bold % 'Details:' + br)
          results = False
          for line in lines:
