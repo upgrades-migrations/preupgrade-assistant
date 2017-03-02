@@ -646,7 +646,10 @@ def is_dist_native(pkg):
             else:
                 return False
         if os.path.exists(DIST_NATIVE):
-            list_native = FileHelper.get_file_content(DIST_NATIVE, "r", method=True)
+            list_native = map(
+                unicode.strip,
+                FileHelper.get_file_content(DIST_NATIVE, "r", method=True)
+            )
             if pkg in list_native:
                 return True
         return False
