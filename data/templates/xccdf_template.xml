@@ -2,9 +2,9 @@
   <status date="${CURRENT_DATE}">draft</status>
   <title>Preupgrade Assistant analysis report</title>
   <description>
-    <p>
+    <html:p>
       This report lists results of a set of checks that have been performed on a system. Please go through the results and act according to the recommendations if given.
-    </p>
+    </html:p>
   </description>
   <notice id="disclaimer">This report has been automatically generated.</notice>
 
@@ -18,9 +18,9 @@
     <title>Preupgrade Assistant default profile</title>
 
     <description>
-      <p>
+      <html:p>
         This profile is designed for the Preupgrade Assistant tool.
-      </p>
+      </html:p>
     </description>
   </Profile>
 </Benchmark>
