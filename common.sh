@@ -219,7 +219,7 @@ _log() {
     #
     local SEVERITY=$1 ; shift
 
-    echo "preupg.log.$SEVERITY: $1" >&2
+    echo "preupg.log.$SEVERITY: $@" >&2
 }
 
 log_debug() {
@@ -271,35 +271,36 @@ _log_risk() {
     #
     # log risk level to stderr
     #
-    echo "preupg.risk.$1: $2" >&2
+    local SEVERITY=$1 ; shift
+    echo "preupg.risk.$SEVERITY: $@" >&2
 }
 
 log_slight_risk() {
     #
     # no issues found; although there are some unexplored areas
     #
-    _log_risk "SLIGHT" "$1"
+    _log_risk "SLIGHT" "$@"
 }
 
 log_medium_risk() {
     #
     # inplace upgrade is possible; system after upgrade may be unstable
     #
-    _log_risk "MEDIUM" "$1"
+    _log_risk "MEDIUM" "$@"
 }
 
 log_high_risk() {
     #
     # Administrator has to inspect and correct upgraded system so inplace upgrade can be used.
     #
-    _log_risk "HIGH" "$1"
+    _log_risk "HIGH" "$@"
 }
 
 log_extreme_risk() {
     #
     # Inplace upgrade is impossible.
     #
-    _log_risk "EXTREME" "$1"
+    _log_risk "EXTREME" "$@"
 }
 
 exit_pass() {
@@ -464,7 +465,7 @@ solution_file() {
     # solution file will be created in module directory
     # :param message: Message - string of list of strings
     #
-    echo "$1" >> "$SOLUTION_FILE"
+    echo "$@" >> "$SOLUTION_FILE"
 }
 
 
