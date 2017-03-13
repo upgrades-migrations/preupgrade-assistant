@@ -358,48 +358,6 @@ class ReportParser(object):
                 list_rules.append(idref)
         return list_rules
 
-    def get_report_type(self, report_type):
-        """
-        Function returns all reports for selected report_type
-
-        :param type: specify report_type like 'admin' or 'user'
-        :return: a set of content
-        """
-        if not os.path.exists(self.path):
-            return None
-        orig_name = self.path
-        new_report_name = os.path.join(os.path.dirname(self.path),
-                                       settings.result_prefix + '-' + report_type + '.xml')
-        shutil.copyfile(self.path, new_report_name)
-        self.reload_xml(new_report_name)
-        list_dict = {}
-        for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
-            values_id = values.get('id')
-            if not values_id.endswith('_state_result_part'):
-                continue
-            for value in self.get_nodes(values, "value"):
-                if value.text == report_type:
-                    values_id = values_id.replace('_state_result_part', '').replace('xccdf_preupg_value_', '')
-                    group_id = '_'.join(values_id.split('_')[:-1])
-                    list_dict[group_id] = values_id
-
-        if not list_dict:
-            self.reload_xml(orig_name)
-            os.unlink(new_report_name)
-            return None
-
-        # Remove all reports from TestResult node
-        for test_result in self.get_nodes(self.target_tree, 'TestResult'):
-            for rule in self.get_nodes(test_result, 'rule-result'):
-                idref = rule.get('idref').replace('xccdf_preupg_rule_', '')
-                if idref not in list_dict.values():
-                    test_result.remove(rule)
-
-        self.write_xml()
-
-        self.reload_xml(orig_name)
-        return new_report_name
-
     def get_path(self):
         """Function return path to report"""
         return self.path

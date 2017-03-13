@@ -354,13 +354,6 @@ class Application(object):
 
     def _get_reports(self):
         reports = [self.openscap_helper.get_default_xml_result_path()]
-        report_admin = self.report_parser.get_report_type(settings.REPORTS[0])
-        if report_admin:
-            reports.append(report_admin)
-        # We separate user contents
-        report_user = self.report_parser.get_report_type(settings.REPORTS[1])
-        if report_user:
-            reports.append(report_user)
         return reports
 
     def finalize_xml_files(self):
@@ -549,11 +542,6 @@ class Application(object):
             if report_dict[int(self.report_return_value)]:
                 log_message('Summary information:')
                 log_message(report_dict[int(self.report_return_value)])
-            for report_type in settings.REPORTS:
-                file_name = settings.result_prefix + '-' + report_type + '.html'
-                report_name = os.path.join(os.path.dirname(self.report_parser.get_path()), file_name)
-                if os.path.exists(report_name):
-                    log_message("Read the %s report file %s for more details." % (report_type, report_name))
         except KeyError:
             # We do not want to print anything in case of testing contents
             pass
