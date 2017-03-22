@@ -15,8 +15,6 @@ preupg [--list-rules] [-s, --scan MODULE_SET]
 
 preupg [--riskcheck] [-v, --verbose]
 
-preupg [--kickstart]
-
 preupg [-u, --upload URL] [-r, --results TARBALL]
 
 preupg [--cleanup]
@@ -108,13 +106,6 @@ modules \- they can provide different results when only
 one mode is selected. Use one of these values:
 migrate, upgrade. It may be that modules behave the
 same no matter what mode is selected.
-.TP
-\fB\-\-kickstart\fR
-Generate kickstart file that is to be used for
-migration. Preupgrade Assistant system assessment
-needs to be performed before using this option. You
-may use the preupg\-kickstart\-generator tool instead of
-this option \- it does the same.
 .TP
 \fB\-\-select\-rules\fR=\fI\,RULES\/\fR
 Execute just a subset of modules out of a module set.
