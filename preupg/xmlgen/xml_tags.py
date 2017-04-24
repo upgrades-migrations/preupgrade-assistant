@@ -54,12 +54,12 @@ FIX = """<fix """+PLATFORM+""" system="urn:xccdf:fix:script:{script_type}">
          </fix>"""
 FIX_TEXT = """<fixtext>{solution_text}</fixtext>"""
 CONFIG_SECTION = """
-        <xhtml:p>
+        <p>
             File(s) affected:
-            <xhtml:ul>
+            <ul>
             {config_file}
-            </xhtml:ul>
-        </xhtml:p>
+            <ul>
+        <p>
 """
 RULE_SECTION_VALUE_IMPORT = """\t\t<check-import import-name="stderr"/>"""
 

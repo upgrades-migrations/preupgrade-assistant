@@ -7,6 +7,7 @@ recursive-include data *
 recursive-include doc *
 recursive-include etc *
 include           man/*
+recursive-include packaging *
 include           preupg/*.py
 include           preupg/creator/*
 recursive-include preupg/kickstart *

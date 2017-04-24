@@ -234,42 +234,41 @@ class TestHashes(base.TestCase):
 
 
 class TestSolutionReplacement(base.TestCase):
-    extension = "html"
 
     def test_solution_bold_tag(self):
         solution_text = ['This is solution text [bold: provided as text ] by check script']
         expected_text = ['This is solution text <b> provided as text </b> by check script']
-        line = xml_manager.tag_formating(solution_text, self.extension)
+        line = xml_manager.tag_formating(solution_text)
         self.assertEqual(expected_text, line)
 
     def test_solution_www_link_tag(self):
         solution_text = ['This is solution text [link: http://127.0.0.1/all-xccdf.html ] by check script']
         expected_text = ['This is solution text <a href="http://127.0.0.1/all-xccdf.html">http://127.0.0.1/all-xccdf.html</a> by check script']
-        line = xml_manager.tag_formating(solution_text, self.extension)
+        line = xml_manager.tag_formating(solution_text)
         self.assertEqual(expected_text, line)
 
     def test_solution_file_link_tag(self):
         solution_text = ['This is solution text [link: description.txt ] by check script']
         expected_text = ['This is solution text <a href="./description.txt">description.txt</a> by check script']
-        line = xml_manager.tag_formating(list(solution_text), self.extension)
+        line = xml_manager.tag_formating(list(solution_text))
         self.assertEqual(list(expected_text), line)
 
     def test_solution_wrong_link_tag(self):
         solution_text = ['This is solution text [link: /var/cache/description.txt] by check script']
         expected_text = ['This is solution text [link: /var/cache/description.txt] by check script']
-        line = xml_manager.tag_formating(solution_text, self.extension)
+        line = xml_manager.tag_formating(solution_text)
         self.assertEqual(expected_text, line)
 
     def test_solution_file_bold_tag(self):
         solution_text = ['This is solution text [link: description.txt ] by [bold: check script ]']
         expected_text = ['This is solution text <a href="./description.txt">description.txt</a> by <b> check script </b>']
-        line = xml_manager.tag_formating(solution_text, self.extension)
+        line = xml_manager.tag_formating(solution_text)
         self.assertEqual(expected_text, line)
 
     def test_solution_www_bold_tag(self):
         solution_text = ['This is solution text [link: http://127.0.0.1/description.txt ] by [bold: check script ]']
         expected_text = ['This is solution text <a href="http://127.0.0.1/description.txt">http://127.0.0.1/description.txt</a> by <b> check script </b>']
-        line = xml_manager.tag_formating(solution_text, self.extension)
+        line = xml_manager.tag_formating(solution_text)
         self.assertEqual(expected_text, line)
 
 

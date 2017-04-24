@@ -33,6 +33,7 @@ def suite():
     from tests import test_kickstart
     from tests import test_inplace_risks
     from tests import test_creator
+    from tests import test_preupg_diff
     suite.addTests(test_preupg.suite())
     suite.addTests(test_xml.suite())
     suite.addTests(test_generation.suite())
@@ -40,6 +41,7 @@ def suite():
     suite.addTests(test_kickstart.suite())
     suite.addTests(test_inplace_risks.suite())
     suite.addTests(test_creator.suite())
+    suite.addTests(test_preupg_diff.suite())
     return suite
 
 if __name__ == '__main__':

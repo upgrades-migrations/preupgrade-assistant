@@ -14,7 +14,7 @@
 %endif # RHEL <= 5
 
 Name:           preupgrade-assistant
-Version:        2.3.1
+Version:        2.3.3
 Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
@@ -211,6 +211,7 @@ install -d -m 755 $RPM_BUILD_ROOT%{_mandir}/man1
 install -p man/preupg.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupgrade-assistant-api.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 install -p man/preupg-content-creator.1 $RPM_BUILD_ROOT%{_mandir}/man1/
+install -p man/preupg-diff.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 
 %if %{build_ui}
 ######### UI packaging #######################################
@@ -358,9 +359,11 @@ fi
 %attr(0755,root,root) %{_bindir}/preupg-create-group-xml
 %attr(0755,root,root) %{_bindir}/preupg-xccdf-compose
 %attr(0755,root,root) %{_bindir}/preupg-content-creator
+%attr(0755,root,root) %{_bindir}/preupg-diff
 %{python_sitelib}/preupg/creator/
 %attr(0644,root,root) %{_mandir}/man1/preupgrade-assistant-api.*
 %attr(0644,root,root) %{_mandir}/man1/preupg-content-creator.*
+%attr(0644,root,root) %{_mandir}/man1/preupg-diff.*
 
 %changelog
 * Wed Nov 16 2016 Michal Bocek <mbocek@redhat.com> - %{version}-1

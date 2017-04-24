@@ -796,19 +796,12 @@ class OpenSCAPHelper(object):
                             settings.xsl_sheet)
 
     @staticmethod
-    def get_command_generate():
-        if not SystemIdentification.get_system():
-            command_generate = ['xccdf', 'generate', 'custom']
-        else:
-            command_generate = ['xccdf', 'generate', 'report']
-        return command_generate
-
-    def build_generate_command(self, xml_file, html_file, old_style=False):
+    def build_generate_command(xml_file, html_file, old_style=False):
         """Function builds a command for generating results"""
         command = [settings.openscap_binary]
-        command.extend(OpenSCAPHelper.get_command_generate())
-        if not SystemIdentification.get_system():
-            command.extend(("--stylesheet", OpenSCAPHelper.get_xsl_stylesheet(old_style=old_style)))
+        command.extend(['xccdf', 'generate', 'custom'])
+        command.extend(["--stylesheet",
+                        OpenSCAPHelper.get_xsl_stylesheet(old_style)])
         command.extend(("--output", html_file))
         command.append(FileHelper.check_xml(xml_file))
         return command
