@@ -1,16 +1,3 @@
-diff --git a/bin/premigrate b/bin/premigrate
-index e377165..c8282b7 100755
---- a/bin/premigrate
-+++ b/bin/premigrate
-@@ -21,7 +21,7 @@ def main():
-     else:
-         try:
-             ret = app.run()
--        except Exception as ex:
-+        except Exception, ex:
-             cli.parser.error(str(ex))
-     return ret
- 
 diff --git a/bin/preupg b/bin/preupg
 index f59edfd..0b5cacf 100755
 --- a/bin/preupg
@@ -224,7 +211,7 @@ index 5858db8..150bba7 100644
  
  if __name__ == '__main__':
 diff --git a/preupg/common.py b/preupg/common.py
-index 60286ae..4424bba 100644
+index 7b485b3..9e07e1a 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
 @@ -4,7 +4,6 @@ generating common logs, coping these common logs
@@ -515,7 +502,7 @@ index 7d8d96d..4dc8a93 100644
              kickstart_groups[group] = ids
          if not kickstart_groups:
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 8f12b78..349e402 100644
+index 7d6a20a..fa00951 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -1,5 +1,4 @@
@@ -524,7 +511,7 @@ index 8f12b78..349e402 100644
  import logging
  import sys
  from preupg import settings
-@@ -60,32 +59,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
+@@ -72,32 +71,22 @@ logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', log
  
  def log_message(message, new_line=True, level=logging.INFO):
      """ if verbose, log `msg % args` to stdout """
@@ -677,17 +664,15 @@ index 1f271ac..94685e1 100644
              exit_error()
  
 diff --git a/preupg/settings.py b/preupg/settings.py
-index 8f068fa..f20454f 100644
+index bd613cf..e48ade1 100644
 --- a/preupg/settings.py
 +++ b/preupg/settings.py
-@@ -1,4 +1,3 @@
+@@ -1,10 +1,12 @@
 -from __future__ import unicode_literals
  import sys
  import os
  
-@@ -8,7 +7,10 @@ if os.path.basename(sys.argv[0]) == "premigrate":
- else:
-     prefix = "preupgrade"
+ prefix = "preupgrade"
  
 -defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
 +if sys.getdefaultencoding() == "ascii":
@@ -697,7 +682,7 @@ index 8f068fa..f20454f 100644
  
  # dir where results of analysis are stored
  assessment_results_dir = os.path.join("/root", prefix)
-@@ -24,11 +26,14 @@ result_prefix = "result"
+@@ -20,11 +22,14 @@ result_prefix = "result"
  
  tarball_base = result_prefix + 's'
  tarball_prefix = "preupg_"
@@ -713,7 +698,7 @@ index 8f068fa..f20454f 100644
  xsl_sheet = "xccdf-report.xsl"
  
  share_dir = "/usr/share"
-@@ -139,15 +144,15 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
+@@ -135,15 +140,15 @@ migration_text = "The running system is 32bit. Migration is possible only to 64b
                   "See help --dst-arch option.\n"
  migration_options = ['x86_64', 'ppc64']
  assessment_text = "Assessment of the system, running checks / SCE scripts"
@@ -732,7 +717,7 @@ index 8f068fa..f20454f 100644
  kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n" \
                   "The Kickstart file contains:\n" \
                   "- users with UID/GID which you should create on Red Hat Enterprise Linux 7 system.\n" \
-@@ -163,13 +168,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
+@@ -159,13 +164,13 @@ kickstart_text = "The Preupgrade Assistant generates a kickstart file in '%s'.\n
  
  options_not_allowed = "Options --mode and --select-rules are not allowed together.\n"
  unknown_rules = "These rules do not exist:\n%s\n"
@@ -752,7 +737,7 @@ index 8f068fa..f20454f 100644
  UPGRADE_PATH = ""
  KS_DIR = os.path.join(assessment_results_dir, 'kickstart')
 diff --git a/preupg/utils.py b/preupg/utils.py
-index ee3a850..df3f094 100644
+index f09d5c3..28da307 100644
 --- a/preupg/utils.py
 +++ b/preupg/utils.py
 @@ -1,6 +1,4 @@
@@ -809,7 +794,7 @@ index ee3a850..df3f094 100644
                  else:
                      pass
              else:
-@@ -482,7 +483,7 @@ class TarballHelper(object):
+@@ -476,7 +477,7 @@ class TarballHelper(object):
  
      @staticmethod
      def _get_tarball_name(result_file, time):
@@ -818,7 +803,7 @@ index ee3a850..df3f094 100644
  
      @staticmethod
      def _get_tarball_result_path(root_dir, filename):
-@@ -663,7 +664,7 @@ class PostupgradeHelper(object):
+@@ -657,7 +658,7 @@ class PostupgradeHelper(object):
      def get_hash_file(filename, hasher):
          """Function gets a hash from file"""
          content = FileHelper.get_file_content(filename, "rb", False, False)
@@ -827,7 +812,7 @@ index ee3a850..df3f094 100644
          return hasher.hexdigest()
  
      @staticmethod
-@@ -690,7 +691,7 @@ class PostupgradeHelper(object):
+@@ -684,7 +685,7 @@ class PostupgradeHelper(object):
              if interpreter is None:
                  continue
              log_message('Executing script %s' % scr)
@@ -836,7 +821,7 @@ index ee3a850..df3f094 100644
              ProcessHelper.run_subprocess(cmd, print_output=False, shell=True)
              log_message("Executing script %s ...done" % scr)
  
-@@ -762,7 +763,7 @@ class PostupgradeHelper(object):
+@@ -756,7 +757,7 @@ class PostupgradeHelper(object):
          postupgrade_dict = {"copy_clean_conf.sh": "z_copy_clean_conf.sh",
                              "postupgrade_hooks.sh": "postupgrade_hooks.sh"}
  
@@ -1023,7 +1008,7 @@ index 4ab16d2..3d2cafc 100644
              tree, subgroups = t
  
 diff --git a/preupg/xmlgen/oscap_group_xml.py b/preupg/xmlgen/oscap_group_xml.py
-index c7b3883..3bd48bd 100644
+index e3cdf42..90a6d17 100644
 --- a/preupg/xmlgen/oscap_group_xml.py
 +++ b/preupg/xmlgen/oscap_group_xml.py
 @@ -4,9 +4,7 @@ This class will ready the YAML file as INI file.
@@ -1036,7 +1021,7 @@ index c7b3883..3bd48bd 100644
  import codecs
  
  try:
-@@ -73,7 +71,7 @@ class OscapGroupXml(object):
+@@ -70,7 +68,7 @@ class OscapGroupXml(object):
          xml_path = os.path.join(self.dirname, "group.xml")
          try:
              self.ret[self.dirname] = ElementTree.parse(xml_path).getroot()
@@ -1045,7 +1030,7 @@ index c7b3883..3bd48bd 100644
              raise ParseError(
                  "Encountered a parse error in file %s.\nDetails: %s"
                  % (os.path.join(self.dirname, "group.xml"), par_err))
-@@ -89,7 +87,7 @@ class OscapGroupXml(object):
+@@ -86,7 +84,7 @@ class OscapGroupXml(object):
          try:
              FileHelper.write_to_file(file_name, "wb",
                                       ["%s" % item for item in self.rule])
@@ -1054,7 +1039,7 @@ index c7b3883..3bd48bd 100644
              raise IOError('Problem with writing to file %s.\nDetails: %s'
                            % (file_name, ior.message))
  
-@@ -102,7 +100,7 @@ class OscapGroupXml(object):
+@@ -99,7 +97,7 @@ class OscapGroupXml(object):
              # characters as html entities instead, which are unsusable for us
              data = ElementTree.tostring(target_tree, "utf-8")
              FileHelper.write_to_file(file_name, "wb", data, False)
@@ -1063,7 +1048,7 @@ index c7b3883..3bd48bd 100644
              raise IOError('Problem with writing to file %s.\nDetails: %s'
                            % (file_name, ioe.message))
  
-@@ -115,8 +113,8 @@ class OscapGroupXml(object):
+@@ -112,8 +110,8 @@ class OscapGroupXml(object):
              lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
          else:
              lines = []
