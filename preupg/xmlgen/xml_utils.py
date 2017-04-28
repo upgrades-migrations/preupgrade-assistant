@@ -317,11 +317,7 @@ class XmlUtils(object):
             else:
                 xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
 
-            # Add flag where will be shown content if in admin part or in user part
-            if 'result_part' in key:
-                xml_tags.DIC_VALUES['result_part'] = key['result_part']
-            else:
-                xml_tags.DIC_VALUES['result_part'] = 'admin'
+            xml_tags.DIC_VALUES['result_part'] = key['result_part']
 
             self.update_values_list(self.rule, "{rule_tag}", ''.join(xml_tags.RULE_SECTION))
             value_tag, check_export_tag = self.add_value_tag()
