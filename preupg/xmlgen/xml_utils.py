@@ -317,8 +317,6 @@ class XmlUtils(object):
             else:
                 xml_tags.DIC_VALUES['solution_file'] = 'solution.txt'
 
-            xml_tags.DIC_VALUES['result_part'] = key['result_part']
-
             self.update_values_list(self.rule, "{rule_tag}", ''.join(xml_tags.RULE_SECTION))
             value_tag, check_export_tag = self.add_value_tag()
             self.update_values_list(self.rule, "{check_export}", ''.join(check_export_tag))

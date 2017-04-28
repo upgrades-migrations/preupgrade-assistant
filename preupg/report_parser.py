@@ -367,8 +367,6 @@ class ReportParser(object):
         for child in self.get_nodes(self.target_tree, self.profile):
             last_child = child
             for key, val in six.iteritems(xml_tags.GLOBAL_DIC_VALUES):
-                if key == 'result_part':
-                    continue
                 if key == "tmp_preupgrade":
                     val = result_dir
                 elif key == "migrate" or key == "upgrade":
