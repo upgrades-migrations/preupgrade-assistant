@@ -58,8 +58,8 @@ CONFIG_SECTION = """
             File(s) affected:
             <ul>
             {config_file}
-            <ul>
-        <p>
+            </ul>
+        </p>
 """
 RULE_SECTION_VALUE_IMPORT = """\t\t<check-import import-name="stderr"/>"""
 
