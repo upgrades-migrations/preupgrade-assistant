@@ -81,9 +81,10 @@ class FileHelper(object):
         """
         Check if file exists and has set right mode
 
-        mode can be in string format as for function open (available letters:
-        wrax) or int number (in that case prefered are os constants W_OK, 
-        R_OK, X_OK). Letter 'a' has same signification as 'w', is here due to compatibility with open mode.
+        mode can be in string format as for function open (available letters: wrax)
+        or int number (in that case prefered are os constants W_OK, R_OK, X_OK)
+        (letter 'a' has same signification as 'w', is here due to compatibility
+        with open mode)
         """
         intern_mode = 0
         if isinstance(mode, int):

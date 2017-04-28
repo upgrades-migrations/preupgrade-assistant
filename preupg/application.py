@@ -544,13 +544,13 @@ class Application(object):
             path = self.openscap_helper.get_default_html_result_path()
 
         report_dict = {
-            0: settings.message.format(path),
-            1: settings.message.format(path),
-            2: 'We found some critical issues. In-place upgrade is not'
-               ' advised.\n' + "Read the file {0} for more details.".
+            0: settings.risks_found_warning.format(path),
+            1: settings.risks_found_warning.format(path),
+            2: 'We have found some critical issues. In-place upgrade or migration is not advised.\n' +
+            "Read the file {0} for more details.".
             format(path),
-            3: 'We found some error issues. In-place upgrade is not advised'
-               '.\n' + "Read the file {0} for more details.".format(path)
+            3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' +
+               "Read the file {0} for more details.".format(path)
         }
         self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
         try:
@@ -646,8 +646,7 @@ class Application(object):
             log_message(settings.options_not_allowed)
             return ReturnValues.MODE_SELECT_RULES
 
-        if not self.conf.riskcheck and not self.conf.cleanup and \
-                not self.conf.kickstart:
+        if not self.conf.riskcheck and not self.conf.cleanup:
             # If force option is not mentioned and user selects NO then exit
             if not self.conf.force:
                 text = ""

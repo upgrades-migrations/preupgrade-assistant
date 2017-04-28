@@ -74,14 +74,12 @@ class XmlUtils(object):
         lines = FileHelper.get_file_content(os.path.join(self.dirname,
                                                          filename), "rb", True)
 
-        bold = '<xhtml:b>{0}</xhtml:b>'
-        br = '<xhtml:br/>'
-        table_begin = '<xhtml:table>'
-        table_end = '</xhtml:table>'
-        table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>' \
-                       'Description</xhtml:th></xhtml:tr>'
-        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}' \
-                    '</xhtml:td></xhtml:tr>'
+        bold = '<b>{0}</b>'
+        br = '<br/>'
+        table_begin = '<table>'
+        table_end = '</table>'
+        table_header = '<tr><th>Result</th><th>Description</th></tr>'
+        table_row = '<tr><td>{0}</td><td>{1}</td></tr>'
         new_text.append(br + br + '\n' + bold.format('Details:') + br)
         results = False
         for line in lines:
@@ -116,8 +114,7 @@ class XmlUtils(object):
         elif search_exp == "{config_file}":
             new_text = ""
             for lines in replace_exp.split(','):
-                new_text = new_text + "<xhtml:li>" + lines.strip() + \
-                    "</xhtml:li>"
+                new_text += "<li>" + lines.strip() + "</li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
             new_text = FileHelper.get_file_content(os.path.join(
@@ -293,20 +290,10 @@ class XmlUtils(object):
 
     def update_text(self, key, name):
         """Function updates a text."""
-<<<<<<< 7b978c397f19bf1cca7c83f3783548922eb7fc9e
         if key[name] is not None:
             # escape values so they can be loaded as XMLs
             escaped_text = html_escape_string(key[name])
             self.update_values_list(self.rule, "{" + name + "}", escaped_text)
-=======
-        try:
-            if key[name] is not None:
-                # escape values so they can be loaded as XMLs
-                escaped_text = html_escape_string(key[name])
-                self.update_values_list(self.rule, "{"+name+"}", escaped_text)
-        except KeyError:
-            raise MissingTagsIniFileError
->>>>>>> reduce the number of changes for smaller pull request
 
     def create_xml_from_ini(self, main):
         """

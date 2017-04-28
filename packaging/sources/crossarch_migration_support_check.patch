@@ -1,15 +1,14 @@
 diff --git a/preupg/common.py b/preupg/common.py
-index 13d6f59..38984a5 100644
+index 60286ae..7b485b3 100644
 --- a/preupg/common.py
 +++ b/preupg/common.py
-@@ -8,10 +8,12 @@ from __future__ import unicode_literals
- import os
+@@ -9,9 +9,11 @@ import os
+ import platform
  import datetime
  import shutil
 +import sys
  from distutils import dir_util
- from preupg.utils import FileHelper, DirHelper, ProcessHelper
- from preupg.utils import SystemIdentification
+ from preupg.utils import FileHelper, DirHelper, ProcessHelper, SystemIdentification
 -from preupg.logger import log_message
 +from preupg.exception import MissingFileInContentError
 +from preupg.logger import log_message, logger_debug, LoggerHelper
@@ -61,7 +60,7 @@ index 13d6f59..38984a5 100644
          self.copy_kickstart_files(self.common_result_dir, server_variant)
          for files in server_variant_files:
 diff --git a/preupg/logger.py b/preupg/logger.py
-index 451f4f2..cffdabe 100644
+index 8f12b78..7d6a20a 100644
 --- a/preupg/logger.py
 +++ b/preupg/logger.py
 @@ -37,6 +37,18 @@ class LoggerHelper(object):
