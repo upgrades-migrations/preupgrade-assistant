@@ -364,19 +364,6 @@ class TestPreupgradePrefix(base.TestCase):
         self.assertEqual(version, None)
 
 
-class TestPremigratePrefix(base.TestCase):
-    def setUp(self):
-        settings.prefix = 'premigrate'
-
-    def test_correct_prefix(self):
-        version = SystemIdentification.get_assessment_version('FOOBAR6_CENTOS6')
-        self.assertEqual(version, ['6', '6'])
-
-    def test_wrong_prefix(self):
-        version = SystemIdentification.get_assessment_version('FOOBAR6_7')
-        self.assertEqual(version, None)
-
-
 def suite():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
@@ -389,7 +376,6 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestXMLUpdates))
     suite.addTest(loader.loadTestsFromTestCase(TestScenario))
     suite.addTest(loader.loadTestsFromTestCase(TestPreupgradePrefix))
-    suite.addTest(loader.loadTestsFromTestCase(TestPremigratePrefix))
     return suite
 
 if __name__ == '__main__':

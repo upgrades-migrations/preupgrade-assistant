@@ -59,10 +59,7 @@ class OscapGroupXml(object):
             filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
             config.readfp(filehander)
             fields = {}
-            if config.has_section('premigrate'):
-                section = 'premigrate'
-            else:
-                section = 'preupgrade'
+            section = 'preupgrade'
             for option in config.options(section):
                 fields[option] = config.get(section, option)
             self.loaded[file_name] = [fields]

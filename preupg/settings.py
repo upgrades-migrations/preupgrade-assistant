@@ -2,11 +2,7 @@ from __future__ import unicode_literals
 import sys
 import os
 
-
-if os.path.basename(sys.argv[0]) == "premigrate":
-    prefix = "premigrate"
-else:
-    prefix = "preupgrade"
+prefix = "preupgrade"
 
 defenc = "utf-8" if sys.getdefaultencoding() == "ascii" else sys.getdefaultencoding()
 

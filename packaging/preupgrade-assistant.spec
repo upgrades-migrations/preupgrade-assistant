@@ -319,7 +319,6 @@ fi
 %files -f preupg-filelist
 %defattr(-,root,root,-)
 %attr(0755,root,root) %{_bindir}/preupg
-%attr(0755,root,root) %{_bindir}/premigrate
 %attr(0755,root,root) %{_bindir}/preupg-kickstart-generator
 %dir %{_localstatedir}/log/preupgrade
 %dir %{_datadir}/preupgrade/

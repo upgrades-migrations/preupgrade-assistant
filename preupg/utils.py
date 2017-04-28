@@ -415,12 +415,6 @@ class SystemIdentification(object):
                 return [matched.group(1), matched.group(2)]
             else:
                 return None
-        elif PreupgHelper.get_prefix() == "premigrate":
-            matched = re.search(r'\D+(\d*)_\D+(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(2)]
-            else:
-                return None
         else:
             matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
             if matched:
