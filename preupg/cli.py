@@ -172,16 +172,6 @@ class CLI(object):
                  " behave the same no matter what mode is selected."
         )
         self.parser.add_option(
-            "--kickstart",
-            action="store_true",
-            default=False,
-            help="Generate kickstart file that is to be used for migration."
-                 " Preupgrade Assistant system assessment needs to be"
-                 " performed before using this option. You may use the"
-                 " preupg-kickstart-generator tool instead of this option -"
-                 " it does the same."
-        )
-        self.parser.add_option(
             "--select-rules",
             metavar="RULES",
             help="Execute just a subset of modules out of a module set."

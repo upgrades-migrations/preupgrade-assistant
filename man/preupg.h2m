@@ -18,8 +18,6 @@ preupg [--list-rules] [-s, --scan MODULE_SET]
 
 preupg [--riskcheck] [-v, --verbose]
 
-preupg [--kickstart]
-
 preupg [-u, --upload URL] [-r, --results TARBALL]
 
 preupg [--cleanup]
@@ -44,7 +42,7 @@ Possible return codes are:
 
 23 - preupg has to be executed as root.
 
-24 - preupg has to be executed before the Kickstart generation.
+24 - System assessment has to be performed first before using --riskcheck option.
 
 25 - openscap and openscap-engine-sce are not installed on the system.
 

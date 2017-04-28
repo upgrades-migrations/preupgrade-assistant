@@ -641,7 +641,7 @@ class Application(object):
             log_message(settings.options_not_allowed)
             return ReturnValues.MODE_SELECT_RULES
 
-        if not self.conf.riskcheck and not self.conf.cleanup and not self.conf.kickstart:
+        if not self.conf.riskcheck and not self.conf.cleanup:
             # If force option is not mentioned and user selects NO then exit
             if not self.conf.force:
                 text = ""
@@ -692,19 +692,10 @@ class Application(object):
         if self.conf.riskcheck:
             if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
                 log_message("The 'preupg' command was not run yet. Run it to check for possible risks.")
-                return ReturnValues.PREUPG_BEFORE_KICKSTART
+                return ReturnValues.PREUPG_BEFORE_RISKCHECK
             return_val = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(),
                                                         self.conf.verbose)
             return return_val
-
-        if self.conf.kickstart:
-            if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
-                log_message("The 'preupg' command was not run yet. Run it before the Kickstart generation.")
-                return ReturnValues.PREUPG_BEFORE_KICKSTART
-            kg = KickstartGenerator(self.conf, settings.KS_DIR,
-                                    settings.KS_PATH)
-            kg.main()
-            return 0
 
         if self.conf.scan:
             self.content = os.path.join(self.conf.source_dir,
