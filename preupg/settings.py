@@ -36,6 +36,9 @@ share_dir = "/usr/share"
 source_dir = os.path.join(share_dir, prefix)
 
 data_dir = os.path.join(source_dir, "data")
+# set data_dir value based on env variable PREUPG_DATA_DIR
+# if variable is not set doesn't change the value
+data_dir = os.getenv('PREUPG_DATA_DIR', data_dir)
 
 # file where the lock file stored
 lock_file = "/var/run/preupgrade.pid"
