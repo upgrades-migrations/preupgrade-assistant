@@ -182,7 +182,6 @@ KS_SCRIPTS = "kickstart_scripts.txt"
 
 CPE_RHEL = 'redhat:enterprise_linux'
 CPE_FEDORA = 'fedoraproject:fedora'
-REPORTS = ['admin', 'user']
 PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
 DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')

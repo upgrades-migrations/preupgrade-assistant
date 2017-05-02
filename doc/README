@@ -39,14 +39,6 @@ The files are:
 result.html - a file with the final migration assessment report in a human-readable
          form (the functionality is only listed)
 result.xml - a file with the final migration assessment report in a machine-readable form
-result-admin.html - a file with the final migration assessment report in a human-readable
-         form (the functionality is only listed) for administrators
-result-admin.xml - a file with final the migration assessment report in a machine-readable 
-         form for administrators
-result-admin.html - a file with the final migration assessment report in a human-readable
-         form (the functionality is only listed) for users
-result-admin.xml - a file with the final migration assessment report in a machine-readable 
-         form for users
 README - this file
 results.tar.gz - a tarball with all the files in the /root/preupgrade directory
 
