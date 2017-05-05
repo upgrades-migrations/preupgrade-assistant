@@ -186,9 +186,9 @@ get_file_list() {
         | grep -vE "$3" | sed "$4" >> $5
 }
 ### preupgrade-assistant ###
-get_file_list f %{python_sitelib}/.*$  "%{bundled_pykickstart_dirname}|preupg/(ui|creator)|\.pyc$" \
+get_file_list f %{python_sitelib}/.*$  "preupg/(ui|creator)|\.pyc$" \
     "s/\.py$/\.py\*/" preupg-filelist
-get_file_list d %{python_sitelib}/.*$ "%{bundled_pykickstart_dirname}|preupg/(ui|creator)|\.pyc$" \
+get_file_list d %{python_sitelib}/.*$ "preupg/(ui|creator)|\.pyc$" \
     "s/^/\%dir /" preupg-filelist
 %if %{build_ui}
 ### preupgrade-assistant-ui ###
