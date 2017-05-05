@@ -31,12 +31,6 @@ class PartitionGenerator(BaseKickstart):
         self.raid_list = []
 
     def generate_partitioning(self):
-        """
-        Returns dictionary with partition and realname and size
-        :param filename:  filename with partition_layout in
-                          /root/preupgrade/kickstart directory
-        :return: dictionary with layout
-        """
         pv_name = ""
         index_pv = 1
         crypt = ""
@@ -200,12 +194,6 @@ class PartitionGenerator(BaseKickstart):
         return volume_info
 
     def get_partition_layout(self, lsblk, vgs, lvdisplay):
-        """
-        Returns dictionary with partition and realname and size
-        :param filename:  filename with partition_layout in
-                          /root/preupgrade/kickstart directory
-        :return: dictionary with layout
-        """
         lsblk_filename = os.path.join(settings.KS_DIR, lsblk)
         try:
             self.layout = FileHelper.get_file_content(lsblk_filename, 'rb',

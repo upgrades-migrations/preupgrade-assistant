@@ -34,8 +34,7 @@ from preupg.version import VERSION
 
 
 def fault_repr(self):
-    """monkey patching Fault's repr method so newlines are actually interpreted
-    """
+    """Monkey patching Fault's repr method to interpret newlines."""
     log_message(self.faultString)
     return "<Fault %s: %s>" % (self.faultCode, self.faultString)
 
