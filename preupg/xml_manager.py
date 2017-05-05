@@ -7,7 +7,6 @@ try:
     import rpm
 except ImportError:
     pass
-import six
 from preupg.utils import FileHelper
 from preupg import settings
 from preupg.logger import logger_report
@@ -239,7 +238,7 @@ class XmlManager(object):
         orig_file = os.path.join(self.dirname,
                                  result_name + "." + extension)
         lines = FileHelper.get_file_content(orig_file, "rb", method=True)
-        for dir_name, files in six.iteritems(solution_files):
+        for dir_name, files in iter(solution_files.items()):
             section = dir_name.replace(os.path.join(self.dirname, self.scenario),
                                        "").replace("/", "_")
             solution_text = section + "_SOLUTION_MSG"

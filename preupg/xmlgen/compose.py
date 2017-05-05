@@ -5,7 +5,6 @@ import re
 import datetime
 import shutil
 
-import six
 from distutils import dir_util
 
 from preupg.utils import FileHelper, SystemIdentification
@@ -108,7 +107,6 @@ class ComposeXML(object):
 
             group_file_path = os.path.join(new_dir, "group.xml")
             if not os.path.isfile(group_file_path):
-                # print("Directory '%s' is missing a group.xml file!" % (new_dir))
                 continue
             try:
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
@@ -122,7 +120,7 @@ class ComposeXML(object):
 
     @staticmethod
     def perform_autoqa(path_prefix, group_tree):
-        for f, t in six.iteritems(group_tree):
+        for f, t in iter(group_tree.items()):
             b_subgroups = True
             try:
                 tree, subgroups = t
@@ -134,11 +132,6 @@ class ComposeXML(object):
 
             groups = tree.findall(xccdf.XMLNS + "Group")
             if len(groups) != 1:
-                """print("'%s' doesn't have exactly one Group element."
-                      " Each group.xml file is allowed to have just one group in it, "
-                      "if you want to split a group into two, "
-                      "move the other half to a different folder!" % (group_xml_path))
-                """
                 continue
 
             for element in tree.findall(".//" + xccdf.XMLNS + "Rule"):
@@ -165,8 +158,6 @@ class ComposeXML(object):
                           " its check element!")
                     continue
 
-                # cref = crefs[0]
-
                 # Check if the description contains a list of affected files
                 description = element.find(xccdf.XMLNS + "description")
                 if description is None:
@@ -180,7 +171,7 @@ class ComposeXML(object):
 
     @staticmethod
     def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
-        for f, t in six.iteritems(group_tree):
+        for f, t in iter(group_tree.items()):
             tree, subgroups = t
 
             old_base_dir = os.path.join(source_dir, f)
@@ -210,7 +201,7 @@ class ComposeXML(object):
 
         def sort_key(t_key):
             return get_sorting_key_for_tree(group_tree, t_key)
-        for f in sorted(six.iterkeys(group_tree), key=sort_key):
+        for f in sorted(iter(group_tree.keys()), key=sort_key):
             t = group_tree[f]
             tree, subgroups = t
 

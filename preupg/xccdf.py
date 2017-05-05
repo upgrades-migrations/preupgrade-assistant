@@ -3,12 +3,10 @@
 from __future__ import unicode_literals
 import re
 import os
-import six
 from operator import itemgetter
 from xml.etree import ElementTree
 
 from preupg import settings
-from preupg.settings import ModuleValues
 from preupg.logger import log_message, logger_report
 from preupg.utils import FileHelper, SystemIdentification
 
@@ -33,14 +31,16 @@ class XccdfHelper(object):
         }
 
         return_value = -1
-        for key, val in sorted(six.iteritems(risks), key=itemgetter(1), reverse=False):
+        for key, val in sorted(iter(risks.items()), key=itemgetter(1),
+                               reverse=False):
             matched = [x for x in inplace_risk if key in x]
             logger_report.debug(matched)
             if matched:
                 # if matched and return_value the remember her
                 if return_value < val:
                     return_value = val
-                # If verbose mode is used and value is bigger then 0 then prints out
+                # If verbose mode is used and value is bigger then 0 then
+                # prints out
                 if int(verbose) > 1:
                     log_message('\n'.join(matched))
                 elif int(verbose) == 1 and val > 0:

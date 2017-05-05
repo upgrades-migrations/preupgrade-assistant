@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+
 class DummyConf(object):
     """
     Dummy conf class for Conf
@@ -48,5 +49,4 @@ class Conf(object):
                 return value
             else:
                 continue
-        #return object.__getattribute__(self, name)
         return None

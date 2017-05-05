@@ -8,7 +8,6 @@ import os
 import ConfigParser
 import shutil
 import sys
-import six
 
 from distutils.util import strtobool
 from preupg.utils import FileHelper, SystemIdentification
@@ -210,7 +209,7 @@ class UIHelper(object):
         """
         config = ConfigParser.RawConfigParser()
         config.add_section(section)
-        for key, val in six.iteritems(self.content_dict):
+        for key, val in iter(self.content_dict.items()):
             if val is not None:
                 config.set(section, key, val)
 

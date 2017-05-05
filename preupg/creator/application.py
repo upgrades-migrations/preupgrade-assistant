@@ -22,4 +22,3 @@ class Application(object):
 
     def run(self):
         self.ui_helper.take_manadatory_info()
-

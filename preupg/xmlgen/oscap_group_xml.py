@@ -6,7 +6,6 @@ So no change is needed from maintainer point of view
 
 from __future__ import print_function, unicode_literals
 import os
-import six
 import codecs
 
 try:
@@ -93,7 +92,8 @@ class OscapGroupXml(object):
     def write_profile_xml(self, target_tree):
         """The function stores all-xccdf.xml file into content directory"""
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
-        print ('File which can be used by Preupgrade-Assistant is:\n', ''.join(file_name))
+        print ('File which can be used by Preupgrade-Assistant is: %s'
+               % file_name)
         try:
             # encoding must be set! otherwise ElementTree return non-ascii
             # characters as html entities instead, which are unsusable for us
@@ -104,17 +104,22 @@ class OscapGroupXml(object):
                           % (file_name, ioe.message))
 
     def write_list_rules(self):
-        end_point = self.dirname.find(SystemIdentification.get_valid_scenario(self.dirname))
+        end_point = self.dirname.find(
+            SystemIdentification.get_valid_scenario(self.dirname))
         rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
-        file_list_rules = os.path.join(settings.UPGRADE_PATH, settings.file_list_rules)
+        file_list_rules = os.path.join(settings.UPGRADE_PATH,
+                                       settings.file_list_rules)
         lines = []
         if os.path.exists(file_list_rules):
-            lines = FileHelper.get_file_content(file_list_rules, "rb", method=True)
+            lines = FileHelper.get_file_content(file_list_rules, "rb",
+                                                method=True)
         else:
             lines = []
-        for values in six.itervalues(self.loaded):
-            check_script = [v for k, v in six.iteritems(values[0]) if k == 'check_script']
+        for values in iter(self.loaded.values()):
+            check_script = [v for k, v in iter(values[0].items())
+                            if k == 'check_script']
             if check_script:
                 check_script = os.path.splitext(''.join(check_script))[0]
-                lines.append(settings.xccdf_tag + rule_name + '_' + check_script + '\n')
+                lines.append(settings.xccdf_tag + rule_name + '_' +
+                             check_script + '\n')
         FileHelper.write_to_file(file_list_rules, "wb", lines)

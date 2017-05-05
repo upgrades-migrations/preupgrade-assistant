@@ -40,7 +40,8 @@ class LoggerHelper(object):
     def add_file_handler(logger_name, path, formatter=None, level=None):
         """
         Adds FileHandler to a given logger
-        :param logger_name: Logger object to which the file handler will be added
+        :param logger_name: Logger object to which the file handler will be
+                            added
         :param path: Path to file where the debug log will be written
         :param formatter: logging format
         :param level: severity level
@@ -53,9 +54,11 @@ class LoggerHelper(object):
             file_handler.setFormatter(formatter)
         logger_name.addHandler(file_handler)
 
+
 logger = LoggerHelper.get_basic_logger('preupgrade-assistant')
 logger_debug = LoggerHelper.get_basic_logger('preupgrade-assistant-debug')
-logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report', logging.DEBUG)
+logger_report = LoggerHelper.get_basic_logger('preupgrade-assistant-report',
+                                              logging.DEBUG)
 
 
 def log_message(message, new_line=True, level=logging.INFO):
@@ -88,4 +91,3 @@ def log_report_message(message, new_line=True, level=logging.INFO):
         print(message, end=endline, file=sys.stdout, flush=True)
 
     logger_report.log(level, message)
-

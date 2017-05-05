@@ -22,7 +22,8 @@ def upload_callback(option, dummy_opt_str, dummy_value, parser):
                 pass
             else:
                 if not second_arg.startswith('-'):
-                    raise OptionValueError("Specify at most one argument for upload option.")
+                    raise OptionValueError("Specify at most one argument for"
+                                           " upload option.")
 
 
 def optional_rh_arg(arg_default):

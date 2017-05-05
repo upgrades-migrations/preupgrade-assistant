@@ -8,7 +8,6 @@ from __future__ import unicode_literals, print_function
 import shutil
 import datetime
 import os
-import six
 import sys
 import logging
 from distutils import dir_util
@@ -35,9 +34,10 @@ from preupg.version import VERSION
 
 
 def fault_repr(self):
-    """monkey patching Fault's repr method so newlines are actually interpreted"""
+    """Monkey patching Fault's repr method to interpret newlines."""
     log_message(self.faultString)
     return "<Fault %s: %s>" % (self.faultCode, self.faultString)
+
 
 Fault.__repr__ = fault_repr
 
@@ -48,7 +48,8 @@ def list_contents(source_dir):
     is_dir = lambda x: os.path.isdir(os.path.join(source_dir, x))
     dirs = os.listdir(source_dir)
     for dir_name in filter(is_dir, dirs):
-        full_dir_name = os.path.join(source_dir, dir_name, settings.content_file)
+        full_dir_name = os.path.join(source_dir, dir_name,
+                                     settings.content_file)
         if os.path.exists(full_dir_name):
             logger_debug.info('%s', dir_name)
             content_dict[dir_name] = full_dir_name
@@ -110,13 +111,16 @@ class Application(object):
         :return:
         """
         try:
-            LoggerHelper.add_file_handler(logger_report,
-                                          settings.preupg_report_log,
-                                          formatter=logging.Formatter("%(asctime)s %(filename)s"
-                                                                      ":%(lineno)s %(funcName)s: %(message)s"),
-                                          level=logging.DEBUG)
+            LoggerHelper.add_file_handler(
+                logger_report, settings.preupg_report_log,
+                formatter=logging.Formatter(
+                    "%(asctime)s %(filename)s:%(lineno)s %(funcName)s:"
+                    " %(message)s"),
+                level=logging.DEBUG
+            )
         except (IOError, OSError):
-            logger.warning("Can not create report log '%s'", settings.preupg_report_log)
+            logger.warning("Can not create report log '%s'",
+                           settings.preupg_report_log)
         else:
             self.report_log_file = settings.preupg_report_log
 
@@ -126,13 +130,16 @@ class Application(object):
         :return:
         """
         try:
-            LoggerHelper.add_file_handler(logger_debug,
-                                          settings.preupg_log,
-                                          formatter=logging.Formatter("%(asctime)s %(levelname)s\t%(filename)s"
-                                                            ":%(lineno)s %(funcName)s: %(message)s"),
-                                          level=logging.DEBUG)
+            LoggerHelper.add_file_handler(
+                logger_debug, settings.preupg_log,
+                formatter=logging.Formatter(
+                    "%(asctime)s %(levelname)s\t%(filename)s"
+                    ":%(lineno)s %(funcName)s: %(message)s"),
+                level=logging.DEBUG
+            )
         except (IOError, OSError):
-            logger.warning("Can not create debug log '%s'", settings.preupg_log)
+            logger.warning("Can not create debug log '%s'",
+                           settings.preupg_log)
         else:
             self.debug_log_file = settings.preupg_log
 
@@ -145,7 +152,8 @@ class Application(object):
 
     def get_postupgrade_dir(self):
         """Function returns postupgrade dir"""
-        return os.path.join(self.conf.assessment_results_dir, settings.postupgrade_dir)
+        return os.path.join(self.conf.assessment_results_dir,
+                            settings.postupgrade_dir)
 
     def upload_results(self, tarball_path=None):
         """upload tarball with results to frontend"""
@@ -167,21 +175,24 @@ class Application(object):
             proxy = xmlrpclib.ServerProxy(url)
             proxy.submit.ping()
         except Exception as ex:
-            message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.\n\n' \
-                      'Please ensure that package preupgrade-assistant-ui ' \
-                      'has been installed on target system and firewall is set up ' \
+            message = 'Can\'t connect to preupgrade assistant WEB-UI at %s.' \
+                      '\n\nPlease ensure that package' \
+                      ' preupgrade-assistant-ui has been installed on target' \
+                      ' system and firewall is set up ' \
                       'to allow connections on port 8099.' % url
             log_message(message)
             log_message(ex.__str__())
             return False
 
         if not self.conf.results:
-            tarball_results = TarballHelper.get_latest_tarball(settings.tarball_result_dir)
+            tarball_results = TarballHelper.get_latest_tarball(
+                settings.tarball_result_dir)
         else:
             tarball_results = self.conf.results
         if tarball_results is None or not os.path.exists(tarball_results):
             return False
-        file_content = FileHelper.get_file_content(tarball_results, 'rb', False, False)
+        file_content = FileHelper.get_file_content(tarball_results, 'rb',
+                                                   False, False)
 
         binary = xmlrpclib.Binary(file_content)
         host = socket.gethostname()
@@ -193,7 +204,8 @@ class Application(object):
             status = response['status']
         except KeyError:
             log_message('Invalid response from the server.')
-            log_message("Invalid response from the server: %s" % response, level=logging.ERROR)
+            log_message("Invalid response from the server: %s"
+                        % response, level=logging.ERROR)
         else:
             if status == 'OK':
                 try:
@@ -222,7 +234,7 @@ class Application(object):
             DirHelper.check_or_create_temp_dir(dir_name)
 
         # Copy README files into proper directories
-        for key, val in six.iteritems(settings.readme_files):
+        for key, val in iter(settings.readme_files.items()):
             shutil.copyfile(os.path.join(settings.source_dir, key),
                             os.path.join(self.conf.assessment_results_dir, val))
 
@@ -379,7 +391,7 @@ class Application(object):
         3rd party contents are stored in
         /usr/share/preupgrade/RHEL6_7/3rdparty directory
         """
-        for third_party, content in six.iteritems(list_contents(dir_name)):
+        for third_party, content in iter(list_contents(dir_name.items())):
             third_party_name = self.third_party = third_party
             log_message("Execution {0} assessments:".format(third_party))
             self.report_parser.reload_xml(content)
@@ -477,19 +489,20 @@ class Application(object):
             log_message("The module {0} does not exist.".format(self.content))
             return ReturnValues.SCENARIO
         if not self.conf.contents:
-            version = SystemIdentification.get_assessment_version(self.conf.scan)
+            version = SystemIdentification.get_assessment_version(
+                self.conf.scan)
             if version is None:
                 log_message("Your scan is in a wrong format %s." % version,
                             level=logging.ERROR)
-                log_message("It should be like 'RHEL6_7' for upgrade from RHEL 6->7.",
-                            level=logging.ERROR)
+                log_message("It should be like 'RHEL6_7' for upgrade from"
+                            " RHEL 6->7.", level=logging.ERROR)
                 return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
-            lines = [i.rstrip() for i in FileHelper.get_file_content(os.path.join(self.assessment_dir,
-                                                                                  self.conf.mode),
-                                                                     'rb',
-                                                                     method=True)]
+            lines = [i.rstrip() for i in
+                     FileHelper.get_file_content(
+                         os.path.join(self.assessment_dir, self.conf.mode),
+                         'rb', method=True)]
             self.report_parser.select_rules(lines)
         if self.conf.select_rules:
             lines = [i.strip() for i in self.conf.select_rules.split(',')]
@@ -507,11 +520,12 @@ class Application(object):
             self.run_third_party_modules(third_party_dir_name)
 
         self.copy_preupgrade_scripts(self.assessment_dir)
-        ConfigFilesHelper.copy_modified_config_files(settings.assessment_results_dir)
+        ConfigFilesHelper.copy_modified_config_files(
+            settings.assessment_results_dir)
 
         # It prints out result in table format
         ScanningHelper.format_rules_to_table(main_report, "main contents")
-        for target, report in six.iteritems(self.report_data):
+        for target, report in iter(self.report_data.items()):
             ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
         self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
@@ -552,7 +566,7 @@ class Application(object):
             log_message(settings.upgrade_backup_warning)
         if self.report_data:
             log_message('Summary of the third party providers:')
-            for target, dummy_report in six.iteritems(self.report_data):
+            for target, dummy_report in iter(self.report_data.items()):
                 self.third_party = target
                 log_message("Read the third party content {0} {1} for more details.".
                             format(target, path))
@@ -562,9 +576,8 @@ class Application(object):
         # Check for devel_mode
         if os.path.exists(settings.DEVEL_MODE):
             self._devel_mode = 1
-            self._dist_mode = ConfigHelper.get_preupg_config_file(settings.PREUPG_CONFIG_FILE,
-                                                           'dist_mode',
-                                                           section="devel-mode")
+            self._dist_mode = ConfigHelper.get_preupg_config_file(
+                settings.PREUPG_CONFIG_FILE, 'dist_mode', section="devel-mode")
         else:
             self._devel_mode = 0
 
@@ -603,11 +616,13 @@ class Application(object):
 
         logger_debug.debug(version_msg)
         if self.conf.list_contents_set:
-            for dir_name, dummy_content in six.iteritems(list_contents(self.conf.source_dir)):
+            for dir_name, dummy_content in iter(list_contents(
+                    self.conf.source_dir).items()):
                 log_message("%s" % dir_name)
             return 0
 
-        if not self.conf.scan and not self.conf.contents and not self.conf.list_rules:
+        if not self.conf.scan and not self.conf.contents and \
+                not self.conf.list_rules:
             ret_val = self._check_available_contents()
             if int(ret_val) != 0:
                 return ret_val
@@ -616,7 +631,8 @@ class Application(object):
             ret_val = self._check_available_contents()
             if int(ret_val) != 0:
                 return ret_val
-            rules = [self.conf.scan + ':' + x for x in XccdfHelper.get_list_rules(self.conf.scan)]
+            rules = [self.conf.scan + ':' + x
+                     for x in XccdfHelper.get_list_rules(self.conf.scan)]
             log_message('\n'.join(rules))
             return 0
 
@@ -634,7 +650,8 @@ class Application(object):
             if not self.conf.force:
                 text = ""
                 if self.conf.dst_arch:
-                    correct_option = [x for x in settings.migration_options if self.conf.dst_arch == x]
+                    correct_option = [x for x in settings.migration_options
+                                      if self.conf.dst_arch == x]
                     if not correct_option:
                         sys.stderr.write(
                             "Error: Specify correct value for --dst-arch"
@@ -642,7 +659,8 @@ class Application(object):
                             % ", ".join(settings.migration_options)
                         )
                         return ReturnValues.INVALID_CLI_OPTION
-                if SystemIdentification.get_arch() == "i386" or SystemIdentification.get_arch() == "i686":
+                if SystemIdentification.get_arch() == "i386" or \
+                        SystemIdentification.get_arch() == "i686":
                     if not self.conf.dst_arch:
                         text = '\n' + settings.migration_text
                 logger_debug.debug("Architecture '%s'. Text '%s'.",
@@ -719,7 +737,8 @@ class Application(object):
                 log_message("Oscap with SCE enabled is not installed")
                 return ReturnValues.MISSING_OPENSCAP
             if not os.access(settings.openscap_binary, os.X_OK):
-                log_message("Oscap with SCE %s is not executable" % settings.openscap_binary)
+                log_message("Oscap with SCE %s is not executable"
+                            % settings.openscap_binary)
                 return ReturnValues.MISSING_OPENSCAP
 
             current_dir = os.getcwd()

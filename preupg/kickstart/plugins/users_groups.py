@@ -4,7 +4,6 @@
 Class appends users and groups to kickstart
 """
 
-import six
 import os
 
 from preupg import settings
@@ -41,8 +40,8 @@ class UsersGroupsGenerator(BaseKickstart):
             try:
                 user_group = []
                 if groups:
-                    for key, value in six.iteritems(groups):
-                        found = [x for x in six.itervalues(value) if fields[0] in x]
+                    for key, value in iter(groups.items()):
+                        found = [x for x in iter(value.values()) if fields[0] in x]
                         if found:
                             user_group.append(key)
                 user_dict[fields[0]] = {}
@@ -85,7 +84,7 @@ class UsersGroupsGenerator(BaseKickstart):
     def update_users(self, users):
         if not users:
             return None
-        for key, value in six.iteritems(users):
+        for key, value in iter(users.items()):
             self.handler.user.dataList().append(self.handler.UserData(name=key,
                                                                       uid=int(value['uid']),
                                                                       gid=int(value['gid']),
@@ -96,8 +95,8 @@ class UsersGroupsGenerator(BaseKickstart):
     def update_groups(self, groups):
         if not groups:
             return None
-        for key, value in six.iteritems(groups):
-            for gid in six.iterkeys(value):
+        for key, value in iter(groups.items()):
+            for gid in iter(value.keys()):
                 self.handler.group.dataList().append(self.handler.GroupData(name=key, gid=gid))
 
     def filter_kickstart_users(self):
@@ -106,12 +105,12 @@ class UsersGroupsGenerator(BaseKickstart):
             return None
         setup_passwd = UsersGroupsGenerator.get_kickstart_users('setup_passwd')
         uidgid = UsersGroupsGenerator.get_kickstart_users('uidgid', splitter='|')
-        for user, ids in six.iteritems(self.user_perm):
+        for user, ids in iter(self.user_perm.items()):
             if setup_passwd:
-                if [x for x in six.iterkeys(setup_passwd) if user in x]:
+                if [x for x in iter(setup_passwd.keys()) if user in x]:
                     continue
             if uidgid:
-                if [x for x in six.iterkeys(uidgid) if user in x]:
+                if [x for x in iter(uidgid.keys()) if user in x]:
                     continue
             kickstart_users[user] = ids
         if not kickstart_users:
@@ -123,9 +122,9 @@ class UsersGroupsGenerator(BaseKickstart):
         if not self.group_perm:
             return None
         uidgid = UsersGroupsGenerator.get_kickstart_users('uidgid', splitter='|')
-        for group, ids in six.iteritems(self.group_perm):
+        for group, ids in iter(self.group_perm.items()):
             if uidgid:
-                if [x for x in six.iterkeys(uidgid) if group in x]:
+                if [x for x in iter(uidgid.keys()) if group in x]:
                     continue
             kickstart_groups[group] = ids
         if not kickstart_groups:
