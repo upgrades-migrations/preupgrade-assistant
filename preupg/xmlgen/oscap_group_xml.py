@@ -61,7 +61,7 @@ class OscapGroupXml(object):
             section = 'preupgrade'
             for option in config.options(section):
                 fields[option] = config.get(section, option)
-            self.loaded[file_name] = [fields]
+            self.loaded[file_name] = fields
 
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
@@ -116,7 +116,7 @@ class OscapGroupXml(object):
         else:
             lines = []
         for values in iter(self.loaded.values()):
-            check_script = [v for k, v in iter(values[0].items())
+            check_script = [v for k, v in iter(values.items())
                             if k == 'check_script']
             if check_script:
                 check_script = os.path.splitext(''.join(check_script))[0]
