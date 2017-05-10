@@ -411,16 +411,16 @@ class SystemIdentification(object):
         return settings.text_converters.keys()
 
     @staticmethod
-    def get_assessment_version(dir_name):
-        section_name = "preupgrade-assistant-modules"
-        properties_file = os.path.join(settings.source_dir,
+    def get_assessment_version(dir_name, base_dir=settings.source_dir):
+        section_name = settings.section_name
+        properties_file = os.path.join(base_dir,
                                        dir_name,
                                        settings.properties_ini)
         src_os_ver = ConfigHelper.get_preupg_config_file(properties_file,
-                                                         key="srcMajorVersion",
+                                                         key=settings.src_version_key,
                                                          section=section_name)
         dest_os_ver = ConfigHelper.get_preupg_config_file(properties_file,
-                                                          key="destMajorVersion",
+                                                          key=settings.dest_version_key,
                                                           section=section_name)
         if src_os_ver is None or dest_os_ver is None:
             return None
@@ -434,12 +434,10 @@ class SystemIdentification(object):
         >>> get_valid_scenario('/dir1/dir2/dir3/')
         'dir3'
         >>> get_valid_scenario('/dir1/dir2/dir3')
-        'dir3'
+        'dir2'
+        # doesn't check directory at the end of path, is considered as a file
         """
-        if(os.path.isfile(scenario_path)):  # scenario_path ends with file
-            return os.path.basename(os.path.dirname(scenario_path))
-        else:  # scenario_path ends with directory
-            return os.path.basename(scenario_path.rstrip(os.path.sep))
+        return os.path.basename(os.path.split(scenario_path)[0])
 
     @staticmethod
     def get_variant():
