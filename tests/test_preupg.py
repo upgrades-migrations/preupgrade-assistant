@@ -273,94 +273,79 @@ class TestSolutionReplacement(base.TestCase):
 
 
 class TestScenario(base.TestCase):
-    temp_dir = None
-
-    def setUp(self):
-        self.temp_dir = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.temp_dir)
-
+    '''
+    Test get_scenario method, to get directory with modules
+    '''
     def test_correct_content_scenario(self):
-        """
-        Basic test for whole program
-        """
+        '''
+        Test to get right module directory with contents option,
+        directory with modules are the same where all-xccdf file is located
+        '''
         conf = {
-            "contents": "tests/FOOBAR6_77/dummy_preupg/all-xccdf.xml",
-            "profile": "xccdf_preupg_profile_default",
-            "result_dir": self.temp_dir,
-            "skip_common": True,
-            "temp_dir": self.temp_dir,
-            "id": None,
-            "debug": True,  # so root check won't fail
+            "contents": "tests/Modules/all-xccdf.xml",
         }
-
         dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_77/dummy_preupg/all-xccdf.xml"])
+        cli = CLI(["--contents", "tests/Modules/all-xccdf.xml"])
         a = Application(Conf(dc, settings, cli))
         # Prepare all variables for test
         a.conf.source_dir = os.getcwd()
         a.content = a.conf.contents
         a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), "FOOBAR6_77")
+        self.assertEqual(a.get_scenario(), 'Modules')
 
-    def test_migration_content_scenario(self):
-        """
-        Basic test for whole program
-        """
-        conf = {
-            "contents": "tests/FOOBAR6_CENTOS6/dummy_preupg/all-xccdf.xml",
-            "profile": "xccdf_preupg_profile_default",
-            "result_dir": self.temp_dir,
-            "skip_common": True,
-            "temp_dir": self.temp_dir,
-            "id": None,
-            "debug": True,  # so root check won't fail
-        }
 
-        dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_CENTOS6/dummy_preupg/all-xccdf.xml"])
-        a = Application(Conf(dc, settings, cli))
-        # Prepare all variables for test
-        a.conf.source_dir = os.getcwd()
-        a.content = a.conf.contents
-        a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), "FOOBAR6_CENTOS6")
+class TestValidScenario(base.TestCase):
+    '''
+    Test get_valid_scenario method
+    '''
+    def test_file_ending_path(self):
+        '''
+        Test to get directory where file is located
+        '''
+        self.assertEqual(
+            SystemIdentification.get_valid_scenario('/dir1/dir2/file.xml'),
+            'dir2'
+        )
 
-    def test_wrong_content_scenario(self):
-        """
-        Basic test for whole program
-        """
-        conf = {
-            "contents": "tests/FOOBAR6_7A/dummy_preupg/all-xccdf.xml",
-            "profile": "xccdf_preupg_profile_default",
-            "result_dir": self.temp_dir,
-            "skip_common": True,
-            "temp_dir": self.temp_dir,
-            "id": None,
-            "debug": True,  # so root check won't fail
-        }
+    def test_dir_ending_path(self):
+        '''
+        Test when file is not specified get last directory in path
+        '''
+        self.assertEqual(
+            SystemIdentification.get_valid_scenario('/dir1/dir2/dir3/'),
+            'dir3'
+        )
 
-        dc = DummyConf(**conf)
-        cli = CLI(["--contents", "tests/FOOBAR6_7A/dummy_preupg/all-xccdf.xml"])
-        a = Application(Conf(dc, settings, cli))
-        # Prepare all variables for test
-        a.conf.source_dir = os.getcwd()
-        a.content = a.conf.contents
-        a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), None)
+    def test_dir_as_file_ending_path(self):
+        '''
+        Test should get a second directory from the end
+        '''
+        self.assertEqual(
+            SystemIdentification.get_valid_scenario('/dir1/dir2/dir3'),
+            'dir2'
+        )
 
 
 class TestPreupgradePrefix(base.TestCase):
-    def setUp(self):
-        settings.prefix = 'preupgrade'
-
-    def test_correct_prefix(self):
-        version = SystemIdentification.get_assessment_version('FOOBAR6_7')
+    '''
+    Test parser of source and destination major versions of system from ini file
+    '''
+    def test_valid_ini_file(self):
+        '''
+        Test check if parse on correct ini file works fine
+        '''
+        this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
+        dummy_ini_path = os.path.join(this_file_dir_path,
+                                      'FOOBAR6_7/dummy_preupg')
+        version = SystemIdentification.get_assessment_version('',
+                                                              dummy_ini_path)
         self.assertEqual(version, ['6', '7'])
 
-    def test_wrong_prefix(self):
-        version = SystemIdentification.get_assessment_version('FOOBAR6_CENTOS6')
+    def test_invalid_ini_file(self):
+        '''
+        Test with with wrong ini file path
+        '''
+        version = SystemIdentification.get_assessment_version('/dev/null')
         self.assertEqual(version, None)
 
 
@@ -375,6 +360,7 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestSolutionReplacement))
     suite.addTest(loader.loadTestsFromTestCase(TestXMLUpdates))
     suite.addTest(loader.loadTestsFromTestCase(TestScenario))
+    suite.addTest(loader.loadTestsFromTestCase(TestValidScenario))
     suite.addTest(loader.loadTestsFromTestCase(TestPreupgradePrefix))
     return suite
 
