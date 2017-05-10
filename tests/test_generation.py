@@ -25,9 +25,8 @@ class TestContentGenerate(base.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
-        self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR, 'dummy')
-        self.result_dir = os.path.join(self.temp_dir, 'tests', FOO_RESULTS,
-                                       'dummy')
+        self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR)
+        self.result_dir = os.path.join(self.temp_dir, 'tests', FOO_RESULTS)
         shutil.copytree(self.dir_name, os.path.join(self.temp_dir, FOO_DIR))
         self.dir_name = os.path.join(self.temp_dir, FOO_DIR)
 
@@ -69,7 +68,7 @@ class TestGlobalContent(base.TestCase):
         expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
         for content in expected_contents:
             compose_xml = ComposeXML()
-            dir_name = os.path.join(self.temp_dir, FOO_DIR, 'dummy')
+            dir_name = os.path.join(self.temp_dir, FOO_DIR)
             compose_xml.collect_group_xmls(dir_name, content=content)
 
         xccdf_compose = XCCDFCompose(os.path.join(self.temp_dir, FOO_DIR))

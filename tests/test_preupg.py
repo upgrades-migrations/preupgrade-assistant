@@ -56,7 +56,7 @@ class TestPreupg(base.TestCase):
 
         """Basic test for whole program"""
 
-        content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf-migrate.xml"
+        content = "tests/generated_results/all-xccdf-migrate.xml"
         args = ["--contents", content]
         a = setup_preupg_environment(args, content, self.temp_dir)
         self.assertEqual(a.run_scan(), 0)
@@ -74,7 +74,7 @@ class TestPreupgMigrate(base.TestCase):
     def test_migrate(self):
         """Basic test for whole program"""
 
-        content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf-migrate.xml"
+        content = "tests/generated_results/all-xccdf-migrate.xml"
         args = ["--contents", content, "--mode", "migrate"]
         a = setup_preupg_environment(args, content, self.temp_dir, mode='migrate')
         self.assertEqual(a.run_scan(), 0)
@@ -103,7 +103,7 @@ class TestPreupgUpgrade(base.TestCase):
     def test_upgrade(self):
         """Basic test for whole program"""
 
-        content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf-upgrade.xml"
+        content = "tests/generated_results/all-xccdf-upgrade.xml"
         args = ["--contents", content, "--mode", "upgrade"]
         a = setup_preupg_environment(args, content, self.temp_dir, mode='upgrade')
         self.assertEqual(a.run_scan(), 0)
@@ -123,7 +123,7 @@ class TestXMLUpdates(base.TestCase):
     test_content = None
 
     def setUp(self):
-        self.content = "tests/FOOBAR6_7/dummy_preupg/all-xccdf-upgrade.xml"
+        self.content = "tests/generated_results/all-xccdf-upgrade.xml"
         self.test_content = self.content+".test"
 
     def tearDown(self):
@@ -326,7 +326,7 @@ class TestValidScenario(base.TestCase):
         )
 
 
-class TestPreupgradePrefix(base.TestCase):
+class TestModuleSetINI(base.TestCase):
     '''
     Test parser of source and destination major versions of system from ini file
     '''
@@ -335,8 +335,7 @@ class TestPreupgradePrefix(base.TestCase):
         Test check if parse on correct ini file works fine
         '''
         this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
-        dummy_ini_path = os.path.join(this_file_dir_path,
-                                      'FOOBAR6_7/dummy_preupg')
+        dummy_ini_path = os.path.join(this_file_dir_path, 'FOOBAR6_7')
         version = SystemIdentification.get_assessment_version('',
                                                               dummy_ini_path)
         self.assertEqual(version, ['6', '7'])
@@ -361,7 +360,7 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestXMLUpdates))
     suite.addTest(loader.loadTestsFromTestCase(TestScenario))
     suite.addTest(loader.loadTestsFromTestCase(TestValidScenario))
-    suite.addTest(loader.loadTestsFromTestCase(TestPreupgradePrefix))
+    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetINI))
     return suite
 
 if __name__ == '__main__':
