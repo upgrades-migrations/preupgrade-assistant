@@ -72,12 +72,14 @@ class XmlUtils(object):
         lines = FileHelper.get_file_content(os.path.join(self.dirname,
                                                          filename), "rb", True)
 
-        bold = '<b>{0}</b>'
-        br = '<br/>'
-        table_begin = '<table>'
-        table_end = '</table>'
-        table_header = '<tr><th>Result</th><th>Description</th></tr>'
-        table_row = '<tr><td>{0}</td><td>{1}</td></tr>'
+        bold = '<xhtml:b>{0}</xhtml:b>'
+        br = '<xhtml:br/>'
+        table_begin = '<xhtml:table>'
+        table_end = '</xhtml:table>'
+        table_header = '<xhtml:tr><xhtml:th>Result</xhtml:th><xhtml:th>' \
+                       'Description</xhtml:th></xhtml:tr>'
+        table_row = '<xhtml:tr><xhtml:td>{0}</xhtml:td><xhtml:td>{1}' \
+                    '</xhtml:td></xhtml:tr>'
         new_text.append(br + br + '\n' + bold.format('Details:') + br)
         results = False
         for line in lines:
@@ -112,7 +114,7 @@ class XmlUtils(object):
         elif search_exp == "{config_file}":
             new_text = ""
             for lines in replace_exp.split(','):
-                new_text += "<li>" + lines.strip() + "</li>"
+                new_text += "<xhtml:li>" + lines.strip() + "</xhtml:li>"
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
             new_text = FileHelper.get_file_content(os.path.join(
