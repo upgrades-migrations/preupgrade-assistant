@@ -277,7 +277,7 @@ A solution text for test suite"
         self.assertTrue(rule_title)
 
     def test_xml_config_file(self):
-        conf_file = [x for x in self.rule if "<li>/etc/named.conf</li>" in x]
+        conf_file = [x for x in self.rule if "<xhtml:li>/etc/named.conf</xhtml:li>" in x]
         self.assertTrue(conf_file)
 
     def test_xml_fix_text(self):
