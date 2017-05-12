@@ -391,7 +391,7 @@ class Application(object):
         3rd party contents are stored in
         /usr/share/preupgrade/RHEL6_7/3rdparty directory
         """
-        for third_party, content in iter(list_contents(dir_name.items())):
+        for third_party, content in list_contents(dir_name).items():
             third_party_name = self.third_party = third_party
             log_message("Execution {0} assessments:".format(third_party))
             self.report_parser.reload_xml(content)
