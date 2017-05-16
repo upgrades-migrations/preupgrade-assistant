@@ -6,8 +6,9 @@
 #  - A unit test shall not modify/create/remove any file during its exectution.
 #  - No unit test shall rely on any other unit test, i.e. each test shall be
 #    possible to execute on its own.
-#  - Use mock as much as possible. Use setUp only to avoid using the same
-#    mock decorator for many unit test methods.
+#  - Prefer 'mock' decorator to setUp method. Use setUp only to avoid using
+#    the same mock decorator for many unit test methods. See base.py for details
+#    on the usage of mock.
 #  - Each python file needs to have 'suite' function defined in order to be
 #    executed along the other tests using 'python setup.py test'
 
