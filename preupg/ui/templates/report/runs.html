@@ -84,7 +84,7 @@
             </td>
             <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 {% if hostrun.result %}<span class="fa icon closed"></span>{% endif %}
-                <span class="row-title">{{ hostrun.run.dt_submitted|date:"Y-m-d H:i:s" }}</span>
+                <span class="row-title">{{ hostrun.result.dt_finished|date:"Y-m-d H:i:s" }}</span>
             </td>
             <td{% if hostrun.result %} class="hostrun-toggle"{% endif %}>
                 <span class="text">

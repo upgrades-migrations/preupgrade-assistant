@@ -28,7 +28,7 @@
               {% for hostrun in hostruns %}
                   <li>
                       <input type="hidden" name="runs" value="{{ hostrun.id }}"/>
-                      <span class="row-title">{{ hostrun.run.dt_submitted|date:"Y-m-d H:i:s" }}</span>,
+                      <span class="row-title">{{ hostrun.result.dt_finished|date:"Y-m-d H:i:s" }}</span>,
                       {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}{% endif %}
                   </li>
               {% endfor %}

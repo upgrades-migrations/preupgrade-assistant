@@ -21,7 +21,9 @@
         {% csrf_token %}
         <div class="form-group">
           <div class="col-sm-12 col-md-12">
-            Are you sure you want to delete result "<b>{{ object }}</b>"?
+            Are you sure you want to delete result "<b>{{ hostrun.result.dt_finished|date:"Y-m-d H:i:s" }},
+            {% if hostrun.result %}{{ hostrun.result.hostname|default_if_none:"" }}{% else %}{{ hostrun.host.hostname }}
+            {% endif %}</b>"?
           </div>
           <div class="col-sm-12 col-md-12 submit">
             <a class="btn btn-default btn-lg" href="{% url 'results-list' %}">Back</a>
