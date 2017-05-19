@@ -1,5 +1,6 @@
 
 from __future__ import unicode_literals
+import datetime
 import os
 from preupg.logger import settings, logger_report, log_message, logging
 
@@ -61,6 +62,7 @@ class ScanProgress(object):
         self.names = {}
         self.list_names = []
         self.width_size = 0
+        self.time = datetime.datetime.now()
 
     def get_full_name(self, count):
         """Function returns full name from dictionary"""
@@ -106,13 +108,21 @@ class ScanProgress(object):
         self.width_size = old_width
         cur_msg = self._return_correct_msg(self.get_full_name(self.current_count))
         cnt_back = 7 + len(prev_msg) + 3
-        msg = u'%sdone    (%s)' % ('\b' * cnt_back, prev_msg)
+        curr_time = datetime.datetime.now()
+        diff_time = curr_time - self.time
+        msg = (u'%sdone    (%s) (time: %.2d:%.2ds)'
+               % ('\b' * cnt_back,
+                  prev_msg,
+                  diff_time.seconds / 60,
+                  diff_time.seconds % 60))
         log_message(msg, new_line=True)
         if self.total_count > self.current_count:
-            msg = self._return_correct_msg(u'%.3d/%.3d ...running (%s)' % (self.current_count + 1,
-                                                                           self.total_count,
-                                                                           cur_msg))
+            msg = self._return_correct_msg(u'%.3d/%.3d ...running (%s)'
+                                           % (self.current_count + 1,
+                                              self.total_count,
+                                              cur_msg))
             log_message(msg, new_line=False)
+        self.time = datetime.datetime.now()
 
     def set_names(self, names):
         """
