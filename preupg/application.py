@@ -707,17 +707,11 @@ class Application(object):
             self.content = os.path.join(self.conf.source_dir,
                                         self.conf.scan,
                                         settings.content_file)
-            if self.conf.scan.startswith("/"):
-                log_message('Specify the correct upgrade path parameter like -s RHEL6_7')
-                log_message("Upgrade path is provided by the 'preupg --list' command.")
-                self._check_available_contents()
-                log_message("The available upgrade paths: '%s'" % '\n'.join(self.list_scans))
-                return ReturnValues.SCENARIO
-            if not os.path.isdir(os.path.join(self.conf.source_dir, self.conf.scan)):
-                log_message('Specify the correct upgrade path parameter like -s RHEL6_7')
-                self._check_available_contents()
-                log_message("Upgrade path is provided by the 'preupg --list' command.")
-                log_message("The available upgrade paths: '%s'" % '\n'.join(self.list_scans))
+            if not os.path.isdir(os.path.join(self.conf.source_dir,
+                                              self.conf.scan)):
+                log_message("The module set '%s' is not installed.\nFor a list"
+                            " of installed module sets, use -l option."
+                            % self.conf.scan)
                 return ReturnValues.SCENARIO
 
         if self.conf.contents:
