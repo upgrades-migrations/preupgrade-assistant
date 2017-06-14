@@ -103,7 +103,6 @@ class Application(object):
         self.tar_ball_name = None
         self.third_party = ""
         self.assessment_dir = None
-        self.list_scans = []
 
     def _add_report_log_file(self):
         """
@@ -582,31 +581,23 @@ class Application(object):
         else:
             self._devel_mode = 0
 
-    def _check_available_contents(self):
-        cnt = 0
-        is_dir = lambda x: os.path.isdir(os.path.join(self.conf.source_dir, x))
-        dirs = os.listdir(self.conf.source_dir)
-        self.list_scans = []
-        for dir_name in filter(is_dir, dirs):
-            if SystemIdentification.get_assessment_version(dir_name):
-                self.conf.scan = dir_name
-                self.list_scans.append(dir_name)
-                logger_debug.debug("Scan directory '%s'", self.conf.scan)
-                cnt += 1
-
-        if int(cnt) < 1:
-            log_message("There were no modules found in the %s directory.\n"
-                        "If you would like to use this tool, you have to"
-                        " install some." % settings.source_dir)
-            return ReturnValues.SCENARIO
-        if int(cnt) > 1:
-            log_message("Preupgrade Assistant detects more "
-                        "than one set of modules in the %s directory.\n" % settings.source_dir)
-            log_message("The list of sets of all available modules is: \n%s" % '\n'.join(self.list_scans))
-            log_message("If you would like to use the tool, "
-                        "specify the correct upgrade path mentioned above with a parameter -s.")
-            return ReturnValues.SCENARIO
-        return 0
+    def _get_default_module_set(self):
+        available_module_set_dirs = list_contents(self.conf.source_dir)
+        if not available_module_set_dirs:
+            log_message("No modules found in the default directory (%s).\n"
+                        " Either install a package with modules or use"
+                        " -c option for custom created modules."
+                        % settings.source_dir)
+            return None
+        if len(available_module_set_dirs) > 1:
+            log_message("More than one module set is detected in the default"
+                        " directory (%s)." % settings.source_dir)
+            log_message("Available module sets: \n%s"
+                        % '\n'.join(available_module_set_dirs))
+            log_message("Use option -s to specify which module set should be"
+                        " used.")
+            return None
+        return available_module_set_dirs.keys()[0]
 
     def run(self):
         """run analysis"""
@@ -624,14 +615,15 @@ class Application(object):
 
         if not self.conf.scan and not self.conf.contents and \
                 not self.conf.list_rules:
-            ret_val = self._check_available_contents()
-            if int(ret_val) != 0:
-                return ret_val
+            self.conf.scan = self._get_default_module_set()
+            if not self.conf.scan:
+                return ReturnValues.SCENARIO
 
         if self.conf.list_rules:
-            ret_val = self._check_available_contents()
-            if int(ret_val) != 0:
-                return ret_val
+            if not self.conf.scan:
+                self.conf.scan = self._get_default_module_set()
+            if not self.conf.scan:
+                return ReturnValues.SCENARIO
             rules = [self.conf.scan + ':' + x
                      for x in XccdfHelper.get_list_rules(self.conf.scan)]
             log_message('\n'.join(rules))
