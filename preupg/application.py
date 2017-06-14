@@ -269,12 +269,13 @@ class Application(object):
                     new_line=False
                     )
         start_time = datetime.datetime.now()
+        self.scanning_progress.time = start_time
         self.run_scan(function=self.scanning_progress.show_progress)
         end_time = datetime.datetime.now()
         diff = end_time - start_time
         log_message(
             "The assessment finished (time %.2d:%.2ds)" % (diff.seconds / 60,
-                                                       diff.seconds % 60)
+                                                           diff.seconds % 60)
         )
 
     def run_scan(self, function=None):
