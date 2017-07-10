@@ -19,6 +19,6 @@ do
         echo "Config file $NEW_FILE does not exists."
     fi
     echo "Copy file $file to $NEW_FILE"
-    cp $file $NEW_FILE
+    cp -a $file $NEW_FILE
 done
 cd "$CWD"
