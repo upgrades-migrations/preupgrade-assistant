@@ -8,7 +8,8 @@ from preupg.application import Application
 from preupg.conf import Conf, DummyConf
 from preupg.cli import CLI
 from preupg import settings, xml_manager
-from preupg.utils import PostupgradeHelper, SystemIdentification, FileHelper, OpenSCAPHelper
+from preupg.utils import (PostupgradeHelper, SystemIdentification, FileHelper,
+                          OpenSCAPHelper)
 from preupg.report_parser import ReportParser
 
 try:
@@ -296,14 +297,14 @@ class TestScenario(base.TestCase):
 
 class TestValidScenario(base.TestCase):
     '''
-    Test get_valid_scenario method
+    Test get_module_set_dirname method
     '''
     def test_file_ending_path(self):
         '''
         Test to get directory where file is located
         '''
         self.assertEqual(
-            SystemIdentification.get_valid_scenario('/dir1/dir2/file.xml'),
+            SystemIdentification.get_module_set_dirname('/dir1/dir2/file.xml'),
             'dir2'
         )
 
@@ -312,7 +313,7 @@ class TestValidScenario(base.TestCase):
         Test when file is not specified get last directory in path
         '''
         self.assertEqual(
-            SystemIdentification.get_valid_scenario('/dir1/dir2/dir3/'),
+            SystemIdentification.get_module_set_dirname('/dir1/dir2/dir3/'),
             'dir3'
         )
 
@@ -321,7 +322,7 @@ class TestValidScenario(base.TestCase):
         Test should get a second directory from the end
         '''
         self.assertEqual(
-            SystemIdentification.get_valid_scenario('/dir1/dir2/dir3'),
+            SystemIdentification.get_module_set_dirname('/dir1/dir2/dir3'),
             'dir2'
         )
 

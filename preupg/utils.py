@@ -427,17 +427,17 @@ class SystemIdentification(object):
         return [src_os_ver, dest_os_ver]
 
     @staticmethod
-    def get_valid_scenario(scenario_path):
+    def get_module_set_dirname(module_path):
         """
-        >>> get_valid_scenario('/dir1/dir2/file.xml')
+        >>> get_module_set_dirname('/dir1/dir2/file.xml')
         'dir2'
-        >>> get_valid_scenario('/dir1/dir2/dir3/')
+        >>> get_module_set_dirname('/dir1/dir2/dir3/')
         'dir3'
-        >>> get_valid_scenario('/dir1/dir2/dir3')
+        >>> get_module_set_dirname('/dir1/dir2/dir3')
         'dir2'
         # doesn't check directory at the end of path, is considered as a file
         """
-        return os.path.basename(os.path.split(scenario_path)[0])
+        return os.path.basename(os.path.dirname(module_path))
 
     @staticmethod
     def get_variant():
@@ -866,5 +866,3 @@ class OpenSCAPHelper(object):
         logger.debug('%s', '\n'.join(lines))
         os.remove(out_path)
         return ret_val
-
-

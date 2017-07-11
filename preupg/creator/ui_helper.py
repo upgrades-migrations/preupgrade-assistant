@@ -120,7 +120,7 @@ class UIHelper(object):
             print ("The scenario is mandatory. You have to specify it.")
             return None
 
-        if not SystemIdentification.get_valid_scenario(self.upgrade_path):
+        if not SystemIdentification.get_module_set_dirname(self.upgrade_path):
             if self.content_path is None:
                 self.content_path = self.upgrade_path
             print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)

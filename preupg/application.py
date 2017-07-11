@@ -293,7 +293,8 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
-                dir_name = SystemIdentification.get_valid_scenario(self.content)
+                dir_name = SystemIdentification.get_module_set_dirname(
+                    self.content)
                 if dir_name is None:
                     return None
                 check_name = dir_name

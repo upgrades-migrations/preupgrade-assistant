@@ -56,7 +56,7 @@ def main():
         print ('In directory %s no INI file was found.' % args[0])
         sys.exit(1)
 
-    dir_name = SystemIdentification.get_valid_scenario(args[0])
+    dir_name = SystemIdentification.get_module_set_dirname(args[0])
     if dir_name is None:
         print ('Dir does not contain proper scenario.')
         sys.exit(1)
