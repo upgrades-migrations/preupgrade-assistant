@@ -629,7 +629,7 @@ class Application(object):
             log_message('\n'.join(rules))
             return 0
 
-        if self.conf.upload:
+        if self.conf.upload and self.conf.results:
             if not self.upload_results():
                 return ReturnValues.SEND_REPORT_TO_UI
             return 0
