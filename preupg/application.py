@@ -441,7 +441,12 @@ class Application(object):
             return False
         # Validate properties.ini file in module set dir
         try:
-            ModulSetUtils.get_assessment_version(self.conf.scan)
+            module_set_path = self.conf.scan
+            # in case --contents option is used
+            if module_set_path is None:
+                # strip all-xccdf.xml from path
+                module_set_path = os.path.dirname(self.conf.contents)
+            ModulSetUtils.get_assessment_version(module_set_path)
         except EnvironmentError as err:
             log_message(str(err), level=logging.ERROR)
             return False
@@ -467,11 +472,15 @@ class Application(object):
         self.common.prep_symlinks(self.assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         if not self.conf.contents:
-            if not XccdfHelper.update_platform(
-                    os.path.join(self.assessment_dir, settings.content_file)):
+            ret = XccdfHelper.update_platform(os.path.join(
+                    self.assessment_dir, settings.content_file))
+            if ret:
+                log_message(str(ret), level=logging.ERROR)
                 return ReturnValues.SCENARIO
         else:
-            if not XccdfHelper.update_platform(self.content):
+            ret = XccdfHelper.update_platform(self.content)
+            if ret:
+                log_message(str(ret), level=logging.ERROR)
                 return ReturnValues.SCENARIO
             self.assessment_dir = os.path.dirname(self.content)
         return 0
