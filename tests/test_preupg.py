@@ -9,7 +9,7 @@ from preupg.conf import Conf, DummyConf
 from preupg.cli import CLI
 from preupg import settings, xml_manager
 from preupg.utils import (PostupgradeHelper, SystemIdentification, FileHelper,
-                          OpenSCAPHelper)
+                          OpenSCAPHelper, ModulSetUtils)
 from preupg.report_parser import ReportParser
 
 try:
@@ -304,7 +304,7 @@ class TestValidScenario(base.TestCase):
         Test to get directory where file is located
         '''
         self.assertEqual(
-            SystemIdentification.get_module_set_dirname('/dir1/dir2/file.xml'),
+            ModulSetUtils.get_module_set_dirname('/dir1/dir2/file.xml'),
             'dir2'
         )
 
@@ -313,7 +313,7 @@ class TestValidScenario(base.TestCase):
         Test when file is not specified get last directory in path
         '''
         self.assertEqual(
-            SystemIdentification.get_module_set_dirname('/dir1/dir2/dir3/'),
+            ModulSetUtils.get_module_set_dirname('/dir1/dir2/dir3/'),
             'dir3'
         )
 
@@ -322,14 +322,15 @@ class TestValidScenario(base.TestCase):
         Test should get a second directory from the end
         '''
         self.assertEqual(
-            SystemIdentification.get_module_set_dirname('/dir1/dir2/dir3'),
+            ModulSetUtils.get_module_set_dirname('/dir1/dir2/dir3'),
             'dir2'
         )
 
 
 class TestModuleSetINI(base.TestCase):
     '''
-    Test parser of source and destination major versions of system from ini file
+    Test parser of source and destination major versions of system from ini
+    file
     '''
     def test_valid_ini_file(self):
         '''
@@ -337,16 +338,61 @@ class TestModuleSetINI(base.TestCase):
         '''
         this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
         dummy_ini_path = os.path.join(this_file_dir_path, 'FOOBAR6_7')
-        version = SystemIdentification.get_assessment_version('',
-                                                              dummy_ini_path)
+        version = ModulSetUtils.get_assessment_version(dummy_ini_path)
         self.assertEqual(version, ['6', '7'])
 
     def test_invalid_ini_file(self):
         '''
         Test with with wrong ini file path
         '''
-        version = SystemIdentification.get_assessment_version('/dev/null')
-        self.assertEqual(version, None)
+        self.assertRaises(EnvironmentError,
+                          ModulSetUtils.get_assessment_version,
+                          '/dev/null')
+
+
+class TestCheckIniProp(base.TestCase):
+    '''
+    Test case for validation keys and sections inside ini file
+    '''
+    def __init__(self, *args, **kwargs):
+        super(TestCheckIniProp, self).__init__(*args, **kwargs)
+        self.src_version_key = "srcMajorVersion"
+        self.dst_version_key = "dstMajorVersion"
+        self.section_name = "preupgrade-assistant-modules"
+        self.this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
+        self.dummy_ini_path = os.path.join(self.this_file_dir_path,
+                                           'FOOBAR6_7/properties.ini')
+
+    def test_valid_keys(self):
+        '''
+        Test to check correct valid keys in ini file
+        '''
+        try:
+            for key in [self.src_version_key, self.dst_version_key]:
+                ModulSetUtils.check_property(self.dummy_ini_path,
+                                             key,
+                                             self.section_name)
+        except EnvironmentError:
+            self.self.fail('Key: {0} in {1} file should be correct'.format(
+                self.src_version_key, self.dummy_ini_path))
+
+    def test_invalid_key(self):
+        '''
+        Test to check some invalid non existing key in ini file
+        '''
+        self.assertRaises(EnvironmentError,
+                          ModulSetUtils.check_property,
+                          self.dummy_ini_path, "invalid_key",
+                          self.section_name)
+
+    def test_invalid_section(self):
+        '''
+        Test to check some invalid non existing section in ini file
+        '''
+        self.assertRaises(EnvironmentError,
+                          ModulSetUtils.check_property,
+                          self.dummy_ini_path, self.src_version_key,
+                          "invalid_section")
 
 
 def suite():
@@ -362,7 +408,9 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestScenario))
     suite.addTest(loader.loadTestsFromTestCase(TestValidScenario))
     suite.addTest(loader.loadTestsFromTestCase(TestModuleSetINI))
+    suite.addTest(loader.loadTestsFromTestCase(TestCheckIniProp))
     return suite
+
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=3).run(suite())

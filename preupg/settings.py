@@ -45,12 +45,6 @@ log_dir = "/var/log/preupgrade"
 
 # file with meta info
 properties_ini = "properties.ini"
-# section inside ini file
-section_name = "preupgrade-assistant-modules"
-# key which specify source major OS version
-src_version_key ="srcMajorVersion"
-# key to specify destination major OS version
-dest_version_key ="destMajorVersion"
 
 # preupg log file
 preupg_log = os.path.join(log_dir, "preupg.log")

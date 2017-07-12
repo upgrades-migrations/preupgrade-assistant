@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 
 from preupg import settings
 from preupg.logger import log_message, logger_report
-from preupg.utils import FileHelper, SystemIdentification
+from preupg.utils import FileHelper, SystemIdentification, ModulSetUtils
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 
@@ -154,8 +154,11 @@ class XccdfHelper(object):
             platform = settings.CPE_RHEL
         else:
             platform = settings.CPE_FEDORA
-        platform_id = SystemIdentification.get_assessment_version(
-            os.path.dirname(full_path))
+        try:
+            platform_id = ModulSetUtils.get_assessment_version(
+                os.path.dirname(full_path))
+        except EnvironmentError as err:
+            return err
         for index, line in enumerate(file_lines):
             if 'PLATFORM_NAME' in line:
                 line = line.replace('PLATFORM_NAME', platform)

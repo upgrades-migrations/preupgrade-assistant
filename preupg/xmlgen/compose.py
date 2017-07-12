@@ -7,7 +7,7 @@ import shutil
 
 from distutils import dir_util
 
-from preupg.utils import FileHelper, SystemIdentification
+from preupg.utils import FileHelper, ModulSetUtils
 from preupg.xmlgen.oscap_group_xml import OscapGroupXml
 from preupg import settings
 from preupg import xccdf
@@ -48,7 +48,7 @@ class XCCDFCompose(object):
             shutil.rmtree(self.dir_name)
 
     def generate_xml(self, generate_from_ini=True):
-        if SystemIdentification.get_module_set_dirname(self.dir_name) is None:
+        if ModulSetUtils.get_module_set_dirname(self.dir_name) is None:
             sys.stderr.write('Use scenario with valid name, e.g. RHEL6_7\n')
             return ReturnValues.SCENARIO
 
