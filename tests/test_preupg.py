@@ -8,8 +8,8 @@ from preupg.application import Application
 from preupg.conf import Conf, DummyConf
 from preupg.cli import CLI
 from preupg import settings, xml_manager
-from preupg.utils import (PostupgradeHelper, SystemIdentification, FileHelper,
-                          OpenSCAPHelper, ModulSetUtils)
+from preupg.utils import (PostupgradeHelper, FileHelper,
+                          OpenSCAPHelper, ModuleSetUtils)
 from preupg.report_parser import ReportParser
 
 try:
@@ -273,11 +273,11 @@ class TestSolutionReplacement(base.TestCase):
         self.assertEqual(expected_text, line)
 
 
-class TestScenario(base.TestCase):
+class TestModuleSet(base.TestCase):
     '''
     Test get_scenario method, to get directory with modules
     '''
-    def test_correct_content_scenario(self):
+    def test_correct_module_set(self):
         '''
         Test to get right module directory with contents option,
         directory with modules are the same where all-xccdf file is located
@@ -285,17 +285,17 @@ class TestScenario(base.TestCase):
         conf = {
             "contents": "tests/Modules/all-xccdf.xml",
         }
-        dc = DummyConf(**conf)
+        dummy_conf = DummyConf(**conf)
         cli = CLI(["--contents", "tests/Modules/all-xccdf.xml"])
-        a = Application(Conf(dc, settings, cli))
+        app = Application(Conf(dummy_conf, settings, cli))
         # Prepare all variables for test
-        a.conf.source_dir = os.getcwd()
-        a.content = a.conf.contents
-        a.basename = os.path.basename(a.content)
-        self.assertEqual(a.get_scenario(), 'Modules')
+        app.conf.source_dir = os.getcwd()
+        app.content = app.conf.contents
+        app.basename = os.path.basename(app.content)
+        self.assertEqual(app.get_scenario(), 'Modules')
 
 
-class TestValidScenario(base.TestCase):
+class TestModuleSetDirname(base.TestCase):
     '''
     Test get_module_set_dirname method
     '''
@@ -304,7 +304,7 @@ class TestValidScenario(base.TestCase):
         Test to get directory where file is located
         '''
         self.assertEqual(
-            ModulSetUtils.get_module_set_dirname('/dir1/dir2/file.xml'),
+            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/file.xml'),
             'dir2'
         )
 
@@ -313,7 +313,7 @@ class TestValidScenario(base.TestCase):
         Test when file is not specified get last directory in path
         '''
         self.assertEqual(
-            ModulSetUtils.get_module_set_dirname('/dir1/dir2/dir3/'),
+            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/dir3/'),
             'dir3'
         )
 
@@ -322,76 +322,77 @@ class TestValidScenario(base.TestCase):
         Test should get a second directory from the end
         '''
         self.assertEqual(
-            ModulSetUtils.get_module_set_dirname('/dir1/dir2/dir3'),
+            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/dir3'),
             'dir2'
         )
 
 
-class TestModuleSetINI(base.TestCase):
+class TestModuleSetConfigParse(base.TestCase):
     '''
-    Test parser of source and destination major versions of system from ini
-    file
+    Test parser of source and destination major versions of system from module
+    set config file
     '''
-    def test_valid_ini_file(self):
+    def test_valid_config(self):
         '''
-        Test check if parse on correct ini file works fine
+        Test check if parse on correct module set config works fine
         '''
         this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
-        dummy_ini_path = os.path.join(this_file_dir_path, 'FOOBAR6_7')
-        version = ModulSetUtils.get_assessment_version(dummy_ini_path)
+        dummy_config_path = os.path.join(this_file_dir_path, 'FOOBAR6_7')
+        version = ModuleSetUtils.get_module_set_os_versions(dummy_config_path)
         self.assertEqual(version, ['6', '7'])
 
-    def test_invalid_ini_file(self):
+    def test_invalid_config(self):
         '''
-        Test with with wrong ini file path
+        Test with wrong module set config path
         '''
         self.assertRaises(EnvironmentError,
-                          ModulSetUtils.get_assessment_version,
+                          ModuleSetUtils.get_module_set_os_versions,
                           '/dev/null')
 
 
-class TestCheckIniProp(base.TestCase):
+class TestModuleSetConfigContent(base.TestCase):
     '''
-    Test case for validation keys and sections inside ini file
+    Test case for validation keys and sections inside module set config file
     '''
     def __init__(self, *args, **kwargs):
-        super(TestCheckIniProp, self).__init__(*args, **kwargs)
+        super(TestModuleSetConfigContent, self).__init__(*args, **kwargs)
         self.src_version_key = "srcMajorVersion"
         self.dst_version_key = "dstMajorVersion"
         self.section_name = "preupgrade-assistant-modules"
         self.this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.dummy_ini_path = os.path.join(self.this_file_dir_path,
-                                           'FOOBAR6_7/properties.ini')
+        self.dummy_config_path = os.path.join(self.this_file_dir_path,
+                                              'FOOBAR6_7/properties.ini')
 
     def test_valid_keys(self):
         '''
-        Test to check correct valid keys in ini file
+        Test to check correct valid keys in module set config file
         '''
         try:
             for key in [self.src_version_key, self.dst_version_key]:
-                ModulSetUtils.check_property(self.dummy_ini_path,
-                                             key,
-                                             self.section_name)
+                ModuleSetUtils.get_config_key_value(self.dummy_config_path,
+                                                    key,
+                                                    self.section_name)
         except EnvironmentError:
-            self.self.fail('Key: {0} in {1} file should be correct'.format(
-                self.src_version_key, self.dummy_ini_path))
+            self.fail('Key: {0} in {1} file should be correct'.format(
+                self.src_version_key, self.dummy_config_path))
 
     def test_invalid_key(self):
         '''
-        Test to check some invalid non existing key in ini file
+        Test to check some invalid non existing key in module set config file
         '''
         self.assertRaises(EnvironmentError,
-                          ModulSetUtils.check_property,
-                          self.dummy_ini_path, "invalid_key",
+                          ModuleSetUtils.get_config_key_value,
+                          self.dummy_config_path, "invalid_key",
                           self.section_name)
 
     def test_invalid_section(self):
         '''
-        Test to check some invalid non existing section in ini file
+        Test to check some invalid non existing section in module set config
+        file
         '''
         self.assertRaises(EnvironmentError,
-                          ModulSetUtils.check_property,
-                          self.dummy_ini_path, self.src_version_key,
+                          ModuleSetUtils.get_config_key_value,
+                          self.dummy_config_path, self.src_version_key,
                           "invalid_section")
 
 
@@ -405,10 +406,10 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestHashes))
     suite.addTest(loader.loadTestsFromTestCase(TestSolutionReplacement))
     suite.addTest(loader.loadTestsFromTestCase(TestXMLUpdates))
-    suite.addTest(loader.loadTestsFromTestCase(TestScenario))
-    suite.addTest(loader.loadTestsFromTestCase(TestValidScenario))
-    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetINI))
-    suite.addTest(loader.loadTestsFromTestCase(TestCheckIniProp))
+    suite.addTest(loader.loadTestsFromTestCase(TestModuleSet))
+    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetDirname))
+    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetConfigParse))
+    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetConfigContent))
     return suite
 
 

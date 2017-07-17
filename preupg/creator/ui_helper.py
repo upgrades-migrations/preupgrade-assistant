@@ -10,7 +10,7 @@ import shutil
 import sys
 
 from distutils.util import strtobool
-from preupg.utils import FileHelper, ModulSetUtils
+from preupg.utils import FileHelper, ModuleSetUtils
 from preupg.creator import settings
 
 from preupg.settings import content_file as ALL_XCCDF_XML
@@ -120,7 +120,7 @@ class UIHelper(object):
             print ("The scenario is mandatory. You have to specify it.")
             return None
 
-        if not ModulSetUtils.get_module_set_dirname(self.upgrade_path):
+        if not ModuleSetUtils.get_module_set_dirname(self.upgrade_path):
             if self.content_path is None:
                 self.content_path = self.upgrade_path
             print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)

@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 
 from preupg import settings
 from preupg.logger import log_message, logger_report
-from preupg.utils import FileHelper, SystemIdentification, ModulSetUtils
+from preupg.utils import FileHelper, SystemIdentification, ModuleSetUtils
 
 XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 
@@ -155,7 +155,7 @@ class XccdfHelper(object):
         else:
             platform = settings.CPE_FEDORA
         try:
-            platform_id = ModulSetUtils.get_assessment_version(
+            platform_id = ModuleSetUtils.get_module_set_os_versions(
                 os.path.dirname(full_path))
         except EnvironmentError as err:
             return err

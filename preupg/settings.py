@@ -43,7 +43,7 @@ lock_file = "/var/run/preupgrade.pid"
 cache_dir = "/var/cache/preupgrade"
 log_dir = "/var/log/preupgrade"
 
-# file with meta info
+# file with module set meta info
 properties_ini = "properties.ini"
 
 # preupg log file

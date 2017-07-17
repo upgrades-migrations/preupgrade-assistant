@@ -339,7 +339,7 @@ class DirHelper(object):
 
         If /root/preupgrade/ dir contaings RHEL6_7 dir then
         it return just RHEL6_7 dir.
-        This is used for get_assessment_version
+        This is used for get_module_set_os_versions
         """
         is_dir = lambda x: os.path.isdir(os.path.join(dirname, x))
         dirs = os.listdir(dirname)
@@ -544,11 +544,11 @@ class ConfigHelper(object):
                 return config.get(section, key)
 
     @staticmethod
-    def has_ini_file_section(ini_file_path, section):
-        if not os.path.exists(ini_file_path):
+    def config_has_section(config_path, section):
+        if not os.path.exists(config_path):
             return False
         config = configparser.RawConfigParser(allow_no_value=True)
-        config.read(ini_file_path)
+        config.read(config_path)
         return True if config.has_section(section) else False
 
 
@@ -848,33 +848,33 @@ class OpenSCAPHelper(object):
         return ret_val
 
 
-class ModulSetUtils(object):
+class ModuleSetUtils(object):
 
     @staticmethod
-    def check_property(ini_file_path, key, section):
+    def get_config_key_value(config_path, key, section):
         """
         Checks for key in section if key exists, returns it else raise
         an exception
 
-        @param {string} ini_file_path
+        @param {string} config_path
         @param {string} key
         @param {string} section
         @return {string} - key value
         @throws {EnvironmentError} - if key of section doesn't exist
         """
-        if not ConfigHelper.has_ini_file_section(ini_file_path, section):
+        if not ConfigHelper.config_has_section(config_path, section):
             raise EnvironmentError("Section {0} is missing inside {1} file is"
-                                   .format(section, ini_file_path))
-        key_value = ConfigHelper.get_preupg_config_file(ini_file_path,
+                                   .format(section, config_path))
+        key_value = ConfigHelper.get_preupg_config_file(config_path,
                                                         key, section)
         if not key_value:
             raise EnvironmentError("Key {0} inside {1} section\n"
                                    "is missing in {2}"
-                                   .format(key, section, ini_file_path))
+                                   .format(key, section, config_path))
         return key_value
 
     @staticmethod
-    def get_assessment_version(module_set_path):
+    def get_module_set_os_versions(module_set_path):
         """
         Check if properties.ini file exists in dir_name and also
         validate the file content. From the content gets src/dst version of OS
@@ -897,14 +897,14 @@ class ModulSetUtils(object):
         if not os.path.isfile(properties_file):
             raise EnvironmentError("{0} file not found inside {1} directory"
                                    .format(settings.properties_ini,
-                                           os.path.dirname(properties_file)))
+                                           module_set_path))
 
-        src_os_ver = ModulSetUtils.check_property(properties_file,
-                                                  src_version_key,
-                                                  section_name)
-        dst_os_ver = ModulSetUtils.check_property(properties_file,
-                                                  dst_version_key,
-                                                  section_name)
+        src_os_ver = ModuleSetUtils.get_config_key_value(properties_file,
+                                                         src_version_key,
+                                                         section_name)
+        dst_os_ver = ModuleSetUtils.get_config_key_value(properties_file,
+                                                         dst_version_key,
+                                                         section_name)
         return [src_os_ver, dst_os_ver]
 
     @staticmethod

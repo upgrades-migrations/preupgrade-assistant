@@ -14,7 +14,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from preupg.xmlgen.xml_utils import XmlUtils
-from preupg.utils import FileHelper, ModulSetUtils
+from preupg.utils import FileHelper, ModuleSetUtils
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -105,7 +105,7 @@ class OscapGroupXml(object):
 
     def write_list_rules(self):
         end_point = self.dirname.find(
-            ModulSetUtils.get_module_set_dirname(self.dirname))
+            ModuleSetUtils.get_module_set_dirname(self.dirname))
         rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
         file_list_rules = os.path.join(settings.UPGRADE_PATH,
                                        settings.file_list_rules)

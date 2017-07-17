@@ -24,7 +24,7 @@ from preupg.scanning import ScanProgress, ScanningHelper
 from preupg.utils import (FileHelper, ProcessHelper, DirHelper, OpenSCAPHelper,
                           MessageHelper, TarballHelper, SystemIdentification,
                           PostupgradeHelper, ConfigHelper, ConfigFilesHelper,
-                          ModulSetUtils)
+                          ModuleSetUtils)
 from preupg.xccdf import XccdfHelper
 from preupg.logger import log_message, LoggerHelper, logger, logger_report
 from preupg.logger import logger_debug
@@ -294,7 +294,7 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
-                dir_name = ModulSetUtils.get_module_set_dirname(self.content)
+                dir_name = ModuleSetUtils.get_module_set_dirname(self.content)
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -446,7 +446,7 @@ class Application(object):
             if module_set_path is None:
                 # strip all-xccdf.xml from path
                 module_set_path = os.path.dirname(self.conf.contents)
-            ModulSetUtils.get_assessment_version(module_set_path)
+            ModuleSetUtils.get_module_set_os_versions(module_set_path)
         except EnvironmentError as err:
             log_message(str(err), level=logging.ERROR)
             return False
@@ -517,9 +517,8 @@ class Application(object):
             log_message("The module {0} does not exist.".format(self.content))
             return ReturnValues.SCENARIO
         if not self.conf.contents:
-            version = None
             try:
-                version = ModulSetUtils.get_assessment_version(self.conf.scan)
+                version = ModuleSetUtils.get_module_set_os_versions(self.conf.scan)
             except EnvironmentError as err:
                 log_message(str(err), level=logging.ERROR)
                 return ReturnValues.SCENARIO
