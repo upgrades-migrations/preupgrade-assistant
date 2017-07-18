@@ -89,7 +89,6 @@ class Application(object):
         self.common = None
         self._devel_mode = 0
         self._dist_mode = None
-        self.report_return_value = 0
         self.report_log_file = None
         self.debug_log_file = None
         settings.profile = self.conf.profile
@@ -551,11 +550,13 @@ class Application(object):
             3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' +
                "Read the file {0} for more details.".format(path)
         }
-        self.report_return_value = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(), 0)
+        report_return_value = XccdfHelper.check_inplace_risk(
+            self.openscap_helper.get_default_xml_result_path(),
+            0)
         try:
-            if report_dict[int(self.report_return_value)]:
+            if report_dict[int(report_return_value)]:
                 log_message('Summary information:')
-                log_message(report_dict[int(self.report_return_value)])
+                log_message(report_dict[int(report_return_value)])
         except KeyError:
             # We do not want to print anything in case of testing contents
             pass
@@ -571,6 +572,7 @@ class Application(object):
                 log_message("Read the third party content {0} {1} for more details.".
                             format(target, path))
         log_message("Upload results to UI by the command:\ne.g. {0} .".format(command))
+        return report_return_value
 
     def _set_devel_mode(self):
         # Check for devel_mode
@@ -733,14 +735,15 @@ class Application(object):
             retval = self.scan_system()
             if int(retval) != 0:
                 return retval
-            self.summary_report(self.tar_ball_name)
+            retval = self.summary_report(self.tar_ball_name)
             self.common.copy_common_files()
             KickstartGenerator.kickstart_scripts()
             FileHelper.remove_home_issues()
             if self.conf.upload:
-                self.upload_results(self.tar_ball_name)
+                if not self.upload_results(self.tar_ball_name):
+                    retval = ReturnValues.SEND_REPORT_TO_UI
             os.chdir(current_dir)
-            return self.report_return_value
+            return retval
 
         log_message('Nothing to do. Give me a task, please.')
         self.conf.settings[2].parser.print_help()
