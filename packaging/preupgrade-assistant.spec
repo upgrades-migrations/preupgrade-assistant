@@ -10,7 +10,7 @@
 %endif # RHEL
 
 Name:           preupgrade-assistant
-Version:        2.4.3
+Version:        2.4.4
 Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
