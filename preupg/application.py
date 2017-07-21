@@ -153,7 +153,7 @@ class Application(object):
         return os.path.join(self.conf.assessment_results_dir,
                             settings.postupgrade_dir)
 
-    def upload_results(self, tarball_path=None):
+    def upload_results(self):
         """upload tarball with results to frontend"""
         import xmlrpclib
         import socket
@@ -188,6 +188,8 @@ class Application(object):
         else:
             tarball_results = self.conf.results
         if tarball_results is None or not os.path.exists(tarball_results):
+            log_message("Can't determine what tarball to upload to the UI.",
+                        level=logging.ERROR)
             return False
         file_content = FileHelper.get_file_content(tarball_results, 'rb',
                                                    False, False)
@@ -204,6 +206,7 @@ class Application(object):
             log_message('Invalid response from the server.')
             log_message("Invalid response from the server: %s"
                         % response, level=logging.ERROR)
+            return False
         else:
             if status == 'OK':
                 try:
@@ -220,6 +223,8 @@ class Application(object):
                 except KeyError:
                     log_message('The report not submitted. The server returned a status: ', status)
                     log_message("The report status: %s" % status, level=logging.ERROR)
+                return False
+        return True
 
     def prepare_scan_directories(self):
         """Used for prepartion of directories used during scan functionality"""
@@ -740,7 +745,7 @@ class Application(object):
             KickstartGenerator.kickstart_scripts()
             FileHelper.remove_home_issues()
             if self.conf.upload:
-                if not self.upload_results(self.tar_ball_name):
+                if not self.upload_results():
                     retval = ReturnValues.SEND_REPORT_TO_UI
             os.chdir(current_dir)
             return retval
