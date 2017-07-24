@@ -18,7 +18,6 @@
   <ns0:front-matter xml:lang="en" />
   <ns0:reference href="http://iase.disa.mil/stigs/index.html">Defense Information Systems Agency - Security Technical Implementation Guides (DISA STIG)</ns0:reference>
   <ns0:reference href="https://www.pcisecuritystandards.org">Payment Card Industry - Data Security Standard (PCI DSS)</ns0:reference>
-  <ns0:platform idref="cpe:/o:PLATFORM_TAG:6" />
   <ns0:version>1.0</ns0:version>
   <ns0:model system="urn:xccdf:scoring:default" />
   <ns0:model system="urn:xccdf:scoring:flat" />

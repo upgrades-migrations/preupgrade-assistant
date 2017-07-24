@@ -130,17 +130,6 @@ class TestXMLUpdates(base.TestCase):
     def tearDown(self):
         os.remove(self.test_content)
 
-    def test_platform_tag(self):
-        shutil.copyfile(self.content, self.test_content)
-        rp = ReportParser(self.test_content)
-        rp.modify_platform_tag("12")
-
-        found = 0
-        for platform in rp.get_nodes(rp.target_tree, "platform"):
-            if "cpe:/o:redhat:enterprise_linux:12" in platform.get('idref'):
-                found = 1
-        self.assertTrue(found)
-
     def test_result_dirs_tmp_preupgrade(self):
         shutil.copyfile(self.content, self.test_content)
         rp = ReportParser(self.test_content)

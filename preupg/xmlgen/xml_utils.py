@@ -286,9 +286,6 @@ class XmlUtils(object):
         else:
             self.update_values_list(self.rule, "{fix}", xml_tags.FIX_TEXT)
             self.update_values_list(self.rule, "{solution_text}", "text")
-            self.update_values_list(
-                self.rule, "{platform_id}",
-                ModuleSetUtils.get_module_set_os_versions(self.module_dir)[1])
 
     def fnc_update_mode(self, key, name):
         """

@@ -129,29 +129,6 @@ Authors:
                     </tr>
                 </table>
             </div>
-            <div class="col-md-3 horizontal-scroll">
-                <h4>CPE Platforms</h4>
-                <ul class="list-group">
-                    <!-- all the applicable platforms first -->
-                    <xsl:for-each select="$benchmark/cdf:platform">
-                        <xsl:variable name="idref" select="@idref"/>
-                        <xsl:if test="$testresult/cdf:platform[@idref=$idref]">
-                            <li class="list-group-item">
-                                <span class="label label-success" title="CPE platform {@idref} was found applicable on the evaluated machine"><xsl:value-of select="@idref"/></span>
-                            </li>
-                        </xsl:if>
-                    </xsl:for-each>
-                    <!-- then the rest -->
-                    <xsl:for-each select="$benchmark/cdf:platform">
-                        <xsl:variable name="idref" select="@idref"/>
-                        <xsl:if test="not($testresult/cdf:platform[@idref=$idref])">
-                            <li class="list-group-item">
-                                <span class="label label-default" title="This CPE platform was not applicable on the evaluated machine"><xsl:value-of select="@idref"/></span>
-                            </li>
-                        </xsl:if>
-                    </xsl:for-each>
-                </ul>
-            </div>
             <div class="col-md-4 horizontal-scroll">
                 <h4>Addresses</h4>
                 <ul class="list-group">

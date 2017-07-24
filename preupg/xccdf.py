@@ -144,25 +144,3 @@ class XccdfHelper(object):
         rules = FileHelper.get_file_content(os.path.join(main_dir, settings.file_list_rules), "rb", method=True)
         rules = [x.strip() for x in rules]
         return rules
-
-    @staticmethod
-    def update_platform(full_path):
-        file_lines = FileHelper.get_file_content(full_path, 'rb', method=True)
-        platform = ''
-        platform_id = ''
-        if not SystemIdentification.get_system():
-            platform = settings.CPE_RHEL
-        else:
-            platform = settings.CPE_FEDORA
-        try:
-            platform_id = ModuleSetUtils.get_module_set_os_versions(
-                os.path.dirname(full_path))
-        except EnvironmentError as err:
-            return err
-        for index, line in enumerate(file_lines):
-            if 'PLATFORM_NAME' in line:
-                line = line.replace('PLATFORM_NAME', platform)
-            if 'PLATFORM_ID' in line:
-                line = line.replace('PLATFORM_ID', platform_id[0])
-            file_lines[index] = line
-        FileHelper.write_to_file(full_path, 'wb', file_lines)
