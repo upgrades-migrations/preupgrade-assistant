@@ -198,8 +198,8 @@ ORDERED_LIST = ['error', 'fail', 'needs_action', 'needs_inspection',
                 'not_checked', 'pass']
 
 
-class ReturnValues(object):
 
+class PreupgReturnCodes(object):
     SCENARIO = 20
     MODE_SELECT_RULES = 21
     INVALID_CLI_OPTION = 22
@@ -213,8 +213,7 @@ class ReturnValues(object):
     USER_ABORT = 30
 
 
-class ModuleValues(object):
-
+class ResultBasedReturnCodes(object):
     ERROR = 2
     FAIL = 2
     NEEDS_ACTION = 1
@@ -224,17 +223,16 @@ class ModuleValues(object):
     NOT_ALL = 0
     PASS = 0
 
-PREUPG_RETURN_VALUES = {'error': ModuleValues.ERROR,
-                        'fail': ModuleValues.FAIL,
-                        'needs_action': ModuleValues.NEEDS_ACTION,
-                        'needs_inspection': ModuleValues.NEEDS_INSPECTION,
-                        'fixed': ModuleValues.FIXED,
-                        'informational': ModuleValues.INFORMATIONAL,
-                        'not_applicable': ModuleValues.NOT_ALL,
-                        'not_selected': ModuleValues.NOT_ALL,
-                        'not_checked': ModuleValues.NOT_ALL,
-                        'pass': ModuleValues.PASS
-                        }
-ERROR_RETURN_VALUES = ['error', 'pass', 'informational', 'fixed',
-                       'not_applicable', 'not_selected',
-                       'not_checked' ]
+
+RESULT_BASED_RETURN_CODES = {
+    'error': ResultBasedReturnCodes.ERROR,
+    'fail': ResultBasedReturnCodes.FAIL,
+    'needs_action': ResultBasedReturnCodes.NEEDS_ACTION,
+    'needs_inspection': ResultBasedReturnCodes.NEEDS_INSPECTION,
+    'fixed': ResultBasedReturnCodes.FIXED,
+    'informational': ResultBasedReturnCodes.INFORMATIONAL,
+    'not_applicable': ResultBasedReturnCodes.NOT_ALL,
+    'not_selected': ResultBasedReturnCodes.NOT_ALL,
+    'not_checked': ResultBasedReturnCodes.NOT_ALL,
+    'pass': ResultBasedReturnCodes.PASS
+}

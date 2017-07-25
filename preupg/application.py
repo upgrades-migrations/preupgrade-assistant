@@ -20,7 +20,7 @@ except ImportError:
 
 from preupg import xml_manager, settings, exception
 from preupg.common import Common
-from preupg.settings import ReturnValues
+from preupg.settings import PreupgReturnCodes
 from preupg.scanning import ScanProgress, ScanningHelper
 from preupg.utils import (FileHelper, ProcessHelper, DirHelper, OpenSCAPHelper,
                           MessageHelper, TarballHelper, SystemIdentification,
@@ -440,7 +440,7 @@ class Application(object):
         self.common = Common(self.conf)
         if not self.conf.skip_common:
             if not self.common.common_results():
-                return ReturnValues.SCRIPT_TXT_MISSING
+                return PreupgReturnCodes.SCRIPT_TXT_MISSING
         return 0
 
     def is_module_set_valid(self):
@@ -525,7 +525,7 @@ class Application(object):
         """The function is used for scanning system with all steps."""
         self._set_devel_mode()
         if not self.is_module_set_valid():
-            return ReturnValues.SCENARIO
+            return PreupgReturnCodes.SCENARIO
         ret_val = self.prepare_scan_system()
         if ret_val != 0:
             return ret_val
@@ -543,7 +543,7 @@ class Application(object):
         except IOError:
             log_message("Error: Unable to open {0}."
                         .format(self.all_xccdf_xml_copy_path))
-            return ReturnValues.SCENARIO
+            return PreupgReturnCodes.SCENARIO
         if self.conf.mode:
             lines = [i.rstrip() for i in
                      FileHelper.get_file_content(
@@ -658,7 +658,7 @@ class Application(object):
             if not self.conf.scan:  # and what about the --scan option?
                 self.module_set_dirname = self.get_default_module_set_dirname()
                 if not self.module_set_dirname:
-                    return ReturnValues.SCENARIO
+                    return PreupgReturnCodes.SCENARIO
             else:
                 self.module_set_dirname = self.conf.scan
             self.module_set_path = os.path.join(self.conf.source_dir,
@@ -667,7 +667,7 @@ class Application(object):
                 log_message("Module set '%s' is not installed.\nFor a list"
                             " of installed module sets, use -l option."
                             % self.module_set_dirname, level=logging.ERROR)
-                return ReturnValues.SCENARIO
+                return PreupgReturnCodes.SCENARIO
             self.all_xccdf_xml_path = os.path.join(
                 self.module_set_path, settings.all_xccdf_xml_filename)
         else:
@@ -680,11 +680,11 @@ class Application(object):
                 log_message("The directory name needs to be in format"
                             " 'RHELx_y' for upgrades from RHEL x to RHEL y.",
                             level=logging.ERROR)
-                return ReturnValues.SCENARIO
+                return PreupgReturnCodes.SCENARIO
         if not os.path.isfile(self.all_xccdf_xml_path):
             log_message("'%s' does not exist." % self.all_xccdf_xml_path,
                         level=logging.ERROR)
-            return ReturnValues.SCENARIO
+            return PreupgReturnCodes.SCENARIO
 
     def determine_module_set_copy_location(self):
         """The module set to be used for the system assessment will needs to be
@@ -716,18 +716,18 @@ class Application(object):
                                            settings.xml_result_name)
             if not os.path.exists(result_xml_path):
                 log_message("System assessment needs to be performed first.")
-                return ReturnValues.PREUPG_BEFORE_RISKCHECK
+                return PreupgReturnCodes.PREUPG_BEFORE_RISKCHECK
             return XccdfHelper.check_inplace_risk(result_xml_path,
                                                   self.conf.verbose)
 
         if self.conf.upload and self.conf.results:
             if not self.upload_results():
-                return ReturnValues.SEND_REPORT_TO_UI
+                return PreupgReturnCodes.SEND_REPORT_TO_UI
             return 0
 
         if self.conf.cleanup:
             if not self.executed_under_root():
-                return ReturnValues.ROOT
+                return PreupgReturnCodes.ROOT
             self.clean_preupgrade_environment()
             return 0
 
@@ -742,7 +742,7 @@ class Application(object):
             if not found:
                 log_message(settings.converter_message.format(
                     ' '.join(SystemIdentification.get_convertors())))
-                return ReturnValues.MISSING_TEXT_CONVERTOR
+                return PreupgReturnCodes.MISSING_TEXT_CONVERTOR
 
         return_code = self.determine_module_set_location()
         if return_code:
@@ -757,7 +757,7 @@ class Application(object):
 
         if self.conf.mode and self.conf.select_rules:
             log_message(settings.options_not_allowed)
-            return ReturnValues.MODE_SELECT_RULES
+            return PreupgReturnCodes.MODE_SELECT_RULES
 
         # If force option is not mentioned and user selects NO then exit
         if not self.conf.force:
@@ -771,7 +771,7 @@ class Application(object):
                         " option.\nValid are: %s.\n"
                         % ", ".join(settings.migration_options)
                     )
-                    return ReturnValues.INVALID_CLI_OPTION
+                    return PreupgReturnCodes.INVALID_CLI_OPTION
             if SystemIdentification.get_arch() == "i386" or \
                     SystemIdentification.get_arch() == "i686":
                 if not self.conf.dst_arch:
@@ -780,7 +780,7 @@ class Application(object):
                                SystemIdentification.get_arch(), text)
             if not show_message(settings.warning_text + text):
                 # User does not want to continue
-                return ReturnValues.USER_ABORT
+                return PreupgReturnCodes.USER_ABORT
 
         self.openscap_helper = OpenSCAPHelper(self.conf.assessment_results_dir,
                                               self.conf.result_prefix,
@@ -789,14 +789,14 @@ class Application(object):
                                               self.all_xccdf_xml_path)
 
         if not self.executed_under_root():
-            return ReturnValues.ROOT
+            return PreupgReturnCodes.ROOT
         if not os.path.exists(settings.openscap_binary):
             log_message("Oscap with SCE enabled is not installed")
-            return ReturnValues.MISSING_OPENSCAP
+            return PreupgReturnCodes.MISSING_OPENSCAP
         if not os.access(settings.openscap_binary, os.X_OK):
             log_message("Oscap with SCE %s is not executable"
                         % settings.openscap_binary)
-            return ReturnValues.MISSING_OPENSCAP
+            return PreupgReturnCodes.MISSING_OPENSCAP
 
         self.execution_dir = os.getcwd()
         os.chdir("/tmp")
@@ -809,7 +809,7 @@ class Application(object):
         FileHelper.remove_home_issues()
         if self.conf.upload:
             if not self.upload_results():
-                retval = ReturnValues.SEND_REPORT_TO_UI
+                retval = PreupgReturnCodes.SEND_REPORT_TO_UI
         os.chdir(self.execution_dir)
         return retval
 

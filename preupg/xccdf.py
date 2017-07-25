@@ -108,31 +108,31 @@ class XccdfHelper(object):
             if result in results:
                 current_val = 0
                 logger_report.debug('%s found in assessment' % result)
-                current_val = settings.PREUPG_RETURN_VALUES[result]
+                current_val = settings.RESULT_BASED_RETURN_CODES[result]
                 ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
                 """
                 if not results[result]:
                     ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
                     if result == 'fail' and int(ret_val) == -1:
-                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
                     else:
-                        current_val = settings.PREUPG_RETURN_VALUES[result]
+                        current_val = settings.RESULT_BASED_RETURN_CODES[result]
                 else:
                     ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
                     logger_report.debug('Return value from "get_and_print_inplace_risk" is %s' % ret_val)
                     if result == 'fail' and int(ret_val) == -1:
-                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
                     elif result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
-                        current_val = settings.PREUPG_RETURN_VALUES['error']
+                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
                     elif int(ret_val) == -1:
-                        current_val = settings.PREUPG_RETURN_VALUES[result]
+                        current_val = settings.RESULT_BASED_RETURN_CODES[result]
                     else:
                         # EXTREME has to return 2 as FAIL
                         if ret_val == 2:
-                            current_val = ModuleValues.FAIL
+                            current_val = ResultBasedReturnCodes.FAIL
                         else:
                             # Needs_action has to return 1 as needs_inspection
-                            current_val = ModuleValues.NEEDS_INSPECTION
+                            current_val = ResultBasedReturnCodes.NEEDS_INSPECTION
                 """
                 if return_val < current_val:
                     return_val = current_val

@@ -7,7 +7,7 @@ import os
 from preupg.xccdf import XccdfHelper
 from preupg.utils import FileHelper
 from preupg import settings
-from preupg.settings import ModuleValues
+from preupg.settings import ResultBasedReturnCodes
 
 try:
     import base
@@ -42,49 +42,64 @@ class TestRiskCheck(base.TestCase):
         return return_value
 
     def test_check_inplace_risk_high(self):
-        self.assertEqual(self._update_xccdf_file('needs_action', 'HIGH'), ModuleValues.NEEDS_ACTION)
+        self.assertEqual(self._update_xccdf_file('needs_action', 'HIGH'),
+                         ResultBasedReturnCodes.NEEDS_ACTION)
 
     def test_check_inplace_risk_medium(self):
-        self.assertEqual(self._update_xccdf_file('needs_inspection', 'MEDIUM'), ModuleValues.NEEDS_INSPECTION)
+        self.assertEqual(self._update_xccdf_file('needs_inspection', 'MEDIUM'),
+                         ResultBasedReturnCodes.NEEDS_INSPECTION)
 
     def test_check_inplace_risk_slight(self):
-        self.assertEqual(self._update_xccdf_file('needs_inspection', 'SLIGHT'), ModuleValues.NEEDS_INSPECTION)
+        self.assertEqual(self._update_xccdf_file('needs_inspection', 'SLIGHT'),
+                         ResultBasedReturnCodes.NEEDS_INSPECTION)
 
     def test_check_inplace_risk_extreme(self):
-        self.assertEqual(self._update_xccdf_file('fail', 'EXTREME'), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file('fail', 'EXTREME'),
+                         ResultBasedReturnCodes.FAIL)
 
     def test_fail_return_value(self):
-        self.assertEqual(self._update_xccdf_file('fail', None), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file('fail', None),
+                         ResultBasedReturnCodes.FAIL)
 
     def test_pass_return_values(self):
         expected_value = 'pass'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.PASS)
+        self.assertEqual(self._update_xccdf_file(expected_value, None),
+                         ResultBasedReturnCodes.PASS)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.PASS)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk),
+                             ResultBasedReturnCodes.PASS)
 
     def test_fixed_return_values(self):
         expected_value = 'fixed'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.FIXED)
+        self.assertEqual(self._update_xccdf_file(expected_value, None),
+                         ResultBasedReturnCodes.FIXED)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.FIXED)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk),
+                             ResultBasedReturnCodes.FIXED)
 
     def test_informational_return_values(self):
         expected_value = 'informational'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.INFORMATIONAL)
+        self.assertEqual(self._update_xccdf_file(expected_value, None),
+                         ResultBasedReturnCodes.INFORMATIONAL)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.INFORMATIONAL)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk),
+                             ResultBasedReturnCodes.INFORMATIONAL)
 
     def test_not_applicable_return_values(self):
         expected_value = 'not_applicable'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.NOT_ALL)
+        self.assertEqual(self._update_xccdf_file(expected_value, None),
+                         ResultBasedReturnCodes.NOT_ALL)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.NOT_ALL)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk),
+                             ResultBasedReturnCodes.NOT_ALL)
 
     def test_error_return_values(self):
         expected_value = 'error'
-        self.assertEqual(self._update_xccdf_file(expected_value, None), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(expected_value, None),
+                         ResultBasedReturnCodes.ERROR)
         for risk in self.risks:
-            self.assertEqual(self._update_xccdf_file(expected_value, risk), ModuleValues.ERROR)
+            self.assertEqual(self._update_xccdf_file(expected_value, risk),
+                             ResultBasedReturnCodes.ERROR)
 
 
 class TestCombinedRiskCheck(base.TestCase):
@@ -123,43 +138,69 @@ class TestCombinedRiskCheck(base.TestCase):
         return return_value
 
     def test_error_pass(self):
-        self.assertEqual(self._update_xccdf_file(['error', 'pass'], [None, None]), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(['error', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.ERROR)
 
     def test_error_failed(self):
-        self.assertEqual(self._update_xccdf_file(['error', 'fail'], [None, None]), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(['error', 'fail'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.ERROR)
 
     def test_error_informational(self):
-        self.assertEqual(self._update_xccdf_file(['error', 'informational'], [None, None]), ModuleValues.ERROR)
+        self.assertEqual(self._update_xccdf_file(['error', 'informational'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.ERROR)
 
     def test_needs_inspection_pass(self):
-        self.assertEqual(self._update_xccdf_file(['needs_inspection', 'pass'], [None, None]), ModuleValues.NEEDS_INSPECTION)
+        self.assertEqual(self._update_xccdf_file(['needs_inspection', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.NEEDS_INSPECTION)
 
     def test_informational_pass(self):
-        self.assertEqual(self._update_xccdf_file(['informational', 'pass'], [None, None]), ModuleValues.INFORMATIONAL)
+        self.assertEqual(self._update_xccdf_file(['informational', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.INFORMATIONAL)
 
     def test_fixed_informational(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'], [None, None]), ModuleValues.FIXED)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.FIXED)
 
     def test_fixed_pass(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'pass'], [None, None]), ModuleValues.FIXED)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.FIXED)
 
     def test_pass_pass(self):
-        self.assertEqual(self._update_xccdf_file(['pass', 'pass'], [None, None]), ModuleValues.PASS)
+        self.assertEqual(self._update_xccdf_file(['pass', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.PASS)
 
     def test_needs_action_failed(self):
-        self.assertEqual(self._update_xccdf_file(['needs_action', 'fail'], ['HIGH', 'EXTREME']), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file(['needs_action', 'fail'],
+                                                 ['HIGH', 'EXTREME']),
+                         ResultBasedReturnCodes.FAIL)
 
     def test_fixed_failed(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, 'EXTREME']), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'],
+                                                 [None, 'EXTREME']),
+                         ResultBasedReturnCodes.FAIL)
 
     def test_fixed_failed_none(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'], [None, None]), ModuleValues.FAIL)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'fail'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.FAIL)
 
     def test_fixed_information_risk(self):
-        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'], [None, 'HIGH']), ModuleValues.FIXED)
+        self.assertEqual(self._update_xccdf_file(['fixed', 'informational'],
+                                                 [None, 'HIGH']),
+                         ResultBasedReturnCodes.FIXED)
 
     def test_not_applicable_pass(self):
-        self.assertEqual(self._update_xccdf_file(['not_applicable', 'pass'], [None, None]), ModuleValues.NOT_ALL)
+        self.assertEqual(self._update_xccdf_file(['not_applicable', 'pass'],
+                                                 [None, None]),
+                         ResultBasedReturnCodes.NOT_ALL)
 
 
 def suite():
@@ -168,6 +209,7 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestRiskCheck))
     suite.addTest(loader.loadTestsFromTestCase(TestCombinedRiskCheck))
     return suite
+
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=3).run(suite())
