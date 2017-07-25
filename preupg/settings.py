@@ -191,13 +191,6 @@ PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
 DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')
 
-# Ordered dictionary because of python 2.4.
-
-ORDERED_LIST = ['error', 'fail', 'needs_action', 'needs_inspection',
-                'fixed', 'informational', 'not_applicable', 'not_selected',
-                'not_checked', 'pass']
-
-
 
 class PreupgReturnCodes(object):
     SCENARIO = 20
@@ -231,8 +224,8 @@ RESULT_BASED_RETURN_CODES = {
     'needs_inspection': ResultBasedReturnCodes.NEEDS_INSPECTION,
     'fixed': ResultBasedReturnCodes.FIXED,
     'informational': ResultBasedReturnCodes.INFORMATIONAL,
-    'not_applicable': ResultBasedReturnCodes.NOT_ALL,
-    'not_selected': ResultBasedReturnCodes.NOT_ALL,
-    'not_checked': ResultBasedReturnCodes.NOT_ALL,
+    'notapplicable': ResultBasedReturnCodes.NOT_ALL,
+    'notselected': ResultBasedReturnCodes.NOT_ALL,
+    'notchecked': ResultBasedReturnCodes.NOT_ALL,
     'pass': ResultBasedReturnCodes.PASS
 }

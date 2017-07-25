@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 import re
 import os
+import sys
 from operator import itemgetter
 from xml.etree import ElementTree
 
@@ -16,10 +17,10 @@ XMLNS = "{http://checklists.nist.gov/xccdf/1.2}"
 class XccdfHelper(object):
 
     @staticmethod
-    def get_and_print_inplace_risk(verbose, inplace_risk):
+    def get_inplace_risk(inplace_risk, verbose=0):
         """
-        The function browse throw the list and find first
-        inplace_risk and return corresponding status.
+        The function goes through the list and finds first
+        inplace_risk and returns corresponding status.
         If verbose mode is used then it prints out
         all inplace risks higher then SLIGHT.
         """
@@ -34,7 +35,6 @@ class XccdfHelper(object):
         for key, val in sorted(iter(risks.items()), key=itemgetter(1),
                                reverse=False):
             matched = [x for x in inplace_risk if key in x]
-            logger_report.debug(matched)
             if matched:
                 # if matched and return_value the remember her
                 if return_value < val:
@@ -49,12 +49,12 @@ class XccdfHelper(object):
         return return_value
 
     @staticmethod
-    def get_check_import_inplace_risk(tree):
+    def get_check_import_inplace_risks(tree):
         """
         Function returns implace risks
         """
         inplace_risk = []
-        risk_regex = "preupg\.risk\.(?P<level>\w+): (?P<message>.+)"
+        risk_regex = r"preupg\.risk\.(?P<level>\w+): (?P<message>.+)"
         for check in tree.findall(".//" + XMLNS + "check-import"):
             if not check.text:
                 continue
@@ -62,81 +62,67 @@ class XccdfHelper(object):
             for line in lines:
                 match = re.match(risk_regex, line)
                 if match:
-                    logger_report.debug(line)
                     if line not in inplace_risk:
                         inplace_risk.append(line)
         return inplace_risk
 
     @staticmethod
-    def check_inplace_risk(xccdf_file, verbose):
+    def check_inplace_risk(result_xml, verbose):
         """
-        The function read the content of the file
-        and finds out all "preupg.risk" rows in TestResult tree.
-        return code is get from function get_and_print_inplace_risk
+        The function gathers all module results from the report and returns
+        code that represents the highest risk found.
         """
-        message = "'preupg' command was not run yet. Run 'preupg' before getting list of risks."
         try:
-            content = FileHelper.get_file_content(xccdf_file, 'rb', False, False)
-            if not content:
-                # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
-                log_message(message)
-                return -1
+            content = FileHelper.get_file_content(result_xml, 'rb',
+                                                  False, False)
         except IOError:
-            # WE NEED TO RETURN -1 FOR RED-HAT-UPGRADE-TOOL
-            log_message(message)
-            return -1
+            # Red Hat Upgrade Tool in case of no report expects any value
+            # except 0, 1, or 2
+            return settings.PreupgReturnCodes.PREUPG_BEFORE_RISKCHECK
 
+        report_results = XccdfHelper.gather_report_results(content)
+        return XccdfHelper.get_highest_return_code(report_results, verbose)
+
+    @staticmethod
+    def gather_report_results(content):
+        """Generate a dictionary that summarizes what module results exist in
+        the report and what risks have been reported for these results.
+        """
         target_tree = ElementTree.fromstring(content)
-        results = {}
-        for profile in target_tree.findall(XMLNS + "TestResult"):
-            # Collect all inplace risk for each return code
-            for rule_result in profile.findall(XMLNS + "rule-result"):
-                result_value = None
-                for check in rule_result.findall(XMLNS + "result"):
-                    result_value = check.text
-                if check.text not in results:
-                    results[check.text] = []
-                inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule_result)
-                if not inplace_risk:
-                    continue
-                for risk in inplace_risk:
-                    if risk not in results[result_value]:
-                        results[result_value].append(risk)
-        logger_report.debug(results)
-        return_val = 0
-        for result in settings.ORDERED_LIST:
-            if result in results:
-                current_val = 0
-                logger_report.debug('%s found in assessment' % result)
-                current_val = settings.RESULT_BASED_RETURN_CODES[result]
-                ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
-                """
-                if not results[result]:
-                    ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
-                    if result == 'fail' and int(ret_val) == -1:
-                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
-                    else:
-                        current_val = settings.RESULT_BASED_RETURN_CODES[result]
-                else:
-                    ret_val = XccdfHelper.get_and_print_inplace_risk(verbose, results[result])
-                    logger_report.debug('Return value from "get_and_print_inplace_risk" is %s' % ret_val)
-                    if result == 'fail' and int(ret_val) == -1:
-                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
-                    elif result in settings.ERROR_RETURN_VALUES and int(ret_val) != -1:
-                        current_val = settings.RESULT_BASED_RETURN_CODES['error']
-                    elif int(ret_val) == -1:
-                        current_val = settings.RESULT_BASED_RETURN_CODES[result]
-                    else:
-                        # EXTREME has to return 2 as FAIL
-                        if ret_val == 2:
-                            current_val = ResultBasedReturnCodes.FAIL
-                        else:
-                            # Needs_action has to return 1 as needs_inspection
-                            current_val = ResultBasedReturnCodes.NEEDS_INSPECTION
-                """
-                if return_val < current_val:
-                    return_val = current_val
-        return return_val
+        report_results = {}
+        profile = target_tree.find(XMLNS + "TestResult")
+        for rule_result in profile.findall(XMLNS + "rule-result"):
+            result_value = rule_result.find(XMLNS + "result").text
+            inplace_risks = XccdfHelper.get_check_import_inplace_risks(
+                rule_result)
+            if result_value not in report_results.keys():
+                report_results[result_value] = []
+            for risk in inplace_risks:
+                if risk not in report_results[result_value]:
+                    report_results[result_value].append(risk)
+        logger_report.debug(report_results)
+        return report_results
+
+    @staticmethod
+    def get_highest_return_code(report_results, verbose):
+        """Return a number based on the modules' results (exit_x)
+        and inplace risks (log_x_risk). From these the one with the highest
+        severity is chosen.
+        """
+        highest_return_code = settings.ResultBasedReturnCodes.PASS
+        for found_result in report_results.keys():
+            if found_result not in settings.RESULT_BASED_RETURN_CODES.keys():
+                sys.stderr.write("Unknown result: %s\n" % found_result)
+                sys.exit(settings.PreupgReturnCodes.INTERNAL_EXCEPTION)
+            result_based_return_code = \
+                settings.RESULT_BASED_RETURN_CODES[found_result]
+            risk_based_return_code = \
+                XccdfHelper.get_inplace_risk(report_results[found_result],
+                                             verbose)
+            highest_return_code = max(highest_return_code,
+                                      result_based_return_code,
+                                      risk_based_return_code)
+        return highest_return_code
 
     @staticmethod
     def get_list_rules(all_xccdf_xml_path):

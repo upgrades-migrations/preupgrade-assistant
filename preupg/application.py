@@ -601,8 +601,7 @@ class Application(object):
                "Read the file {0} for more details.".format(path)
         }
         report_return_value = XccdfHelper.check_inplace_risk(
-            self.openscap_helper.get_default_xml_result_path(),
-            0)
+            self.openscap_helper.get_default_xml_result_path(), 0)
         try:
             if report_dict[int(report_return_value)]:
                 log_message('Summary information:')
@@ -712,13 +711,13 @@ class Application(object):
             return 0
 
         if self.conf.riskcheck:
-            result_xml_path = os.path.join(settings.assessment_results_dir,
+            report_xml_path = os.path.join(settings.assessment_results_dir,
                                            settings.xml_result_name)
-            if not os.path.exists(result_xml_path):
+            retval = XccdfHelper.check_inplace_risk(report_xml_path,
+                                                    self.conf.verbose)
+            if retval == PreupgReturnCodes.PREUPG_BEFORE_RISKCHECK:
                 log_message("System assessment needs to be performed first.")
-                return PreupgReturnCodes.PREUPG_BEFORE_RISKCHECK
-            return XccdfHelper.check_inplace_risk(result_xml_path,
-                                                  self.conf.verbose)
+            return retval
 
         if self.conf.upload and self.conf.results:
             if not self.upload_results():

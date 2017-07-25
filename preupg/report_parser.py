@@ -1,7 +1,7 @@
 from __future__ import print_function, unicode_literals
+import logging
 import re
 import os
-import shutil
 
 from preupg.utils import FileHelper
 from preupg.xccdf import XccdfHelper
@@ -14,14 +14,6 @@ except ImportError:
 from preupg.xmlgen import xml_tags
 
 
-def get_node(tree, tag, name_space='', prefix=''):
-    return tree.find(prefix + name_space + tag)
-
-
-def remove_node(tree, tag):
-    return tree.remove(tag)
-
-
 class ReportHelper(object):
 
     @staticmethod
@@ -31,24 +23,6 @@ class ReportHelper(object):
     @staticmethod
     def get_needs_action():
         return settings.needs_action
-
-    @staticmethod
-    def upd_inspection(rule):
-        """
-        Function updates result to needs_inspection in case
-        of SLIGHT or MEDIUM risk
-        """
-        return rule.get("idref"), ReportHelper.get_needs_inspection()
-
-    @staticmethod
-    def upd_action(rule):
-        """Function updates result to needs_action in caseof HIGH"""
-        return rule.get("idref"), ReportHelper.get_needs_action()
-
-    @staticmethod
-    def upd_extreme(rule):
-        """Function does no update result for extreme risk"""
-        return None, "fail"
 
 
 class ReportParser(object):
@@ -77,7 +51,11 @@ class ReportParser(object):
                                              self.element_prefix, tag))
 
     def get_child(self, tree, tag):
-        return get_node(tree, tag, self.element_prefix, prefix='./')
+        return self.get_node(tree, tag, self.element_prefix, prefix='./')
+
+    @staticmethod
+    def get_node(tree, tag, name_space='', prefix=''):
+        return tree.find(prefix + name_space + tag)
 
     def get_nodes_attrib(self, tree, tag, attrib):
         try:
@@ -139,14 +117,14 @@ class ReportParser(object):
             list_names[id_ref] = self.get_nodes_text(rule[0], "title")
         return list_names
 
-    def get_all_result_rules(self):
-        """Function returns all rul-result in TestResult xml tag"""
+    def get_all_rule_results(self):
+        """Function returns all rule-result in TestResult xml tag"""
         return self.filter_grandchildren(self.target_tree, "TestResult", "rule-result")
 
     def get_all_results(self):
         """Function return all results"""
         results = []
-        for rule in self.get_all_result_rules():
+        for rule in self.get_all_rule_results():
             results.extend(self.get_nodes(rule, "result", prefix='./'))
         return results
 
@@ -169,6 +147,7 @@ class ReportParser(object):
 
         self.write_xml()
 
+<<<<<<< HEAD
     def update_inplace_risk(self, scanning_progress, rule, res):
         """Function updates inplace risk"""
         inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
@@ -185,42 +164,62 @@ class ReportParser(object):
                     scanning_progress.output_data[index] = "{0}:{1}".format(
                         self.get_nodes_text(rule, "title"),
                         res.text)
+=======
+    def modify_platform_tag(self, platform_tag):
+        """The function updates platform tag to the assessment system tag"""
+        for platform in self.filter_children(self.target_tree, "platform"):
+            if "cpe:/o:redhat:enterprise_linux:" in platform.get("idref"):
+                logger_report.debug("Update platform tag to '%s'", platform_tag)
+                platform.set("idref", "cpe:/o:redhat:enterprise_linux:"+platform_tag)
+
+        self.write_xml()
+>>>>>>> Refactor functions determining the return code
 
     def replace_inplace_risk(self, scanning_results=None):
+        """Replace result of a module:
+        - from FAIL to NEEDS_INSPECTION if the module has SLIGHT or MEDIUM risk
+        - from FAIL to NEEDS_ACTION if the module has HIGH risk
+        - from FAIL to ERROR if the module has no risk
+        - from UNKNOWN to ERROR
+        - to ERROR if the module has some risk but the result isn't FAIL
         """
-        This function has aim to replace FAILED to
-        NEEDS_INSPECTION in case that risks are SLIGHT or MEDIUM
-        """
-        #Filter all rule-result in TestResult
-        changed_fields = []
+        changed_results = []
         self.remove_empty_check_import()
-        inplace_dict = {
-            0: ReportHelper.upd_inspection,
-            1: ReportHelper.upd_action,
-            2: ReportHelper.upd_extreme,
-        }
-        for rule in self.get_all_result_rules():
-            result = [x for x in self.get_nodes(rule, "result") if x.text == "fail"]
-            # Get all affected rules and taken their names
-            for res in result:
-                inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
-                logger_report.debug(inplace_risk)
-                # In case that report has state fail and
-                # no log_risk than it should be needs_inspection
-                if not inplace_risk:
-                    changed = rule.get("idref")
-                    res.text = "fail"
-                    log_message('The %s module exits as fail but without a risk.' % rule.get("idref"))
+        for rule_result in self.get_all_rule_results():
+            rule_id = rule_result.get("idref")
+            result_node = self.get_child(rule_result, "result")
+            inplace_risks = XccdfHelper.get_check_import_inplace_risks(
+                rule_result)
+            if result_node.text != "fail" and inplace_risks:
+                # The only result that may have an inplace risk is "fail"
+                logger_report.debug(
+                    "Module with result '%s' can't have any inplace risks."
+                    " Setting the result to 'error'.\n"
+                    " - Module: %s\n - Risks found: %s",
+                    result_node.text, rule_id, "|".join(inplace_risks))
+                result_node.text = "error"
+                changed_results.append(rule_id + ":" + result_node.text)
+            if result_node.text == "fail":
+                if not inplace_risks:
+                    result_node.text = "error"
+                    log_message("The result of %s module is 'fail' but without"
+                                " any risk." % rule_id, level=logging.ERROR)
+                    changed_results.append(rule_id + ":" + result_node.text)
                 else:
-                    inplace_num = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
-                    logger_report.debug("Call function '%s'", inplace_dict[inplace_num])
-                    changed, res.text = inplace_dict[inplace_num](rule)
-                    logger_report.debug("Replace text '%s:%s'", changed, res.text)
-                if changed is not None:
-                    changed_fields.append(changed+":"+res.text)
-
+                    risk_level = XccdfHelper.get_inplace_risk(inplace_risks)
+                    self.update_result_based_on_risk(result_node, risk_level)
+                    changed_results.append(rule_id + ":" + result_node.text)
+                    logger_report.debug("Result 'fail' replaced with '%s' for"
+                                        " the '%s' rule.", result_node.text,
+                                        rule_id)
+            if result_node.text == "unknown":
+                result_node.text = "error"
+                changed_results.append(rule_id + ":" + result_node.text)
+                log_message("Detected 'unknown' result of module %s. Setting"
+                            " the result to 'error'."
+                            % rule_id, level=logging.ERROR)
         if scanning_results:
-            scanning_results.update_data(changed_fields)
+            scanning_results.update_data(changed_results)
 
         self.write_xml()
 
@@ -230,16 +229,27 @@ class ReportParser(object):
         """
         has_std_name = lambda x: x.get("import-name") in ["stdout", "stderr"]
         is_empty = lambda x: x.text is None or x.text.strip() == ""
-        for rule in self.get_all_result_rules():
+        for rule in self.get_all_rule_results():
             for check in self.get_nodes(rule, "check"):
                 for node in self.get_nodes(check, "check-import"):
                     if has_std_name(node) and is_empty(node):
-                        remove_node(check, node)
+                        self.remove_node(check, node)
+
+    @staticmethod
+    def remove_node(tree, tag):
+        return tree.remove(tag)
+
+    @staticmethod
+    def update_result_based_on_risk(result_node, risk_level):
+        if risk_level == 0:
+            result_node.text = ReportHelper.get_needs_inspection()
+        if risk_level == 1:
+            result_node.text = ReportHelper.get_needs_action()
 
     def remove_debug_info(self):
         """Function removes debug information from report"""
         re_expr = r'^preupg.log.DEBUG.*'
-        for rule in self.get_all_result_rules():
+        for rule in self.get_all_rule_results():
             for check_import in self.filter_grandchildren(rule,
                                                           "check",
                                                           "check-import"):
