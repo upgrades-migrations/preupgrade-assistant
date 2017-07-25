@@ -339,7 +339,7 @@ class DirHelper(object):
 
         If /root/preupgrade/ dir contaings RHEL6_7 dir then
         it return just RHEL6_7 dir.
-        This is used for get_assessment_version
+        This is used for get_module_set_os_versions
         """
         is_dir = lambda x: os.path.isdir(os.path.join(dirname, x))
         dirs = os.listdir(dirname)
@@ -410,28 +410,6 @@ class SystemIdentification(object):
         """Function returns list of supported convertors"""
         return settings.text_converters.keys()
 
-    @staticmethod
-    def get_assessment_version(dir_name):
-        if PreupgHelper.get_prefix() == "preupgrade":
-            matched = re.search(r'\D+(\d*)_(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(2)]
-            else:
-                return None
-        else:
-            matched = re.search(r'\D+(\d*)_(\D*)(\d+)', dir_name, re.I)
-            if matched:
-                return [matched.group(1), matched.group(3)]
-            else:
-                return None
-
-    @staticmethod
-    def get_valid_scenario(dir_name):
-        matched = [x for x in dir_name.split(os.path.sep) if re.match(r'\D+(\d*)_(\D*)(\d+)(-results)?$', x, re.I)]
-        if matched:
-            return matched[0]
-        else:
-            return None
 
     @staticmethod
     def get_variant():
@@ -564,6 +542,14 @@ class ConfigHelper(object):
         if config.has_section(section):
             if config.has_option(section, key):
                 return config.get(section, key)
+
+    @staticmethod
+    def config_has_section(config_path, section):
+        if not os.path.exists(config_path):
+            return False
+        config = configparser.RawConfigParser(allow_no_value=True)
+        config.read(config_path)
+        return True if config.has_section(section) else False
 
 
 class ConfigFilesHelper(object):
@@ -862,3 +848,74 @@ class OpenSCAPHelper(object):
         return ret_val
 
 
+class ModuleSetUtils(object):
+
+    @staticmethod
+    def get_config_key_value(config_path, key, section):
+        """
+        Checks for key in section if key exists, returns it else raise
+        an exception
+
+        @param {string} config_path
+        @param {string} key
+        @param {string} section
+        @return {string} - key value
+        @throws {EnvironmentError} - if key of section doesn't exist
+        """
+        if not ConfigHelper.config_has_section(config_path, section):
+            raise EnvironmentError("Section {0} is missing inside {1} file is"
+                                   .format(section, config_path))
+        key_value = ConfigHelper.get_preupg_config_file(config_path,
+                                                        key, section)
+        if not key_value:
+            raise EnvironmentError("Key {0} inside {1} section\n"
+                                   "is missing in {2}"
+                                   .format(key, section, config_path))
+        return key_value
+
+    @staticmethod
+    def get_module_set_os_versions(module_set_path):
+        """
+        Check if properties.ini file exists in dir_name and also
+        validate the file content. From the content gets src/dst version of OS
+        and return them as list.
+
+        @param {string} dir_name - eg. /root/preupgrage/modul_dir
+        @param {string} base_dir
+        @return {list}
+        @throws {EnvironmentError} - when file doesn't exist or content is
+                                     incorrect
+        """
+        src_version_key = "srcMajorVersion"
+        dst_version_key = "dstMajorVersion"
+        section_name = "preupgrade-assistant-modules"
+        if not os.path.isdir(module_set_path):
+            module_set_path = os.path.join(settings.source_dir,
+                                           module_set_path)
+        properties_file = os.path.join(module_set_path,
+                                       settings.properties_ini)
+        if not os.path.isfile(properties_file):
+            raise EnvironmentError("{0} file not found inside {1} directory"
+                                   .format(settings.properties_ini,
+                                           module_set_path))
+
+        src_os_ver = ModuleSetUtils.get_config_key_value(properties_file,
+                                                         src_version_key,
+                                                         section_name)
+        dst_os_ver = ModuleSetUtils.get_config_key_value(properties_file,
+                                                         dst_version_key,
+                                                         section_name)
+        return [src_os_ver, dst_os_ver]
+
+    @staticmethod
+    def get_module_set_dirname(module_path):
+        """
+        >>> get_module_set_dirname('/dir1/dir2/file.xml')
+        'dir2'
+        >>> get_module_set_dirname('/dir1/dir2/dir3/')
+        'dir3'
+        >>> get_module_set_dirname('/dir1/dir2/dir3')
+        'dir2'
+        # doesn't check directory at the end of path, is considered as a file
+        """
+        return os.path.basename(os.path.dirname(module_path))

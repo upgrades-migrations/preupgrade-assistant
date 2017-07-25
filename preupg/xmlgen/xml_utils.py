@@ -6,7 +6,7 @@ import sys
 import copy
 
 from preupg.xml_manager import html_escape_string
-from preupg.utils import SystemIdentification, FileHelper
+from preupg.utils import FileHelper, ModuleSetUtils
 from preupg import settings
 from preupg.xmlgen import xml_tags
 from preupg.xmlgen.script_utils import ModuleHelper
@@ -264,7 +264,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{solution_text}", "text")
             self.update_values_list(
                 self.rule, "{platform_id}",
-                SystemIdentification.get_assessment_version(self.dirname)[1])
+                ModuleSetUtils.get_module_set_os_versions(self.dirname)[1])
 
     def fnc_update_mode(self, key, name):
         """

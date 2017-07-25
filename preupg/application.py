@@ -21,9 +21,10 @@ from preupg import xml_manager, settings
 from preupg.common import Common
 from preupg.settings import ReturnValues
 from preupg.scanning import ScanProgress, ScanningHelper
-from preupg.utils import FileHelper, ProcessHelper, DirHelper, OpenSCAPHelper
-from preupg.utils import MessageHelper, TarballHelper, SystemIdentification
-from preupg.utils import PostupgradeHelper, ConfigHelper, ConfigFilesHelper
+from preupg.utils import (FileHelper, ProcessHelper, DirHelper, OpenSCAPHelper,
+                          MessageHelper, TarballHelper, SystemIdentification,
+                          PostupgradeHelper, ConfigHelper, ConfigFilesHelper,
+                          ModuleSetUtils)
 from preupg.xccdf import XccdfHelper
 from preupg.logger import log_message, LoggerHelper, logger, logger_report
 from preupg.logger import logger_debug
@@ -297,7 +298,7 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
-                dir_name = SystemIdentification.get_valid_scenario(self.content)
+                dir_name = ModuleSetUtils.get_module_set_dirname(self.content)
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -426,16 +427,34 @@ class Application(object):
         # First of all we need to delete the older one assessment
         self.clean_scan()
         self.prepare_scan_directories()
+        self.common = Common(self.conf)
+        if not self.conf.skip_common:
+            if not self.common.common_results():
+                return ReturnValues.SCRIPT_TXT_MISSING
+        return 0
+
+    def is_module_set_valid(self):
         scenario = self.get_scenario()
         if scenario is None:
             log_message('Invalid scenario: %s' % self.conf.contents)
-            return ReturnValues.SCENARIO
+            return False
         scenario_path = os.path.join(self.conf.source_dir, scenario)
         if not os.path.isdir(scenario_path):
             log_message('Invalid scenario: %s' % scenario,
                         level=logging.ERROR)
-            return ReturnValues.SCENARIO
-        return 0
+            return False
+        # Validate properties.ini file in module set dir
+        try:
+            module_set_path = self.conf.scan
+            # in case --contents option is used
+            if module_set_path is None:
+                # strip all-xccdf.xml from path
+                module_set_path = os.path.dirname(self.conf.contents)
+            ModuleSetUtils.get_module_set_os_versions(module_set_path)
+        except EnvironmentError as err:
+            log_message(str(err), level=logging.ERROR)
+            return False
+        return True
 
     def generate_report(self):
         """Function generates report"""
@@ -457,9 +476,16 @@ class Application(object):
         self.common.prep_symlinks(self.assessment_dir,
                                   scenario=self.get_proper_scenario(scenario))
         if not self.conf.contents:
-            XccdfHelper.update_platform(os.path.join(self.assessment_dir, settings.content_file))
+            ret = XccdfHelper.update_platform(os.path.join(
+                    self.assessment_dir, settings.content_file))
+            if ret:
+                log_message(str(ret), level=logging.ERROR)
+                return ReturnValues.SCENARIO
         else:
-            XccdfHelper.update_platform(self.content)
+            ret = XccdfHelper.update_platform(self.content)
+            if ret:
+                log_message(str(ret), level=logging.ERROR)
+                return ReturnValues.SCENARIO
             self.assessment_dir = os.path.dirname(self.content)
         return 0
 
@@ -474,6 +500,8 @@ class Application(object):
     def scan_system(self):
         """The function is used for scanning system with all steps."""
         self._set_devel_mode()
+        if not self.is_module_set_valid():
+            return ReturnValues.SCENARIO
         ret_val = self.prepare_scan_system()
         if ret_val != 0:
             return ret_val
@@ -493,13 +521,10 @@ class Application(object):
             log_message("The module {0} does not exist.".format(self.content))
             return ReturnValues.SCENARIO
         if not self.conf.contents:
-            version = SystemIdentification.get_assessment_version(
-                self.conf.scan)
-            if version is None:
-                log_message("Your scan is in a wrong format %s." % version,
-                            level=logging.ERROR)
-                log_message("It should be like 'RHEL6_7' for upgrade from"
-                            " RHEL 6->7.", level=logging.ERROR)
+            try:
+                version = ModuleSetUtils.get_module_set_os_versions(self.conf.scan)
+            except EnvironmentError as err:
+                log_message(str(err), level=logging.ERROR)
                 return ReturnValues.SCENARIO
             self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
@@ -720,11 +745,6 @@ class Application(object):
             # to get content-users dir
             content_dir = self.conf.contents[:self.conf.contents.find(self.get_scenario())]
             self.conf.source_dir = os.path.join(os.getcwd(), content_dir)
-
-        self.common = Common(self.conf)
-        if not self.conf.skip_common:
-            if not self.common.common_results():
-                return ReturnValues.SCRIPT_TXT_MISSING
 
         if self.conf.scan or self.conf.contents:
             if not os.path.exists(settings.openscap_binary):

@@ -36,7 +36,7 @@ class TestXMLCompose(base.TestCase):
         self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
         self.result_dir = os.path.join(self.temp_dir, 'FOOBAR6_7' +
                                        settings.results_postfix)
-        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7', 'dummy')
+        dir_name = os.path.join(os.getcwd(), 'tests', 'FOOBAR6_7')
         shutil.copytree(dir_name, self.result_dir)
 
         self.autocomplete_orig = settings.autocomplete
