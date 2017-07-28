@@ -147,34 +147,6 @@ class ReportParser(object):
 
         self.write_xml()
 
-<<<<<<< HEAD
-    def update_inplace_risk(self, scanning_progress, rule, res):
-        """Function updates inplace risk"""
-        inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)
-        if inplace_risk:
-            logger_report.debug("Update_inplace_risk '%s'", inplace_risk)
-            return_value = XccdfHelper.get_and_print_inplace_risk(0, inplace_risk)
-            logger_report.debug("Get and print inplace risk return code '%s'", return_value)
-            if int(return_value)/2 == 1:
-                res.text = ReportHelper.get_needs_inspection()
-            elif int(return_value)/2 == 2:
-                res.text = ReportHelper.get_needs_action()
-            for index, row in enumerate(scanning_progress.output_data):
-                if self.get_nodes_text(rule, "title") in row:
-                    scanning_progress.output_data[index] = "{0}:{1}".format(
-                        self.get_nodes_text(rule, "title"),
-                        res.text)
-=======
-    def modify_platform_tag(self, platform_tag):
-        """The function updates platform tag to the assessment system tag"""
-        for platform in self.filter_children(self.target_tree, "platform"):
-            if "cpe:/o:redhat:enterprise_linux:" in platform.get("idref"):
-                logger_report.debug("Update platform tag to '%s'", platform_tag)
-                platform.set("idref", "cpe:/o:redhat:enterprise_linux:"+platform_tag)
-
-        self.write_xml()
->>>>>>> Refactor functions determining the return code
-
     def replace_inplace_risk(self, scanning_results=None):
         """Replace result of a module:
         - from FAIL to NEEDS_INSPECTION if the module has SLIGHT or MEDIUM risk

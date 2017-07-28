@@ -30,7 +30,6 @@
     </ns0:description>
     <ns0:select idref="xccdf_preupg_rule_dummy_preupg_dummy1" selected="true" />
     <ns0:select idref="xccdf_preupg_rule_dummy_preupg_dummy2" selected="true" />
-    <ns0:select idref="xccdf_preupg_rule_dummy_preupg_diff" selected="true" />
   </ns0:Profile>
   <ns0:Value id="xccdf_preupg_value_tmp_preupgrade" type="string">
     <ns0:value>/root/preupgrade</ns0:value>
@@ -72,7 +71,7 @@
         Dummy content
 
       </ns0:description>
-        <ns0:fixtext xml:lang="en">Dummy content</ns0:fixtext>
+        <ns0:fixtext xml:lang="en">Dummy content solution</ns0:fixtext>
         <ns0:check system="http://open-scap.org/page/SCE">
           <ns0:check-import import-name="stdout">
           </ns0:check-import>
@@ -122,33 +121,6 @@
           <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_result_part" />
           <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_current_directory" />
           <ns0:check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_solution_file" />
-          <ns0:check-export export-name="REPORT_DIR" value-id="xccdf_preupg_value_report_dir" />
-          <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_upgrade" />
-          <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_migrate" />
-          <ns0:check-export export-name="DIST_NATIVE" value-id="xccdf_preupg_value_dist_native" />
-          <ns0:check-export export-name="DEVEL_MODE" value-id="xccdf_preupg_value_devel_mode" />
-          <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />
-          <ns0:check-content-ref href="dummy/preupg/dummy.sh" />
-        </ns0:check>
-      </ns0:Rule>
-    </ns0:Group>
-    <ns0:Group id="xccdf_preupg_group_dummy_preupg_diff" selected="true">
-      <ns0:title xml:lang="en">Dummy content</ns0:title>
-      <ns0:Rule id="xccdf_preupg_rule_dummy_preupg_diff" selected="true">
-        <ns0:title xml:lang="en">Dummy content</ns0:title>
-        <ns0:description xml:lang="en">
-        Dummy content
-      </ns0:description>
-        <ns0:fixtext xml:lang="en">str1<br />str2</ns0:fixtext>
-        <ns0:check system="http://open-scap.org/page/SCE">
-          <ns0:check-import import-name="stdout">
-          </ns0:check-import>
-          <ns0:check-import import-name="stderr">
-          </ns0:check-import>
-          <ns0:check-export export-name="MODULE_NAME" value-id="xccdf_preupg_value_dummy_preupg_dummy1_state_module_name" />
-          <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy1_state_result_part" />
-          <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy1_state_current_directory" />
-          <ns0:check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy1_state_solution_file" />
           <ns0:check-export export-name="REPORT_DIR" value-id="xccdf_preupg_value_report_dir" />
           <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_upgrade" />
           <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_migrate" />
@@ -216,24 +188,6 @@
       <ns0:check system="http://open-scap.org/page/SCE">
         <ns0:check-import import-name="stdout">INPLACE_TAG2</ns0:check-import>
         <ns0:check-import import-name="stderr">          </ns0:check-import>
-        <ns0:check-export export-name="MODULE_NAME" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_module_name" />
-        <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_result_part" />
-        <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_current_directory" />
-        <ns0:check-export export-name="SOLUTION_FILE" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_solution_file" />
-        <ns0:check-export export-name="REPORT_DIR" value-id="xccdf_preupg_value_report_dir" />
-        <ns0:check-export export-name="UPGRADE" value-id="xccdf_preupg_value_upgrade" />
-        <ns0:check-export export-name="MIGRATE" value-id="xccdf_preupg_value_migrate" />
-        <ns0:check-export export-name="DIST_NATIVE" value-id="xccdf_preupg_value_dist_native" />
-        <ns0:check-export export-name="DEVEL_MODE" value-id="xccdf_preupg_value_devel_mode" />
-        <ns0:check-export export-name="TMP_PREUPGRADE" value-id="xccdf_preupg_value_tmp_preupgrade" />
-        <ns0:check-content-ref href="dummy/preupg/dummy.sh" />
-      </ns0:check>
-    </ns0:rule-result>
-    <ns0:rule-result idref="xccdf_preupg_rule_dummy_preupg_diff" time="2016-08-24T17:39:11" weight="1.000000">
-      <ns0:result>dummy_result</ns0:result>
-      <ns0:check system="http://open-scap.org/page/SCE">
-        <ns0:check-import import-name="stdout">sample output</ns0:check-import>
-        <ns0:check-import import-name="stderr"></ns0:check-import>
         <ns0:check-export export-name="MODULE_NAME" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_module_name" />
         <ns0:check-export export-name="RESULT_PART" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_result_part" />
         <ns0:check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_dummy_preupg_dummy2_state_current_directory" />
