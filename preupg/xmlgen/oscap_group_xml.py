@@ -31,7 +31,13 @@ class OscapGroupXml(object):
 
     """Class creates a XML file for OpenSCAP"""
 
-    def __init__(self, dir_name):
+    def __init__(self, root_module_dir, dir_name):
+        """
+        @param {str} root_module_dir - directory where all modules are stored
+        @param {str} dir_name - directory of specific method or method
+            directory
+        """
+        self.root_module_dir = root_module_dir
         self.dirname = dir_name
         if dir_name.endswith('/'):
             self.main_dir = dir_name.split('/')[-3]
@@ -79,7 +85,7 @@ class OscapGroupXml(object):
         """The function is used for storing a group.xml file"""
         self.find_all_ini()
         self.write_list_rules()
-        xml_utils = XmlUtils(self.dirname, self.loaded)
+        xml_utils = XmlUtils(self.root_module_dir, self.dirname, self.loaded)
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
@@ -92,8 +98,8 @@ class OscapGroupXml(object):
     def write_profile_xml(self, target_tree):
         """The function stores all-xccdf.xml file into content directory"""
         file_name = os.path.join(self.dirname, "all-xccdf.xml")
-        print ('File which can be used by Preupgrade-Assistant is: %s'
-               % file_name)
+        print('File which can be used by Preupgrade-Assistant is: %s'
+              % file_name)
         try:
             # encoding must be set! otherwise ElementTree return non-ascii
             # characters as html entities instead, which are unsusable for us

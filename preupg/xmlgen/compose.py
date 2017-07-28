@@ -77,8 +77,45 @@ class XCCDFCompose(object):
 class ComposeXML(object):
 
     @staticmethod
-    def collect_group_xmls(source_dir, content=None, level=0,
+    def collect_group_xmls(root_module_dir, source_dir, content=None, level=0,
                            generate_from_ini=True):
+        """
+        Find group.xml file recursively through all module directories
+        and modules. Collect data from each of them into dictionary.
+
+        @parma {str} root_module_dir - directory where all modules are stored
+        @param {str} source_dir - directory path for processing
+        @param {str} content - module result e.g. failed,needs_action,pass,...
+        @param {int} level - indicate the depth of recursive call in directory
+        @param {bool} generate_from_ini - True if xccdf-compose tool is used
+
+        @return {dict} - structure is file based, keys are top level module
+        directories, values are tuples which consist of 2 elements:
+            [0] - XML data for top level dir itself
+            [1] - dict of all modules inside [0] directory
+        @example
+        from file structure:
+            - RHEL6_7
+                - services (modules directory)
+                    - group.xml
+                    - group.ini
+                    - httpd (module)
+                        - group.xml
+                        - ...
+                    - tomcat (module)
+                        - group.xml
+                        - ...
+                - drivers (modules directory)
+                - ...
+        result is:
+            {services: tuple(<Element {services}>, {
+                httpd: tuple(<Element {httpd}>, {}),
+                tomcat: tuple(<Element {tomcat}>, {}),
+                ...
+            )},
+            drivers: tuple(<Element {drivers}>, {...}),
+            ...}
+        """
         ret = {}
 
         for dirname in os.listdir(source_dir):
@@ -100,7 +137,7 @@ class ComposeXML(object):
                            " in %s. Please check if it is really missing."
                            % new_dir)
             if ini_files and generate_from_ini:
-                oscap_group = OscapGroupXml(new_dir)
+                oscap_group = OscapGroupXml(root_module_dir, new_dir)
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
                 ComposeXML.perform_autoqa(new_dir, return_list)
@@ -110,8 +147,8 @@ class ComposeXML(object):
                 continue
             try:
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
-                                ComposeXML.collect_group_xmls(new_dir,
-                                level=level + 1,
+                                ComposeXML.collect_group_xmls(root_module_dir,
+                                new_dir, level=level + 1,
                                 generate_from_ini=generate_from_ini))
             except ParseError as e:
                 print ("Encountered a parse error in file ", group_file_path,
@@ -201,6 +238,7 @@ class ComposeXML(object):
 
         def sort_key(t_key):
             return get_sorting_key_for_tree(group_tree, t_key)
+
         for f in sorted(iter(group_tree.keys()), key=sort_key):
             t = group_tree[f]
             tree, subgroups = t
@@ -336,8 +374,8 @@ class ComposeXML(object):
         settings.UPGRADE_PATH = dir_name
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
-        group_xmls = ComposeXML.collect_group_xmls(dir_name, content, 0,
-                                                   generate_from_ini)
+        group_xmls = ComposeXML.collect_group_xmls(dir_name, dir_name, content,
+                                                   0, generate_from_ini)
         logger_debug.debug("Group xmls '%s'", group_xmls)
         if generate_from_ini:
             ComposeXML.perform_autoqa(dir_name, group_xmls)

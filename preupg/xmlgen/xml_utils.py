@@ -1,6 +1,5 @@
 from __future__ import print_function, unicode_literals
 
-import re
 import os
 import sys
 import copy
@@ -13,24 +12,43 @@ from preupg.xmlgen.script_utils import ModuleHelper
 from preupg.exception import EmptyTagGroupXMLError
 
 
-def get_full_xml_tag(dirname):
-    """We need just from RHEL directory"""
-    found = 0
-    # Get index of scenario and cut directory till scenario (included)
-    for index, dir_name in enumerate(dirname.split(os.path.sep)):
-        if re.match(r'\D+(\d)_(\D*)(\d)-results', dir_name, re.I):
-            found = index
-    main_dir = dirname.split(os.path.sep)[found + 1:]
-    return main_dir
+def module_path_from_root_dir(dirname, root_module_dir):
+    """
+    Remove root_module_dir from dirname path
+
+    @param {str} dir_name - directory of specific method or method directory
+    @param {str} root_module_dir - directory where all modules are stored
+
+    @return {list} - splited path to module
+
+    @example
+    >>> module_path_from_root_dir(/root/RHEL6_7-results/selinux/CustomPolicy,
+                                  /root/RHEL6_7-results)
+    ['selinux', 'CustomPolicy']
+    """
+    return (dirname
+            .replace(root_module_dir, '', 1)
+            .lstrip(os.path.sep)  # remove first / from path
+            .split(os.path.sep))
 
 
 class XmlUtils(object):
     """Class generate a XML from xml_tags and loaded INI file"""
-    def __init__(self, dir_name, ini_files):
+
+    def __init__(self, root_module_dir, module_dir, ini_files):
+        """
+        @param {str} root_module_dir - directory where all modules are stored
+        @param {str} module_dir - directory of specific method or method
+            directory
+        @param {dict} ini_files - ini file options and their values in format:
+            {ini_file_path: {option1: value, option2: value, ...}}
+        """
+        self.root_module_dir = root_module_dir
+        self.module_dir = module_dir
+        self.ini_files = ini_files
+
         self.select_rules = []
         self.rule = []
-        self.dirname = dir_name
-        self.ini_files = ini_files
         self._test_init_file()
         self.mh = None
 
@@ -69,7 +87,7 @@ class XmlUtils(object):
 
     def _update_check_description(self, filename):
         new_text = []
-        lines = FileHelper.get_file_content(os.path.join(self.dirname,
+        lines = FileHelper.get_file_content(os.path.join(self.module_dir,
                                                          filename), "rb", True)
 
         bold = '<xhtml:b>{0}</xhtml:b>'
@@ -118,12 +136,14 @@ class XmlUtils(object):
             replace_exp = new_text.rstrip()
         elif search_exp == "{solution}":
             new_text = FileHelper.get_file_content(os.path.join(
-                self.dirname, replace_exp), "rb", True)
+                self.module_dir, replace_exp), "rb", True)
             # we does not need interpreter for fix script
             # in XML therefore skip first line
             replace_exp = ''.join(new_text[1:])
         elif search_exp == "{solution_text}":
-            new_text = "_" + '_'.join(get_full_xml_tag(self.dirname))\
+            new_text = "_" + '_'.join(
+                module_path_from_root_dir(self.module_dir,
+                                          self.root_module_dir))\
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
         if replace_exp == '' and search_exp in forbidden_empty:
@@ -136,15 +156,18 @@ class XmlUtils(object):
     def add_value_tag(self):
         """The function adds VALUE tag in group.xml file"""
         value_tag = []
-        check_export_tag = list()
+        check_export_tag = []
+
         check_export_tag.append(xml_tags.RULE_SECTION_VALUE_IMPORT)
         for key, val in xml_tags.DIC_VALUES.items():
             value_tag.append(xml_tags.VALUE)
             if key == 'current_directory':
-                val = '/'.join(get_full_xml_tag(self.dirname))
+                val = '/'.join(module_path_from_root_dir(self.module_dir,
+                                                         self.root_module_dir))
                 val = 'SCENARIO/' + val
             if key == 'module_path':
-                val = '_'.join(get_full_xml_tag(self.dirname))
+                val = '_'.join(module_path_from_root_dir(self.module_dir,
+                                                         self.root_module_dir))
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
@@ -209,7 +232,8 @@ class XmlUtils(object):
         self.update_values_list(self.rule, "{" + k + "}", key[k])
 
     def prepare_sections(self):
-        """The function prepares all tags needed for generation group.xml file.
+        """
+        The function prepares all tags needed for generation group.xml file.
         """
         for ini_filepath, ini_file_content in iter(self.ini_files.items()):
             if ini_filepath.endswith("group.ini"):
@@ -220,13 +244,12 @@ class XmlUtils(object):
             else:
                 self.rule.append(xml_tags.CONTENT_INI)
                 self.create_xml_from_ini(ini_filepath, ini_file_content)
-                self.update_values_list(self.rule,
-                                        "{select_rules}",
+                self.update_values_list(self.rule, "{select_rules}",
                                         ' '.join(self.select_rules))
-            xml_tag = "{main_dir}"
-            self.update_values_list(self.rule,
-                                    xml_tag,
-                                    '_'.join(get_full_xml_tag(self.dirname)))
+            self.update_values_list(self.rule, "{main_dir}",
+                                    '_'.join(module_path_from_root_dir(
+                                        self.module_dir,
+                                        self.root_module_dir)))
         return self.rule
 
     def fnc_config_file(self, key, name):
@@ -264,7 +287,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{solution_text}", "text")
             self.update_values_list(
                 self.rule, "{platform_id}",
-                ModuleSetUtils.get_module_set_os_versions(self.dirname)[1])
+                ModuleSetUtils.get_module_set_os_versions(self.module_dir)[1])
 
     def fnc_update_mode(self, key, name):
         """
@@ -277,7 +300,8 @@ class XmlUtils(object):
 
         content = "{rule}{main_dir}_{name}".format(
             rule=xml_tags.TAG_RULE,
-            main_dir='_'.join(get_full_xml_tag(self.dirname)),
+            main_dir='_'.join(module_path_from_root_dir(self.module_dir,
+                                                        self.root_module_dir)),
             name=key.split('.')[0])
         if not name:
             self.update_files('migrate', content)
@@ -328,7 +352,6 @@ class XmlUtils(object):
                                 ''.join(check_export_tag))
         self.update_values_list(self.rule, "{group_value}",
                                 ''.join(value_tag))
-
 
         for k, function in iter(update_fnc.items()):
             try:
