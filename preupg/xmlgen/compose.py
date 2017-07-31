@@ -52,6 +52,13 @@ class XCCDFCompose(object):
             sys.stderr.write('Use scenario with valid name, e.g. RHEL6_7\n')
             return ReturnValues.SCENARIO
 
+        # check for properties.ini in modules directory
+        try:
+            ModuleSetUtils.get_module_set_os_versions(self.result_dir)
+        except EnvironmentError as err:
+            sys.stderr.write("{0}\n".format(str(err)))
+            return ReturnValues.SCENARIO
+
         dir_util.copy_tree(self.result_dir, self.dir_name)
         target_tree = ComposeXML.run_compose(
             self.dir_name, generate_from_ini=generate_from_ini)
