@@ -83,7 +83,7 @@ class ComposeXML(object):
         Find group.xml file recursively through all module directories
         and modules. Collect data from each of them into dictionary.
 
-        @parma {str} root_module_dir - directory where all modules are stored
+        @param {str} root_module_dir - directory where all modules are stored
         @param {str} source_dir - directory path for processing
         @param {str} content - module result e.g. failed,needs_action,pass,...
         @param {int} level - indicate the depth of recursive call in directory
