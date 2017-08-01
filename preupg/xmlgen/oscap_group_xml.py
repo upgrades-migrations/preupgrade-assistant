@@ -31,13 +31,13 @@ class OscapGroupXml(object):
 
     """Class creates a XML file for OpenSCAP"""
 
-    def __init__(self, root_module_dir, dir_name):
+    def __init__(self, module_set_dir, dir_name):
         """
-        @param {str} root_module_dir - directory where all modules are stored
-        @param {str} dir_name - directory of specific method or method
+        @param {str} module_set_dir - directory where all modules are stored
+        @param {str} dir_name - directory of specific module or module
             directory
         """
-        self.root_module_dir = root_module_dir
+        self.module_set_dir = module_set_dir
         self.dirname = dir_name
         if dir_name.endswith('/'):
             self.main_dir = dir_name.split('/')[-3]
@@ -85,7 +85,7 @@ class OscapGroupXml(object):
         """The function is used for storing a group.xml file"""
         self.find_all_ini()
         self.write_list_rules()
-        xml_utils = XmlUtils(self.root_module_dir, self.dirname, self.loaded)
+        xml_utils = XmlUtils(self.module_set_dir, self.dirname, self.loaded)
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:

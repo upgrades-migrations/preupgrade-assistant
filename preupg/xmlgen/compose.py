@@ -77,16 +77,15 @@ class XCCDFCompose(object):
 class ComposeXML(object):
 
     @staticmethod
-    def collect_group_xmls(root_module_dir, source_dir, content=None, level=0,
+    def collect_group_xmls(module_set_dir, source_dir, content=None,
                            generate_from_ini=True):
         """
         Find group.xml file recursively through all module directories
         and modules. Collect data from each of them into dictionary.
 
-        @param {str} root_module_dir - directory where all modules are stored
+        @param {str} module_set_dir - directory where all modules are stored
         @param {str} source_dir - directory path for processing
         @param {str} content - module result e.g. failed,needs_action,pass,...
-        @param {int} level - indicate the depth of recursive call in directory
         @param {bool} generate_from_ini - True if xccdf-compose tool is used
 
         @return {dict} - structure is file based, keys are top level module
@@ -133,11 +132,11 @@ class ComposeXML(object):
                 directories = [x for x in os.listdir(new_dir)
                                if not os.path.isdir(os.path.join(new_dir, x))]
                 if not directories and 'postupgrade.d' not in dirname:
-                    print ("WARNING: It seems that group.ini file is missing"
-                           " in %s. Please check if it is really missing."
-                           % new_dir)
+                    print("WARNING: It seems that group.ini file is missing"
+                          " in %s. Please check if it is really missing."
+                          % new_dir)
             if ini_files and generate_from_ini:
-                oscap_group = OscapGroupXml(root_module_dir, new_dir)
+                oscap_group = OscapGroupXml(module_set_dir, new_dir)
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
                 ComposeXML.perform_autoqa(new_dir, return_list)
@@ -147,12 +146,12 @@ class ComposeXML(object):
                 continue
             try:
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
-                                ComposeXML.collect_group_xmls(root_module_dir,
-                                new_dir, level=level + 1,
-                                generate_from_ini=generate_from_ini))
+                                ComposeXML.collect_group_xmls(
+                                    module_set_dir, new_dir,
+                                    generate_from_ini=generate_from_ini))
             except ParseError as e:
-                print ("Encountered a parse error in file ", group_file_path,
-                       " details: ", e)
+                print("Encountered a parse error in file ", group_file_path,
+                      " details: ", e)
         return ret
 
     @staticmethod
@@ -375,7 +374,7 @@ class ComposeXML(object):
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
         group_xmls = ComposeXML.collect_group_xmls(dir_name, dir_name, content,
-                                                   0, generate_from_ini)
+                                                   generate_from_ini)
         logger_debug.debug("Group xmls '%s'", group_xmls)
         if generate_from_ini:
             ComposeXML.perform_autoqa(dir_name, group_xmls)

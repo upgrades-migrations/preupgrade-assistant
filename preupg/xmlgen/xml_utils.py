@@ -12,12 +12,12 @@ from preupg.xmlgen.script_utils import ModuleHelper
 from preupg.exception import EmptyTagGroupXMLError
 
 
-def module_path_from_root_dir(dirname, root_module_dir):
+def module_path_from_root_dir(dirname, module_set_dir):
     """
-    Remove root_module_dir from dirname path
+    Remove module_set_dir from dirname path
 
     @param {str} dir_name - directory of specific method or method directory
-    @param {str} root_module_dir - directory where all modules are stored
+    @param {str} module_set_dir - directory where all modules are stored
 
     @return {list} - splited path to module
 
@@ -27,7 +27,7 @@ def module_path_from_root_dir(dirname, root_module_dir):
     ['selinux', 'CustomPolicy']
     """
     return (dirname
-            .replace(root_module_dir, '', 1)
+            .replace(module_set_dir, '', 1)
             .lstrip(os.path.sep)  # remove first / from path
             .split(os.path.sep))
 
@@ -35,15 +35,15 @@ def module_path_from_root_dir(dirname, root_module_dir):
 class XmlUtils(object):
     """Class generate a XML from xml_tags and loaded INI file"""
 
-    def __init__(self, root_module_dir, module_dir, ini_files):
+    def __init__(self, module_set_dir, module_dir, ini_files):
         """
-        @param {str} root_module_dir - directory where all modules are stored
+        @param {str} module_set_dir - directory where all modules are stored
         @param {str} module_dir - directory of specific method or method
             directory
         @param {dict} ini_files - ini file options and their values in format:
             {ini_file_path: {option1: value, option2: value, ...}}
         """
-        self.root_module_dir = root_module_dir
+        self.module_set_dir = module_set_dir
         self.module_dir = module_dir
         self.ini_files = ini_files
 
@@ -143,7 +143,7 @@ class XmlUtils(object):
         elif search_exp == "{solution_text}":
             new_text = "_" + '_'.join(
                 module_path_from_root_dir(self.module_dir,
-                                          self.root_module_dir))\
+                                          self.module_set_dir))\
                        + "_SOLUTION_MSG_" + replace_exp.upper()
             replace_exp = new_text
         if replace_exp == '' and search_exp in forbidden_empty:
@@ -163,11 +163,11 @@ class XmlUtils(object):
             value_tag.append(xml_tags.VALUE)
             if key == 'current_directory':
                 val = '/'.join(module_path_from_root_dir(self.module_dir,
-                                                         self.root_module_dir))
+                                                         self.module_set_dir))
                 val = 'SCENARIO/' + val
             if key == 'module_path':
                 val = '_'.join(module_path_from_root_dir(self.module_dir,
-                                                         self.root_module_dir))
+                                                         self.module_set_dir))
             self.update_values_list(value_tag, "{value_name}", val)
             self.update_values_list(value_tag, "{val}", key.lower())
             check_export_tag.append(xml_tags.RULE_SECTION_VALUE)
@@ -249,7 +249,7 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{main_dir}",
                                     '_'.join(module_path_from_root_dir(
                                         self.module_dir,
-                                        self.root_module_dir)))
+                                        self.module_set_dir)))
         return self.rule
 
     def fnc_config_file(self, key, name):
@@ -301,7 +301,7 @@ class XmlUtils(object):
         content = "{rule}{main_dir}_{name}".format(
             rule=xml_tags.TAG_RULE,
             main_dir='_'.join(module_path_from_root_dir(self.module_dir,
-                                                        self.root_module_dir)),
+                                                        self.module_set_dir)),
             name=key.split('.')[0])
         if not name:
             self.update_files('migrate', content)

@@ -26,7 +26,6 @@ class TestContentGenerate(base.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp(prefix='preupgrade', dir='/tmp')
         self.dir_name = os.path.join(os.getcwd(), 'tests', FOO_DIR)
-        print()
         self.result_dir = os.path.join(self.temp_dir, 'tests', FOO_RESULTS)
         shutil.copytree(self.dir_name, os.path.join(self.temp_dir, FOO_DIR))
         self.dir_name = os.path.join(self.temp_dir, FOO_DIR)
