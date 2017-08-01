@@ -11,30 +11,31 @@ from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
 
 class ModuleHelper(object):
 
-    def __init__(self, dir_name, script_name, solution_name):
+    def __init__(self, dir_name):
         self.dir_name = dir_name
-        self.script_name = script_name
-        self.solution_name = solution_name
-        self.full_path_name = os.path.join(self.dir_name, self.script_name)
-        self.full_path_name_solution = os.path.join(self.dir_name,
-                                                    self.solution_name)
+        self.check_script_path = os.path.join(self.dir_name, 'check')
+        self.solution_txt_path = os.path.join(self.dir_name, 'solution.txt')
 
-    def get_full_path_name(self):
-        return self.full_path_name
+    def get_check_script_path(self):
+        return self.check_script_path
 
-    def get_full_path_name_solution(self):
-        return self.full_path_name_solution
+    def get_solution_txt_path(self):
+        return self.solution_txt_path
 
     def check_scripts(self, type_name):
         """
         The function checks whether script exists in content directory
         If check_script exists then the script checks whether it is executable
+
+        @param {str} type_name - name of the script e.g. solution
+            or check_script
+        @throws {MissingFileInContentError}
         """
-        if not os.path.exists(self.full_path_name):
-            raise MissingFileInContentError(file=self.full_path_name,
+        if not os.path.exists(self.check_script_path):
+            raise MissingFileInContentError(file=self.check_script_path,
                                             dir=self.dir_name)
         if type_name != 'solution':
-            FileHelper.check_executable(self.full_path_name)
+            FileHelper.check_executable(self.check_script_path)
 
     @staticmethod
     def apply_function(updates, begin_fnc, end_fnc, dummy_sep, script_type):
@@ -118,15 +119,15 @@ class ModuleHelper(object):
         The function updates check script with license file
         and with API functions like check_rpm_to and check_applies_to
         """
-        script_type = FileHelper.get_script_type(self.full_path_name)
+        script_type = FileHelper.get_script_type(self.check_script_path)
         if author is None:
             author = "<empty_line>"
         generated_section, functions = ModuleHelper.generate_common_stuff(
             settings.license % author, updates, script_type)
-        lines = FileHelper.get_file_content(self.full_path_name, "rb",
+        lines = FileHelper.get_file_content(self.check_script_path, "rb",
                                             method=True)
         if not [x for x in lines if re.search(r'#END GENERATED SECTION', x)]:
-            raise MissingHeaderCheckScriptError(self.full_path_name)
+            raise MissingHeaderCheckScriptError(self.check_script_path)
         for func in functions:
             lines = [x for x in lines if func not in x.strip()]
         output_text = ""
@@ -137,7 +138,7 @@ class ModuleHelper(object):
                                             '').replace('<new_line>', '')
                 output_text += new_line + '\n'
             output_text += line
-        FileHelper.write_to_file(self.full_path_name, "wb", output_text)
+        FileHelper.write_to_file(self.check_script_path, "wb", output_text)
 
     def check_inplace_risk(self, prefix="", check_func=None):
         """
@@ -146,7 +147,7 @@ class ModuleHelper(object):
         """
         if check_func is None:
             check_func = []
-        lines = FileHelper.get_file_content(self.full_path_name, "rb")
+        lines = FileHelper.get_file_content(self.check_script_path, "rb")
         compile_req = re.compile(r'^#', re.M | re.I)
         lines = [x for x in lines if not compile_req.search(x.strip())]
         inplace_lines = [x for x in lines if prefix in x]
@@ -166,9 +167,15 @@ class ModuleHelper(object):
         """
         The function checks whether all the required fields are used in an INI
         file.
+
+        @param {str} ini_filepath - real path of ini file
+        @param {dict} fields_in_ini - options and values from ini file:
+            {option1: value, option2: value, ...}
+        @throws {MissingTagsIniFileError} - when required option is missing
+            in ini file
+        @throws {ValueError} - when "solution_type" option has wrong value
         """
-        required_fields = ['content_title', 'content_description',
-                           'check_script', 'solution']
+        required_fields = ['content_title', 'content_description']
         not_in_ini = [x for x in required_fields if not fields_in_ini.get(x)]
         if not_in_ini:
             raise MissingTagsIniFileError(tags=', '.join(not_in_ini),

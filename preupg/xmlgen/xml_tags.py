@@ -66,7 +66,7 @@ RULE_SECTION_VALUE_IMPORT = """\t\t<check-import import-name="stderr"/>"""
 RULE_SECTION_VALUE = """\t\t<check-export export-name="{value_name_upper}" value-id=\""""+TAG_VALUE+"""{main_dir}_{scap_name}_state_{val}" />
 """
 DIC_VALUES = {'current_directory': '/root/preupgrade',
-              'solution_file': '',
+              'solution_file': 'solution.txt',
               'module_path': '',
               }
 

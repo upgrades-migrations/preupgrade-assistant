@@ -2,7 +2,6 @@ from __future__ import print_function, unicode_literals
 
 import os
 import sys
-import copy
 
 from preupg.xml_manager import html_escape_string
 from preupg.utils import FileHelper, ModuleSetUtils
@@ -35,7 +34,6 @@ def module_path_from_root_dir(dirname, module_set_dir):
 
 class XmlUtils(object):
     """Class generate a XML from xml_tags and loaded INI file"""
-
     def __init__(self, module_set_dir, module_dir, ini_files):
         """
         @param {str} module_set_dir - directory where all modules are stored
@@ -48,26 +46,34 @@ class XmlUtils(object):
         self.module_dir = module_dir
         self.ini_files = ini_files
 
+        self.check_script = 'check'
+        self.solution = 'solution.txt'
+
         self.select_rules = []
         self.rule = []
-        self._test_init_file()
+        self._test_config_file()
         self.mh = None
 
-    def _test_init_file(self):
-        test_dict = copy.deepcopy(self.ini_files)
-        allowed_tags = ['check_script', 'content_description', 'content_title',
-                        'applies_to', 'author', 'binary_req', 'solution',
-                        'bugzilla', 'config_file', 'group_title', 'mode',
-                        'requires', 'solution_type']
-        for ini, content_dict in iter(test_dict.items()):
-            for tag in allowed_tags:
-                if tag in content_dict:
-                    del content_dict[tag]
-            if content_dict:
-                tags = ', '. join(iter(content_dict.keys()))
-                sys.stderr.write("Warning: The tag(s) '%s' not allowed in INI"
-                                 " file %s.\nAllowed tags are %s.\n"
-                                 % (tags, ini, ', '.join(allowed_tags)))
+    def _test_config_file(self):
+        """
+        Checks if there are any illegal tags in config files i.e.
+        (group.ini, module.ini) and print out warning message about them
+        """
+        allowed_tags = set(['content_description', 'content_title',
+                            'applies_to', 'author', 'binary_req', 'bugzilla',
+                            'config_file', 'group_title', 'mode', 'requires',
+                            'solution_type'])
+        for ini_file, ini_content in iter(self.ini_files.items()):
+            ini_content_tags = set(ini_content.keys())
+            different = ini_content_tags.difference(allowed_tags)
+            if different:
+                sys.stderr.write("Warning: tags: '{0}' are not allowed "
+                                 "in config file {1}.\n"
+                                 "Allowed tags are {2}.\n"
+                                 .format(', '
+                                         .join(str(tag) for tag in different),
+                                         ini_file,
+                                         ', '.join(allowed_tags)))
 
     def update_files(self, file_name, content):
         """Function updates file_name <migrate or update> according to INI
@@ -186,21 +192,20 @@ class XmlUtils(object):
     def solution_modification(self, key):
         """Function handles a solution text or scripts"""
         fix_tag = []
-        for k in key['solution'].split(','):
-            self.mh.check_scripts('solution')
-            script_type = FileHelper.get_script_type(
-                self.mh.get_full_path_name_solution())
-            if script_type == "txt":
-                fix_tag.append(xml_tags.FIX_TEXT)
-            else:
-                fix_tag.append(xml_tags.FIX)
-            if 'solution_type' in key:
-                solution_type = key['solution_type']
-            else:
-                solution_type = "text"
-            self.update_values_list(fix_tag, "{solution_text}", solution_type)
-            self.update_values_list(fix_tag, "{solution}", k.strip())
-            self.update_values_list(fix_tag, "{script_type}", script_type)
+        self.mh.check_scripts('solution')
+        script_type = FileHelper.get_script_type(
+            self.mh.get_solution_txt_path())
+        if script_type == "txt":
+            fix_tag.append(xml_tags.FIX_TEXT)
+        else:
+            fix_tag.append(xml_tags.FIX)
+        if 'solution_type' in key:
+            solution_type = key['solution_type']
+        else:
+            solution_type = "text"
+        self.update_values_list(fix_tag, "{solution_text}", solution_type)
+        self.update_values_list(fix_tag, "{solution}", self.solution)
+        self.update_values_list(fix_tag, "{script_type}", script_type)
         self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):
@@ -217,7 +222,7 @@ class XmlUtils(object):
         for check in check_func:
             self.mh.check_inplace_risk(prefix=check,
                                        check_func=check_func[check])
-        self.update_values_list(self.rule, "{scap_name}", key[k].split('.')[0])
+        self.update_values_list(self.rule, "{scap_name}", self.check_script)
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
                         'requires': 'check_rpm'}
@@ -230,7 +235,7 @@ class XmlUtils(object):
         else:
             author = None
         self.mh.update_check_script(updates, author=author)
-        self.update_values_list(self.rule, "{" + k + "}", key[k])
+        self.update_values_list(self.rule, "{" + k + "}", self.check_script)
 
     def prepare_sections(self):
         """
@@ -264,11 +269,16 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{config_section}", "")
 
     def fnc_check_script(self, key, name):
-        """ Function updates a check_script """
-        if name in key:
-            self.check_script_modification(key, name)
-            self.update_values_list(self.select_rules, "{scap_name}",
-                                    key[name].split('.')[0])
+        """
+        Function updates a check_script
+
+        @param {dict} key - options and values from ini file:
+            {option1: value, option2: value, ...}
+        @param {str} name - 'check_script'
+        """
+        self.check_script_modification(key, name)
+        self.update_values_list(self.select_rules, "{scap_name}",
+                                self.check_script)
 
     def fnc_check_description(self, key, name):
         """ Function updates a check_description """
@@ -280,14 +290,16 @@ class XmlUtils(object):
             self.update_values_list(self.rule, "{check_description}", "")
 
     def fnc_solution_text(self, key, name):
-        """Function updates a solution text."""
-        if name in key:
-            self.solution_modification(key)
-        else:
-            self.update_values_list(self.rule, "{fix}", xml_tags.FIX_TEXT)
-            self.update_values_list(self.rule, "{solution_text}", "text")
+        """
+        Function updates a solution text.
+        
+        @param {dict} key - options and values from ini file:
+            {option1: value, option2: value, ...}
+        @param {str} name - 'solution'
+        """
+        self.solution_modification(key)
 
-    def fnc_update_mode(self, key, name):
+    def fnc_update_mode(self, name):
         """
         Function update <upgrade_path>/<migrate.conf|update.conf> files
         migrate_xccdf_path
@@ -300,7 +312,7 @@ class XmlUtils(object):
             rule=xml_tags.TAG_RULE,
             main_dir='_'.join(module_path_from_root_dir(self.module_dir,
                                                         self.module_set_dir)),
-            name=key.split('.')[0])
+            name=self.check_script)
         if not name:
             self.update_files('migrate', content)
             self.update_files('upgrade', content)
@@ -320,10 +332,14 @@ class XmlUtils(object):
 
     def create_xml_from_ini(self, ini_filepath, ini_content):
         """
-        The function creates group.xml file from INI file.
-        All tag are replaced by function update_value_list
+        Creates group.xml file from INI file. All tags are replaced by function
+        update_value_list. Function also checks whether check script fulfills
+        all criteria
 
-        Function also checks whether check script full fills all criteria
+        @param {str} ini_filepath - real path of ini file
+        @param {dict} ini_content - options and values from ini file:
+            {option1: value, option2: value, ...}
+        @throws {IOError}
         """
         self.select_rules.append(xml_tags.SELECT_TAG)
         update_fnc = {
@@ -331,17 +347,11 @@ class XmlUtils(object):
             'check_script': self.fnc_check_script,
             'check_description': self.fnc_check_description,
             'solution': self.fnc_solution_text,
-            'applies_to': self.dummy_fnc,
-            'binary_req': self.dummy_fnc,
             'content_title': self.update_text,
             'content_description': self.update_text,
         }
         ModuleHelper.check_required_fields(ini_filepath, ini_content)
-        self.mh = ModuleHelper(os.path.dirname(ini_filepath),
-                               ini_content['check_script'],
-                               ini_content['solution'])
-        # Add solution text into value
-        xml_tags.DIC_VALUES['solution_file'] = ini_content['solution']
+        self.mh = ModuleHelper(os.path.dirname(ini_filepath))
 
         self.update_values_list(self.rule, "{rule_tag}",
                                 ''.join(xml_tags.RULE_SECTION))
@@ -365,8 +375,6 @@ class XmlUtils(object):
             html_escape_string(ini_content['content_title'])
         )
         if 'mode' not in ini_content:
-            self.fnc_update_mode(ini_content['check_script'],
-                                 'migrate, upgrade')
+            self.fnc_update_mode('migrate, upgrade')
         else:
-            self.fnc_update_mode(ini_content['check_script'],
-                                 ini_content['mode'])
+            self.fnc_update_mode(ini_content['mode'])
