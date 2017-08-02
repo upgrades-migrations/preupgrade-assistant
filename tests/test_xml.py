@@ -124,15 +124,14 @@ class TestScriptGenerator(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.txt"
-        self.check_script = "check_script.sh"
+        self.test_solution = "solution.txt"
+        self.check_script = "check"
         self.loaded_ini = {}
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': ' some content description',
                          'author': 'test <test@redhat.com>',
-                         'config_file': '/etc/named.conf',
-                         'check_script': self.check_script,
-                         'solution': self.test_solution}
+                         'config_file': '/etc/named.conf'
+                         }
         self.check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
@@ -223,15 +222,13 @@ class TestXML(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.txt"
-        self.check_script = "check_script.sh"
+        self.test_solution = "solution.txt"
+        self.check_script = "check"
         self.loaded_ini = {}
         test_ini = {'content_title': 'Testing content title',
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
@@ -343,8 +340,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -371,8 +366,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -399,8 +392,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -425,8 +416,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
@@ -497,14 +486,12 @@ class TestIncorrectINI(base.TestCase):
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.sh"
-        self.check_script = "check_script.sh"
+        self.test_solution = "solution.txt"
+        self.check_script = "check"
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
                          'author': 'test <test@redhat.com>',
                          'config_file': '/etc/named.conf',
-                         'check_script': self.check_script,
-                         'solution': self.test_solution,
                          'applies_to': 'test'
                          }
         solution_text = """
@@ -522,49 +509,6 @@ A solution text for test suite"
     def tearDown(self):
         shutil.rmtree(self.dir_name)
 
-    def test_missing_tag_check_script(self):
-        """Basic test for whole program"""
-        self.test_ini.pop('check_script', None)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_missing_tag_solution_script(self):
-        """Test of missing tag 'solution' - MissingTagsIniFileError should be raised"""
-        self.test_ini.pop('solution', None)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_file_solution_not_exists(self):
-        """Test of missing 'solution' file - IOError should be raised"""
-        self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_file_check_script_not_exists(self):
-        """Test of missing 'check_script' file"""
-        self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_check_script_is_directory(self):
-        """
-        Directory as input instead of regular file is incorrect input
-        Tests issue #29
-        """
-        self.test_ini['check_script'] = '.'
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
-
     def test_incorrect_tag(self):
         """
         Check occurrence of incorrect tag
@@ -576,16 +520,6 @@ A solution text for test suite"
         FileHelper.write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.root_dir_name, self.dir_name)
         self.assertRaises(configparser.ParsingError, oscap.find_all_ini)
-
-    def test_secret_check_script(self):
-        """Check occurrence of secret file for check script"""
-        self.test_ini['check_script'] = '.minicheck'
-        text = """#!/usr/bin/sh\necho 'ahojky'\n"""
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
 
 class TestGroupXML(base.TestCase):
