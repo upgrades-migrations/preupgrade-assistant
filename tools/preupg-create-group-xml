@@ -77,8 +77,7 @@ def main():
     settings.autocomplete = False
     target_tree = ComposeXML.get_xml_tree()
     try:
-        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name),
-                                             os.path.basename(dir_name))
+        target_tree = ComposeXML.run_compose(os.path.dirname(dir_name))
     except Exception as err:
         if opts.debug:
             traceback.print_exc(file=sys.stderr)

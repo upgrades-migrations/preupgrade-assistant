@@ -80,8 +80,7 @@ class XCCDFCompose(object):
 class ComposeXML(object):
 
     @staticmethod
-    def collect_group_xmls(module_set_dir, source_dir, content=None,
-                           generate_from_ini=True):
+    def collect_group_xmls(module_set_dir, source_dir, generate_from_ini=True):
         """
         Find group.xml file recursively through all module directories
         and modules. Collect data from each of them into dictionary.
@@ -129,8 +128,6 @@ class ComposeXML(object):
         ret = {}
 
         for dirname in os.listdir(source_dir):
-            if content and dirname != content:
-                continue
             if dirname and dirname[0] == '.':
                 continue
             new_dir = os.path.join(source_dir, dirname)
@@ -159,7 +156,7 @@ class ComposeXML(object):
                 ret[dirname] = (ElementTree.parse(group_file_path).getroot(),
                                 ComposeXML.collect_group_xmls(
                                     module_set_dir, new_dir,
-                                    generate_from_ini=generate_from_ini))
+                                    generate_from_ini))
             except ParseError as e:
                 log_message(
                     "Encountered a parse error in {0} file, details: {1}"
@@ -331,18 +328,6 @@ class ComposeXML(object):
                     profile.append(elem)
 
     @staticmethod
-    def update_content_ref(target_tree, content):
-        if not content:
-            return target_tree
-        for content_ref in target_tree.findall(".//" + xccdf.XMLNS + "check"):
-            for check_ref in content_ref.findall("*"):
-                if check_ref.tag == xccdf.XMLNS + "check-content-ref":
-                    reference = check_ref.get("href")
-                    check_ref.set("href", os.path.basename(reference))
-
-        return target_tree
-
-    @staticmethod
     def refresh_status(target_tree):
         for status in target_tree.findall(xccdf.XMLNS + "status"):
             if status.get("date", "") == "${CURRENT_DATE}":
@@ -381,12 +366,12 @@ class ComposeXML(object):
         return target_tree
 
     @staticmethod
-    def run_compose(dir_name, content=None, generate_from_ini=True):
+    def run_compose(dir_name, generate_from_ini=True):
         target_tree = ComposeXML.get_xml_tree()
         settings.UPGRADE_PATH = dir_name
         if os.path.exists(os.path.join(dir_name, settings.file_list_rules)):
             os.unlink(os.path.join(dir_name, settings.file_list_rules))
-        group_xmls = ComposeXML.collect_group_xmls(dir_name, dir_name, content,
+        group_xmls = ComposeXML.collect_group_xmls(dir_name, dir_name,
                                                    generate_from_ini)
         logger_debug.debug("Group xmls '%s'", group_xmls)
         if generate_from_ini:
@@ -394,7 +379,6 @@ class ComposeXML(object):
         new_base_dir = dir_name
         ComposeXML.repath_group_xml_tree(dir_name, new_base_dir, group_xmls)
         ComposeXML.merge_trees(target_tree, target_tree, group_xmls)
-        target_tree = ComposeXML.update_content_ref(target_tree, content)
         ComposeXML.resolve_selects(target_tree)
         ComposeXML.refresh_status(target_tree)
         ComposeXML.indent(target_tree)
