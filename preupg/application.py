@@ -298,6 +298,7 @@ class Application(object):
         try:
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
+                # remove all-xccdf.xml from path and get last directory
                 dir_name = ModuleSetUtils.get_module_set_dirname(self.content)
                 if dir_name is None:
                     return None

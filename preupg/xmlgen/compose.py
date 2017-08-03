@@ -48,8 +48,10 @@ class XCCDFCompose(object):
             shutil.rmtree(self.dir_name)
 
     def generate_xml(self, generate_from_ini=True):
-        if ModuleSetUtils.get_module_set_dirname(self.dir_name) is None:
-            sys.stderr.write('Use scenario with valid name, e.g. RHEL6_7\n')
+        try:
+            ModuleSetUtils.get_module_set_os_versions(self.result_dir)
+        except EnvironmentError as err:
+            sys.stderr.write("{0}\n".format(str(err)))
             return ReturnValues.SCENARIO
 
         dir_util.copy_tree(self.result_dir, self.dir_name)

@@ -880,8 +880,7 @@ class ModuleSetUtils(object):
         validate the file content. From the content gets src/dst version of OS
         and return them as list.
 
-        @param {string} dir_name - eg. /root/preupgrage/modul_dir
-        @param {string} base_dir
+        @param {string} module_set_path - eg. /root/preupgrage/modul_dir
         @return {list}
         @throws {EnvironmentError} - when file doesn't exist or content is
                                      incorrect

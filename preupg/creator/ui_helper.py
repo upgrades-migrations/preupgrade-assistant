@@ -67,6 +67,7 @@ class UIHelper(object):
         self.solution_file = True
         self.refresh_content = False
         self.script_type = None
+        self.properties_ini_path = None
 
     def _init_dict(self):
         self.content_dict['content_description'] = ''
@@ -118,12 +119,6 @@ class UIHelper(object):
 
         if self.upgrade_path is True or self.upgrade_path == "":
             print ("The scenario is mandatory. You have to specify it.")
-            return None
-
-        if not ModuleSetUtils.get_module_set_dirname(self.upgrade_path):
-            if self.content_path is None:
-                self.content_path = self.upgrade_path
-            print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
             return None
 
         message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
@@ -195,6 +190,24 @@ class UIHelper(object):
             desc = get_user_input(settings.content_desc_text, any_input=True)
             self.content_dict['content_description'] = desc
 
+    @staticmethod
+    def _write_to_file_content(file_path, config):
+        """
+        Create config file
+
+        @param {str} file_path - path of new config file
+        @param {RawConfigParser} config - configuration object with config data
+        @throws {IOError}
+        """
+        try:
+            f = open(file_path, 'wb')
+            config.write(f)
+            f.close()
+        except IOError:
+            print('We have a problem with writing {0} file to disc'.format(
+                file_path))
+            raise
+
     def _create_ini_file(self):
         """
         INI file should look like
@@ -215,13 +228,7 @@ class UIHelper(object):
 
         self.content_ini = self.get_content_name() + '.ini'
         ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
-        try:
-            f = open(ini_path, 'wb')
-            config.write(f)
-            f.close()
-        except IOError:
-            print ('We have a problem with writing content file %s to disc' % ini_path)
-            raise
+        UIHelper._write_to_file_content(ini_path, config)
 
     def _create_check_script(self):
         if self.check_script:
@@ -253,19 +260,37 @@ class UIHelper(object):
         config.set(section, 'group_title', 'Title for %s ' % self.get_group_name())
 
         file_name = 'group.ini'
-        group_ini = os.path.join(self.get_upgrade_path(), self.get_group_name(), file_name)
+        group_ini = os.path.join(self.get_upgrade_path(),
+                                 self.get_group_name(),
+                                 file_name)
         if os.path.exists(group_ini):
             return
-        try:
-            f = open(group_ini, 'wb')
-            config.write(f)
-            f.close()
-        except IOError:
-            print ('We have a problem with writing %s file to disc' % group_ini)
-            raise
+        UIHelper._write_to_file_content(group_ini, config)
+
+    def _create_properties_ini(self):
+        """
+        Create properties.ini inside module set directory in format:
+
+        [preupgrade-assistant-modules]
+        srcMajorVersion =
+        dstMajorVersion =
+        """
+        file_name = 'properties.ini'
+        section = 'preupgrade-assistant-modules'
+
+        config = ConfigParser.RawConfigParser()
+        config.add_section(section)
+        config.set(section, 'srcMajorVersion', '')
+        config.set(section, 'dstMajorVersion', '')
+
+        self.properties_ini_path = os.path.join(self.get_upgrade_path(), file_name)
+        if os.path.exists(self.properties_ini_path):
+            return
+        UIHelper._write_to_file_content(self.properties_ini_path, config)
 
     def create_final_content(self):
         try:
+            self._create_properties_ini()
             self._create_group_ini()
             self._create_ini_file()
         except IOError:
@@ -280,12 +305,18 @@ class UIHelper(object):
         result_content_path = os.path.join(self.upgrade_path + '-results',
                                            self.get_group_name(),
                                            self.get_content_name())
-        print (settings.summary_title)
-        print (settings.summary_directory % self.get_content_path())
-        print (settings.summary_ini % os.path.join(content_path, self.get_content_ini_file()))
-        print (settings.summary_check % os.path.join(content_path, self.get_check_script()))
-        print (settings.summary_solution % os.path.join(content_path, self.get_solution_file()))
-        print (settings.text_for_testing % (content_path, os.path.join(result_content_path, ALL_XCCDF_XML)))
+        print(settings.summary_title)
+        print(settings.summary_directory % self.get_content_path())
+        print(settings.properties_ini % (self.properties_ini_path))
+        print(settings.summary_ini % os.path.join(content_path,
+                                                  self.get_content_ini_file()))
+        print(settings.summary_check % os.path.join(content_path,
+                                                    self.get_check_script()))
+        print(settings.summary_solution % os.path.join(content_path,
+                                                       self.get_solution_file()))
+        print(settings.text_for_testing % (content_path,
+                                           os.path.join(result_content_path,
+                                                        ALL_XCCDF_XML)))
 
     def take_manadatory_info(self):
         try:
@@ -302,4 +333,4 @@ class UIHelper(object):
         except KeyboardInterrupt:
             if self.get_content_path() is not None:
                 shutil.rmtree(self.get_content_path())
-            print ('\n Content creation was interrupted by user.\n')
+            print('\n Content creation was interrupted by user.\n')
