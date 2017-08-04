@@ -886,8 +886,8 @@ class ModuleSetUtils(object):
         @throws {EnvironmentError} - when file doesn't exist or content is
                                      incorrect
         """
-        src_version_key = "srcMajorVersion"
-        dst_version_key = "dstMajorVersion"
+        src_version_key = "src_major_version"
+        dst_version_key = "dst_major_version"
         section_name = "preupgrade-assistant-modules"
         if not os.path.isdir(module_set_path):
             module_set_path = os.path.join(settings.source_dir,
