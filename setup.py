@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import distutils.command.sdist
 from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
@@ -25,9 +26,9 @@ data_files = {
     'preupg/ui/report/fixtures/':
         ['preupg/ui/report/fixtures/initial_data.json'],
     '/usr/share/preupgrade/':
-        ['common.sh', 'doc/README', 'doc/README.kickstart', 'doc/README.ui'],
+        ['common.sh'],
     '/usr/share/doc/preupgrade-assistant/':
-        ['LICENSE']
+        ['LICENSE', 'doc/README', 'doc/README.kickstart', 'doc/README.ui']
 }
 
 # Include relative path to dirs with non-python files - these will be added
@@ -39,12 +40,17 @@ for path in paths:
 
 # Specify absolute paths into which content from the relative path-defined
 # dirs will be copied to
-paths = {'/usr/share/preupgrade/': 'data/',
-         '/': 'etc/'}
-for absolute_dir_base, local_relative_dir in iter(paths.items()):
-    for root, dirs, files in os.walk(local_relative_dir):
-        absolute_dir = os.path.join(absolute_dir_base, root)
-        data_files[absolute_dir] = [os.path.join(root, f) for f in files]
+paths = {'etc/': '/etc',
+         'data/': '/usr/share/preupgrade/data',
+         'doc/module_writing_tutorial/':
+         '/usr/share/doc/preupgrade-assistant/module_writing_tutorial/'}
+for relative_source_dir, absolute_dest_dir in iter(paths.items()):
+    for root, dirs, files in os.walk(relative_source_dir):
+        path_to_join = re.split(relative_source_dir + "/?", root)[1]
+        absolute_dir = os.path.join(absolute_dest_dir, path_to_join)
+        relative_file_paths = [os.path.join(root, f) for f in files]
+        if relative_file_paths:
+            data_files[absolute_dir] = relative_file_paths
 
 # override default tarball format with bzip2
 distutils.command.sdist.sdist.default_format = {'posix': 'bztar'}
