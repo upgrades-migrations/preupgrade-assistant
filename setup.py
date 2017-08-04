@@ -20,8 +20,7 @@ package_version = VERSION
 
 script_files = ['bin/preupg', 'tools/preupg-content-creator',
                 'tools/preupg-kickstart-generator', 'tools/preupg-ui-manage',
-                'tools/preupg-xccdf-compose', 'tools/preupg-create-group-xml',
-                'tools/preupg-diff']
+                'tools/preupg-xccdf-compose', 'tools/preupg-diff']
 
 data_files = {
     'preupg/ui/report/fixtures/':

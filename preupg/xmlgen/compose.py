@@ -87,7 +87,6 @@ class ComposeXML(object):
 
         @param {str} module_set_dir - directory where all modules are stored
         @param {str} source_dir - directory path for processing
-        @param {str} content - module result e.g. failed,needs_action,pass,...
         @param {bool} generate_from_ini - True if xccdf-compose tool is used
 
         @return {dict} - structure is file based, keys are top level module

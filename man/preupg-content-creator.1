@@ -4,34 +4,19 @@
 .\"
 .TH preupg-content-creator 1 2016-09-01 "" "Linux User's Manual"
 .SH NAME
-preupg-content-creator \- The Preupgrade Assistant provides this script for a faster creation of modules
-
-.SH AVAILABLE FUNCTIONS
-API provides a set of functions which can be used for better handling of your data.
-
-\fBcheck_applies_to\fP - The function can be used to detect a specific RPM package. If the RPM package does not exist, check the script exit with the \fBexit_not_applicable\fP return code.
-
-\fBcheck_root\fP - The function checks whether the user is root.
-
-\fBsolution_file\fP - The function adds a message to the solution file defined in the INI file.
-
-\fBbackup_config_file\fP - The function backs up a config file to the /root/preupgrade directory.
-
-\fBservice_is_enabled\fP - The function checks if the service provided by the chkconfig command is enabled.
+preupg-content-creator \- An interactive way of creating a Preupgrade Assistant module
 
 .SH HOW TO TEST A MODULE
 
-Follow these steps to test your module on the system:
+Follow these steps to test the created module on the system:
 
-1. Execute the preupg-create-group-xml command which checks whether your module is properly created and nothing is missing:
+1. Execute the preupg-xccdf-compose command which creates an XML file needed for running the Preupgrade Assistant
 
-preupg-create-group-xml contents/[Migration_path]/[content_dir]/
+preupg-xccdf-compose <module_set_directory>
 
-2. The preupg-create-group-xml command creates an XML file in contents/[Migration_path]-results/[content_dir]/all_xccdf.xml
+2. Execute the preupg binary as root:
 
-3. Execute the preupg binary as root:
-
-preupg -c contents/[Migration_path]/[content_dir]/
+preupg -c <module_set_directory>-results/all-xccdf.xml
 
 
 .SH AUTHORS
