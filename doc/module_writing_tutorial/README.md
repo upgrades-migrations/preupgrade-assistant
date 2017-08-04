@@ -8,10 +8,10 @@
 3. Create a _properties.ini_ file in the _<MODULE_SET_DIR>_ directory with the following content:
 ```
 [preupgrade-assistant-modules]
-srcMajorVersion=6
-dstMajorVersion=7
+src_major_version=6
+dst_major_version=7
 ```  
->  Note: srcMajorVersion is the major version of the current system and dstMajorVersion is the major version to which the system is to be upgraded.
+>  Note: src_major_version is the major version of the current system and dst_major_version is the major version to which the system is to be upgraded.
 
 4. Make sure you have installed the _preupgrade-assistant-tools_ package, and run the _preupg-xccdf-compose_ tool as follows:
 

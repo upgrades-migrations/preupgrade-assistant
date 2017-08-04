@@ -356,8 +356,8 @@ class TestModuleSetConfigContent(base.TestCase):
     '''
     def __init__(self, *args, **kwargs):
         super(TestModuleSetConfigContent, self).__init__(*args, **kwargs)
-        self.src_version_key = "srcMajorVersion"
-        self.dst_version_key = "dstMajorVersion"
+        self.src_version_key = "src_major_version"
+        self.dst_version_key = "dst_major_version"
         self.section_name = "preupgrade-assistant-modules"
         self.this_file_dir_path = os.path.dirname(os.path.realpath(__file__))
         self.dummy_config_path = os.path.join(self.this_file_dir_path,
