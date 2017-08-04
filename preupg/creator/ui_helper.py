@@ -200,11 +200,10 @@ class UIHelper(object):
         @throws {IOError}
         """
         try:
-            f = open(file_path, 'wb')
-            config.write(f)
-            f.close()
+            with open(file_path, 'wb') as f:
+                config.write(f)
         except IOError:
-            print('We have a problem with writing {0} file to disc'.format(
+            print('An error occured while writing to the {0} file!'.format(
                 file_path))
             raise
 
@@ -272,16 +271,16 @@ class UIHelper(object):
         Create properties.ini inside module set directory in format:
 
         [preupgrade-assistant-modules]
-        srcMajorVersion =
-        dstMajorVersion =
+        src_major_version =
+        dst_major_version =
         """
         file_name = 'properties.ini'
         section = 'preupgrade-assistant-modules'
 
         config = ConfigParser.RawConfigParser()
         config.add_section(section)
-        config.set(section, 'srcMajorVersion', '')
-        config.set(section, 'dstMajorVersion', '')
+        config.set(section, 'src_major_version', '')
+        config.set(section, 'dst_major_version', '')
 
         self.properties_ini_path = os.path.join(self.get_upgrade_path(), file_name)
         if os.path.exists(self.properties_ini_path):
