@@ -176,7 +176,7 @@ mv      ${RPM_BUILD_ROOT}%{python_sitelib}/{django,south} \
 rm -rf  ${RPM_BUILD_ROOT}%{python_sitelib}/preupg/ui/
 rm -f   ${RPM_BUILD_ROOT}%{_bindir}/preupg-ui-manage
 rm -f   ${RPM_BUILD_ROOT}%{_sysconfdir}/httpd/conf.d/99-preup-httpd.conf.*
-rm -f   ${RPM_BUILD_ROOT}%{_datadir}/preupgrade/README.ui
+rm -f   ${RPM_BUILD_ROOT}%{_docdir}/%{name}/README.ui
 %endif # build_ui
 
 ######### FILELISTS #######################################
@@ -249,8 +249,8 @@ fi
 %{_sysconfdir}/bash_completion.d/preupg.bash
 %{_datadir}/preupgrade/data
 %{_datadir}/preupgrade/common.sh
-%doc %{_datadir}/preupgrade/README
-%doc %{_datadir}/preupgrade/README.kickstart
+%doc %{_docdir}/%{name}/README
+%doc %{_docdir}/%{name}/README.kickstart
 %{!?_licensedir:%global license %%doc}
 %license %{_docdir}/%{name}/LICENSE
 %attr(0644,root,root) %{_mandir}/man1/preupg.*
@@ -265,7 +265,7 @@ fi
 %attr(0744, apache, apache) %dir %{_sharedstatedir}/preupgrade/
 %ghost %config(noreplace) %{_sharedstatedir}/preupgrade/db.sqlite
 %ghost %config(noreplace) %{_sharedstatedir}/preupgrade/secret_key
-%doc %{_datadir}/preupgrade/README.ui
+%doc %{_docdir}/%{name}/README.ui
 %endif # build_ui
 
 %files tools
@@ -275,6 +275,7 @@ fi
 %attr(0755,root,root) %{_bindir}/preupg-content-creator
 %attr(0755,root,root) %{_bindir}/preupg-diff
 %{python_sitelib}/preupg/creator/
+%doc %{_docdir}/%{name}/module_writing_tutorial
 %attr(0644,root,root) %{_mandir}/man1/preupgrade-assistant-api.*
 %attr(0644,root,root) %{_mandir}/man1/preupg-content-creator.*
 %attr(0644,root,root) %{_mandir}/man1/preupg-diff.*
