@@ -253,11 +253,12 @@ class ReportParser(object):
         self.write_xml()
 
     def remove_empty_check_import(self):
-        """This function remove check-import tags which are empty"""
+        """Remove stdout or stderr check-import tags whose text is either empty
+        or contains nothing but whitespace characters.
+        """
         has_std_name = lambda x: x.get("import-name") in ["stdout", "stderr"]
         is_empty = lambda x: x.text is None or x.text.strip() == ""
         for rule in self.get_all_result_rules():
-            # Filter all check-import=stdout which are empty and remove them
             for check in self.get_nodes(rule, "check"):
                 for node in self.get_nodes(check, "check-import"):
                     if has_std_name(node) and is_empty(node):
@@ -280,14 +281,18 @@ class ReportParser(object):
         self.write_xml()
 
     def strip_whitespaces(self):
-        "Strip whitespaces from start and end of stderr/stdout of modules"
-        has_std_name=lambda x: x.get("import-name") in ["stdout", "stderr"]
-        for rule in self.get_all_result_rules():
-            for check in self.get_nodes(rule, "check"):
-                for node in self.get_nodes(check, "check-import"):
-                    if has_std_name(node) and node.text is not None:
-                        node.text = node.text.strip()
-
+        """Strip specific whitespace characters from the start and end of
+        stderr/stdout of modules.
+        """
+        check_imports = self.target_tree.getiterator(self.element_prefix +
+                                                     "check-import")
+        for check_import in check_imports:
+            if check_import.get("import-name") not in ["stdout", "stderr"]:
+                continue
+            txt = check_import.text
+            if txt and txt.startswith('\n') and \
+                    txt.endswith('\n\n          \n'):
+                check_import.text = txt[1:-13]
 
     @staticmethod
     def write_xccdf_version(file_name, direction=False):
