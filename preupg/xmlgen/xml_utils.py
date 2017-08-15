@@ -16,7 +16,8 @@ def module_path_from_root_dir(dirname, module_set_dir):
     """
     Remove module_set_dir from dirname path
 
-    @param {str} dir_name - directory of specific method or method directory
+    @param {str} dir_name - directory of specific module or module-set
+        directory
     @param {str} module_set_dir - directory where all modules are stored
 
     @return {list} - splited path to module
@@ -38,7 +39,7 @@ class XmlUtils(object):
     def __init__(self, module_set_dir, module_dir, ini_files):
         """
         @param {str} module_set_dir - directory where all modules are stored
-        @param {str} module_dir - directory of specific method or method
+        @param {str} module_dir - directory of specific module or module-set
             directory
         @param {dict} ini_files - ini file options and their values in format:
             {ini_file_path: {option1: value, option2: value, ...}}

@@ -34,7 +34,7 @@ class OscapGroupXml(object):
     def __init__(self, module_set_dir, dir_name):
         """
         @param {str} module_set_dir - directory where all modules are stored
-        @param {str} dir_name - directory of specific module or module
+        @param {str} dir_name - directory of specific module or module-set
             directory
         """
         self.module_set_dir = module_set_dir

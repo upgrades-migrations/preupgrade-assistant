@@ -13,6 +13,7 @@ from preupg import settings
 from preupg import xccdf
 from preupg.logger import logger_debug
 from preupg.settings import ReturnValues
+from preupg.logger import log_message, logging
 
 try:
     from xml.etree import ElementTree
@@ -107,13 +108,21 @@ class ComposeXML(object):
                 - drivers (modules directory)
                 - ...
         result is:
-            {services: tuple(<Element {services}>, {
-                httpd: tuple(<Element {httpd}>, {}),
-                tomcat: tuple(<Element {tomcat}>, {}),
+            {
+                services: tuple(
+                    <Element {services}>,
+                    {
+                        httpd: tuple(<Element {httpd}>, {}),
+                        tomcat: tuple(<Element {tomcat}>, {}),
+                        ...
+                    }
+                ),
+                drivers: tuple(
+                    <Element {drivers}>,
+                    {...}
+                ),
                 ...
-            )},
-            drivers: tuple(<Element {drivers}>, {...}),
-            ...}
+            }
         """
         ret = {}
 
@@ -132,9 +141,9 @@ class ComposeXML(object):
                 directories = [x for x in os.listdir(new_dir)
                                if not os.path.isdir(os.path.join(new_dir, x))]
                 if not directories and 'postupgrade.d' not in dirname:
-                    print("WARNING: It seems that group.ini file is missing"
-                          " in %s. Please check if it is really missing."
-                          % new_dir)
+                    log_message(
+                        "group.ini file is missing in {0}".format(new_dir),
+                        level=logging.WARNING)
             if ini_files and generate_from_ini:
                 oscap_group = OscapGroupXml(module_set_dir, new_dir)
                 oscap_group.write_xml()
@@ -150,8 +159,10 @@ class ComposeXML(object):
                                     module_set_dir, new_dir,
                                     generate_from_ini=generate_from_ini))
             except ParseError as e:
-                print("Encountered a parse error in file ", group_file_path,
-                      " details: ", e)
+                log_message(
+                    "Encountered a parse error in {0} file, details: {1}"
+                    .format(group_file_path, e), level=logging.ERROR)
+                sys.exit(1)
         return ret
 
     @staticmethod
