@@ -14,7 +14,9 @@ from preupg.utils import FileHelper, ModuleSetUtils
 from preupg.creator import settings
 
 from preupg.settings import content_file as ALL_XCCDF_XML
+
 section = 'preupgrade'
+PROPERTIES_FILE_NAME = 'properties.ini'
 
 
 def get_user_input(message, default_yes=True, any_input=False):
@@ -48,7 +50,7 @@ def get_user_input(message, default_yes=True, any_input=False):
             try:
                 user_input = strtobool(user_input)
             except ValueError:
-                print ('You have to type [y]es or [n]o.')
+                print('You have to type [y]es or [n]o.')
                 continue
 
         return user_input
@@ -67,18 +69,13 @@ class UIHelper(object):
         self.solution_file = True
         self.refresh_content = False
         self.script_type = None
+        # properties.ini
         self.properties_ini_path = None
+        self.src_version = None
+        self.dst_version = None
 
     def _init_dict(self):
         self.content_dict['content_description'] = ''
-
-    @staticmethod
-    def check_path(path, msg):
-        if os.path.exists(path):
-            choice = get_user_input(msg)
-            if not choice:
-                return None
-        return True
 
     def get_group_name(self):
         return self._group_name
@@ -115,10 +112,11 @@ class UIHelper(object):
 
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
-            self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
+            self.upgrade_path = get_user_input(settings.upgrade_path,
+                                               any_input=True)
 
-        if self.upgrade_path is True or self.upgrade_path == "":
-            print ("The scenario is mandatory. You have to specify it.")
+        if not UIHelper.is_valid_string(self.upgrade_path):
+            print("The scenario is mandatory. You have to specify it.")
             return None
 
         message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
@@ -128,7 +126,35 @@ class UIHelper(object):
         return True
 
     def prepare_content_env(self):
-        self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
+        self.content_path = os.path.join(self.get_group_name(),
+                                         self.get_content_name())
+
+    def properties_ini(self):
+        """ If properties.ini file doesnt exist ask user for OS versions """
+        self.properties_ini_path = os.path.join(
+            self.get_upgrade_path(),
+            PROPERTIES_FILE_NAME)
+        if not self.properties_ini_exists():
+            self.get_properties_ini_versions()  # ask user for versions
+
+    def properties_ini_exists(self):
+        if self.properties_ini_path:
+            return os.path.isfile(self.properties_ini_path)
+        return False
+
+    def get_properties_ini_versions(self):
+        """
+        Asks user for src,dst OS versions, while options are mandatory user
+        input is required
+        """
+        while not self.src_version:
+            self.src_version = UIHelper.ask_about_version_number(
+                settings.prop_src_version,
+                "The major source OS version is mandatory.")
+        while not self.dst_version:
+            self.dst_version = UIHelper.ask_about_version_number(
+                settings.prop_dst_version,
+                "The major destination OS version is mandatory.")
 
     def get_script_type(self):
         while True:
@@ -190,23 +216,6 @@ class UIHelper(object):
             desc = get_user_input(settings.content_desc_text, any_input=True)
             self.content_dict['content_description'] = desc
 
-    @staticmethod
-    def _write_to_file_content(file_path, config):
-        """
-        Create config file
-
-        @param {str} file_path - path of new config file
-        @param {RawConfigParser} config - configuration object with config data
-        @throws {IOError}
-        """
-        try:
-            with open(file_path, 'wb') as f:
-                config.write(f)
-        except IOError:
-            print('An error occured while writing to the {0} file!'.format(
-                file_path))
-            raise
-
     def _create_ini_file(self):
         """
         INI file should look like
@@ -227,7 +236,7 @@ class UIHelper(object):
 
         self.content_ini = self.get_content_name() + '.ini'
         ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
-        UIHelper._write_to_file_content(ini_path, config)
+        UIHelper.write_config_to_file(ini_path, config)
 
     def _create_check_script(self):
         if self.check_script:
@@ -264,32 +273,29 @@ class UIHelper(object):
                                  file_name)
         if os.path.exists(group_ini):
             return
-        UIHelper._write_to_file_content(group_ini, config)
+        UIHelper.write_config_to_file(group_ini, config)
 
-    def _create_properties_ini(self):
+    def create_properties_ini(self):
         """
         Create properties.ini inside module set directory in format:
 
         [preupgrade-assistant-modules]
-        src_major_version =
-        dst_major_version =
+        src_major_version = <user_input>
+        dst_major_version = <user_input>
         """
-        file_name = 'properties.ini'
-        section = 'preupgrade-assistant-modules'
+        if not self.properties_ini_exists():
+            section = 'preupgrade-assistant-modules'
 
-        config = ConfigParser.RawConfigParser()
-        config.add_section(section)
-        config.set(section, 'src_major_version', '')
-        config.set(section, 'dst_major_version', '')
+            config = ConfigParser.RawConfigParser()
+            config.add_section(section)
+            config.set(section, 'src_major_version', self.src_version)
+            config.set(section, 'dst_major_version', self.dst_version)
 
-        self.properties_ini_path = os.path.join(self.get_upgrade_path(), file_name)
-        if os.path.exists(self.properties_ini_path):
-            return
-        UIHelper._write_to_file_content(self.properties_ini_path, config)
+            UIHelper.write_config_to_file(self.properties_ini_path, config)
 
     def create_final_content(self):
         try:
-            self._create_properties_ini()
+            self.create_properties_ini()
             self._create_group_ini()
             self._create_ini_file()
         except IOError:
@@ -321,11 +327,13 @@ class UIHelper(object):
         try:
             if self.specify_upgrade_path() is None:
                 return 1
+
+            self.properties_ini()
+
             self.get_content_info()
             if self.refresh_content:
                 shutil.rmtree(self.get_content_path())
                 os.makedirs(self.get_content_path())
-
             if self.create_final_content() is None:
                 return 1
             self._brief_summary()
@@ -333,3 +341,42 @@ class UIHelper(object):
             if self.get_content_path() is not None:
                 shutil.rmtree(self.get_content_path())
             print('\n Content creation was interrupted by user.\n')
+
+    @staticmethod
+    def check_path(path, msg):
+        if os.path.exists(path):
+            choice = get_user_input(msg)
+            if not choice:
+                return None
+        return True
+
+    @staticmethod
+    def is_valid_string(string):
+        if isinstance(string, basestring) and bool(string.strip()):
+            return True
+        return False
+
+    @staticmethod
+    def ask_about_version_number(msg, err_msg):
+        version = get_user_input(msg, any_input=True)
+        if not UIHelper.is_valid_string(version):
+            print(err_msg)
+            return False
+        return version
+
+    @staticmethod
+    def write_config_to_file(file_path, config):
+        """
+        Create config file
+
+        @param {str} file_path - path of new config file
+        @param {RawConfigParser} config - configuration object with config data
+        @throws {IOError}
+        """
+        try:
+            with open(file_path, 'wb') as f:
+                config.write(f)
+        except IOError:
+            print('An error occured while writing to the {0} file!'.format(
+                file_path))
+            raise

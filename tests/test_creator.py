@@ -1,15 +1,16 @@
-
 from __future__ import unicode_literals, print_function
 import unittest
 import tempfile
 import os
 import shutil
+import ConfigParser
 
 try:
     import base
 except ImportError:
     import tests.base as base
 
+from preupg.creator import ui_helper
 from preupg.creator.ui_helper import UIHelper
 from preupg.utils import FileHelper
 
@@ -31,6 +32,13 @@ class TestCreator(base.TestCase):
     group_name = "foobar_group"
     content_name = "foobar_content"
     content_dict = {}
+
+    class Identity(base.MockFunction):
+        def __init__(self, identity):
+            self.identity = identity
+
+        def __call__(self, *args, **kwargs):
+            return self.identity
 
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
@@ -54,6 +62,7 @@ class TestCreator(base.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tempdir)
 
+    @base.mock(UIHelper, "properties_ini_exists", Identity(True))
     def test_content_ini(self):
         self.puh.script_type = "sh"
         self.puh.prepare_content_env()
@@ -72,6 +81,7 @@ class TestCreator(base.TestCase):
                         '']
         self.assertEqual(expected_ini.sort(), lines.sort())
 
+    @base.mock(UIHelper, "properties_ini_exists", Identity(True))
     def test_group_ini(self):
         self.puh.script_type = "sh"
         self.puh.prepare_content_env()
@@ -87,6 +97,7 @@ class TestCreator(base.TestCase):
                               '']
         self.assertEqual(lines, expected_group_ini)
 
+    @base.mock(UIHelper, "properties_ini_exists", Identity(True))
     def test_bash_check_script(self):
         self.puh.script_type = "sh"
         self.puh.prepare_content_env()
@@ -103,6 +114,7 @@ class TestCreator(base.TestCase):
                       '']
         self.assertEqual(lines, exp_script)
 
+    @base.mock(UIHelper, "properties_ini_exists", Identity(True))
     def test_python_check_script(self):
         self.puh.script_type = "python"
         self.puh.prepare_content_env()
@@ -118,12 +130,73 @@ class TestCreator(base.TestCase):
                       "### For more information see 'man preupg-content-creator' or 'man preupgrade-assistant-api'."]
         self.assertTrue(exp_script, lines)
 
+    @base.mock(UIHelper, "properties_ini_exists", Identity(False))
+    def test_create_properties_ini(self):
+        """ Create valid properties.ini file """
+        ini_content = ["[preupgrade-assistant-modules]",
+                       "src_major_version = 6",
+                       "dst_major_version = 7",
+                       ""]
+
+        ui = UIHelper()
+        ui.src_version = 6
+        ui.dst_version = 7
+
+        tmp_file_name = tempfile.mkstemp()[1]
+        ui.properties_ini_path = tmp_file_name
+        ui.create_properties_ini()
+        tmp_content = load_file(tmp_file_name)
+        self.assertEqual(tmp_content, ini_content)
+        os.remove(tmp_file_name)
+
+    @base.mock(UIHelper, "check_path", Identity(True))
+    def test_specify_upgrade_path(self):
+        """Normal pass"""
+        self.assertTrue(self.puh.specify_upgrade_path())
+
+    def test_is_valid_string(self):
+        self.assertTrue(UIHelper.is_valid_string('text'))
+        self.assertTrue(UIHelper.is_valid_string(u'text'))
+
+        self.assertFalse(UIHelper.is_valid_string(""))
+        self.assertFalse(UIHelper.is_valid_string(None))
+        self.assertFalse(UIHelper.is_valid_string(0))
+
+    @base.mock(ui_helper, "get_user_input", Identity('6'))
+    def test_ask_about_version_number(self):
+        self.assertEqual(UIHelper.ask_about_version_number(
+            "msg", "err_msg"), '6')
+
+    @base.mock(ui_helper, "get_user_input", Identity(''))
+    def test_ask_about_wrong_version(self):
+        self.assertEqual(UIHelper.ask_about_version_number(
+            "msg", "err_msg"), False)
+
+    def test_write_config_to_file(self):
+        """ Test creation and content in config file """
+        config = ConfigParser.RawConfigParser()
+        section = "section"
+        config.add_section(section)
+        config.set(section, 'option', 'value')
+
+        tmp_file_name = tempfile.mkstemp()[1]
+        UIHelper.write_config_to_file(tmp_file_name, config)
+        tmp_content = load_file(tmp_file_name)
+        expected_content = ['[section]', 'option = value', '']
+        self.assertEqual(tmp_content, expected_content)
+        os.remove(tmp_file_name)
+
+    def test_write_config_to_nofile(self):
+        """ Write config to non-existing file path """
+        self.assertRaises(IOError, UIHelper.write_config_to_file, '', None)
+
 
 def suite():
     loader = unittest.TestLoader()
     unit_suite = unittest.TestSuite()
     unit_suite.addTest(loader.loadTestsFromTestCase(TestCreator))
     return unit_suite
+
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=3).run(suite())
