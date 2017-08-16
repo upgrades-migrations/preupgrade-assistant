@@ -117,9 +117,8 @@ class TestScriptGenerator(base.TestCase):
     test_ini = []
 
     def setUp(self):
-        self.dirname = os.path.join("tests",
-                                    "FOOBAR6_7" + settings.results_postfix,
-                                    "test")
+        self.root_dir_name = "tests/FOOBAR6_7" + settings.results_postfix
+        self.dirname = os.path.join(self.root_dir_name, "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -159,21 +158,24 @@ A solution text for test suite"
     def test_applies_to(self):
         self.test_ini['applies_to'] = 'test_rpm'
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
 
     def test_check_bin(self):
         self.test_ini['binary_req'] = 'cpf'
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "" "cpf"'))
 
     def test_check_rpm(self):
         self.test_ini['requires'] = 'test_rpm'
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "test_rpm" ""'))
 
@@ -181,7 +183,8 @@ A solution text for test suite"
         self.test_ini['binary_req'] = 'cpf'
         self.test_ini['requires'] = 'test_rpm'
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_rpm_to "test_rpm" "cpf"'))
 
@@ -189,7 +192,8 @@ A solution text for test suite"
         self.test_ini['applies_to'] = 'test_rpm'
         self.test_ini['binary_req'] = 'cpf'
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         self.assertTrue(self._return_check('check_applies_to "test_rpm"'))
         self.assertTrue(self._return_check('check_rpm_to "" "cpf"'))
@@ -212,9 +216,8 @@ class TestXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dirname = os.path.join("tests",
-                                    "FOOBAR6_7" + settings.results_postfix,
-                                    "test")
+        self.root_dir_name = "tests/FOOBAR6_7" + settings.results_postfix
+        self.dirname = os.path.join(self.root_dir_name, "test")
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
@@ -249,7 +252,8 @@ A solution text for test suite"
         test_solution_name = os.path.join(self.dirname, self.test_solution)
         FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
 
     def tearDown(self):
@@ -286,14 +290,16 @@ A solution text for test suite"
 
     def test_xml_solution_type_text(self):
         self.loaded_ini[self.filename]['solution_type'] = "text"
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_html(self):
         self.loaded_ini[self.filename]['solution_type'] = "html"
-        self.xml_utils = XmlUtils(self.dirname, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x]
         self.assertTrue(fix_text)
@@ -347,7 +353,7 @@ A solution text for test suite"
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
         ini[self.filename] = test_ini
-        xml_utils = XmlUtils(self.dirname, ini)
+        xml_utils = XmlUtils(self.root_dir_name, self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
@@ -375,7 +381,7 @@ A solution text for test suite"
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
         ini[self.filename] = test_ini
-        xml_utils = XmlUtils(self.dirname, ini)
+        xml_utils = XmlUtils(self.root_dir_name, self.dirname, ini)
         xml_utils.prepare_sections()
         upgrade_file = FileHelper.get_file_content(upgrade, 'rb', method=True)
         tag = [x.strip() for x in upgrade_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
@@ -403,7 +409,7 @@ A solution text for test suite"
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
         ini[self.filename] = test_ini
-        xml_utils = XmlUtils(self.dirname, ini)
+        xml_utils = XmlUtils(self.root_dir_name, self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
@@ -428,7 +434,7 @@ A solution text for test suite"
         old_settings = settings.UPGRADE_PATH
         migrate, upgrade = self._create_temporary_dir()
         ini[self.filename] = test_ini
-        xml_utils = XmlUtils(self.dirname, ini)
+        xml_utils = XmlUtils(self.root_dir_name, self.dirname, ini)
         xml_utils.prepare_sections()
         migrate_file = FileHelper.get_file_content(migrate, 'rb', method=True)
         tag = [x.strip() for x in migrate_file if 'xccdf_preupg_rule_test_check_script' in x.strip()]
@@ -486,7 +492,8 @@ class TestIncorrectINI(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dir_name = "tests/FOOBAR6_7/incorrect_ini"
+        self.root_dir_name = "tests/FOOBAR6_7"
+        self.dir_name = os.path.join(self.root_dir_name, "incorrect_ini")
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
@@ -519,28 +526,32 @@ A solution text for test suite"
         """Basic test for whole program"""
         self.test_ini.pop('check_script', None)
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_missing_tag_solution_script(self):
         """Test of missing tag 'solution' - MissingTagsIniFileError should be raised"""
         self.test_ini.pop('solution', None)
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_solution_not_exists(self):
         """Test of missing 'solution' file - IOError should be raised"""
         self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_file_check_script_not_exists(self):
         """Test of missing 'check_script' file"""
         self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_check_script_is_directory(self):
@@ -550,8 +561,8 @@ A solution text for test suite"
         """
         self.test_ini['check_script'] = '.'
         self.loaded_ini[self.filename] = self.test_ini
-        print(self.loaded_ini)
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_incorrect_tag(self):
@@ -563,7 +574,7 @@ A solution text for test suite"
         text_ini += '\n'.join([key + " = " + self.test_ini[key] for key in self.test_ini])
         text_ini += '\n[]\neliskk\n'
         FileHelper.write_to_file(self.filename, "wb", text_ini)
-        oscap = OscapGroupXml(self.dir_name)
+        oscap = OscapGroupXml(self.root_dir_name, self.dir_name)
         self.assertRaises(configparser.ParsingError, oscap.find_all_ini)
 
     def test_secret_check_script(self):
@@ -572,7 +583,8 @@ A solution text for test suite"
         text = """#!/usr/bin/sh\necho 'ahojky'\n"""
         FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
         self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
 
@@ -587,7 +599,8 @@ class TestGroupXML(base.TestCase):
     xml_utils = None
 
     def setUp(self):
-        self.dir_name = "tests/FOOBAR6_7-results/test_group"
+        self.root_dir_name = "tests/FOOBAR6_7"
+        self.dir_name = os.path.join(self.root_dir_name, "test_group")
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'group.ini')
         test_ini = {'group_title': 'Testing content title'}
@@ -599,7 +612,8 @@ class TestGroupXML(base.TestCase):
 
     def test_group_ini(self):
         """Basic test creation group.xml file"""
-        self.xml_utils = XmlUtils(self.dir_name, self.loaded_ini)
+        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
+                                  self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         group_tag = [x for x in self.rule if '<Group id="xccdf_preupg_group_test_group" selected="true">' in x]
         self.assertTrue(group_tag)

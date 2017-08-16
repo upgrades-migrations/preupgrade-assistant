@@ -42,7 +42,8 @@ class TestContentGenerate(base.TestCase):
         for content in expected_contents:
             compose_xml = ComposeXML()
             result_dir = os.path.join(self.dir_name, content)
-            compose_xml.collect_group_xmls(self.dir_name, content=content)
+            compose_xml.collect_group_xmls(self.dir_name, self.dir_name,
+                                           content=content)
             self.assertTrue(os.path.exists(os.path.join(result_dir, 'group.xml')))
             self.assertFalse(os.path.exists(os.path.join(result_dir, 'all-xccdf.xml')))
 
@@ -69,7 +70,7 @@ class TestGlobalContent(base.TestCase):
         for content in expected_contents:
             compose_xml = ComposeXML()
             dir_name = os.path.join(self.temp_dir, FOO_DIR)
-            compose_xml.collect_group_xmls(dir_name, content=content)
+            compose_xml.collect_group_xmls(dir_name, dir_name, content=content)
 
         xccdf_compose = XCCDFCompose(os.path.join(self.temp_dir, FOO_DIR))
         xccdf_compose.generate_xml()
