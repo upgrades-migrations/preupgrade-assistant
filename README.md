@@ -1,39 +1,34 @@
-# preupgrade-assistant
+# The Preupgrade Assistant
 
-[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) [![GitLab build status](https://gitlab.com/phracek/preupgrade-assistant/badges/master/build.svg)](https://gitlab.com/phracek/preupgrade-assistant/commits/master) [![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)](https://preupg.000webhostapp.com/master_build_log.html)
+[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) ![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)
 
-The Preupgrade Assistant performs an assessment of the system from the "upgradeability" point of view.
+Preupgrade Assistant analyses the operating system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant are required by [Red Hat Upgrade tool](https://github.com/upgrades-migrations/redhat-upgrade-tool) that performs an in-place upgrade of the system.
 
-## Landscape scans
+## How to build the Preupgrade Assistant package
 
-[**Landscape.io scans of preupgrade-assistant**](https://landscape.io/github/phracek/preupgrade-assistant/)
-
-## Requirements for running the tool
-
-- openscap
-- openscap-engine-sce
-- openscap-utils
-- python-six
-
-## Extra requirements for development and running tests
-
-- pykickstart
-- python-setuptools
-- some packages you can download from this repository: [epel-release-6-8.noarch.rpm](http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm)
+- Create the primary packaging source: `python setup.py sdist --formats=gztar`
+- The other packaging sources are in the _packaging/sources_ folder.
+- Build an RPM package using specfile in the _packaging_ folder:
+  ```
+  rpmbuild -bs packaging/preupgrade-assistant.spec \
+    --define "_sourcedir `pwd`/packaging/sources"
+   ```
 
 ## How to execute the Preupgrade Assistant
 
-Run ./preupg with root privileges, because the preupg binary needs to have an access to all files.
+- Install the preupgrade-assistant package
+- The Preupgrade Assistant requires modules. Either create your own modules by following the tutorial described below or find modules for Red Hat Enterprise Linux in the [Preupgrade Assistant Modules repo](https://github.com/upgrades-migrations/preupgrade-assistant-modules).
+- Run _preupg_ with root privileges.
+
+## How to run unit tests
+
+- Install required python modules:
+  `pip install test-requirements.txt`
+- Run `python setup.py test`
 
 ## Module writing tutorial
 
-To learn how to write modules for the Preupgrade Assistant, go through
-the tutorial located in the doc/module_writing_tutorial/ directory and read through
-the contents of its subfolders in the numerical order (01, 02, etc.).
-
-The tutorial will be kept up to date with the changes in the Preupgrade Assistant
-and the provided API and it will probably be extended continuously to describe best practices
-for writing modules.
+To learn how to write modules for the Preupgrade Assistant, go through the tutorial located in the _doc/module_writing_tutorial/_.
 
 ## Contribute
 
