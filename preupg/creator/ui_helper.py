@@ -12,11 +12,9 @@ import sys
 from distutils.util import strtobool
 from preupg.utils import FileHelper, ModuleSetUtils
 from preupg.creator import settings
+from preupg import settings as preupgSettings
 
 from preupg.settings import content_file as ALL_XCCDF_XML
-
-section = 'preupgrade'
-PROPERTIES_FILE_NAME = 'properties.ini'
 
 
 def get_user_input(message, default_yes=True, any_input=False):
@@ -129,13 +127,15 @@ class UIHelper(object):
         self.content_path = os.path.join(self.get_group_name(),
                                          self.get_content_name())
 
-    def properties_ini(self):
-        """ If properties.ini file doesnt exist ask user for OS versions """
+    def ask_about_properties_ini(self):
+        """ If properties.ini file doesnt exist ask user for OS versions,
+        otherwise don't ask anything
+        """
         self.properties_ini_path = os.path.join(
             self.get_upgrade_path(),
-            PROPERTIES_FILE_NAME)
+            preupgSettings.properties_ini)
         if not self.properties_ini_exists():
-            self.get_properties_ini_versions()  # ask user for versions
+            self.get_properties_ini_versions()  # ask user forn  versions
 
     def properties_ini_exists(self):
         if self.properties_ini_path:
@@ -229,10 +229,10 @@ class UIHelper(object):
         :return:
         """
         config = ConfigParser.RawConfigParser()
-        config.add_section(section)
+        config.add_section(preupgSettings.prefix)
         for key, val in iter(self.content_dict.items()):
             if val is not None:
-                config.set(section, key, val)
+                config.set(preupgSettings.prefix, key, val)
 
         self.content_ini = self.get_content_name() + '.ini'
         ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
@@ -264,8 +264,8 @@ class UIHelper(object):
         :return:
         """
         config = ConfigParser.RawConfigParser()
-        config.add_section(section)
-        config.set(section, 'group_title', 'Title for %s ' % self.get_group_name())
+        config.add_section(preupgSettings.prefix)
+        config.set(preupgSettings.prefix, 'group_title', 'Title for %s ' % self.get_group_name())
 
         file_name = 'group.ini'
         group_ini = os.path.join(self.get_upgrade_path(),
@@ -328,7 +328,7 @@ class UIHelper(object):
             if self.specify_upgrade_path() is None:
                 return 1
 
-            self.properties_ini()
+            self.ask_about_properties_ini()
 
             self.get_content_info()
             if self.refresh_content:
