@@ -127,7 +127,7 @@ class UIHelper(object):
         self.content_path = os.path.join(self.get_group_name(),
                                          self.get_content_name())
 
-    def ask_about_properties_ini(self):
+    def get_properties_ini_info(self):
         """ If properties.ini file doesnt exist ask user for OS versions,
         otherwise don't ask anything
         """
@@ -135,14 +135,14 @@ class UIHelper(object):
             self.get_upgrade_path(),
             preupgSettings.properties_ini)
         if not self.properties_ini_exists():
-            self.get_properties_ini_versions()  # ask user forn  versions
+            self.ask_for_properties_ini_versions()
 
     def properties_ini_exists(self):
         if self.properties_ini_path:
             return os.path.isfile(self.properties_ini_path)
         return False
 
-    def get_properties_ini_versions(self):
+    def ask_for_properties_ini_versions(self):
         """
         Asks user for src,dst OS versions, while options are mandatory user
         input is required
@@ -328,7 +328,7 @@ class UIHelper(object):
             if self.specify_upgrade_path() is None:
                 return 1
 
-            self.ask_about_properties_ini()
+            self.get_properties_ini_info()
 
             self.get_content_info()
             if self.refresh_content:
