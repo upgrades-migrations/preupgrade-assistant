@@ -103,8 +103,9 @@ preupgrade_dirs = [dirty_conf_dir, clean_conf_dir,
                    'preupgrade-scripts', 'noauto_postupgrade.d',
                    postmigrate_dir]
 
+DOC_DIR = '/usr/share/doc/preupgrade-assistant/'
 PREUPG_README = 'README'
-readme_files = {'README': PREUPG_README,
+readme_files = {PREUPG_README: PREUPG_README,
                 'README.kickstart': os.path.join(kickstart_dir, 'README'),
                 }
 

@@ -7,6 +7,7 @@ import distutils.command.sdist
 from distutils.command.install import INSTALL_SCHEMES
 from setuptools import setup, find_packages
 from preupg.version import VERSION
+from preupg.settings import DOC_DIR
 
 project_name = "preupgrade-assistant"
 project_url = "https://github.com/upgrades-migrations/preupgrade-assistant/"
@@ -27,7 +28,7 @@ data_files = {
         ['preupg/ui/report/fixtures/initial_data.json'],
     '/usr/share/preupgrade/':
         ['common.sh'],
-    '/usr/share/doc/preupgrade-assistant/':
+    DOC_DIR:
         ['LICENSE', 'doc/README', 'doc/README.kickstart', 'doc/README.ui']
 }
 
@@ -43,7 +44,7 @@ for path in paths:
 paths = {'etc/': '/etc',
          'data/': '/usr/share/preupgrade/data',
          'doc/module_writing_tutorial/':
-         '/usr/share/doc/preupgrade-assistant/module_writing_tutorial/'}
+             os.path.join(DOC_DIR, 'module_writing_tutorial')}
 for relative_source_dir, absolute_dest_dir in iter(paths.items()):
     for root, dirs, files in os.walk(relative_source_dir):
         path_to_join = re.split(relative_source_dir + "/?", root)[1]
