@@ -20,21 +20,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
-import fnmatch
-import glob
 import os
 import sys
 
 from lxml import etree as ET
 from preupg.utils import OpenSCAPHelper, ProcessHelper, FileHelper
 
-version = 1.0  # version of the preupg-diff
+version = 1.1  # version of the preupg-diff
 diff_report_name = "result_diff"
 diff_report_name_xml = diff_report_name + ".xml"
 diff_report_name_html = diff_report_name + ".html"
 namespace = "http://checklists.nist.gov/xccdf/1.2"
 # Rule result attributes to be compared for equality
 rule_attrs_to_compare = ["result", "solution", "stdout", "stderr"]
+parsed_opts = None
 
 
 def parse_cli_opts():
@@ -193,6 +192,7 @@ def has_no_subtags_recursive(tag_obj, subtag_name):
     else:
         return True
 
+
 def check_files_are_readable(files):
     for file in files:
         if not FileHelper.check_file(file, "r"):
@@ -216,10 +216,10 @@ def get_analyzed_xml_paths(cli_paths):
             sys.exit("Error: Can't access '{0}'.".format(path))
 
     if not analyzed_xml_paths:
-        sys.exit("Error: No analyzed XML found.".format(path))
+        sys.exit("Error: No analyzed XML found.")
 
     check_files_are_readable(analyzed_xml_paths)
-    
+
     return analyzed_xml_paths
 
 
