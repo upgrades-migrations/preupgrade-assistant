@@ -12,9 +12,9 @@ import sys
 from distutils.util import strtobool
 from preupg.utils import FileHelper, ModuleSetUtils
 from preupg.creator import settings
+from preupg import settings as preupgSettings
 
 from preupg.settings import content_file as ALL_XCCDF_XML
-section = 'preupgrade'
 
 
 def get_user_input(message, default_yes=True, any_input=False):
@@ -48,7 +48,7 @@ def get_user_input(message, default_yes=True, any_input=False):
             try:
                 user_input = strtobool(user_input)
             except ValueError:
-                print ('You have to type [y]es or [n]o.')
+                print('You have to type [y]es or [n]o.')
                 continue
 
         return user_input
@@ -67,17 +67,13 @@ class UIHelper(object):
         self.solution_file = True
         self.refresh_content = False
         self.script_type = None
+        # properties.ini
+        self.properties_ini_path = None
+        self.src_version = None
+        self.dst_version = None
 
     def _init_dict(self):
         self.content_dict['content_description'] = ''
-
-    @staticmethod
-    def check_path(path, msg):
-        if os.path.exists(path):
-            choice = get_user_input(msg)
-            if not choice:
-                return None
-        return True
 
     def get_group_name(self):
         return self._group_name
@@ -114,16 +110,11 @@ class UIHelper(object):
 
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
-            self.upgrade_path = get_user_input(settings.upgrade_path, any_input=True)
+            self.upgrade_path = get_user_input(settings.upgrade_path,
+                                               any_input=True)
 
-        if self.upgrade_path is True or self.upgrade_path == "":
-            print ("The scenario is mandatory. You have to specify it.")
-            return None
-
-        if not ModuleSetUtils.get_module_set_dirname(self.upgrade_path):
-            if self.content_path is None:
-                self.content_path = self.upgrade_path
-            print ("The scenario '%s' is not valid.\nIt has to be like RHEL6_7 or CentOS7_RHEL7." % self.content_path)
+        if not UIHelper.is_valid_string(self.upgrade_path):
+            print("The scenario is mandatory. You have to specify it.")
             return None
 
         message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
@@ -133,7 +124,37 @@ class UIHelper(object):
         return True
 
     def prepare_content_env(self):
-        self.content_path = os.path.join(self.get_group_name(), self.get_content_name())
+        self.content_path = os.path.join(self.get_group_name(),
+                                         self.get_content_name())
+
+    def get_properties_ini_info(self):
+        """ If properties.ini file doesnt exist ask user for OS versions,
+        otherwise don't ask anything
+        """
+        self.properties_ini_path = os.path.join(
+            self.get_upgrade_path(),
+            preupgSettings.properties_ini)
+        if not self.properties_ini_exists():
+            self.ask_for_properties_ini_versions()
+
+    def properties_ini_exists(self):
+        if self.properties_ini_path:
+            return os.path.isfile(self.properties_ini_path)
+        return False
+
+    def ask_for_properties_ini_versions(self):
+        """
+        Asks user for src,dst OS versions, while options are mandatory user
+        input is required
+        """
+        while not self.src_version:
+            self.src_version = UIHelper.ask_about_version_number(
+                settings.prop_src_version,
+                "The major source OS version is mandatory.")
+        while not self.dst_version:
+            self.dst_version = UIHelper.ask_about_version_number(
+                settings.prop_dst_version,
+                "The major destination OS version is mandatory.")
 
     def get_script_type(self):
         while True:
@@ -208,20 +229,14 @@ class UIHelper(object):
         :return:
         """
         config = ConfigParser.RawConfigParser()
-        config.add_section(section)
+        config.add_section(preupgSettings.prefix)
         for key, val in iter(self.content_dict.items()):
             if val is not None:
-                config.set(section, key, val)
+                config.set(preupgSettings.prefix, key, val)
 
         self.content_ini = self.get_content_name() + '.ini'
         ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
-        try:
-            f = open(ini_path, 'wb')
-            config.write(f)
-            f.close()
-        except IOError:
-            print ('We have a problem with writing content file %s to disc' % ini_path)
-            raise
+        UIHelper.write_config_to_file(ini_path, config)
 
     def _create_check_script(self):
         if self.check_script:
@@ -249,23 +264,38 @@ class UIHelper(object):
         :return:
         """
         config = ConfigParser.RawConfigParser()
-        config.add_section(section)
-        config.set(section, 'group_title', 'Title for %s ' % self.get_group_name())
+        config.add_section(preupgSettings.prefix)
+        config.set(preupgSettings.prefix, 'group_title', 'Title for %s ' % self.get_group_name())
 
         file_name = 'group.ini'
-        group_ini = os.path.join(self.get_upgrade_path(), self.get_group_name(), file_name)
+        group_ini = os.path.join(self.get_upgrade_path(),
+                                 self.get_group_name(),
+                                 file_name)
         if os.path.exists(group_ini):
             return
-        try:
-            f = open(group_ini, 'wb')
-            config.write(f)
-            f.close()
-        except IOError:
-            print ('We have a problem with writing %s file to disc' % group_ini)
-            raise
+        UIHelper.write_config_to_file(group_ini, config)
+
+    def create_properties_ini(self):
+        """
+        Create properties.ini inside module set directory in format:
+
+        [preupgrade-assistant-modules]
+        src_major_version = <user_input>
+        dst_major_version = <user_input>
+        """
+        if not self.properties_ini_exists():
+            section = 'preupgrade-assistant-modules'
+
+            config = ConfigParser.RawConfigParser()
+            config.add_section(section)
+            config.set(section, 'src_major_version', self.src_version)
+            config.set(section, 'dst_major_version', self.dst_version)
+
+            UIHelper.write_config_to_file(self.properties_ini_path, config)
 
     def create_final_content(self):
         try:
+            self.create_properties_ini()
             self._create_group_ini()
             self._create_ini_file()
         except IOError:
@@ -280,26 +310,73 @@ class UIHelper(object):
         result_content_path = os.path.join(self.upgrade_path + '-results',
                                            self.get_group_name(),
                                            self.get_content_name())
-        print (settings.summary_title)
-        print (settings.summary_directory % self.get_content_path())
-        print (settings.summary_ini % os.path.join(content_path, self.get_content_ini_file()))
-        print (settings.summary_check % os.path.join(content_path, self.get_check_script()))
-        print (settings.summary_solution % os.path.join(content_path, self.get_solution_file()))
-        print (settings.text_for_testing % (content_path, os.path.join(result_content_path, ALL_XCCDF_XML)))
+        print(settings.summary_title)
+        print(settings.summary_directory % self.get_content_path())
+        print(settings.properties_ini % (self.properties_ini_path))
+        print(settings.summary_ini % os.path.join(content_path,
+                                                  self.get_content_ini_file()))
+        print(settings.summary_check % os.path.join(content_path,
+                                                    self.get_check_script()))
+        print(settings.summary_solution % os.path.join(content_path,
+                                                       self.get_solution_file()))
+        print(settings.text_for_testing % (content_path,
+                                           os.path.join(result_content_path,
+                                                        ALL_XCCDF_XML)))
 
     def take_manadatory_info(self):
         try:
             if self.specify_upgrade_path() is None:
                 return 1
+
+            self.get_properties_ini_info()
+
             self.get_content_info()
             if self.refresh_content:
                 shutil.rmtree(self.get_content_path())
                 os.makedirs(self.get_content_path())
-
             if self.create_final_content() is None:
                 return 1
             self._brief_summary()
         except KeyboardInterrupt:
             if self.get_content_path() is not None:
                 shutil.rmtree(self.get_content_path())
-            print ('\n Content creation was interrupted by user.\n')
+            print('\n Content creation was interrupted by user.\n')
+
+    @staticmethod
+    def check_path(path, msg):
+        if os.path.exists(path):
+            choice = get_user_input(msg)
+            if not choice:
+                return None
+        return True
+
+    @staticmethod
+    def is_valid_string(string):
+        if isinstance(string, basestring) and bool(string.strip()):
+            return True
+        return False
+
+    @staticmethod
+    def ask_about_version_number(msg, err_msg):
+        version = get_user_input(msg, any_input=True)
+        if not UIHelper.is_valid_string(version):
+            print(err_msg)
+            return False
+        return version
+
+    @staticmethod
+    def write_config_to_file(file_path, config):
+        """
+        Create config file
+
+        @param {str} file_path - path of new config file
+        @param {RawConfigParser} config - configuration object with config data
+        @throws {IOError}
+        """
+        try:
+            with open(file_path, 'wb') as f:
+                config.write(f)
+        except IOError:
+            print('An error occured while writing to the {0} file!'.format(
+                file_path))
+            raise

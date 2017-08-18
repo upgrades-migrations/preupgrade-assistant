@@ -37,9 +37,12 @@ summary_title = 'preupg-content-creator generated these files to be updated:'
 summary_directory = '- the module was created in the %s directory.'
 summary_ini = '- the INI file which defines the module is %s.'
 summary_check = '- the check script which provides an assessment is %s. Update it before you use it.'
-summary_solution = '- the solution text which informs about incompatilibies is %s. Update it before you use it.'
+summary_solution = '- the solution text which informs about incompatibilities %s. Update it before you use it.'
 check_path = "The %s file already exists. Do you want to replace the file?"
 type_check_script = "Would you like to create a BASH or Python check script? [sh/py] Bash is default."
+properties_ini = "- Fill empty options in %s before you use it."
+prop_src_version = "Specify major source OS version e.g. \"6\":"
+prop_dst_version = "Specify major destination OS version e.g. \"7\":"
 
 text_for_testing = "\nFor testing content run these two commands:\n" \
                    "- preupg-create-group-xml %s to create XML file\n" \
