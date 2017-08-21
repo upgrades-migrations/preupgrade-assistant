@@ -237,10 +237,12 @@ class Application(object):
         for dir_name in dirs:
             DirHelper.check_or_create_temp_dir(dir_name)
 
-        # Copy README files into proper directories
-        for key, val in iter(settings.readme_files.items()):
-            shutil.copyfile(os.path.join(settings.source_dir, key),
-                            os.path.join(self.conf.assessment_results_dir, val))
+        # Copy README files into assessment result directory so the user has
+        # them easily available
+        for orig_filename, dest_filename in settings.readme_files.items():
+            shutil.copyfile(os.path.join(settings.DOC_DIR, orig_filename),
+                            os.path.join(settings.assessment_results_dir,
+                                         dest_filename))
 
     def get_total_check(self):
         """Returns a total check"""
@@ -558,7 +560,7 @@ class Application(object):
         for target, report in iter(self.report_data.items()):
             ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
-        self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.assessment_results_dir, self.conf.verbose)
+        self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.verbose)
         log_message("The tarball with results is stored in '%s' ." % self.tar_ball_name)
         log_message("The latest assessment is stored in the '%s' directory." % self.conf.assessment_results_dir)
         # pack all configuration files to tarball

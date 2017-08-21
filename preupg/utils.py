@@ -464,7 +464,7 @@ class TarballHelper(object):
         return os.path.join(root_dir, filename)
 
     @staticmethod
-    def tarball_result_dir(result_file, dirname, quiet, direction=True):
+    def tarball_result_dir(result_file, verbose, direction=True):
         """
         pack results to tarball
 
@@ -489,19 +489,22 @@ class TarballHelper(object):
         if direction:
             if not os.path.exists(bkp_tar_dir):
                 os.makedirs(bkp_tar_dir)
-            for preupg_dir in settings.preupgrade_dirs:
-                shutil.copytree(os.path.join(dirname, preupg_dir),
-                                os.path.join(bkp_tar_dir, preupg_dir),
+            for dir_to_pack in settings.preupgrade_dirs:
+                shutil.copytree(os.path.join(settings.assessment_results_dir,
+                                             dir_to_pack),
+                                os.path.join(bkp_tar_dir, dir_to_pack),
                                 symlinks=True)
             files_to_copy = [settings.PREUPG_README]
-            for root, subdirs, files in os.walk(dirname):
+            for _, _, files in os.walk(settings.assessment_results_dir):
                 for f in files:
                     if f.startswith("result"):
                         files_to_copy.append(f)
             for f in files_to_copy:
-                shutil.copyfile(os.path.join(dirname, f),
+                shutil.copyfile(os.path.join(settings.assessment_results_dir,
+                                             f),
                                 os.path.join(bkp_tar_dir, f))
-            tarball = TarballHelper._get_tarball_result_path(dirname, tarball_name)
+            tarball = TarballHelper._get_tarball_result_path(
+                settings.assessment_results_dir, tarball_name)
             cmd.append(cmd_pack)
             cmd.append(tarball)
             cmd.append(tarball_dir)
@@ -510,7 +513,7 @@ class TarballHelper(object):
             cmd.append(result_file)
 
         cmd.extend(tar_options)
-        ProcessHelper.run_subprocess(cmd, print_output=quiet)
+        ProcessHelper.run_subprocess(cmd, print_output=verbose)
         shutil.rmtree(bkp_tar_dir)
         if direction:
             shutil.copy(tarball, settings.tarball_result_dir + "/")
