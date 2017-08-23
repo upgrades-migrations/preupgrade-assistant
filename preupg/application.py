@@ -301,7 +301,7 @@ class Application(object):
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
                 # remove all-xccdf.xml from path and get last directory
-                dir_name = ModuleSetUtils.get_module_set_dirname(self.content)
+                dir_name = os.path.basename(os.path.dirname(self.content))
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -525,7 +525,8 @@ class Application(object):
             return ReturnValues.SCENARIO
         if not self.conf.contents:
             try:
-                version = ModuleSetUtils.get_module_set_os_versions(self.conf.scan)
+                version = ModuleSetUtils.get_module_set_os_versions(
+                    self.conf.scan)
             except EnvironmentError as err:
                 log_message(str(err), level=logging.ERROR)
                 return ReturnValues.SCENARIO

@@ -908,16 +908,3 @@ class ModuleSetUtils(object):
                                                          dst_version_key,
                                                          section_name)
         return [src_os_ver, dst_os_ver]
-
-    @staticmethod
-    def get_module_set_dirname(module_path):
-        """
-        >>> get_module_set_dirname('/dir1/dir2/file.xml')
-        'dir2'
-        >>> get_module_set_dirname('/dir1/dir2/dir3/')
-        'dir3'
-        >>> get_module_set_dirname('/dir1/dir2/dir3')
-        'dir2'
-        # doesn't check directory at the end of path, is considered as a file
-        """
-        return os.path.basename(os.path.dirname(module_path))

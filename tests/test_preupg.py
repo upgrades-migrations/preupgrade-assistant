@@ -295,38 +295,6 @@ class TestModuleSet(base.TestCase):
         self.assertEqual(app.get_scenario(), 'Modules')
 
 
-class TestModuleSetDirname(base.TestCase):
-    '''
-    Test get_module_set_dirname method
-    '''
-    def test_file_ending_path(self):
-        '''
-        Test to get directory where file is located
-        '''
-        self.assertEqual(
-            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/file.xml'),
-            'dir2'
-        )
-
-    def test_dir_ending_path(self):
-        '''
-        Test when file is not specified get last directory in path
-        '''
-        self.assertEqual(
-            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/dir3/'),
-            'dir3'
-        )
-
-    def test_dir_as_file_ending_path(self):
-        '''
-        Test should get a second directory from the end
-        '''
-        self.assertEqual(
-            ModuleSetUtils.get_module_set_dirname('/dir1/dir2/dir3'),
-            'dir2'
-        )
-
-
 class TestModuleSetConfigParse(base.TestCase):
     '''
     Test parser of source and destination major versions of system from module
@@ -407,7 +375,6 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(TestSolutionReplacement))
     suite.addTest(loader.loadTestsFromTestCase(TestXMLUpdates))
     suite.addTest(loader.loadTestsFromTestCase(TestModuleSet))
-    suite.addTest(loader.loadTestsFromTestCase(TestModuleSetDirname))
     suite.addTest(loader.loadTestsFromTestCase(TestModuleSetConfigParse))
     suite.addTest(loader.loadTestsFromTestCase(TestModuleSetConfigContent))
     return suite
