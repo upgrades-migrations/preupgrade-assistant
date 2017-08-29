@@ -48,7 +48,6 @@ __all__ = (
 
     'exit_error',
     'exit_fail',
-    'exit_failed',
     'exit_fixed',
     'exit_informational',
     'exit_not_applicable',
@@ -416,15 +415,6 @@ def shorten_envs():
 def exit_fail():
     """
     The test failed.
-    Moving to new release with this configuration will result in malfunction.
-    """
-    sys.exit(int(os.environ['XCCDF_RESULT_FAIL']))
-
-
-def exit_failed():
-    """
-    The test failed.
-
     Moving to new release with this configuration will result in malfunction.
     """
     sys.exit(int(os.environ['XCCDF_RESULT_FAIL']))

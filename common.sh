@@ -159,11 +159,6 @@ RESULT_PASS=$XCCDF_RESULT_PASS
 RESULT_FAIL=$XCCDF_RESULT_FAIL
 
 #
-# Exit status for 'fail' result
-#
-RESULT_FAILED=$RESULT_FAIL
-
-#
 # Exit status for 'error' result
 #
 RESULT_ERROR=$XCCDF_RESULT_ERROR
@@ -446,16 +441,6 @@ check_rpm_to() {
     fi
 }
 
-check_root() {
-    #
-    # This check can be used if you need root privilegues
-    #
-    if [ "$(id -u)" != "0" ]; then
-        log_error "This script must be run as root"
-        log_slight_risk "The script must be run as root"
-        exit_error
-    fi
-}
 
 solution_file() {
     #
