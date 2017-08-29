@@ -40,7 +40,6 @@ summary_check = '- the check script which provides an assessment is %s. Update i
 summary_solution = '- the solution text which informs about incompatibilities %s. Update it before you use it.'
 check_path = "The %s file already exists. Do you want to replace the file?"
 type_check_script = "Would you like to create a BASH or Python check script? [sh/py] Bash is default."
-properties_ini = "- Fill empty options in %s before you use it."
 prop_src_version = "Specify major source OS version e.g. \"6\":"
 prop_dst_version = "Specify major destination OS version e.g. \"7\":"
 
