@@ -312,7 +312,6 @@ class UIHelper(object):
                                            self.get_content_name())
         print(settings.summary_title)
         print(settings.summary_directory % self.get_content_path())
-        print(settings.properties_ini % (self.properties_ini_path))
         print(settings.summary_ini % os.path.join(content_path,
                                                   self.get_content_ini_file()))
         print(settings.summary_check % os.path.join(content_path,
