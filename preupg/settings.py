@@ -184,8 +184,6 @@ KS_TEMPLATES = [KS_TEMPLATE, KS_POSTSCRIPT_TEMPLATE]
 KS_FILES = ['default_grouplist-el7', 'default-optional_grouplist-el7']
 KS_SCRIPTS = "kickstart_scripts.txt"
 
-CPE_RHEL = 'redhat:enterprise_linux'
-CPE_FEDORA = 'fedoraproject:fedora'
 PREUPG_CONFIG_FILE = os.path.join('/etc', 'preupgrade-assistant.conf')
 
 DEVEL_MODE = os.path.join(cache_dir, 'devel_mode')

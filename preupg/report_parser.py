@@ -188,15 +188,6 @@ class ReportParser(object):
 
         self.write_xml()
 
-    def modify_platform_tag(self, platform_tag):
-        """The function updates platform tag to the assessment system tag"""
-        for platform in self.filter_children(self.target_tree, "platform"):
-            if "cpe:/o:redhat:enterprise_linux:" in platform.get("idref"):
-                logger_report.debug("Update platform tag to '%s'", platform_tag)
-                platform.set("idref", "cpe:/o:redhat:enterprise_linux:"+platform_tag)
-
-        self.write_xml()
-
     def update_inplace_risk(self, scanning_progress, rule, res):
         """Function updates inplace risk"""
         inplace_risk = XccdfHelper.get_check_import_inplace_risk(rule)

@@ -48,8 +48,7 @@ RULE_SECTION = """
       </check>
     </Rule>
 """
-PLATFORM = """platform=\"cpe:/o:PLATFORM_NAME:PLATFORM_ID\""""
-FIX = """<fix """+PLATFORM+""" system="urn:xccdf:fix:script:{script_type}">
+FIX = """<fix system="urn:xccdf:fix:script:{script_type}">
 {solution}
          </fix>"""
 FIX_TEXT = """<fixtext>{solution_text}</fixtext>"""

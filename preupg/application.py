@@ -477,18 +477,9 @@ class Application(object):
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
 
         self.common.prep_symlinks(self.assessment_dir,
-                                  scenario=self.get_proper_scenario(scenario))
-        if not self.conf.contents:
-            ret = XccdfHelper.update_platform(os.path.join(
-                    self.assessment_dir, settings.content_file))
-            if ret:
-                log_message(str(ret), level=logging.ERROR)
-                return ReturnValues.SCENARIO
-        else:
-            ret = XccdfHelper.update_platform(self.content)
-            if ret:
-                log_message(str(ret), level=logging.ERROR)
-                return ReturnValues.SCENARIO
+                                  scenario=self.get_proper_scenario(scenario))            
+
+        if self.conf.contents:
             self.assessment_dir = os.path.dirname(self.content)
         return 0
 
@@ -529,7 +520,6 @@ class Application(object):
             except EnvironmentError as err:
                 log_message(str(err), level=logging.ERROR)
                 return ReturnValues.SCENARIO
-            self.report_parser.modify_platform_tag(version[0])
         if self.conf.mode:
             lines = [i.rstrip() for i in
                      FileHelper.get_file_content(

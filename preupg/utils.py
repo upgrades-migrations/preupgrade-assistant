@@ -392,16 +392,6 @@ class PreupgHelper(object):
 class SystemIdentification(object):
 
     @staticmethod
-    def get_system():
-        """
-        Check if system is Fedora or RHEL
-
-        :return: Fedora or None
-        """
-        lines = FileHelper.get_file_content('/etc/redhat-release', 'rb', method=True)
-        return [line for line in lines if line.startswith('Fedora')]
-
-    @staticmethod
     def get_arch():
         return platform.machine()
 
