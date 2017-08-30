@@ -448,18 +448,13 @@ class TarballHelper(object):
         return os.path.join(root_dir, filename)
 
     @staticmethod
-    def tarball_result_dir(result_file, verbose, direction=True):
+    def tarball_result_dir(result_file, verbose):
         """
         pack results to tarball
-
-        direction is used as a flag for packing or extracting
-        For packing True
-        For unpacking False
         """
         current_dir = os.getcwd()
         tar_binary = "/bin/tar"
         current_time = get_current_time()
-        cmd_extract = "-xzf"
         cmd_pack = "-czvf"
         cmd = [tar_binary]
         # numeric UIDs and GIDs are used, ACLs are enabled, SELinux is enabled
@@ -470,37 +465,32 @@ class TarballHelper(object):
         tarball_dir = TarballHelper._get_tarball_name(result_file, current_time)
         tarball_name = tarball_dir + '.tar.gz'
         bkp_tar_dir = os.path.join('/root', tarball_dir)
-        if direction:
-            if not os.path.exists(bkp_tar_dir):
-                os.makedirs(bkp_tar_dir)
-            for dir_to_pack in settings.preupgrade_dirs:
-                shutil.copytree(os.path.join(settings.assessment_results_dir,
-                                             dir_to_pack),
-                                os.path.join(bkp_tar_dir, dir_to_pack),
-                                symlinks=True)
-            files_to_copy = [settings.PREUPG_README]
-            for _, _, files in os.walk(settings.assessment_results_dir):
-                for f in files:
-                    if f.startswith("result"):
-                        files_to_copy.append(f)
-            for f in files_to_copy:
-                shutil.copyfile(os.path.join(settings.assessment_results_dir,
-                                             f),
-                                os.path.join(bkp_tar_dir, f))
-            tarball = TarballHelper._get_tarball_result_path(
-                settings.assessment_results_dir, tarball_name)
-            cmd.append(cmd_pack)
-            cmd.append(tarball)
-            cmd.append(tarball_dir)
-        else:
-            cmd.append(cmd_extract)
-            cmd.append(result_file)
+
+        if not os.path.exists(bkp_tar_dir):
+            os.makedirs(bkp_tar_dir)
+        for dir_to_pack in settings.preupgrade_dirs:
+            shutil.copytree(os.path.join(settings.assessment_results_dir,
+                                         dir_to_pack),
+                            os.path.join(bkp_tar_dir, dir_to_pack),
+                            symlinks=True)
+        files_to_copy = [settings.PREUPG_README]
+        for _, _, files in os.walk(settings.assessment_results_dir):
+            for f in files:
+                if f.startswith("result"):
+                    files_to_copy.append(f)
+        for f in files_to_copy:
+            shutil.copyfile(os.path.join(settings.assessment_results_dir, f),
+                            os.path.join(bkp_tar_dir, f))
+        tarball = TarballHelper._get_tarball_result_path(
+            settings.assessment_results_dir, tarball_name)
+        cmd.append(cmd_pack)
+        cmd.append(tarball)
+        cmd.append(tarball_dir)
 
         cmd.extend(tar_options)
         ProcessHelper.run_subprocess(cmd, print_output=verbose)
         shutil.rmtree(bkp_tar_dir)
-        if direction:
-            shutil.copy(tarball, settings.tarball_result_dir + "/")
+        shutil.copy(tarball, settings.tarball_result_dir + "/")
         os.chdir(current_dir)
 
         return os.path.join(settings.tarball_result_dir, tarball_name)
