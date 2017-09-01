@@ -110,9 +110,8 @@ class OscapGroupXml(object):
                           % (file_name, ioe.message))
 
     def write_list_rules(self):
-        end_point = self.dirname.find(
-            ModuleSetUtils.get_module_set_dirname(self.dirname))
-        rule_name = '_'.join(self.dirname[end_point:].split('/')[1:])
+        module_path = self.dirname.replace(self.module_set_dir, '')
+        rule_name = '_'.join(module_path.split(os.sep)[1:])
         file_list_rules = os.path.join(settings.UPGRADE_PATH,
                                        settings.file_list_rules)
         lines = []

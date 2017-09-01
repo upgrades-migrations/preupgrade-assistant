@@ -301,7 +301,7 @@ class Application(object):
             sep_content = os.path.dirname(self.content).split('/')
             if self.conf.contents:
                 # remove all-xccdf.xml from path and get last directory
-                dir_name = ModuleSetUtils.get_module_set_dirname(self.content)
+                dir_name = os.path.basename(os.path.dirname(self.content))
                 if dir_name is None:
                     return None
                 check_name = dir_name
@@ -453,6 +453,9 @@ class Application(object):
             if module_set_path is None:
                 # strip all-xccdf.xml from path
                 module_set_path = os.path.dirname(self.conf.contents)
+                if not os.path.isdir(module_set_path):
+                    module_set_path = os.path.normpath(
+                        os.path.join(self.execution_dir, module_set_path))
             ModuleSetUtils.get_module_set_os_versions(module_set_path)
         except EnvironmentError as err:
             log_message(str(err), level=logging.ERROR)
@@ -516,7 +519,8 @@ class Application(object):
             return ReturnValues.SCENARIO
         if not self.conf.contents:
             try:
-                version = ModuleSetUtils.get_module_set_os_versions(self.conf.scan)
+                version = ModuleSetUtils.get_module_set_os_versions(
+                    self.conf.scan)
             except EnvironmentError as err:
                 log_message(str(err), level=logging.ERROR)
                 return ReturnValues.SCENARIO
@@ -748,7 +752,7 @@ class Application(object):
                             % settings.openscap_binary)
                 return ReturnValues.MISSING_OPENSCAP
 
-            current_dir = os.getcwd()
+            self.execution_dir = os.getcwd()
             os.chdir("/tmp")
             retval = self.scan_system()
             if int(retval) != 0:
@@ -760,7 +764,7 @@ class Application(object):
             if self.conf.upload:
                 if not self.upload_results():
                     retval = ReturnValues.SEND_REPORT_TO_UI
-            os.chdir(current_dir)
+            os.chdir(self.execution_dir)
             return retval
 
         log_message('Nothing to do. Give me a task, please.')
