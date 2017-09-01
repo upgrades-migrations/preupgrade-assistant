@@ -110,14 +110,13 @@ class UIHelper(object):
 
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
-            self.upgrade_path = get_user_input(settings.upgrade_path,
-                                               any_input=True)
+            self.upgrade_path = UIHelper\
+                .ask_mandatory_string(settings.upgrade_path,
+                                      'The scenario is mandatory. '
+                                      'You have to specify it.')
 
-        if not UIHelper.is_valid_string(self.upgrade_path):
-            print("The scenario is mandatory. You have to specify it.")
-            return None
-
-        message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
+        message = 'The path %s already exists.\n'\
+            'Do you want to create a module there?' % self.upgrade_path
         if UIHelper.check_path(self.get_upgrade_path(), message) is None:
             return None
 
