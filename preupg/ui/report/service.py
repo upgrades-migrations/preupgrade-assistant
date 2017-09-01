@@ -44,16 +44,26 @@ def remove_upload(path):
 
 def extract_tarball(tbpath, target_dir):
     """ return report paths: (xml, html) """
+    def strip_subfolder(tar_content):
+        """The Web UI does not expect the subfolder in the extracted tarball
+        content.
+        """
+        for member in tar_content:
+            path_wo_subfolder = member.path.split(os.sep)[1:]
+            if path_wo_subfolder:
+                member.path = os.path.join(*member.path.split(os.sep)[1:])
+                yield member
+
     tar = tarfile.open(tbpath)
-
     tar_content = tar.getmembers()
-
-    xml = filter_files_by_ext(tar_content, '.xml', 'Missing XML report in tarball.')
-    html = filter_files_by_ext(tar_content, '.html', 'Missing HTML report in tarball.')
-
-    tar.extractall(path=target_dir)
-
+    tar.extractall(target_dir, strip_subfolder(tar_content))
     tar.close()
+
+    xml = filter_files_by_ext(tar_content, '.xml',
+                              'Missing XML report in tarball.')
+    html = filter_files_by_ext(tar_content, '.html',
+                               'Missing HTML report in tarball.')
+
     xml_path = os.path.join(target_dir, xml.name)
     html_path = os.path.join(target_dir, html.name)
     return xml_path, html_path
