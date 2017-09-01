@@ -164,12 +164,12 @@ class TestCreator(base.TestCase):
 
     @base.mock(ui_helper, "get_user_input", Identity('6'))
     def test_ask_about_version_number(self):
-        self.assertEqual(UIHelper.ask_about_version_number(
+        self.assertEqual(UIHelper.ask_for_string(
             "msg", "err_msg"), '6')
 
     @base.mock(ui_helper, "get_user_input", Identity(''))
     def test_ask_about_wrong_version(self):
-        self.assertEqual(UIHelper.ask_about_version_number(
+        self.assertEqual(UIHelper.ask_for_string(
             "msg", "err_msg"), False)
 
     def test_write_config_to_file(self):
