@@ -455,7 +455,7 @@ class Application(object):
                 module_set_path = os.path.dirname(self.conf.contents)
                 if not os.path.isdir(module_set_path):
                     module_set_path = os.path.normpath(
-                        os.path.join(self.script_path, module_set_path))
+                        os.path.join(self.execution_dir, module_set_path))
             ModuleSetUtils.get_module_set_os_versions(module_set_path)
         except EnvironmentError as err:
             log_message(str(err), level=logging.ERROR)
@@ -762,7 +762,7 @@ class Application(object):
                             % settings.openscap_binary)
                 return ReturnValues.MISSING_OPENSCAP
 
-            self.script_path = os.getcwd()
+            self.execution_dir = os.getcwd()
             os.chdir("/tmp")
             retval = self.scan_system()
             if int(retval) != 0:
@@ -774,7 +774,7 @@ class Application(object):
             if self.conf.upload:
                 if not self.upload_results():
                     retval = ReturnValues.SEND_REPORT_TO_UI
-            os.chdir(self.script_path)
+            os.chdir(self.execution_dir)
             return retval
 
         log_message('Nothing to do. Give me a task, please.')
