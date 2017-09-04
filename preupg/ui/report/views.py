@@ -199,8 +199,31 @@ class ResultViewAjax(View):
             content_type='application/json',
         )
 
+
 class ReportFilesView(View):
     """ display arbitrary files from scan result """
+
+    def dir_content_html(self, absolute_dir_path, relative_dir_path):
+        """Create a simple HTML code containing links to the content of the
+        passed directory.
+        """
+        def sort_dirs_first(filename):
+            return (os.path.isfile(os.path.join(absolute_dir_path, filename)),
+                    filename.lower())
+        sorted_dir_content = sorted(os.listdir(absolute_dir_path),
+                                    key=sort_dirs_first)
+        content = "<html>\n"
+        for filename in sorted_dir_content:
+            absolute_filepath = os.path.join(absolute_dir_path, filename)
+            file_type_indicator = \
+                "DIR  " if os.path.isdir(absolute_filepath) else "FILE "
+            relative_filepath = os.path.join(relative_dir_path, filename)
+            content += \
+                file_type_indicator + "<a href='../file/?path=" + \
+                relative_filepath + "'>" + filename + "</a><br>\n"
+        content += "</html>\n"
+        return content
+
     def get(self, request, result_id):
         """
         There has to be GET: path='...'
@@ -211,23 +234,31 @@ class ReportFilesView(View):
         try:
             relative_file_path = request.GET['path']
         except KeyError:
-            return return_error(request, "Can\'t open a file because there is no path specified.")
+            return return_error(request, "Can't open a file because there is"
+                                         " no path specified.")
 
         if not relative_file_path:
-            return return_error(request, "Can\'t open a file because file path is empty.")
+            return return_error(request, "Can't open a file because file path"
+                                         " is empty.")
 
-        file_path = os.path.abspath(os.path.join(result_dir, relative_file_path))
+        absolute_file_path = os.path.abspath(os.path.join(result_dir,
+                                                          relative_file_path))
 
-        if not file_path.startswith(result_dir):
-            return return_error(request, "You are not allowed to access file '%s'." % relative_file_path)
+        if not absolute_file_path.startswith(result_dir):
+            return return_error(request, "You are not allowed to access file"
+                                         " '%s'." % relative_file_path)
 
-        try:
-            f = open(file_path, 'r')
-        except IOError:
-            raise Http404('Can\'t open file \'%s\'' % relative_file_path)
-        response = HttpResponse(f, mimetype='text/plain')
-
-        response["Content-Length"] = os.path.getsize(file_path)
+        if os.path.isdir(absolute_file_path):
+            response = HttpResponse(self.dir_content_html(absolute_file_path,
+                                                          relative_file_path),
+                                    mimetype='text/html')
+        else:
+            try:
+                file_content = open(absolute_file_path, 'r')
+            except IOError:
+                raise Http404('Can\'t open file \'%s\'' % relative_file_path)
+            response = HttpResponse(file_content, mimetype='text/plain')
+            response["Content-Length"] = os.path.getsize(absolute_file_path)
 
         return response
 
