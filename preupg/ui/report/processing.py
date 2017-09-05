@@ -72,7 +72,7 @@ def set_if_true(d, key, value):
         d[key] = value
 
 
-class ReportParser(object):
+class XMLReportParser(object):
 
     def __init__(self, report_path):
         """
@@ -286,17 +286,26 @@ class ReportParser(object):
         return self.run
 
 
-def parse_report(file_path):
-    """ parse XML report """
-    r = ReportParser(file_path)
+def parse_xml_report(xml_filepath):
+    r = XMLReportParser(xml_filepath)
     return r.parse_report()
+
+
+def update_html_report(html_filepath):
+    """Links to files and folders need to be updated to work in the Web UI."""
+    with open(html_filepath, 'r') as infile:
+        updated_html = re.sub(r'<a href="(./|file:)([^"]+)"\s*>',
+                              r'<a href="../file/?path=\2" target="_blank">',
+                              infile.read())
+    with open(html_filepath, 'w') as outfile:
+        outfile.write(updated_html)
 
 
 def main():
     from pprint import pprint
     import sys
     try:
-        r = parse_report(sys.argv[1])
+        r = parse_xml_report(sys.argv[1])
     except KeyError:
         print ('Usage: prog <content.xml>')
         sys.exit(1)

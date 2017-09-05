@@ -3,13 +3,13 @@
 import shutil
 import unittest
 import tempfile
-import preup
+import preupg
 
 from xml.etree import ElementTree
 from preupg.application import Application
 from preupg.conf import DummyConf, Conf
-from report.processing import xml_to_html, stringify_children, parse_report
-from report.service import extract_tarball
+from preupg.ui.report.processing import xml_to_html, stringify_children, parse_xml_report
+from preupg.ui.report.service import extract_tarball
 
 from django.test import TestCase
 
@@ -82,7 +82,7 @@ Text outside tag <html:div>Text <html:em>inside</html:em> tag</html:div> x <b>y<
 #         tarball_path = a.scan_system()
 #
 #         xml_path, html_path = extract_tarball(tarball_path, self.temp_dir)
-#         self.assertTrue(len(parse_report(xml_path)) > 0)
+#         self.assertTrue(len(parse_xml_report(xml_path)) > 0)
 
 
 if __name__ == '__main__':

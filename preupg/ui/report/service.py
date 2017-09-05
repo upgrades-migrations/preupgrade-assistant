@@ -9,7 +9,7 @@ import shutil
 from .models import Test, TestResult, HostRun, Result, Address, TestLog, TestGroup, TestGroupResult
 from .models import Risk
 
-from processing import parse_report
+from processing import parse_xml_report, update_html_report
 
 from django.db import transaction
 from django.conf import settings
@@ -49,8 +49,8 @@ def extract_tarball(tbpath, target_dir):
         content.
         """
         for member in tar_content:
-            path_wo_subfolder = member.path.split(os.sep)[1:]
-            if path_wo_subfolder:
+            path_without_subfolder = member.path.split(os.sep)[1:]
+            if path_without_subfolder:
                 member.path = os.path.join(*member.path.split(os.sep)[1:])
                 yield member
 
@@ -112,7 +112,8 @@ class ReportImporter(object):
         xml_path, html_path = extract_tarball(self.tb_path, self.result.get_result_dir())
         self.html_path = html_path
         remove_upload(self.tb_path)
-        return parse_report(xml_path)
+        update_html_report(self.html_path)
+        return parse_xml_report(xml_path)
 
     @transaction.commit_on_success
     def _add_to_db(self):
