@@ -1,17 +1,14 @@
-# Include warnings about missing documentation?
-doc-warnings: True
-
-# Include warnings about tests?
+# Include code analysis of unit tests?
 test-warnings: False
 
-# tests stricktness
+# Code analysis stricktness
 strictness: medium
 max-line-length: 120
 
-# autodetect dependencies?
+# Autodetect dependencies?
 autodetect: True
 
-# paths to be ignored
+# Paths to be ignored
 ignore-paths:
     - docs
     - preupg/ui
@@ -19,3 +16,6 @@ ignore-paths:
     - tests
 ignore-patterns:
     - ^preupg/script_api.py$
+
+python-targets:
+    - 2

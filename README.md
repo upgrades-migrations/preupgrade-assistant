@@ -1,6 +1,6 @@
 # The Preupgrade Assistant
 
-[![Code Health](https://landscape.io/github/phracek/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/phracek/preupgrade-assistant/master) ![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)
+[![Code Health](https://landscape.io/github/upgrades-migrations/preupgrade-assistant/master/landscape.svg?style=flat)](https://landscape.io/github/upgrades-migrations/preupgrade-assistant/master) ![Jenkins CI build status](https://preupg.000webhostapp.com/master.svg)
 
 The Preupgrade Assistant is a diagnostics utility that assesses the system for possible in-place upgrade limitations and provides a report with the analysis results. It is based on a module system, with each module performing a separate test, checking for package removals, incompatible obsoletes, changes in libraries, name changes, or deficiencies in the compatibilities of certain configuration files. The data gathered by the Preupgrade Assistant can be used for cloning the system. It also provides post-upgrade scripts to finish more complex problems after the in-place upgrade. The Preupgrade Assistant utility is a prerequisite for completing a successful in-place upgrade to the next major version of Red Hat Enterprise Linux. The data gathered by the Preupgrade Assistant is required by [Red Hat Upgrade Tool](https://github.com/upgrades-migrations/redhat-upgrade-tool), which performs the in-place upgrade of the system.
 
