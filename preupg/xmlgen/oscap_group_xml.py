@@ -120,7 +120,9 @@ class OscapGroupXml(object):
         if os.path.exists(file_list_rules):
             lines = FileHelper.get_file_content(file_list_rules, "rb",
                                                 method=True)
-        else:
-            lines = []
-        lines.append(settings.xccdf_tag + rule_name + '_check' + '\n')
+
+        # add rule only for modules (dir which contains module.ini)
+        if os.path.isfile(os.path.join(self.dirname, 'module.ini')):
+            lines.append(settings.xccdf_tag + rule_name + '_check' + '\n')
+
         FileHelper.write_to_file(file_list_rules, "wb", lines)
