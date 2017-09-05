@@ -125,7 +125,7 @@ fi
 if grep -q "deprecated_option" "$foo_conf"; then
   log_medium_risk "The 'deprecated_option' is used inside '$foo_conf'."
 
-  if [ -e "$dst_foo_conf" ]; then
+  [ -e "$dst_foo_conf" ] \
     || cp -ar "$foo_conf" "$PREUPG_CLEANCONFDIR"
   sed -ir 's/^[[:space:]]*deprecated_option([[:space:]]|$)/#deprecated_option /' \
     > "$dst_foo_conf"
