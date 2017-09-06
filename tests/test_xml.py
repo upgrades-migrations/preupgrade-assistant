@@ -85,7 +85,7 @@ class TestXMLCompose(base.TestCase):
     def test_unicode_script_author(self):
         """Test processing of non-ascii characters for author section"""
         u_author = b'Petr Stod\xc5\xaflka'.decode(settings.defenc)
-        script_file = os.path.join(self.result_dir, "unicode", "dummy_unicode.sh")
+        script_file = os.path.join(self.result_dir, "unicode", "check")
         settings.autocomplete = True
         self.target_tree = None
         try:
@@ -266,7 +266,7 @@ A solution text for test suite"
         self.assertTrue(self.rule)
 
     def test_xml_rule_id(self):
-        rule_id = [x for x in self.rule if '<Rule id="xccdf_preupg_rule_test_check_script" selected="true">' in x]
+        rule_id = [x for x in self.rule if '<Rule id="xccdf_preupg_rule_test_check" selected="true">' in x]
         self.assertTrue(rule_id)
 
     def test_xml_profile_id(self):
@@ -315,7 +315,7 @@ A solution text for test suite"
 
     def test_xml_current_directory(self):
         self.rule = self.xml_utils.prepare_sections()
-        cur_directory = [x for x in self.rule if '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x]
+        cur_directory = [x for x in self.rule if '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_state_current_directory" />' in x]
         self.assertTrue(cur_directory)
 
     def _create_temporary_dir(self):
@@ -436,12 +436,12 @@ A solution text for test suite"
 
     def test_xml_check_script_reference(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_script_reference = [x for x in self.rule if '<check-content-ref href="check_script.sh" />' in x]
+        check_script_reference = [x for x in self.rule if '<check-content-ref href="check" />' in x]
         self.assertTrue(check_script_reference)
 
     def test_values_id(self):
         self.rule = self.xml_utils.prepare_sections()
-        value_current_dir = [x for x in self.rule if '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x]
+        value_current_dir = [x for x in self.rule if '<Value id="xccdf_preupg_value_test_check_state_current_directory"' in x]
         self.assertTrue(value_current_dir)
         value_current_dir_set = [x for x in self.rule if '<value>SCENARIO/test</value>' in x]
         self.assertTrue(value_current_dir_set)

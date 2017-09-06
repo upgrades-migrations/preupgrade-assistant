@@ -31,11 +31,15 @@ class ModuleHelper(object):
             or check_script
         @throws {MissingFileInContentError}
         """
-        if not os.path.exists(self.check_script_path):
-            raise MissingFileInContentError(file=self.check_script_path,
-                                            dir=self.dir_name)
-        if type_name != 'solution':
+        if type_name == 'check_script':
+            if not os.path.isfile(self.check_script_path):
+                raise MissingFileInContentError(file=self.check_script_path,
+                                                dir=self.dir_name)
             FileHelper.check_executable(self.check_script_path)
+        else:
+            if not os.path.isfile(self.solution_txt_path):
+                raise MissingFileInContentError(file=self.solution_txt_path,
+                                                dir=self.dir_name)
 
     @staticmethod
     def apply_function(updates, begin_fnc, end_fnc, dummy_sep, script_type):
