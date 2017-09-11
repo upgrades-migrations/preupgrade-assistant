@@ -32,7 +32,7 @@ Authors:
 <!-- the concat workaround deals with preserved excessive whitespace -->
 
 <xsl:template mode='brief' match='xccdf:check-import'>
-  <programlisting><xsl:value-of select='concat("&#10;", text())' /></programlisting>
+  <programlisting><xsl:value-of select='text()' /></programlisting>
 </xsl:template>
 
 <xsl:template mode='brief' match='sceres:sce_results'>
