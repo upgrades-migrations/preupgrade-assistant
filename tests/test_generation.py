@@ -2,9 +2,8 @@ from __future__ import unicode_literals
 import unittest
 import tempfile
 import shutil
-# import shlex
-
 import os
+from glob import glob
 
 from preupg.xmlgen.compose import XCCDFCompose, ComposeXML
 from preupg.utils import FileHelper
@@ -38,14 +37,11 @@ class TestContentGenerate(base.TestCase):
                 os.unlink(os.path.join(d, group_xml[0]))
 
     def test_compose(self):
-        expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
-        for content in expected_contents:
-            compose_xml = ComposeXML()
-            result_dir = os.path.join(self.dir_name, content)
-            compose_xml.collect_group_xmls(self.dir_name, self.dir_name,
-                                           content=content)
-            self.assertTrue(os.path.exists(os.path.join(result_dir, 'group.xml')))
-            self.assertFalse(os.path.exists(os.path.join(result_dir, 'all-xccdf.xml')))
+        ComposeXML().collect_group_xmls(self.dir_name, self.dir_name)
+        for subdir in glob(os.path.join(self.dir_name, "*/")):
+            self.assertTrue(os.path.exists(os.path.join(subdir, 'group.xml')))
+            self.assertFalse(os.path.exists(
+                os.path.join(subdir, settings.content_file)))
 
 
 class TestGlobalContent(base.TestCase):
@@ -66,11 +62,8 @@ class TestGlobalContent(base.TestCase):
         settings.data_dir = self.data_dir_orig
 
     def test_final_compose(self):
-        expected_contents = ['failed', 'fixed', 'needs_action', 'needs_inspection', 'not_applicable', 'pass']
-        for content in expected_contents:
-            compose_xml = ComposeXML()
-            dir_name = os.path.join(self.temp_dir, FOO_DIR)
-            compose_xml.collect_group_xmls(dir_name, dir_name, content=content)
+        dir_name = os.path.join(self.temp_dir, FOO_DIR)
+        ComposeXML().collect_group_xmls(dir_name, dir_name)
 
         xccdf_compose = XCCDFCompose(os.path.join(self.temp_dir, FOO_DIR))
         xccdf_compose.generate_xml()

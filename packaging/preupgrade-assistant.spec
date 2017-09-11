@@ -82,7 +82,6 @@ for inspecting results.
 Summary:    Preupgrade Assistant tools for generating modules
 Group:      System Environment/Libraries
 Provides:   preupg-xccdf-compose = %{version}-%{release}
-Provides:   preupg-create-group-xml = %{version}-%{release}
 Requires:   %{name} = %{version}-%{release}
 Obsoletes:  %{name}-tools < 2.1.3-1
 %description tools
@@ -270,7 +269,6 @@ fi
 
 %files tools
 %defattr(-,root,root,-)
-%attr(0755,root,root) %{_bindir}/preupg-create-group-xml
 %attr(0755,root,root) %{_bindir}/preupg-xccdf-compose
 %attr(0755,root,root) %{_bindir}/preupg-content-creator
 %attr(0755,root,root) %{_bindir}/preupg-diff

@@ -306,21 +306,21 @@ class UIHelper(object):
         return True
 
     def _brief_summary(self):
-        content_path = os.path.join(self.upgrade_path, self.get_group_name(), self.get_content_name())
-        result_content_path = os.path.join(self.upgrade_path + '-results',
-                                           self.get_group_name(),
-                                           self.get_content_name())
+        content_path = os.path.join(self.upgrade_path,
+                                    self.get_group_name(),
+                                    self.get_content_name())
+        generated_all_xccdf_path = os.path.join(self.upgrade_path + '-results',
+                                                ALL_XCCDF_XML)
         print(settings.summary_title)
         print(settings.summary_directory % self.get_content_path())
-        print(settings.summary_ini % os.path.join(content_path,
-                                                  self.get_content_ini_file()))
-        print(settings.summary_check % os.path.join(content_path,
-                                                    self.get_check_script()))
-        print(settings.summary_solution % os.path.join(content_path,
-                                                       self.get_solution_file()))
-        print(settings.text_for_testing % (content_path,
-                                           os.path.join(result_content_path,
-                                                        ALL_XCCDF_XML)))
+        print(settings.summary_ini
+              % os.path.join(content_path, self.get_content_ini_file()))
+        print(settings.summary_check
+              % os.path.join(content_path, self.get_check_script()))
+        print(settings.summary_solution
+              % os.path.join(content_path, self.get_solution_file()))
+        print(settings.commands_to_use_new_module
+              % (self.upgrade_path, generated_all_xccdf_path))
 
     def take_manadatory_info(self):
         try:

@@ -42,7 +42,7 @@ check_path = "The %s file already exists. Do you want to replace the file?"
 type_check_script = "Would you like to create a BASH or Python check script? [sh/py] Bash is default."
 prop_src_version = "Specify major source OS version e.g. \"6\":"
 prop_dst_version = "Specify major destination OS version e.g. \"7\":"
-
-text_for_testing = "\nFor testing content run these two commands:\n" \
-                   "- preupg-create-group-xml %s to create XML file\n" \
-                   "- preupg -c %s"
+commands_to_use_new_module = "\nTo use the newly created module with the" \
+                             " Preupgrade Assistant run these commands:\n" \
+                             "- preupg-xccdf-compose %s\n" \
+                             "- preupg -c %s"
