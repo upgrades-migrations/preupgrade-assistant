@@ -357,6 +357,9 @@ class Application(object):
         """The function prepares a XML file for HTML creation"""
         # Reload XML file
         self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
+        # strip whitespaces on start and end of stdout/stderr from modules
+        # inside the result.xml file
+        self.report_parser.strip_whitespaces()
         # Replace fail in case of slight and medium risks with needs_inspection
         self.report_parser.replace_inplace_risk(scanning_results=self.scanning_progress)
         if not self.conf.debug:

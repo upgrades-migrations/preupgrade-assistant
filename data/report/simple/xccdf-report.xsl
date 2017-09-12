@@ -445,9 +445,7 @@ Authors:
 
 <!-- checking engine results related templates -->
 <xsl:template match='cdf:rule-result' mode='engine-results'>
-  <xsl:if test='contains(",fail,needs_inspection,needs_action,error,unknown,informational,", concat(",", normalize-space(cdf:result), ","))'>
-    <xsl:apply-templates mode='engine-results' select='cdf:check'/>
-  </xsl:if>
+  <xsl:apply-templates mode='engine-results' select='cdf:check'/>
 </xsl:template>
 
 <xsl:template match='cdf:check[starts-with(@system, "http://oval.mitre.org/XMLSchema/oval")]' mode='engine-results'>
