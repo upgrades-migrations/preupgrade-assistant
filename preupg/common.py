@@ -15,11 +15,6 @@ from preupg.logger import log_message
 from preupg import settings
 
 
-def get_add_on_name(filename, add_on):
-    """Function returns the server name with add_on"""
-    return filename + "-" + add_on
-
-
 class Common(object):
 
     """Class handles with common log files"""
