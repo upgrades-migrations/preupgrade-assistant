@@ -75,19 +75,3 @@ def log_message(message, new_line=True, level=logging.INFO):
         print(message, end=endline, file=sys.stdout, flush=True)
 
     logger_debug.log(level, message)
-
-
-def log_report_message(message, new_line=True, level=logging.INFO):
-    """ if verbose, log `msg % args` to stdout """
-    if int(sys.version_info[0]) == 2:
-        sys.stdout.write(message.encode(settings.defenc))
-        sys.stdout.flush()
-        # This is used in case that we do not want to print the new line
-        if new_line:
-            sys.stdout.write("\n")
-            sys.stdout.flush()
-    else:
-        endline = "\n" if new_line else ""
-        print(message, end=endline, file=sys.stdout, flush=True)
-
-    logger_report.log(level, message)
