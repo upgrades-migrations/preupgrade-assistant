@@ -482,10 +482,6 @@ class Application(object):
             if os.path.isdir(self.assessment_dir):
                 shutil.rmtree(self.assessment_dir)
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
-
-        self.common.prep_symlinks(self.assessment_dir,
-                                  scenario=self.get_proper_scenario(scenario))            
-
         self.run_init()
         if self.conf.contents:
             self.assessment_dir = os.path.dirname(self.content)
