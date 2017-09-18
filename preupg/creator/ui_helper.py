@@ -110,14 +110,13 @@ class UIHelper(object):
 
     def specify_upgrade_path(self):
         if self.upgrade_path is None:
-            self.upgrade_path = get_user_input(settings.upgrade_path,
-                                               any_input=True)
+            self.upgrade_path = UIHelper\
+                .ask_mandatory_string(settings.upgrade_path,
+                                      'The scenario is mandatory. '
+                                      'You have to specify it.')
 
-        if not UIHelper.is_valid_string(self.upgrade_path):
-            print("The scenario is mandatory. You have to specify it.")
-            return None
-
-        message = 'The path %s already exists.\nDo you want to create a module there?' % self.upgrade_path
+        message = 'The path %s already exists.\n'\
+            'Do you want to create a module there?' % self.upgrade_path
         if UIHelper.check_path(self.get_upgrade_path(), message) is None:
             return None
 
@@ -147,14 +146,12 @@ class UIHelper(object):
         Asks user for src,dst OS versions, while options are mandatory user
         input is required
         """
-        while not self.src_version:
-            self.src_version = UIHelper.ask_about_version_number(
-                settings.prop_src_version,
-                "The major source OS version is mandatory.")
-        while not self.dst_version:
-            self.dst_version = UIHelper.ask_about_version_number(
-                settings.prop_dst_version,
-                "The major destination OS version is mandatory.")
+        self.src_version = UIHelper.ask_mandatory_string(
+            settings.prop_src_version,
+            "The major source OS version is mandatory.")
+        self.dst_version = UIHelper.ask_mandatory_string(
+            settings.prop_dst_version,
+            "The major destination OS version is mandatory.")
 
     def get_script_type(self):
         while True:
@@ -208,13 +205,14 @@ class UIHelper(object):
                                settings.check_path % solution) is None:
             self.solution_file = False
         self.content_dict['solution'] = solution
-        self.content_dict['content_title'] = get_user_input(settings.content_title, any_input=True)
-        response = get_user_input(settings.content_desc)
-        if not response:
-            self.content_dict['content_description'] = None
-        else:
-            desc = get_user_input(settings.content_desc_text, any_input=True)
-            self.content_dict['content_description'] = desc
+
+        self.content_dict['content_title'] = UIHelper\
+            .ask_mandatory_string(settings.content_title,
+                                  "Module title is mandatory!")
+
+        self.content_dict['content_description'] = UIHelper\
+            .ask_mandatory_string(settings.content_desc_text,
+                                  "Module description is mandatory!")
 
     def _create_ini_file(self):
         """
@@ -356,12 +354,19 @@ class UIHelper(object):
         return False
 
     @staticmethod
-    def ask_about_version_number(msg, err_msg):
-        version = get_user_input(msg, any_input=True)
-        if not UIHelper.is_valid_string(version):
+    def ask_for_string(msg, err_msg):
+        string = get_user_input(msg, any_input=True)
+        if not UIHelper.is_valid_string(string):
             print(err_msg)
             return False
-        return version
+        return string
+
+    @staticmethod
+    def ask_mandatory_string(msg, err_msg):
+        string = False
+        while not string:
+            string = UIHelper.ask_for_string(msg, err_msg)
+        return string
 
     @staticmethod
     def write_config_to_file(file_path, config):
