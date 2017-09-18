@@ -26,17 +26,6 @@ def upload_callback(option, dummy_opt_str, dummy_value, parser):
                                            " upload option.")
 
 
-def optional_rh_arg(arg_default):
-    def func(option, opt_str, value, parser):
-        if parser.rargs and not parser.rargs[0].startswith('-'):
-            val = parser.rargs[0]
-            parser.rargs.pop(0)
-        else:
-            val = arg_default
-        setattr(parser.values, option.dest, val)
-    return func
-
-
 class CLI(object):
 
     """Class for processing data from commandline"""

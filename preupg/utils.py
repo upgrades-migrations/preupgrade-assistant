@@ -383,12 +383,6 @@ class ProcessHelper(object):
         return sp.returncode
 
 
-class PreupgHelper(object):
-    @staticmethod
-    def get_prefix():
-        return settings.prefix
-
-
 class SystemIdentification(object):
 
     @staticmethod
