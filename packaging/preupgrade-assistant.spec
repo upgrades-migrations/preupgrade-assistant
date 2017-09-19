@@ -24,7 +24,6 @@ Source2:        south-%{south_version}.tar.gz
 
 %if 0%{?rhel}
 Patch0:         preupgrade-assistant-scripts.patch
-Patch1:         crossarch_migration_support_check.patch
 %endif # RHEL
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -100,7 +99,6 @@ OpenSCAP is generated automatically.
 
 %if 0%{?rhel}
 %patch0 -p1
-%patch1 -p1
 %endif # RHEL
 
 %build

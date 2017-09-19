@@ -11,6 +11,36 @@ class MissingHeaderCheckScriptError(RuntimeError):
         RuntimeError.__init__(self, "Error: " + message)
 
 
+class ModuleSetFormatError(RuntimeError):
+    """
+    Module set has wrong format
+
+    A mandatory part is missing, has wrong mode, etc.
+    """
+    def __init__(self, reason, subject="", e=None):
+        lines = ["Module set has wrong format:"]
+        lines.append("    reason: %s" % reason)
+        if subject:
+            lines.append("    subject: %s" % subject)
+        if e is not None:
+            lines.append("    error: %s" % e)
+        RuntimeError.__init__(self, "Error: " + '\n'.join(lines))
+
+
+class ModuleSetInitError(RuntimeError):
+    """
+    Module set init script failed
+    """
+    def __init__(self, returncode, stderr=""):
+        lines = ["Module set init script reported error:"]
+        if returncode:
+            lines.append("    status: %s" % returncode)
+        if stderr:
+            for line in stderr.strip('\n').split('\n'):
+                lines.append("    stderr: %s" % line)
+        RuntimeError.__init__(self, "Error: " + '\n'.join(lines))
+
+
 class MissingFileInContentError(RuntimeError):
     """
     Some file is missing in a module.

@@ -8,6 +8,7 @@ from __future__ import unicode_literals, print_function
 import shutil
 import datetime
 import os
+import subprocess
 import sys
 import logging
 from distutils import dir_util
@@ -17,7 +18,7 @@ try:
 except ImportError:
     from xmlrpc.client import Fault
 
-from preupg import xml_manager, settings
+from preupg import xml_manager, settings, exception
 from preupg.common import Common
 from preupg.settings import ReturnValues
 from preupg.scanning import ScanProgress, ScanningHelper
@@ -481,13 +482,46 @@ class Application(object):
             if os.path.isdir(self.assessment_dir):
                 shutil.rmtree(self.assessment_dir)
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
-
-        self.common.prep_symlinks(self.assessment_dir,
-                                  scenario=self.get_proper_scenario(scenario))            
-
+        self.run_init()
         if self.conf.contents:
             self.assessment_dir = os.path.dirname(self.content)
         return 0
+
+    def run_init(self):
+        """
+        Run module set's init script if exists
+
+        If module set provides executable called 'init', run it.   Standard
+        output is ignored.  If either exit status is non-zero or error is
+        printed, raise ModuleSetInitError.
+
+        Note that exported environment variables need to be reviewed; current
+        set is purely to make previous solution work and prevent regression.
+        """
+        scenario = self.get_proper_scenario(self.get_scenario())
+        init = os.path.join(self.conf.source_dir, scenario, 'init')
+        if os.access(init, os.F_OK):
+            init_vars = {
+                'PREUPGM_INIT_ASSESSMENT_DIR': self.assessment_dir,
+                'PREUPGM_INIT_SCENARIO': scenario,
+                'PREUPGM_INIT_DST_ARCH': self.conf.dst_arch if self.conf.dst_arch else "",
+                'PREUPGM_INIT_CONTENTS': self.conf.contents if self.conf.contents else "",
+            }
+            logger_debug.debug("calling module init script with: %r" % init_vars)
+            init_env = os.environ.copy()
+            init_env.update(init_vars)
+            try:
+                p = subprocess.Popen(
+                    [init],
+                    env=init_env,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                out, err = p.communicate()
+            except OSError as e:
+                raise exception.ModuleSetFormatError("init script failed to execute", init, e)
+            if p.returncode or err.strip():
+                raise exception.ModuleSetInitError(p.returncode, err)
 
     def copy_preupgrade_scripts(self, assessment_dir):
         # Copy preupgrade-scripts directory from scenarvirtuio
