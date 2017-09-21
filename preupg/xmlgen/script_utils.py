@@ -177,15 +177,9 @@ class ModuleHelper(object):
             {option1: value, option2: value, ...}
         @throws {MissingTagsIniFileError} - when required option is missing
             in ini file
-        @throws {ValueError} - when "solution_type" option has wrong value
         """
         required_fields = ['content_title', 'content_description']
         not_in_ini = [x for x in required_fields if not fields_in_ini.get(x)]
         if not_in_ini:
             raise MissingTagsIniFileError(tags=', '.join(not_in_ini),
                                           ini_file=ini_filepath)
-        if 'solution_type' in fields_in_ini and \
-                fields_in_ini.get('solution_type') != "html" and \
-                fields_in_ini.get('solution_type') != "text":
-            raise ValueError("Error: Wrong solution_type in %s. Allowed are"
-                             " 'html' or 'text'" % ini_filepath)

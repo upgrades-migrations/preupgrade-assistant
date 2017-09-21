@@ -61,8 +61,7 @@ class XmlUtils(object):
         """
         allowed_tags = set(['content_description', 'content_title',
                             'applies_to', 'author', 'binary_req', 'bugzilla',
-                            'config_file', 'group_title', 'mode', 'requires',
-                            'solution_type'])
+                            'config_file', 'group_title', 'mode', 'requires'])
         for ini_file, ini_content in iter(self.ini_files.items()):
             ini_content_tags = set(ini_content.keys())
             different = ini_content_tags.difference(allowed_tags)
