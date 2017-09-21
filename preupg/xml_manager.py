@@ -186,7 +186,6 @@ class XmlManager(object):
         self.filename = filename.split('.')[0]
         self.result_base = result_base
         self.scenario = scenario
-        self.xml_solution_files = {}
 
     def get_updated_text(self, solution_text, text, line):
         """Function updates a text in XML file"""
@@ -207,48 +206,24 @@ class XmlManager(object):
             updated_text = text
         return updated_text
 
-    def _return_correct_text_file(self, section, files):
-        """
-        Function returns only one text file
-        based on section and list of txt files from content
-        directory
-        """
-        file_name = None
-        for key, value in self.xml_solution_files.items():
-            # section is in format _<path_content>
-            section_name = section[1:] + "_"
-            if section_name not in key:
-                continue
-            # This will return only
-            try:
-                logger_report.debug(value)
-                file_name = [txt for txt in files if txt == value][0]
-                logger_report.debug(file_name)
-                break
-            except IndexError:
-                logger_report.debug("Value '%s'", value)
-        logger_report.debug("Found text file '%s'.", file_name)
-        return file_name
-
-    def update_html(self, result_name, solution_files, extension="html"):
+    def update_html(self, result_name, solution_txt_dirnames, extension="html"):
         """
          Function updates a XML or HTML file with relevant solution
          texts
         """
-        orig_file = os.path.join(self.dirname,
-                                 result_name + "." + extension)
+        orig_file = os.path.join(self.dirname, result_name + "." + extension)
         lines = FileHelper.get_file_content(orig_file, "rb", method=True)
-        for dir_name, files in iter(solution_files.items()):
-            section = dir_name.replace(os.path.join(self.dirname, self.scenario),
-                                       "").replace("/", "_")
+        for dir_name in solution_txt_dirnames:
+            section = dir_name.replace(
+                os.path.join(
+                    self.dirname, self.scenario), "").replace("/", "_")
             solution_text = section + "_SOLUTION_MSG"
 
-            file_name = self._return_correct_text_file(section, files)
-            if not file_name or file_name is None:
-                continue
-            else:
-                logger_report.debug("Solution text '%s' name '%s'", solution_text, file_name)
-                text = FileHelper.get_file_content(os.path.join(dir_name, file_name), "rb", method=True)
+            file_name = 'solution.txt'
+            logger_report.debug("Solution text '%s' name '%s'",
+                                solution_text, file_name)
+            text = FileHelper.get_file_content(
+                os.path.join(dir_name, file_name), "rb", method=True)
             for cnt, line in enumerate(lines):
                 # If in preupg.risk is a [link] then update them
                 # to /root/pre{migrate,upgrade}/...
@@ -272,20 +247,19 @@ class XmlManager(object):
 
         FileHelper.write_to_file(orig_file, "wb", lines)
 
-    def find_solution_files(self, result_name, xml_solution_files):
+    def find_solution_files(self, result_name):
         """
         Function finds all text files in conten
         and updates XML and HTML results
         """
-        solution_files = {}
-        self.xml_solution_files = xml_solution_files
+        solution_txt_dirnames = []
         for dir_name, sub_dir, file_name in os.walk(self.dirname):
-            files = [x for x in file_name if x.endswith(".txt")]
+            files = [x for x in file_name if x == 'solution.txt']
             if files:
                 logger_report.debug(files)
-                solution_files[dir_name] = files
-        self.update_html(result_name, solution_files)
-        self.update_html(result_name, solution_files, extension="xml")
+                solution_txt_dirnames.append(dir_name)
+        self.update_html(result_name, solution_txt_dirnames)
+        self.update_html(result_name, solution_txt_dirnames, extension="xml")
         clean_html(os.path.join(self.dirname, result_name + ".html"))
 
     def remove_html_information(self):

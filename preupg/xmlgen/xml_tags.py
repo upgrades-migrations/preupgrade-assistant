@@ -40,7 +40,7 @@ RULE_SECTION = """
         {check_description}
         {config_section}
       </description>
-      {fix}
+      <fixtext>{solution_text}</fixtext>
       <check system="http://open-scap.org/page/SCE">
         <check-import import-name="stdout" />
         {check_export}
@@ -48,11 +48,6 @@ RULE_SECTION = """
       </check>
     </Rule>
 """
-FIX = """<fix system="urn:xccdf:fix:script:{script_type}">
-{solution}
-         </fix>"""
-FIX_TEXT = """<fixtext>{solution_text}</fixtext>"""
-
 CONFIG_SECTION = """
         <xhtml:p>
             File(s) affected:
@@ -66,7 +61,6 @@ RULE_SECTION_VALUE_IMPORT = """\t\t<check-import import-name="stderr"/>"""
 RULE_SECTION_VALUE = """\t\t<check-export export-name="{value_name_upper}" value-id=\""""+TAG_VALUE+"""{main_dir}_{scap_name}_state_{val}" />
 """
 DIC_VALUES = {'current_directory': '/root/preupgrade',
-              'solution_file': 'solution.txt',
               'module_path': '',
               }
 

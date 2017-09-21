@@ -140,12 +140,6 @@ class XmlUtils(object):
             for lines in replace_exp.split(','):
                 new_text += "<xhtml:li>" + lines.strip() + "</xhtml:li>"
             replace_exp = new_text.rstrip()
-        elif search_exp == "{solution}":
-            new_text = FileHelper.get_file_content(os.path.join(
-                self.module_dir, replace_exp), "rb", True)
-            # we does not need interpreter for fix script
-            # in XML therefore skip first line
-            replace_exp = ''.join(new_text[1:])
         elif search_exp == "{solution_text}":
             new_text = "_" + '_'.join(
                 module_path_from_root_dir(self.module_dir,
@@ -187,25 +181,6 @@ class XmlUtils(object):
             self.update_values_list(check_export_tag, "{value_name}", key)
 
         return value_tag, check_export_tag
-
-    def solution_modification(self, key):
-        """Function handles a solution text or scripts"""
-        fix_tag = []
-        self.mh.check_scripts('solution')
-        script_type = FileHelper.get_script_type(
-            self.mh.get_solution_txt_path())
-        if script_type == "txt":
-            fix_tag.append(xml_tags.FIX_TEXT)
-        else:
-            fix_tag.append(xml_tags.FIX)
-        if 'solution_type' in key:
-            solution_type = key['solution_type']
-        else:
-            solution_type = "text"
-        self.update_values_list(fix_tag, "{solution_text}", solution_type)
-        self.update_values_list(fix_tag, "{solution}", self.solution)
-        self.update_values_list(fix_tag, "{script_type}", script_type)
-        self.update_values_list(self.rule, '{fix}', ''.join(fix_tag))
 
     def check_script_modification(self, key, k):
         """Function checks a check script"""
@@ -296,7 +271,8 @@ class XmlUtils(object):
             {option1: value, option2: value, ...}
         @param {str} name - 'solution'
         """
-        self.solution_modification(key)
+        self.mh.check_scripts('solution')
+        self.update_values_list(self.rule, "{solution_text}", "text")
 
     def fnc_update_mode(self, name):
         """

@@ -150,25 +150,6 @@ class ReportParser(object):
             results.extend(self.get_nodes(rule, "result", prefix='./'))
         return results
 
-    def get_solution_files(self):
-        """
-        Function returns a dictionary with solution_files
-
-        Format is:
-        xccdf_preupg_backup_solution_file=solution.txt
-        """
-        dict_solution = {}
-        for values in self.get_nodes(self.target_tree, "Value", prefix='.//'):
-            value_id = values.get('id')
-            if not value_id.endswith("_state_solution_file"):
-                continue
-            for value in self.get_nodes(values, "value"):
-                logger_report.debug(value_id)
-                value_id = value_id.replace('xccdf_preupg_value_', '').replace("_state_solution_file", '')
-                dict_solution[value_id] = value.text
-        logger_report.debug(dict_solution)
-        return dict_solution
-
     def write_xml(self):
         """Function writes XML document to file"""
         self.target_tree.set('xmlns:xhtml', 'http://www.w3.org/1999/xhtml/')

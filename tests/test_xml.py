@@ -286,20 +286,12 @@ A solution text for test suite"
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_text(self):
-        self.loaded_ini[self.filename]['solution_type'] = "text"
         self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
                                   self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
         fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
         self.assertTrue(fix_text)
 
-    def test_xml_solution_type_html(self):
-        self.loaded_ini[self.filename]['solution_type'] = "html"
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
-                                  self.loaded_ini)
-        self.rule = self.xml_utils.prepare_sections()
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x]
-        self.assertTrue(fix_text)
 
     def test_check_script_author(self):
         settings.autocomplete = True
