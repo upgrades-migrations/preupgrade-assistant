@@ -174,7 +174,7 @@ VALUE_CURRENT_DIRECTORY = os.environ['XCCDF_VALUE_CURRENT_DIRECTORY']
 #
 # Variable which referes to solution file provided by module
 #
-SOLUTION_FILE = os.environ['XCCDF_VALUE_SOLUTION_FILE']
+SOLUTION_FILE = os.path.join(VALUE_CURRENT_DIRECTORY, 'solution.txt')
 
 #
 # Variable which referes to current upgrade path directory
@@ -536,12 +536,11 @@ def solution_file(message):
     :param message: Message - string of list of strings
     :return:
     """
-    solution_filename = os.path.join(VALUE_CURRENT_DIRECTORY, SOLUTION_FILE)
-    if os.path.exists(solution_filename):
+    if os.path.exists(SOLUTION_FILE):
         mod = "a+b"
     else:
         mod = "wb"
-    FileHelper.write_to_file(solution_filename, mod, message)
+    FileHelper.write_to_file(SOLUTION_FILE, mod, message)
 
 
 def service_is_enabled(service_name):
