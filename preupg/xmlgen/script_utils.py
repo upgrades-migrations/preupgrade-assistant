@@ -13,8 +13,10 @@ class ModuleHelper(object):
 
     def __init__(self, dir_name):
         self.dir_name = dir_name
-        self.check_script_path = os.path.join(self.dir_name, 'check')
-        self.solution_txt_path = os.path.join(self.dir_name, 'solution.txt')
+        self.check_script_path = os.path.join(self.dir_name,
+                                              settings.check_script)
+        self.solution_txt_path = os.path.join(self.dir_name,
+                                              settings.solution_txt)
 
     def get_check_script_path(self):
         return self.check_script_path

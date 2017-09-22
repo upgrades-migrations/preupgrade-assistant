@@ -4,7 +4,7 @@ import os
 from preupg import settings
 
 dirname = os.path.join(os.path.dirname(__file__), 'tmp')
-solution_txt = 'solution.txt'
+solution_txt = settings.solution_txt
 os.environ['XCCDF_VALUE_TMP_PREUPGRADE'] = dirname
 os.environ['CURRENT_DIRECTORY'] = dirname
 os.environ['XCCDF_VALUE_REPORT_DIR'] = dirname

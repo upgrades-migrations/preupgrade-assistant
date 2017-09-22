@@ -10,6 +10,7 @@ try:
 except ImportError:
     import tests.base as base
 
+from preupg import settings
 from preupg.creator import ui_helper
 from preupg.creator.ui_helper import UIHelper
 from preupg.utils import FileHelper
@@ -30,7 +31,7 @@ class TestCreator(base.TestCase):
     upgrade_dir = ""
     puh = None
     group_name = "foobar_group"
-    content_name = "module.ini"
+    content_name = settings.module_ini
     content_dict = {}
 
     class Identity(base.MockFunction):

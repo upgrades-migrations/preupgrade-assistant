@@ -88,13 +88,13 @@ class UIHelper(object):
             return None
 
     def get_check_script(self):
-        return 'check'
+        return preupgSettings.check_script
 
     def get_solution_file(self):
-        return 'solution.txt'
+        return preupgSettings.solution_txt
 
     def get_content_ini_file(self):
-        return 'module.ini'
+        return preupgSettings.module_ini
 
     def get_content_path(self):
         if self.content_path is None:

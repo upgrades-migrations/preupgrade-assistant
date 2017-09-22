@@ -174,7 +174,7 @@ VALUE_CURRENT_DIRECTORY = os.environ['XCCDF_VALUE_CURRENT_DIRECTORY']
 #
 # Variable which referes to solution file provided by module
 #
-SOLUTION_FILE = os.path.join(VALUE_CURRENT_DIRECTORY, 'solution.txt')
+SOLUTION_FILE = os.path.join(VALUE_CURRENT_DIRECTORY, settings.solution_txt)
 
 #
 # Variable which referes to current upgrade path directory

@@ -45,10 +45,6 @@ class XmlUtils(object):
         self.module_set_dir = module_set_dir
         self.module_dir = module_dir
         self.ini_files = ini_files
-
-        self.check_script = 'check'
-        self.solution = 'solution.txt'
-
         self.select_rules = []
         self.rule = []
         self._test_config_file()
@@ -196,7 +192,8 @@ class XmlUtils(object):
         for check in check_func:
             self.mh.check_inplace_risk(prefix=check,
                                        check_func=check_func[check])
-        self.update_values_list(self.rule, "{scap_name}", self.check_script)
+        self.update_values_list(self.rule, "{scap_name}",
+                                settings.check_script)
         requirements = {'applies_to': 'check_applies',
                         'binary_req': 'check_bin',
                         'requires': 'check_rpm'}
@@ -209,7 +206,8 @@ class XmlUtils(object):
         else:
             author = None
         self.mh.update_check_script(updates, author=author)
-        self.update_values_list(self.rule, "{" + k + "}", self.check_script)
+        self.update_values_list(self.rule, "{" + k + "}",
+                                settings.check_script)
 
     def prepare_sections(self):
         """
@@ -252,7 +250,7 @@ class XmlUtils(object):
         """
         self.check_script_modification(key, name)
         self.update_values_list(self.select_rules, "{scap_name}",
-                                self.check_script)
+                                settings.check_script)
 
     def fnc_check_description(self, key, name):
         """ Function updates a check_description """
@@ -287,7 +285,7 @@ class XmlUtils(object):
             rule=xml_tags.TAG_RULE,
             main_dir='_'.join(module_path_from_root_dir(self.module_dir,
                                                         self.module_set_dir)),
-            name=self.check_script)
+            name=settings.check_script)
         if not name:
             self.update_files('migrate', content)
             self.update_files('upgrade', content)

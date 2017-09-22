@@ -5,6 +5,7 @@ import os
 
 from preupg import script_api
 from preupg.utils import FileHelper
+from preupg import settings
 
 try:
     import base
@@ -15,7 +16,7 @@ except ImportError:
 class TestAPICheck(base.TestCase):
 
     dirname = os.path.join(os.path.dirname(__file__), 'tmp')
-    solution_txt = 'solution.txt'
+    solution_txt = settings.solution_txt
     api_files = "api_files"
     dist_native = 'dist_native'
 

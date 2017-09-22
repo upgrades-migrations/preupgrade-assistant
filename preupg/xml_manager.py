@@ -219,11 +219,11 @@ class XmlManager(object):
                     self.dirname, self.scenario), "").replace("/", "_")
             solution_text = section + "_SOLUTION_MSG"
 
-            file_name = 'solution.txt'
             logger_report.debug("Solution text '%s' name '%s'",
-                                solution_text, file_name)
+                                solution_text, settings.solution_txt)
             text = FileHelper.get_file_content(
-                os.path.join(dir_name, file_name), "rb", method=True)
+                os.path.join(
+                    dir_name, settings.solution_txt), "rb", method=True)
             for cnt, line in enumerate(lines):
                 # If in preupg.risk is a [link] then update them
                 # to /root/pre{migrate,upgrade}/...
@@ -254,7 +254,7 @@ class XmlManager(object):
         """
         solution_txt_dirnames = []
         for dir_name, sub_dir, file_name in os.walk(self.dirname):
-            files = [x for x in file_name if x == 'solution.txt']
+            files = [x for x in file_name if x == settings.solution_txt]
             if files:
                 logger_report.debug(files)
                 solution_txt_dirnames.append(dir_name)

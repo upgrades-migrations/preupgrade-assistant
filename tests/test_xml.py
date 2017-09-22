@@ -124,8 +124,6 @@ class TestScriptGenerator(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "solution.txt"
-        self.check_script = "check"
         self.loaded_ini = {}
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': ' some content description',
@@ -138,19 +136,20 @@ class TestScriptGenerator(base.TestCase):
 
 #This is testing check script
  """
-        check_name = os.path.join(self.dirname, self.check_script)
+        check_name = os.path.join(self.dirname, settings.check_script)
         FileHelper.write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
-        test_solution_name = os.path.join(self.dirname, self.test_solution)
+        test_solution_name = os.path.join(self.dirname, settings.solution_txt)
         FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
     def _return_check(self, text):
-        content = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        content = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         found = [x for x in content if x.startswith(text)]
         return found
 
@@ -222,8 +221,6 @@ class TestXML(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "solution.txt"
-        self.check_script = "check"
         self.loaded_ini = {}
         test_ini = {'content_title': 'Testing content title',
                     'content_description': ' some content description',
@@ -239,14 +236,14 @@ class TestXML(base.TestCase):
 
 #This is testing check script
  """
-        check_name = os.path.join(self.dirname, self.check_script)
+        check_name = os.path.join(self.dirname, settings.check_script)
         FileHelper.write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
-        test_solution_name = os.path.join(self.dirname, self.test_solution)
+        test_solution_name = os.path.join(self.dirname, settings.solution_txt)
         FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
         self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
@@ -296,7 +293,8 @@ A solution text for test suite"
     def test_check_script_author(self):
         settings.autocomplete = True
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         author = [x for x in lines if "test <test@redhat.com>" in x]
         self.assertTrue(author)
 
@@ -440,19 +438,22 @@ A solution text for test suite"
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         applies = [x for x in lines if 'check_applies_to "test"' in x]
         self.assertTrue(applies)
 
     def test_check_script_common(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         common = [x for x in lines if '. /usr/share/preupgrade/common.sh' in x]
         self.assertTrue(common)
 
     def test_check_script_requires(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         check_rpm_to = [x for x in lines if 'check_rpm_to "bash" "sed"' in x]
         self.assertTrue(check_rpm_to)
 
@@ -478,8 +479,6 @@ class TestIncorrectINI(base.TestCase):
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
-        self.test_solution = "solution.txt"
-        self.check_script = "check"
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
                          'author': 'test <test@redhat.com>',
@@ -495,8 +494,10 @@ A solution text for test suite"
 
 #This is testing check script
  """
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.test_solution), "wb", solution_text)
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", check_sh)
+        FileHelper.write_to_file(os.path.join(
+            self.dir_name, settings.solution_txt), "wb", solution_text)
+        FileHelper.write_to_file(os.path.join(
+            self.dir_name, settings.check_script), "wb", check_sh)
 
     def tearDown(self):
         shutil.rmtree(self.dir_name)
