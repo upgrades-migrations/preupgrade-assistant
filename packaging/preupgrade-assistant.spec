@@ -48,9 +48,9 @@ Requires:       sed findutils bash
 Requires:       rpm-python
 Requires:       redhat-release
 Requires:       yum-utils
-Requires:       openscap%{?_isa} >= 0:1.2.8-1
-Requires:       openscap-engine-sce%{?_isa} >= 0:1.2.8-1
-Requires:       openscap-utils%{?_isa} >= 0:1.2.8-1
+Requires:       openscap%{?_isa} >= 0:1.0.10
+Requires:       openscap-engine-sce%{?_isa} >= 0:1.0.10
+Requires:       openscap-utils%{?_isa} >= 0:1.0.10
 Requires:       pykickstart
 Requires:       python-six
 Conflicts:      %{name}-tools < 2.1.0-1
