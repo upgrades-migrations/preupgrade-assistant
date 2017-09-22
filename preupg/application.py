@@ -104,6 +104,8 @@ class Application(object):
         self.tar_ball_name = None
         self.third_party = ""
         self.assessment_dir = None
+        self._set_old_report_style()
+
 
     def _add_report_log_file(self):
         """
@@ -142,6 +144,24 @@ class Application(object):
                            settings.preupg_log)
         else:
             self.debug_log_file = settings.preupg_log
+
+    def _set_old_report_style(self):
+        """
+        Choose which HTML report style should be used.
+
+        Set self.old_report_style to True when it is required from commandline
+        or older version of OpenSCAP has been detected.
+        """
+        if self.conf.old_report_style:
+            self.old_report_style = True
+        elif OpenSCAPHelper.is_oscap_equal_or_greater(1, 2, 7) is False:
+            # in case that OpenSCAP version is lower then 1.2.7, fallback
+            # to the old (simple) report style.
+            log_message("Generating simply styled report due to the "
+                        + "limitations of the installed OpenSCAP")
+            self.old_report_style = True
+        else:
+            self.old_report_style = False
 
     def get_third_party_dir(self, assessment):
         """
@@ -355,7 +375,7 @@ class Application(object):
         self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
         self.report_parser.update_check_description()
         xml_report = self.openscap_helper.get_default_xml_result_path()
-        if self.conf.old_report_style:
+        if self.old_report_style:
             ReportParser.write_xccdf_version(xml_report, direction=True)
 
     def generate_html_or_text(self):
@@ -369,13 +389,13 @@ class Application(object):
         html_report = self.openscap_helper.get_default_html_result_path()
         self.openscap_helper.run_generate(xml_report,
                                           html_report,
-                                          old_style=self.conf.old_report_style)
+                                          old_style=self.old_report_style)
         self.xml_mgr.update_report(html_report)
 
     def update_xml_after_html_generated(self):
         xml_report = self.openscap_helper.get_default_xml_result_path()
         self.xml_mgr.update_report(xml_report)
-        if self.conf.old_report_style:
+        if self.old_report_style:
             # Revert change to the XML XCCDF namespace which would break preupg-diff
             ReportParser.write_xccdf_version(xml_report)
 

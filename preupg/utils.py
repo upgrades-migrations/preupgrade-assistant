@@ -752,6 +752,48 @@ class OpenSCAPHelper(object):
         self.content = content
 
     @staticmethod
+    def get_oscap_version():
+        """
+        Get version of the OpenSCAP.
+
+        Return version of the openscap as dict with the 'major', 'minor' and
+        'patch' keys.
+
+        Raise OSError when the oscap utility is not installed.
+        """
+        oscap_version = {"major" : -1, "minor" :  -1, "patch" : -1}
+        def _process_oscap_output(oscap_msg):
+            if oscap_version["major"] >= 0:
+                # This is confusing check, but the ProcessHelper.run_subprocess
+                # processes each line of stdout separately and oscap version
+                # appears only on the first line. So in case of:
+                # the first line
+                #    the oscap_version["major"] == -1
+                # other lines
+                #    the oscap_version["major"] >= 0
+                return
+            # Processing of the first line
+            rmatch = re.match(r".*\s([0-9]+)\.([0-9]+)\.([0-9]+)\s$", oscap_msg)
+            if rmatch is None:
+                return
+            oscap_version["major"] = int(rmatch.group(1))
+            oscap_version["minor"] = int(rmatch.group(2))
+            oscap_version["patch"] = int(rmatch.group(3))
+        ProcessHelper.run_subprocess([settings.openscap_binary, "version"],
+                print_output=False, function=_process_oscap_output)
+        return oscap_version
+
+    @staticmethod
+    def is_oscap_equal_or_greater(major, minor, patch):
+        "Return True when version of the OpenSCAP is eg then given one."
+        oscap_version = OpenSCAPHelper.get_oscap_version()
+        if (oscap_version["major"] >= major
+                and oscap_version["minor"] >= minor
+                and oscap_version["patch"] >= patch):
+            return True
+        return False
+
+    @staticmethod
     def get_xsl_stylesheet(old_style=False):
         """Return full XSL stylesheet path"""
         if old_style:
