@@ -483,8 +483,6 @@ class Application(object):
                 shutil.rmtree(self.assessment_dir)
             shutil.move(xccdf_compose.get_compose_dir_name(), self.assessment_dir)
         self.run_init()
-        if self.conf.contents:
-            self.assessment_dir = os.path.dirname(self.content)
         return 0
 
     def run_init(self):
