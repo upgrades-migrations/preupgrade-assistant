@@ -9,7 +9,7 @@ import shutil
 from .models import Test, TestResult, HostRun, Result, Address, TestLog, TestGroup, TestGroupResult
 from .models import Risk
 
-from processing import parse_report
+from processing import parse_xml_report, update_html_report
 
 from django.db import transaction
 from django.conf import settings
@@ -44,16 +44,26 @@ def remove_upload(path):
 
 def extract_tarball(tbpath, target_dir):
     """ return report paths: (xml, html) """
+    def strip_subfolder(tar_content):
+        """The Web UI does not expect the subfolder in the extracted tarball
+        content.
+        """
+        for member in tar_content:
+            path_without_subfolder = member.path.split(os.sep)[1:]
+            if path_without_subfolder:
+                member.path = os.path.join(*member.path.split(os.sep)[1:])
+                yield member
+
     tar = tarfile.open(tbpath)
-
     tar_content = tar.getmembers()
-
-    xml = filter_files_by_ext(tar_content, '.xml', 'Missing XML report in tarball.')
-    html = filter_files_by_ext(tar_content, '.html', 'Missing HTML report in tarball.')
-
-    tar.extractall(path=target_dir)
-
+    tar.extractall(target_dir, strip_subfolder(tar_content))
     tar.close()
+
+    xml = filter_files_by_ext(tar_content, '.xml',
+                              'Missing XML report in tarball.')
+    html = filter_files_by_ext(tar_content, '.html',
+                               'Missing HTML report in tarball.')
+
     xml_path = os.path.join(target_dir, xml.name)
     html_path = os.path.join(target_dir, html.name)
     return xml_path, html_path
@@ -102,7 +112,8 @@ class ReportImporter(object):
         xml_path, html_path = extract_tarball(self.tb_path, self.result.get_result_dir())
         self.html_path = html_path
         remove_upload(self.tb_path)
-        return parse_report(xml_path)
+        update_html_report(self.html_path)
+        return parse_xml_report(xml_path)
 
     @transaction.commit_on_success
     def _add_to_db(self):
