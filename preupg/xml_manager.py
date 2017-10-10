@@ -201,19 +201,16 @@ class XmlManager(object):
                 updated_text = line.replace(solution_text + "_TEXT",
                                             "").replace(solution_text + "_HTML",
                                                         "")
-
         else:
             updated_text = text
         return updated_text
 
-    def update_html(self, result_name, solution_txt_dirnames, extension="html"):
+    def update_report(self, report_filename):
+        """Update either XML or HTML report with relevant solution texts.
         """
-         Function updates a XML or HTML file with relevant solution
-         texts
-        """
-        orig_file = os.path.join(self.dirname, result_name + "." + extension)
+        orig_file = os.path.join(self.dirname, report_filename)
         lines = FileHelper.get_file_content(orig_file, "rb", method=True)
-        for dir_name in solution_txt_dirnames:
+        for dir_name in self.solution_txt_dirnames:
             section = dir_name.replace(
                 os.path.join(
                     self.dirname, self.scenario), "").replace("/", "_")
@@ -226,7 +223,7 @@ class XmlManager(object):
                     dir_name, settings.solution_txt), "rb", method=True)
             for cnt, line in enumerate(lines):
                 # If in preupg.risk is a [link] then update them
-                # to /root/pre{migrate,upgrade}/...
+                # to /root/preupgrade/...
                 if 'preupg.risk.' in line.strip():
                     logger_report.debug(line.strip())
                     lines[cnt] = tag_formating([line])[0]
@@ -236,31 +233,36 @@ class XmlManager(object):
                     continue
 
                 # Get updated text if it is HTML or TEXT
-                lines[cnt] = self.get_updated_text(solution_text,
-                                                   text,
-                                                   line)
+                lines[cnt] = self.get_updated_text(solution_text, text, line)
 
-        if extension == 'xml':
+        if self.get_filetype(report_filename) == 'xml':
             for cnt, line in enumerate(lines):
                 if 'SOLUTION_MSG' in line.strip():
-                    lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<', '><', line.strip())
+                    lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<',
+                                        '><', line.strip())
 
         FileHelper.write_to_file(orig_file, "wb", lines)
 
-    def find_solution_files(self, result_name):
-        """
-        Function finds all text files in conten
-        and updates XML and HTML results
-        """
+    @staticmethod
+    def get_filetype(filepath):
+        return os.path.splitext(filepath)[1]
+
+    def update_xml_and_html_report(self, report_paths):
+        self.solution_txt_dirnames = self.find_solution_files()
+        for report_path in report_paths:
+            self.update_report(report_path)
+            if self.get_filetype(report_path) == "html":
+                clean_html(os.path.join(self.dirname, report_path))
+
+    def find_solution_files(self):
+        """Find all directories that contain solution.txt."""
         solution_txt_dirnames = []
-        for dir_name, sub_dir, file_name in os.walk(self.dirname):
+        for dir_name, _, file_name in os.walk(self.dirname):
             files = [x for x in file_name if x == settings.solution_txt]
             if files:
                 logger_report.debug(files)
                 solution_txt_dirnames.append(dir_name)
-        self.update_html(result_name, solution_txt_dirnames)
-        self.update_html(result_name, solution_txt_dirnames, extension="xml")
-        clean_html(os.path.join(self.dirname, result_name + ".html"))
+        return solution_txt_dirnames
 
     def remove_html_information(self):
         report_path = os.path.join(self.dirname, self.result_base + ".html")

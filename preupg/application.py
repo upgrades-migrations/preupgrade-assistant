@@ -389,8 +389,7 @@ class Application(object):
         PostupgradeHelper.special_postupgrade_scripts(self.conf.assessment_results_dir)
         PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
 
-        for report in self._get_reports():
-            self.xml_mgr.find_solution_files(report.split('.')[0])
+        self.xml_mgr.update_xml_and_html_report(self._get_reports())
 
     def set_third_party(self, third_party):
         self.third_party = third_party
