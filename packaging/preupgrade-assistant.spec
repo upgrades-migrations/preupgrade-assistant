@@ -1,13 +1,17 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
+# build_ui macro can be overriden by using the rpmbuild --define option
 %if 0%{?rhel}
-%global         build_ui 1
+%{!?build_ui: %global build_ui 1}
+%else
+%{!?build_ui: %global build_ui 0}
+%endif # RHEL
+
+%if %{build_ui}
 %global         django_version  1.5.5
 %global         south_version   0.8.4
-%else
-%global         build_ui 0
-%endif # RHEL
+%endif # build_ui
 
 Name:           preupgrade-assistant
 Version:        2.4.4
