@@ -252,9 +252,7 @@ class Application(object):
     def run_scan_process(self):
         """Function scans the source system"""
         self.xml_mgr = xml_manager.XmlManager(self.conf.assessment_results_dir,
-                                              self.get_scenario(),
-                                              os.path.basename(self.content),
-                                              self.conf.result_prefix)
+                                              self.assessment_dir)
 
         self.report_parser.add_global_tags(self.conf.assessment_results_dir,
                                            self.get_proper_scenario(self.get_scenario()),
@@ -343,17 +341,6 @@ class Application(object):
         if os.path.isdir(self.conf.assessment_results_dir):
             shutil.rmtree(self.conf.assessment_results_dir)
 
-    def prepare_for_generation(self):
-        """Function prepares the XML file for conversion to HTML format"""
-        for report in self._get_reports():
-            if self.conf.old_report_style:
-                ReportParser.write_xccdf_version(report, direction=True)
-            self.openscap_helper.run_generate(report,
-                                              report.replace('.xml', '.html'),
-                                              old_style=self.conf.old_report_style)
-            if self.conf.old_report_style:
-                ReportParser.write_xccdf_version(report)
-
     def prepare_xml_for_html(self):
         """The function prepares a XML file for HTML creation"""
         # Reload XML file
@@ -367,29 +354,39 @@ class Application(object):
             self.report_parser.remove_debug_info()
         self.report_parser.reload_xml(self.openscap_helper.get_default_xml_result_path())
         self.report_parser.update_check_description()
-        self.prepare_for_generation()
+        xml_report = self.openscap_helper.get_default_xml_result_path()
+        if self.conf.old_report_style:
+            ReportParser.write_xccdf_version(xml_report, direction=True)
 
-        if not self.conf.verbose:
-            self.xml_mgr.remove_html_information()
-        # This function finalize XML operations
-        self.finalize_xml_files()
+    def generate_html_or_text(self):
+        self.generate_html()
         if self.conf.text:
             ProcessHelper.run_subprocess(self.get_cmd_convertor(), print_output=False, shell=True)
 
-    def _get_reports(self):
-        reports = [self.openscap_helper.get_default_xml_result_path()]
-        return reports
+    def generate_html(self):
+        """Convert XML to HTML"""
+        xml_report = self.openscap_helper.get_default_xml_result_path()
+        html_report = self.openscap_helper.get_default_html_result_path()
+        self.openscap_helper.run_generate(xml_report,
+                                          html_report,
+                                          old_style=self.conf.old_report_style)
+        self.xml_mgr.update_report(html_report)
 
-    def finalize_xml_files(self):
+    def update_xml_after_html_generated(self):
+        xml_report = self.openscap_helper.get_default_xml_result_path()
+        self.xml_mgr.update_report(xml_report)
+        if self.conf.old_report_style:
+            # Revert change to the XML XCCDF namespace which would break preupg-diff
+            ReportParser.write_xccdf_version(xml_report)
+
+    def copy_postupgrade_files(self):
         """
         Function copies postupgrade scripts and creates hash postupgrade file.
-        It finds solution files and update XML file.
         """
         # Copy postupgrade.d special files
         PostupgradeHelper.special_postupgrade_scripts(self.conf.assessment_results_dir)
         PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
-
-        self.xml_mgr.update_xml_and_html_report(self._get_reports())
+        
 
     def set_third_party(self, third_party):
         self.third_party = third_party
@@ -408,8 +405,10 @@ class Application(object):
             self.content = content
             self.run_scan_process()
             self.report_data[third_party_name] = self.scanning_progress.get_output_data()
-            # This function prepare XML and generate HTML
             self.prepare_xml_for_html()
+            self.generate_html_or_text()
+            self.update_xml_after_html_generated()
+            self.copy_postupgrade_files()
         self.set_third_party("")
 
     def get_cmd_convertor(self):
@@ -571,8 +570,10 @@ class Application(object):
             self.report_parser.select_rules(lines)
         self.run_scan_process()
         main_report = self.scanning_progress.get_output_data()
-        # This function prepare XML and generate HTML
         self.prepare_xml_for_html()
+        self.generate_html_or_text()
+        self.update_xml_after_html_generated()
+        self.copy_postupgrade_files()
 
         third_party_dir_name = self.get_third_party_dir(self.assessment_dir)
         if os.path.exists(third_party_dir_name):

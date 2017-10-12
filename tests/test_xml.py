@@ -16,8 +16,7 @@ from preupg import settings
 from preupg.xmlgen.xml_utils import XmlUtils
 from preupg.xmlgen.oscap_group_xml import OscapGroupXml
 from preupg.utils import FileHelper
-from preupg.xml_manager import html_escape, html_escape_string
-from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
+from preupg.xml_manager import html_escape
 try:
     import base
 except ImportError:
@@ -279,14 +278,14 @@ A solution text for test suite"
         self.assertTrue(conf_file)
 
     def test_xml_fix_text(self):
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_text(self):
         self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
                                   self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG</fixtext>" in x]
         self.assertTrue(fix_text)
 
 
@@ -552,35 +551,28 @@ class HTMLEscapeTest(base.TestCase):
 
     """Testing of right transform of unsafe characters to their entities"""
 
-    def test_basic(self):
-        """Basic test with quotation"""
-        input_char = ['asd', '<qwe>', "this 'is' quoted"]
-        output = html_escape(input_char)
-        expected_output = ['asd', '&lt;qwe&gt;', 'this &apos;is&apos; quoted']
-        self.assertEqual(output, expected_output)
-
     def test_basic_string(self):
         """Test if single string is escaped well"""
         input_char = "asd < > &"
         expected_output = "asd &lt; &gt; &amp;"
-        output = html_escape_string(input_char)
+        output = html_escape(input_char)
         self.assertEqual(output, expected_output)
 
     def test_all(self):
         """Test if list of strings is escaped well"""
-        tmp_input = ['a<', 'b>', "x'x", 'y"', 'z&z']
+        tmp_input = "a<b>x'xyz&z"
         output = html_escape(tmp_input)
-        expected_ouput = ['a&lt;', 'b&gt;', 'x&apos;x', 'y&quot;', 'z&amp;z']
+        expected_ouput = 'a&lt;b&gt;x&apos;xyz&amp;z'
         self.assertEqual(output, expected_ouput)
 
     def test_amp_expand(self):
         """Test whether ampersand is not being expanded multiple times"""
-        input_char = ['asd<>&']
-        expected_output = ['asd&lt;&gt;&amp;']
+        input_char = 'asd<>&'
+        expected_output = 'asd&lt;&gt;&amp;'
         output = html_escape(input_char)
         self.assertEqual(output, expected_output)
-        input_multi_char = ['asd<><>&&']
-        expected_multi_output = ['asd&lt;&gt;&lt;&gt;&amp;&amp;']
+        input_multi_char = 'asd<><>&&'
+        expected_multi_output = 'asd&lt;&gt;&lt;&gt;&amp;&amp;'
         output_multi = html_escape(input_multi_char)
         self.assertEqual(output_multi, expected_multi_output)
 

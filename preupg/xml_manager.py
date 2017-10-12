@@ -12,9 +12,9 @@ from preupg import settings
 from preupg.logger import logger_report
 
 
-def html_escape_string(pattern):
+def html_escape(text):
     """
-    escape single string for XML/HTML parsing
+    HTML escape text; text is a list of strings
     """
     escapes = [
         ("&", "&amp;"),  # '&' has to be first!
@@ -23,23 +23,12 @@ def html_escape_string(pattern):
         ("'", "&apos;"),
         ('"', "&quot;"),
     ]
-    result = pattern
     for esc, html_esc in escapes:
-        result = result.replace(esc, html_esc)
-    return result
+        text = text.replace(esc, html_esc)
+    return text
 
 
-def html_escape(text_list):
-    """
-    HTML escape text; text is a list of strings
-    """
-    for index, text in enumerate(text_list):
-        text_list[index] = html_escape_string(text)
-
-    return text_list
-
-
-def link_update(value, inplace):
+def link_update(value):
     """
     Function replaces [link:sss] with either
     <a href="http:sss">sss</a> or
@@ -49,15 +38,13 @@ def link_update(value, inplace):
     if [x for x in possible_links if x in value]:
         return '<a href="{0}">{0}</a>'.format(value.strip())
     else:
-        if inplace:
-            return os.path.join('/root', settings.prefix, value.strip())
-        if value.strip().startswith("/"):
-            return ""
+        if value.strip().startswith("/") or value.strip().startswith(".."):
+            return value.strip()
         else:
             return '<a href="./{0}">{0}</a>'.format(value.strip())
 
 
-def bold_update(value, inplace):
+def bold_update(value):
     """
     Function replaces [bold:sss] with <b>sss</b>
     """
@@ -75,44 +62,16 @@ def tag_formating(text):
         ->
             <a href="/var/cache/description.txt">/var/cache/description.txt</a>
     """
-    regular = r'\[(?P<tag>\w+):(?P<text>.+?)\]'
-    update_dict = {
-        'bold': bold_update,
-        'link': link_update,
-    }
+    def repl(match):
+        if match.group("tag") == 'bold':
+            return bold_update(match.group("text"))
+        elif match.group("tag") == 'link':
+            return link_update(match.group("text"))
+        else:
+            return match.group(0)  # return the original matched string
 
-    for index, line in enumerate(text):
-        expr_re = re.compile(regular)
-        string_match = re.findall(expr_re, line)
-        if string_match:
-            for match in string_match:
-                inplace = False
-                if 'preupg.risk.' in line:
-                    inplace = True
-                update = update_dict[match[0]](match[1], inplace)
-                if update != "":
-                    line = re.sub(regular, update, line, count=1)
-            text[index] = line
-    return text
-
-
-def remove_lines(string, regex_t, post_regex_t):
-    """
-    remove substring from string surrounded by regex
-    Regexes are tuples: (regex, remove from start pos?), e.g.:
-      ('<div id="main-table">', False)
-    """
-    s_re, remove_start = regex_t
-    e_re, remove_end = post_regex_t
-
-    s_search = re.search(s_re, string)
-    e_search = re.search(e_re, string)
-    if not s_search or not e_search:
-        return string
-    s_pos = s_search.start() if remove_start else s_search.end()
-    e_pos = e_search.start() if remove_end else e_search.end()
-
-    return string[:s_pos] + string[e_pos:]
+    regular = re.compile(r'\[(?P<tag>\w+):(?P<text>.+?)\]', re.MULTILINE)
+    return re.sub(regular, repl, text)
 
 
 def get_package_version(name):
@@ -126,159 +85,66 @@ def get_package_version(name):
             return "%s-%s-%s" % (h['name'], h['version'], h['release'])
 
 
-def add_preupg_scanner_info():
-    """ add info about scanner to HTML report """
-    template = """          <h2>Introduction</h2>
-          <div>
-            <h3>Scanner</h3>
-            <ul>
-%s            </ul>
-          </div>
-"""
-    line = "              <li>%s</li>\n"
-    packages = [
-        'preupgrade-assistant',
-        'preupgrade-assistant-contents',
-        'preupgrade-assistant-contents-users',
-    ]
-    data = ''
-    for package in packages:
-        nvr = get_package_version(package)
-        if nvr:
-            l = line % nvr
-            data += l
-    return template % data
-
-
-def clean_html(report_path):
-    """
-    Function cleans a report
-    """
-    file_content = FileHelper.get_file_content(report_path, 'rb')
-
-    s_testres = ('[\t ]*<div id="intro">[\t ]*\n[\t ]*<h2>Introduction</h2>[\t ]*\n', False)
-    e_testres = ('[\t ]*</table>[\t ]*\n[\t ]*</div>[\t ]*\n[\t ]*</div>[\t ]*\n', False)
-
-    s_score = ('[\t ]*<div>[\t ]*\n[\t ]*<h3>Score</h3>\s*', True)
-    e_score = ('[\t ]*</div>[\t ]*\n[\t ]*<div id="results-overview">[\t ]*\n', False)
-
-    # remove test results
-    nl = remove_lines(file_content, s_testres, e_testres)
-    # remove score table
-    #nl = remove_lines(nl, s_score, e_score)
-    # sed XCCDF test results
-    nl = re.sub('XCCDF test result', 'Preupgrade Assistant', nl)
-    # add preupg nvr
-    nl = re.sub('[\t ]*<h2>Introduction</h2>[\t ]*\n', add_preupg_scanner_info(), nl)
-
-    FileHelper.write_to_file(report_path, 'wb', nl)
-
-
 class XmlManager(object):
     """
     Class operates with XML oscap result
     """
-    def __init__(self, dirname, scenario, filename, result_base):
+    def __init__(self, assessment_result_dir, copied_module_set_dir):
         """
-        dirname contains path to result
+        assessment_result_dir .. directory where all results of the
+                                 assessment are stored
+        copied_module_set_dir .. module set directory copied for the assessment
+                                 to the assessment_result_dir
         """
-        self.dirname = dirname
-        self.filename = filename.split('.')[0]
-        self.result_base = result_base
-        self.scenario = scenario
+        self.assessment_result_dir = assessment_result_dir
+        self.copied_module_set_dir = copied_module_set_dir
+        self.paths_to_all_modules = self.get_module_dirs()
+        self.solution_texts = {}
 
-    def get_updated_text(self, solution_text, text, line):
-        """Function updates a text in XML file"""
-        updated_text = []
-        if solution_text + "_TEXT" in line.strip():
-            text = tag_formating(html_escape(text))
-            new_line = "<br/>\n"
-            updated_text = [x.strip() + new_line for x in text]
-            if updated_text:
-                updated_text = line.replace(solution_text + "_TEXT",
-                                            ''.join(updated_text))
-            else:
-                updated_text = line.replace(solution_text + "_TEXT",
-                                            "").replace(solution_text + "_HTML",
-                                                        "")
-        else:
-            updated_text = text
-        return updated_text
+    def update_report(self, report_path):
+        """Update XML or HTML report with relevant solution texts."""
+        if not self.solution_texts:
+            self.load_solution_texts()
 
-    def update_report(self, report_filename):
-        """Update either XML or HTML report with relevant solution texts.
-        """
-        orig_file = os.path.join(self.dirname, report_filename)
-        lines = FileHelper.get_file_content(orig_file, "rb", method=True)
-        for dir_name in self.solution_txt_dirnames:
+        orig_file = os.path.join(self.assessment_result_dir, report_path)
+        report_content = FileHelper.get_file_content(orig_file, "rb")
+
+        for solution_placeholer, solution_text in self.solution_texts.items():
+            report_content = report_content.replace(solution_placeholer,
+                                                    solution_text)
+
+        FileHelper.write_to_file(orig_file, "wb", report_content)
+
+    def load_solution_texts(self):
+        """Load solution texts into a dictionary."""
+        for dir_name in self.paths_to_all_modules:
             section = dir_name.replace(
-                os.path.join(
-                    self.dirname, self.scenario), "").replace("/", "_")
-            solution_text = section + "_SOLUTION_MSG"
+                self.copied_module_set_dir, "").replace("/", "_")
+            solution_placeholder = section + "_SOLUTION_MSG"
 
-            logger_report.debug("Solution text '%s' name '%s'",
-                                solution_text, settings.solution_txt)
-            text = FileHelper.get_file_content(
-                os.path.join(
-                    dir_name, settings.solution_txt), "rb", method=True)
-            for cnt, line in enumerate(lines):
-                # If in preupg.risk is a [link] then update them
-                # to /root/preupgrade/...
-                if 'preupg.risk.' in line.strip():
-                    logger_report.debug(line.strip())
-                    lines[cnt] = tag_formating([line])[0]
-                    continue
-                # Find correct block
-                if solution_text not in line.strip():
-                    continue
+            logger_report.debug("Processing solution placeholder '%s'",
+                                solution_placeholder)
+            try:
+                solution_text = FileHelper.get_file_content(
+                    os.path.join(dir_name, settings.solution_txt), "rb")
+            except IOError:
+                # solution file is not mandatory
+                solution_text = ""
 
-                # Get updated text if it is HTML or TEXT
-                lines[cnt] = self.get_updated_text(solution_text, text, line)
+            updated_solution_text = self.get_updated_solution(solution_text)
+            self.solution_texts[solution_placeholder] = updated_solution_text
 
-        if self.get_filetype(report_filename) == 'xml':
-            for cnt, line in enumerate(lines):
-                if 'SOLUTION_MSG' in line.strip():
-                    lines[cnt] = re.sub(r'>.*SOLUTION_MSG.*<',
-                                        '><', line.strip())
+    def get_updated_solution(self, solution_text):
+        """Function converts the solution text to HTML"""
+        formatted_text = tag_formating(html_escape(solution_text))
+        formatted_text = formatted_text.replace("\n", "<br/>\n")
+        return formatted_text
 
-        FileHelper.write_to_file(orig_file, "wb", lines)
-
-    @staticmethod
-    def get_filetype(filepath):
-        return os.path.splitext(filepath)[1]
-
-    def update_xml_and_html_report(self, report_paths):
-        self.solution_txt_dirnames = self.find_solution_files()
-        for report_path in report_paths:
-            self.update_report(report_path)
-            if self.get_filetype(report_path) == "html":
-                clean_html(os.path.join(self.dirname, report_path))
-
-    def find_solution_files(self):
-        """Find all directories that contain solution.txt."""
-        solution_txt_dirnames = []
-        for dir_name, _, file_name in os.walk(self.dirname):
-            files = [x for x in file_name if x == settings.solution_txt]
-            if files:
-                logger_report.debug(files)
-                solution_txt_dirnames.append(dir_name)
-        return solution_txt_dirnames
-
-    def remove_html_information(self):
-        report_path = os.path.join(self.dirname, self.result_base + ".html")
-        file_content = FileHelper.get_file_content(report_path, 'rb', method=True)
-        detail_start = '<br /><br /><strong class="bold">Details:</strong><br />'
-        detail_end = '[\t ]*<div class="xccdf-fixtext">'
-
-        new_content = []
-        found_section = False
-        for line in file_content:
-            if detail_start in line:
-                found_section = True
-                continue
-            if detail_end in line:
-                found_section = False
-            if not found_section:
-                new_content.append(line)
-
-        FileHelper.write_to_file(report_path, 'wb', new_content)
+    def get_module_dirs(self):
+        """Find all directories that contain a module."""
+        paths_to_all_modules = []
+        for path, _, dir_files in os.walk(self.assessment_result_dir):
+            # Each module has its INI file
+            if settings.check_script in dir_files:
+                paths_to_all_modules.append(path)
+        return paths_to_all_modules

@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 import os
 import sys
 
-from preupg.xml_manager import html_escape_string
+from preupg.xml_manager import html_escape
 from preupg.utils import FileHelper, ModuleSetUtils
 from preupg import settings
 from preupg.xmlgen import xml_tags
@@ -140,7 +140,7 @@ class XmlUtils(object):
             new_text = "_" + '_'.join(
                 module_path_from_root_dir(self.module_dir,
                                           self.module_set_dir))\
-                       + "_SOLUTION_MSG_" + replace_exp.upper()
+                       + "_SOLUTION_MSG"
             replace_exp = new_text
         if replace_exp == '' and search_exp in forbidden_empty:
             raise EmptyTagGroupXMLError(search_exp)
@@ -261,16 +261,16 @@ class XmlUtils(object):
         else:
             self.update_values_list(self.rule, "{check_description}", "")
 
-    def fnc_solution_text(self, key, name):
+    def fnc_solution_text(self, *_):
         """
         Function updates a solution text.
-        
+
         @param {dict} key - options and values from ini file:
             {option1: value, option2: value, ...}
         @param {str} name - 'solution'
         """
         self.mh.check_scripts('solution')
-        self.update_values_list(self.rule, "{solution_text}", "text")
+        self.update_values_list(self.rule, "{solution_text}", "")
 
     def fnc_update_mode(self, name):
         """
@@ -300,7 +300,7 @@ class XmlUtils(object):
         """Function updates a text."""
         if key[name] is not None:
             # escape values so they can be loaded as XMLs
-            escaped_text = html_escape_string(key[name])
+            escaped_text = html_escape(key[name])
             self.update_values_list(self.rule, "{" + name + "}", escaped_text)
 
     def create_xml_from_ini(self, ini_filepath, ini_content):
@@ -345,7 +345,7 @@ class XmlUtils(object):
 
         self.update_values_list(
             self.rule, '{group_title}',
-            html_escape_string(ini_content['content_title'])
+            html_escape(ini_content['content_title'])
         )
         if 'mode' not in ini_content:
             self.fnc_update_mode('migrate, upgrade')
