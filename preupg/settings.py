@@ -45,7 +45,10 @@ log_dir = "/var/log/preupgrade"
 
 # file with module set meta info
 properties_ini = "properties.ini"
+module_ini = "module.ini"
 
+solution_txt = "solution.txt"
+check_script = "check"
 # preupg log file
 preupg_log = os.path.join(log_dir, "preupg.log")
 

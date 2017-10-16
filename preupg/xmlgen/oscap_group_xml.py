@@ -51,8 +51,10 @@ class OscapGroupXml(object):
 
     def find_all_ini(self):
         """
-        This function is used for finding all _fix files in the user defined
-        directory
+        Find all ini files in the self.dirname path. Then read each ini file
+        and save all options in 'preupgrade' section with their values to
+        self.loded dict:
+        self.loaded[ini_file_path] = {option1: value, option2: value, ...}
         """
         for dir_name in os.listdir(self.dirname):
             if dir_name.endswith(".ini"):
@@ -60,8 +62,8 @@ class OscapGroupXml(object):
         for file_name in self.lists:
             if FileHelper.check_file(file_name, "r") is False:
                 continue
-            config = configparser.ConfigParser()
             filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
+            config = configparser.ConfigParser()
             config.readfp(filehander)
             fields = {}
             section = 'preupgrade'
@@ -118,13 +120,9 @@ class OscapGroupXml(object):
         if os.path.exists(file_list_rules):
             lines = FileHelper.get_file_content(file_list_rules, "rb",
                                                 method=True)
-        else:
-            lines = []
-        for values in iter(self.loaded.values()):
-            check_script = [v for k, v in iter(values.items())
-                            if k == 'check_script']
-            if check_script:
-                check_script = os.path.splitext(''.join(check_script))[0]
-                lines.append(settings.xccdf_tag + rule_name + '_' +
-                             check_script + '\n')
+
+        # add rule only for modules (dir which contains module.ini)
+        if os.path.isfile(os.path.join(self.dirname, settings.module_ini)):
+            lines.append(settings.xccdf_tag + rule_name + '_check' + '\n')
+
         FileHelper.write_to_file(file_list_rules, "wb", lines)

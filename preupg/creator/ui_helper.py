@@ -88,13 +88,13 @@ class UIHelper(object):
             return None
 
     def get_check_script(self):
-        return self._get_dict_value('check_script')
+        return preupgSettings.check_script
 
     def get_solution_file(self):
-        return self._get_dict_value('solution')
+        return preupgSettings.solution_txt
 
     def get_content_ini_file(self):
-        return self.content_ini
+        return preupgSettings.module_ini
 
     def get_content_path(self):
         if self.content_path is None:
@@ -153,7 +153,7 @@ class UIHelper(object):
             settings.prop_dst_version,
             "The major destination OS version is mandatory.")
 
-    def get_script_type(self):
+    def ask_for_script_type(self):
         while True:
             options = ['sh', 'py']
             self.script_type = get_user_input(settings.type_check_script, any_input=True)
@@ -165,17 +165,6 @@ class UIHelper(object):
                 continue
             else:
                 break
-        if self.script_type == "sh":
-            message = settings.check_script % settings.default_bash_script_name
-        else:
-            message = settings.check_script % settings.default_python_script_name
-        checkscript = get_user_input(message, any_input=True)
-        if checkscript is True:
-            if self.script_type == "sh":
-                checkscript = settings.default_bash_script_name
-            else:
-                checkscript = settings.default_python_script_name
-        return checkscript
 
     def get_content_info(self):
         self._group_name = get_user_input(settings.group_name, any_input=True)
@@ -193,14 +182,15 @@ class UIHelper(object):
                 self.refresh_content = True
         else:
             os.makedirs(self.get_content_path())
-        checkscript = self.get_script_type()
-        if UIHelper.check_path(os.path.join(self.get_content_path(), checkscript),
-                               settings.check_path % checkscript) is None:
+
+        self.ask_for_script_type()
+        checkscript = self.get_check_script()
+        if UIHelper.check_path(
+                os.path.join(self.get_content_path(), checkscript),
+                settings.check_path % checkscript) is None:
             self.check_script = False
-        self.content_dict['check_script'] = checkscript
-        solution = get_user_input(settings.solution_text, any_input=True)
-        if solution is True:
-            solution = settings.default_solution_name
+
+        solution = self.get_solution_file()
         if UIHelper.check_path(os.path.join(self.get_content_path(), solution),
                                settings.check_path % solution) is None:
             self.solution_file = False
@@ -221,8 +211,6 @@ class UIHelper(object):
         content_title: Bacula Backup Software
         author: Petr Hracek <phracek@redhat.com>
         content_description: This module verifies the directory permissions for the Bacula service.
-        solution: bacula.txt
-        check_script: check.sh
         applies_to: bacula-common
         :return:
         """
@@ -232,8 +220,8 @@ class UIHelper(object):
             if val is not None:
                 config.set(preupgSettings.prefix, key, val)
 
-        self.content_ini = self.get_content_name() + '.ini'
-        ini_path = os.path.join(self.get_content_path(), self.get_content_ini_file())
+        ini_path = os.path.join(self.get_content_path(),
+                                self.get_content_ini_file())
         UIHelper.write_config_to_file(ini_path, config)
 
     def _create_check_script(self):

@@ -30,9 +30,9 @@ SCE = "http://open-scap.org/page/SCE"
 
 
 class XCCDFCompose(object):
-    dir_name = ""
-    result_dir = ""
-
+    """
+    Prepare result directory and take care of creating all-xccdf.xml file
+    """
     def __init__(self, argument):
         """
         Specify dirname with the on content
@@ -49,16 +49,28 @@ class XCCDFCompose(object):
             shutil.rmtree(self.dir_name)
 
     def generate_xml(self, generate_from_ini=True):
+        """
+        Copy files to result directory and if specified generate all-xccdf.xml
+        file
+
+        @param {bool} generate_from_ini - True if xccdf-compose tool is used,
+            decide if all-xccdf.xml file will(True) be created or not(False)
+        @throws {IOError} - when creation of all-xccdf.xml file fails
+        @return {int} - 0 success
+                       !0 error
+        """
         try:
             ModuleSetUtils.get_module_set_os_versions(self.result_dir)
         except EnvironmentError as err:
             sys.stderr.write("{0}\n".format(str(err)))
             return ReturnValues.SCENARIO
 
+        # e.g. /root/preupgrade/RHEL6_7 -> /root/preupgrade/RHEL6_7-results
         dir_util.copy_tree(self.result_dir, self.dir_name)
+        # create content for all-xccdf.xml file as ElementTree object
         target_tree = ComposeXML.run_compose(
             self.dir_name, generate_from_ini=generate_from_ini)
-
+        # path where all-xccdf.xml is going to be generated
         report_filename = os.path.join(self.dir_name, settings.content_file)
         if generate_from_ini:
             try:
@@ -216,6 +228,27 @@ class ComposeXML(object):
 
     @staticmethod
     def repath_group_xml_tree(source_dir, new_base_dir, group_tree):
+        """
+        Fix href attribute inside <check-content-ref> for each
+        XML Element module
+
+        @param {str} source_dir - directory where module is located e.g.
+            /root/preupgrade/RHEL6_7-results/backup/bacula
+        @param {str} new_base_dir - base directory e.g.
+            /root/preupgrade/RHEL6_7-results
+        @param {dict} group_tree - if source_dir is module set directory it
+            has all modules which are inside this directory, e.g.
+            source_dir: /root/preupgrade/RHEL6_7-results/backup
+            group_tree: {bacula: (<Element {bacula}>, {})}
+
+        @return None
+
+        @example
+        from:
+            <ns0:check-content-ref href="check" />
+        to:
+            <ns0:check-content-ref href="backup/bacula/check" />
+        """
         for f, t in iter(group_tree.items()):
             tree, subgroups = t
 

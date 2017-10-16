@@ -16,8 +16,7 @@ from preupg import settings
 from preupg.xmlgen.xml_utils import XmlUtils
 from preupg.xmlgen.oscap_group_xml import OscapGroupXml
 from preupg.utils import FileHelper
-from preupg.xml_manager import html_escape, html_escape_string
-from preupg.exception import MissingFileInContentError, MissingTagsIniFileError
+from preupg.xml_manager import html_escape
 try:
     import base
 except ImportError:
@@ -85,7 +84,7 @@ class TestXMLCompose(base.TestCase):
     def test_unicode_script_author(self):
         """Test processing of non-ascii characters for author section"""
         u_author = b'Petr Stod\xc5\xaflka'.decode(settings.defenc)
-        script_file = os.path.join(self.result_dir, "unicode", "dummy_unicode.sh")
+        script_file = os.path.join(self.result_dir, "unicode", "check")
         settings.autocomplete = True
         self.target_tree = None
         try:
@@ -124,34 +123,32 @@ class TestScriptGenerator(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.txt"
-        self.check_script = "check_script.sh"
         self.loaded_ini = {}
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': ' some content description',
                          'author': 'test <test@redhat.com>',
-                         'config_file': '/etc/named.conf',
-                         'check_script': self.check_script,
-                         'solution': self.test_solution}
+                         'config_file': '/etc/named.conf'
+                         }
         self.check_sh = """#!/bin/bash
 
 #END GENERATED SECTION
 
 #This is testing check script
  """
-        check_name = os.path.join(self.dirname, self.check_script)
+        check_name = os.path.join(self.dirname, settings.check_script)
         FileHelper.write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
-        test_solution_name = os.path.join(self.dirname, self.test_solution)
+        test_solution_name = os.path.join(self.dirname, settings.solution_txt)
         FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
     def _return_check(self, text):
-        content = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        content = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         found = [x for x in content if x.startswith(text)]
         return found
 
@@ -223,15 +220,11 @@ class TestXML(base.TestCase):
         os.makedirs(self.dirname)
         self.filename = os.path.join(self.dirname, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.txt"
-        self.check_script = "check_script.sh"
         self.loaded_ini = {}
         test_ini = {'content_title': 'Testing content title',
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
@@ -242,14 +235,14 @@ class TestXML(base.TestCase):
 
 #This is testing check script
  """
-        check_name = os.path.join(self.dirname, self.check_script)
+        check_name = os.path.join(self.dirname, settings.check_script)
         FileHelper.write_to_file(check_name, "wb", self.check_sh)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
 
         self.solution_text = """
 A solution text for test suite"
 """
-        test_solution_name = os.path.join(self.dirname, self.test_solution)
+        test_solution_name = os.path.join(self.dirname, settings.solution_txt)
         FileHelper.write_to_file(test_solution_name, "wb", self.solution_text)
         os.chmod(check_name, stat.S_IEXEC | stat.S_IRWXG | stat.S_IRWXU)
         self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
@@ -269,7 +262,7 @@ A solution text for test suite"
         self.assertTrue(self.rule)
 
     def test_xml_rule_id(self):
-        rule_id = [x for x in self.rule if '<Rule id="xccdf_preupg_rule_test_check_script" selected="true">' in x]
+        rule_id = [x for x in self.rule if '<Rule id="xccdf_preupg_rule_test_check" selected="true">' in x]
         self.assertTrue(rule_id)
 
     def test_xml_profile_id(self):
@@ -285,29 +278,22 @@ A solution text for test suite"
         self.assertTrue(conf_file)
 
     def test_xml_fix_text(self):
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG</fixtext>" in x]
         self.assertTrue(fix_text)
 
     def test_xml_solution_type_text(self):
-        self.loaded_ini[self.filename]['solution_type'] = "text"
         self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
                                   self.loaded_ini)
         self.rule = self.xml_utils.prepare_sections()
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_TEXT</fixtext>" in x]
+        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG</fixtext>" in x]
         self.assertTrue(fix_text)
 
-    def test_xml_solution_type_html(self):
-        self.loaded_ini[self.filename]['solution_type'] = "html"
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dirname,
-                                  self.loaded_ini)
-        self.rule = self.xml_utils.prepare_sections()
-        fix_text = [x for x in self.rule if "<fixtext>_test_SOLUTION_MSG_HTML</fixtext>" in x]
-        self.assertTrue(fix_text)
 
     def test_check_script_author(self):
         settings.autocomplete = True
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         author = [x for x in lines if "test <test@redhat.com>" in x]
         self.assertTrue(author)
 
@@ -318,7 +304,7 @@ A solution text for test suite"
 
     def test_xml_current_directory(self):
         self.rule = self.xml_utils.prepare_sections()
-        cur_directory = [x for x in self.rule if '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_script_state_current_directory" />' in x]
+        cur_directory = [x for x in self.rule if '<check-export export-name="CURRENT_DIRECTORY" value-id="xccdf_preupg_value_test_check_state_current_directory" />' in x]
         self.assertTrue(cur_directory)
 
     def _create_temporary_dir(self):
@@ -343,8 +329,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -371,8 +355,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -399,8 +381,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed',
@@ -425,8 +405,6 @@ A solution text for test suite"
                     'content_description': ' some content description',
                     'author': 'test <test@redhat.com>',
                     'config_file': '/etc/named.conf',
-                    'check_script': self.check_script,
-                    'solution': self.test_solution,
                     'applies_to': 'test',
                     'requires': 'bash',
                     'binary_req': 'sed'}
@@ -447,31 +425,34 @@ A solution text for test suite"
 
     def test_xml_check_script_reference(self):
         self.rule = self.xml_utils.prepare_sections()
-        check_script_reference = [x for x in self.rule if '<check-content-ref href="check_script.sh" />' in x]
+        check_script_reference = [x for x in self.rule if '<check-content-ref href="check" />' in x]
         self.assertTrue(check_script_reference)
 
     def test_values_id(self):
         self.rule = self.xml_utils.prepare_sections()
-        value_current_dir = [x for x in self.rule if '<Value id="xccdf_preupg_value_test_check_script_state_current_directory"' in x]
+        value_current_dir = [x for x in self.rule if '<Value id="xccdf_preupg_value_test_check_state_current_directory"' in x]
         self.assertTrue(value_current_dir)
         value_current_dir_set = [x for x in self.rule if '<value>SCENARIO/test</value>' in x]
         self.assertTrue(value_current_dir_set)
 
     def test_check_script_applies_to(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         applies = [x for x in lines if 'check_applies_to "test"' in x]
         self.assertTrue(applies)
 
     def test_check_script_common(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         common = [x for x in lines if '. /usr/share/preupgrade/common.sh' in x]
         self.assertTrue(common)
 
     def test_check_script_requires(self):
         self.rule = self.xml_utils.prepare_sections()
-        lines = FileHelper.get_file_content(os.path.join(self.dirname, self.check_script), "rb", method=True)
+        lines = FileHelper.get_file_content(os.path.join(
+            self.dirname, settings.check_script), "rb", method=True)
         check_rpm_to = [x for x in lines if 'check_rpm_to "bash" "sed"' in x]
         self.assertTrue(check_rpm_to)
 
@@ -497,14 +478,10 @@ class TestIncorrectINI(base.TestCase):
         os.makedirs(self.dir_name)
         self.filename = os.path.join(self.dir_name, 'test.ini')
         self.rule = []
-        self.test_solution = "test_solution.sh"
-        self.check_script = "check_script.sh"
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
                          'author': 'test <test@redhat.com>',
                          'config_file': '/etc/named.conf',
-                         'check_script': self.check_script,
-                         'solution': self.test_solution,
                          'applies_to': 'test'
                          }
         solution_text = """
@@ -516,54 +493,13 @@ A solution text for test suite"
 
 #This is testing check script
  """
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.test_solution), "wb", solution_text)
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", check_sh)
+        FileHelper.write_to_file(os.path.join(
+            self.dir_name, settings.solution_txt), "wb", solution_text)
+        FileHelper.write_to_file(os.path.join(
+            self.dir_name, settings.check_script), "wb", check_sh)
 
     def tearDown(self):
         shutil.rmtree(self.dir_name)
-
-    def test_missing_tag_check_script(self):
-        """Basic test for whole program"""
-        self.test_ini.pop('check_script', None)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_missing_tag_solution_script(self):
-        """Test of missing tag 'solution' - MissingTagsIniFileError should be raised"""
-        self.test_ini.pop('solution', None)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingTagsIniFileError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_file_solution_not_exists(self):
-        """Test of missing 'solution' file - IOError should be raised"""
-        self.test_ini['solution'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_file_check_script_not_exists(self):
-        """Test of missing 'check_script' file"""
-        self.test_ini['check_script'] = "this_should_be_unexpected_file.txt"
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
-
-    def test_check_script_is_directory(self):
-        """
-        Directory as input instead of regular file is incorrect input
-        Tests issue #29
-        """
-        self.test_ini['check_script'] = '.'
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(IOError, lambda: list(self.xml_utils.prepare_sections()))
 
     def test_incorrect_tag(self):
         """
@@ -576,16 +512,6 @@ A solution text for test suite"
         FileHelper.write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.root_dir_name, self.dir_name)
         self.assertRaises(configparser.ParsingError, oscap.find_all_ini)
-
-    def test_secret_check_script(self):
-        """Check occurrence of secret file for check script"""
-        self.test_ini['check_script'] = '.minicheck'
-        text = """#!/usr/bin/sh\necho 'ahojky'\n"""
-        FileHelper.write_to_file(os.path.join(self.dir_name, self.check_script), "wb", text)
-        self.loaded_ini[self.filename] = self.test_ini
-        self.xml_utils = XmlUtils(self.root_dir_name, self.dir_name,
-                                  self.loaded_ini)
-        self.assertRaises(MissingFileInContentError, lambda: list(self.xml_utils.prepare_sections()))
 
 
 class TestGroupXML(base.TestCase):
@@ -625,35 +551,28 @@ class HTMLEscapeTest(base.TestCase):
 
     """Testing of right transform of unsafe characters to their entities"""
 
-    def test_basic(self):
-        """Basic test with quotation"""
-        input_char = ['asd', '<qwe>', "this 'is' quoted"]
-        output = html_escape(input_char)
-        expected_output = ['asd', '&lt;qwe&gt;', 'this &apos;is&apos; quoted']
-        self.assertEqual(output, expected_output)
-
     def test_basic_string(self):
         """Test if single string is escaped well"""
         input_char = "asd < > &"
         expected_output = "asd &lt; &gt; &amp;"
-        output = html_escape_string(input_char)
+        output = html_escape(input_char)
         self.assertEqual(output, expected_output)
 
     def test_all(self):
         """Test if list of strings is escaped well"""
-        tmp_input = ['a<', 'b>', "x'x", 'y"', 'z&z']
+        tmp_input = "a<b>x'xyz&z"
         output = html_escape(tmp_input)
-        expected_ouput = ['a&lt;', 'b&gt;', 'x&apos;x', 'y&quot;', 'z&amp;z']
+        expected_ouput = 'a&lt;b&gt;x&apos;xyz&amp;z'
         self.assertEqual(output, expected_ouput)
 
     def test_amp_expand(self):
         """Test whether ampersand is not being expanded multiple times"""
-        input_char = ['asd<>&']
-        expected_output = ['asd&lt;&gt;&amp;']
+        input_char = 'asd<>&'
+        expected_output = 'asd&lt;&gt;&amp;'
         output = html_escape(input_char)
         self.assertEqual(output, expected_output)
-        input_multi_char = ['asd<><>&&']
-        expected_multi_output = ['asd&lt;&gt;&lt;&gt;&amp;&amp;']
+        input_multi_char = 'asd<><>&&'
+        expected_multi_output = 'asd&lt;&gt;&lt;&gt;&amp;&amp;'
         output_multi = html_escape(input_multi_char)
         self.assertEqual(output_multi, expected_multi_output)
 

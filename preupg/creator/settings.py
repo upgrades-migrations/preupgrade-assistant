@@ -22,13 +22,8 @@ from preupg.script_api import *
 """
 default_group = 'system'
 default_module = 'packages'
-default_bash_script_name = 'check.sh'
-default_python_script_name = 'check.py'
-default_solution_name = 'solution.txt'
 group_name = 'Specify the group name which the module belongs to [%s]:' % default_group
 content_name = 'Specify the module name which will be created [%s]:' % default_module
-check_script = "Specify the script name which will be used for the assessment: [%s]"
-solution_text = "Specify the solution file which will be shown in the report: [%s]" % default_solution_name
 content_title = "Specify the module title:"
 content_desc_text = "Specify the module description:"
 upgrade_path = "Specify the name of the module set directory in which the module will be created:"

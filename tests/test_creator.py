@@ -10,6 +10,7 @@ try:
 except ImportError:
     import tests.base as base
 
+from preupg import settings
 from preupg.creator import ui_helper
 from preupg.creator.ui_helper import UIHelper
 from preupg.utils import FileHelper
@@ -30,7 +31,7 @@ class TestCreator(base.TestCase):
     upgrade_dir = ""
     puh = None
     group_name = "foobar_group"
-    content_name = "foobar_content"
+    content_name = settings.module_ini
     content_dict = {}
 
     class Identity(base.MockFunction):
@@ -49,8 +50,6 @@ class TestCreator(base.TestCase):
         self.puh._content_name = self.content_name
         self.puh.check_script = True
         self.puh.solution_file = True
-        self.content_dict['check_script'] = "foobar_check_script.sh"
-        self.content_dict['solution'] = "foobar_solution.txt"
         self.content_dict['content_title'] = "foobar_test_title"
         self.content_dict['content_description'] = "Foobar content test description"
         self.puh.content_dict = self.content_dict
@@ -67,16 +66,15 @@ class TestCreator(base.TestCase):
         self.puh.script_type = "sh"
         self.puh.prepare_content_env()
         self.puh.create_final_content()
-        content_ini = os.path.join(self.puh.get_content_path(), self.puh.get_content_ini_file())
+        content_ini = os.path.join(self.puh.get_content_path(),
+                                   self.puh.get_content_ini_file())
         self.assertEqual(content_ini, os.path.join(self.upgrade_dir,
                                                    self.group_name,
                                                    self.content_name,
-                                                   self.content_name + '.ini'))
+                                                   self.content_name))
         lines = load_file(content_ini)
         expected_ini = ['[preupgrade]',
-                        'check_script = foobar_check_script.sh',
                         'content_description = Foobar content test description',
-                        'solution = foobar_solution.txt',
                         'content_title = foobar_test_title',
                         '']
         self.assertEqual(expected_ini.sort(), lines.sort())

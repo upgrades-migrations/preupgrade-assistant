@@ -95,7 +95,7 @@ UPGRADE=$XCCDF_VALUE_UPGRADE
 #
 # Variable which referes to solution file provided by module
 #
-SOLUTION_FILE=$CURRENT_DIRECTORY/$XCCDF_VALUE_SOLUTION_FILE
+SOLUTION_FILE=$CURRENT_DIRECTORY/solution.txt
 
 #
 # Directory which is used for kickstart generation

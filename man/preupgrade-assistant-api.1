@@ -12,8 +12,6 @@ API provides a set of functions which can be used for better handling of your da
 
 \fBcheck_applies_to\fP - The function can be used to detect a specific RPM package. If the RPM package does not exist, check the script exit with the \fBexit_not_applicable\fP return code.
 
-\fBsolution_file\fP - The function adds a message to the solution file defined in the INI file.
-
 \fBbackup_config_file\fP - The function backs up a config file to the \fB/root/preupgrade\fP directory.
 
 \fBservice_is_enabled\fP - The function checks if the service provided by the chkconfig command is enabled.
@@ -121,8 +119,6 @@ Ini file example
 \& [preupgrade]
 \& content_title: <a title>
 \& content_description: <a description of the module>
-\& check_script: <a check script name>
-\& solution_file: <a solution file name which advises the administrator in case of problems>
 \& author: <the author's name and email>
 \& applies_to: <a package name (RPM) which is tested>
 .fi
