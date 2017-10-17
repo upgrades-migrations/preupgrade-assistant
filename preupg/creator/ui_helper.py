@@ -10,7 +10,7 @@ import shutil
 import sys
 
 from distutils.util import strtobool
-from preupg.utils import FileHelper, ModuleSetUtils
+from preupg.utils import FileHelper
 from preupg.creator import settings
 from preupg import settings as preupgSettings
 
@@ -175,10 +175,14 @@ class UIHelper(object):
             self._content_name = settings.default_module
         self.prepare_content_env()
         if os.path.exists(self.get_content_path()):
-            message = "The module %s already exists.\nDo you want to overwrite them?" % os.path.join(self.upgrade_path,
-                                                                                                  self.content_path)
-            if UIHelper.check_path(os.path.join(self.upgrade_path, self.content_path), message):
-                # User would like to overwrite the content. We will delete them and and make newerone.
+            message = "The module %s already exists.\n" \
+                      "Do you want to overwrite it?" \
+                      % os.path.join(self.upgrade_path,
+                                     self.content_path)
+            if UIHelper.check_path(os.path.join(self.upgrade_path,
+                                                self.content_path),
+                                   message):
+                # User would like to overwrite the module
                 self.refresh_content = True
         else:
             os.makedirs(self.get_content_path())
@@ -194,7 +198,6 @@ class UIHelper(object):
         if UIHelper.check_path(os.path.join(self.get_content_path(), solution),
                                settings.check_path % solution) is None:
             self.solution_file = False
-        self.content_dict['solution'] = solution
 
         self.content_dict['content_title'] = UIHelper\
             .ask_mandatory_string(settings.content_title,
@@ -329,6 +332,9 @@ class UIHelper(object):
 
     @staticmethod
     def check_path(path, msg):
+        """Return None when the path exists and user answers No to the
+        msg question.
+        """
         if os.path.exists(path):
             choice = get_user_input(msg)
             if not choice:
