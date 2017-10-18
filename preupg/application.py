@@ -696,6 +696,38 @@ class Application(object):
                 log_message("%s" % dir_name)
             return 0
 
+        if self.conf.riskcheck:
+            result_xml_path = os.path.join(settings.assessment_results_dir,
+                                           settings.xml_result_name)
+            if not os.path.exists(result_xml_path):
+                log_message("System assessment needs to be performed first.")
+                return ReturnValues.PREUPG_BEFORE_RISKCHECK
+            return XccdfHelper.check_inplace_risk(result_xml_path,
+                                                  self.conf.verbose)
+
+        if self.conf.upload and self.conf.results:
+            if not self.upload_results():
+                return ReturnValues.SEND_REPORT_TO_UI
+            return 0
+
+        if self.conf.cleanup:
+            if not self.executed_under_root():
+                return ReturnValues.ROOT
+            self.clean_preupgrade_environment()
+            return 0
+
+        if self.conf.text:
+            # Test whether w3m, lynx and elinks packages are installed
+            found = False
+            for pkg in SystemIdentification.get_convertors():
+                if xml_manager.get_package_version(pkg):
+                    self.text_convertor = pkg
+                    found = True
+                    break
+            if not found:
+                log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
+                return ReturnValues.MISSING_TEXT_CONVERTOR
+
         if not self.conf.scan and not self.conf.contents and \
                 not self.conf.list_rules:
             self.conf.scan = self._get_default_module_set()
@@ -712,72 +744,38 @@ class Application(object):
             log_message('\n'.join(rules))
             return 0
 
-        if self.conf.upload and self.conf.results:
-            if not self.upload_results():
-                return ReturnValues.SEND_REPORT_TO_UI
-            return 0
-
         if self.conf.mode and self.conf.select_rules:
             log_message(settings.options_not_allowed)
             return ReturnValues.MODE_SELECT_RULES
 
-        if not self.conf.riskcheck and not self.conf.cleanup:
-            # If force option is not mentioned and user selects NO then exit
-            if not self.conf.force:
-                text = ""
-                if self.conf.dst_arch:
-                    correct_option = [x for x in settings.migration_options
-                                      if self.conf.dst_arch == x]
-                    if not correct_option:
-                        sys.stderr.write(
-                            "Error: Specify correct value for --dst-arch"
-                            " option.\nValid are: %s.\n"
-                            % ", ".join(settings.migration_options)
-                        )
-                        return ReturnValues.INVALID_CLI_OPTION
-                if SystemIdentification.get_arch() == "i386" or \
-                        SystemIdentification.get_arch() == "i686":
-                    if not self.conf.dst_arch:
-                        text = '\n' + settings.migration_text
-                logger_debug.debug("Architecture '%s'. Text '%s'.",
-                                   SystemIdentification.get_arch(), text)
-                if not show_message(settings.warning_text + text):
-                    # User does not want to continue
-                    return ReturnValues.USER_ABORT
-
-        if self.conf.text:
-            # Test whether w3m, lynx and elinks packages are installed
-            found = False
-            for pkg in SystemIdentification.get_convertors():
-                if xml_manager.get_package_version(pkg):
-                    self.text_convertor = pkg
-                    found = True
-                    break
-            if not found:
-                log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
-                return ReturnValues.MISSING_TEXT_CONVERTOR
-
-        if os.geteuid() != 0:
-            print("Need to be root", end="\n")
-            if not self.conf.debug:
-                return ReturnValues.ROOT
-
-        if self.conf.cleanup:
-            self.clean_preupgrade_environment()
-            return 0
+        # If force option is not mentioned and user selects NO then exit
+        if not self.conf.force:
+            text = ""
+            if self.conf.dst_arch:
+                correct_option = [x for x in settings.migration_options
+                                  if self.conf.dst_arch == x]
+                if not correct_option:
+                    sys.stderr.write(
+                        "Error: Specify correct value for --dst-arch"
+                        " option.\nValid are: %s.\n"
+                        % ", ".join(settings.migration_options)
+                    )
+                    return ReturnValues.INVALID_CLI_OPTION
+            if SystemIdentification.get_arch() == "i386" or \
+                    SystemIdentification.get_arch() == "i686":
+                if not self.conf.dst_arch:
+                    text = '\n' + settings.migration_text
+            logger_debug.debug("Architecture '%s'. Text '%s'.",
+                               SystemIdentification.get_arch(), text)
+            if not show_message(settings.warning_text + text):
+                # User does not want to continue
+                return ReturnValues.USER_ABORT
 
         self.openscap_helper = OpenSCAPHelper(self.conf.assessment_results_dir,
                                               self.conf.result_prefix,
                                               self.conf.xml_result_name,
                                               self.conf.html_result_name,
                                               self.content)
-        if self.conf.riskcheck:
-            if not os.path.exists(self.openscap_helper.get_default_xml_result_path()):
-                log_message("The 'preupg' command was not run yet. Run it to check for possible risks.")
-                return ReturnValues.PREUPG_BEFORE_RISKCHECK
-            return_val = XccdfHelper.check_inplace_risk(self.openscap_helper.get_default_xml_result_path(),
-                                                        self.conf.verbose)
-            return return_val
 
         if self.conf.scan:
             self.content = os.path.join(self.conf.source_dir,
@@ -796,6 +794,9 @@ class Application(object):
             # to get content-users dir
             content_dir = self.conf.contents[:self.conf.contents.find(self.get_scenario())]
             self.conf.source_dir = os.path.join(os.getcwd(), content_dir)
+
+        if not self.executed_under_root():
+            return ReturnValues.ROOT
 
         if self.conf.scan or self.conf.contents:
             if not os.path.exists(settings.openscap_binary):
@@ -824,3 +825,10 @@ class Application(object):
         log_message('Nothing to do. Give me a task, please.')
         self.conf.settings[2].parser.print_help()
         return 0
+
+    def executed_under_root(self):
+        if os.geteuid() != 0:
+            print("Need to be root", end="\n")
+            if not self.conf.debug:
+                return False
+        return True
