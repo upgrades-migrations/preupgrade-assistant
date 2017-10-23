@@ -34,13 +34,12 @@ def setup_preupg_environment(args, content, tmp_dir, mode=None):
     a = Application(Conf(dc, settings, cli))
     # Prepare all variables for test
     a.conf.source_dir = os.getcwd()
-    a.content = a.conf.contents
-    a.basename = os.path.basename(a.content)
+    a.determine_module_set_location()
     a.openscap_helper = OpenSCAPHelper(a.conf.assessment_results_dir,
                                        a.conf.result_prefix,
                                        a.conf.xml_result_name,
                                        a.conf.html_result_name,
-                                       a.content)
+                                       a.all_xccdf_xml_path)
     return a
 
 
@@ -182,10 +181,10 @@ class TestCLI(base.TestCase):
             "riskcheck": True,
         }
         dc = DummyConf(**conf)
-        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--list-contents-set", "--verbose", "--text",
-                   "--contents", "content/FOOBAR6_7", "--cleanup", "--mode", "upgrade",
-                   "--select-rules", "abc", "--list-rules", "--force",
-                   "--riskcheck"])
+        cli = CLI(["--scan", "FOOBAR6_7", "--skip-common", "--cleanup",
+                   "--list-contents-set", "--verbose", "--text", "--force",
+                   "--mode", "upgrade", "--select-rules", "abc", "--riskcheck",
+                   "--list-rules"])
         a = Application(Conf(cli.opts, dc, cli))
 
         self.assertTrue(a.conf.skip_common)
@@ -281,7 +280,8 @@ class TestModuleSet(base.TestCase):
         app.conf.source_dir = os.getcwd()
         app.content = app.conf.contents
         app.basename = os.path.basename(app.content)
-        self.assertEqual(app.get_scenario(), 'Modules')
+        app.determine_module_set_location()
+        self.assertEqual(app.module_set_dirname, 'Modules')
 
 
 class TestModuleSetConfigParse(base.TestCase):

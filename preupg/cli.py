@@ -42,6 +42,8 @@ class CLI(object):
             self.opts, self.args = self.parser.parse_args(args=args)
         else:
             self.opts, self.args = self.parser.parse_args()
+        
+        self.resolve_option_dependencies()
 
     def add_args(self):
         self.parser.add_option(
@@ -189,6 +191,11 @@ class CLI(object):
             action="store_true",
             help="Generate report with simpler style than the default."
         )
+
+    def resolve_option_dependencies(self):
+        if self.opts.scan and self.opts.contents:
+            raise OptionValueError("Use either --scan or --contents option,"
+                                   " not both.")
 
 
 if __name__ == '__main__':

@@ -139,8 +139,9 @@ class XccdfHelper(object):
         return return_val
 
     @staticmethod
-    def get_list_rules(scenario):
-        main_dir = os.path.join(settings.source_dir, scenario)
-        rules = FileHelper.get_file_content(os.path.join(main_dir, settings.file_list_rules), "rb", method=True)
+    def get_list_rules(all_xccdf_xml_path):
+        rules_filepath = os.path.join(os.path.dirname(all_xccdf_xml_path),
+                                      settings.file_list_rules)
+        rules = FileHelper.get_file_content(rules_filepath, "rb", method=True)
         rules = [x.strip() for x in rules]
         return rules
