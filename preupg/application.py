@@ -44,18 +44,21 @@ def fault_repr(self):
 Fault.__repr__ = fault_repr
 
 
-def list_contents(source_dir):
-    """Function returns a list of installed contents"""
-    content_dict = {}
+def get_installed_module_sets(source_dir):
+    """Return a dictionary of installed module sets within a directory. Format
+    of the dictionary:
+      {<module set root dir name>: <all xccdf xml full path>}
+    """
+    module_sets = {}
     is_dir = lambda x: os.path.isdir(os.path.join(source_dir, x))
     dirs = os.listdir(source_dir)
-    for dir_name in filter(is_dir, dirs):
-        full_dir_name = os.path.join(source_dir, dir_name,
-                                     settings.content_file)
-        if os.path.exists(full_dir_name):
-            logger_debug.info('%s', dir_name)
-            content_dict[dir_name] = full_dir_name
-    return content_dict
+    for module_set_root_dir in filter(is_dir, dirs):
+        all_xccdf_xml_path = os.path.join(
+            source_dir, module_set_root_dir, settings.all_xccdf_xml_filename)
+        if os.path.exists(all_xccdf_xml_path):
+            logger_debug.info('%s', module_set_root_dir)
+            module_sets[module_set_root_dir] = all_xccdf_xml_path
+    return module_sets
 
 
 def show_message(message):
@@ -105,7 +108,6 @@ class Application(object):
         self.third_party = ""
         self.assessment_dir = None
         self._set_old_report_style()
-
 
     def _add_report_log_file(self):
         """
@@ -158,7 +160,7 @@ class Application(object):
             # in case that OpenSCAP version is lower then 1.2.7, fallback
             # to the old (simple) report style.
             log_message("Generating simply styled report due to the "
-                        + "limitations of the installed OpenSCAP")
+                        "limitations of the installed OpenSCAP")
             self.old_report_style = True
         else:
             self.old_report_style = False
@@ -190,7 +192,6 @@ class Application(object):
                 url = self.conf.upload
             else:
                 url = self.conf.upload + '/'
-        message = ""
         try:
             proxy = xmlrpclib.ServerProxy(url)
             proxy.submit.ping()
@@ -275,13 +276,13 @@ class Application(object):
                                               self.assessment_dir)
 
         self.report_parser.add_global_tags(self.conf.assessment_results_dir,
-                                           self.get_proper_scenario(self.get_scenario()),
+                                           self.rename_custom_module_set(self.get_scenario()),
                                            self.conf.mode,
                                            self._devel_mode,
                                            self._dist_mode)
 
         self.report_parser.modify_result_path(self.conf.assessment_results_dir,
-                                              self.get_proper_scenario(self.get_scenario()),
+                                              self.rename_custom_module_set(self.get_scenario()),
                                               self.conf.mode)
         # Execute assessment
         self.scanning_progress = ScanProgress(self.get_total_check(), self.conf.debug)
@@ -406,7 +407,6 @@ class Application(object):
         # Copy postupgrade.d special files
         PostupgradeHelper.special_postupgrade_scripts(self.conf.assessment_results_dir)
         PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
-        
 
     def set_third_party(self, third_party):
         self.third_party = third_party
@@ -418,13 +418,15 @@ class Application(object):
         3rd party contents are stored in
         /usr/share/preupgrade/RHEL6_7/3rdparty directory
         """
-        for third_party, content in list_contents(dir_name).items():
-            third_party_name = self.third_party = third_party
-            log_message("Execution {0} assessments:".format(third_party))
-            self.report_parser.reload_xml(content)
-            self.content = content
+        for module_set, all_xccdf_xml_path in \
+                get_installed_module_sets(dir_name):
+            third_party_name = self.third_party = module_set
+            log_message("Execution {0} assessments:".format(module_set))
+            self.report_parser.reload_xml(all_xccdf_xml_path)
+            self.content = all_xccdf_xml_path
             self.run_scan_process()
-            self.report_data[third_party_name] = self.scanning_progress.get_output_data()
+            self.report_data[third_party_name] = \
+                self.scanning_progress.get_output_data()
             self.prepare_xml_for_html()
             self.generate_html_or_text()
             self.update_xml_after_html_generated()
@@ -440,11 +442,10 @@ class Application(object):
         )
         return cmd
 
-    def get_proper_scenario(self, scenario):
-        if not self.conf.contents:
-            return scenario
-        scenario = scenario.replace('-results', '')
-        return scenario
+    def rename_custom_module_set(self, module_set_dirname):
+        if self.conf.contents:
+            module_set_dirname = module_set_dirname.replace('-results', '')
+        return module_set_dirname
 
     def prepare_scan_system(self):
         """Function cleans previous scan and creates relevant directories"""
@@ -487,7 +488,8 @@ class Application(object):
         """Function generates report"""
         scenario = self.get_scenario()
         scenario_path = os.path.join(self.conf.source_dir, scenario)
-        self.assessment_dir = os.path.join(self.conf.assessment_results_dir, self.get_proper_scenario(scenario))
+        self.assessment_dir = os.path.join(self.conf.assessment_results_dir,
+                                           self.rename_custom_module_set(scenario))
         dir_util.copy_tree(scenario_path, self.assessment_dir)
         # Try copy directory with contents to /root/preupgrade
         # Call xccdf_compose API for generating all-xccdf.xml
@@ -513,7 +515,7 @@ class Application(object):
         Note that exported environment variables need to be reviewed; current
         set is purely to make previous solution work and prevent regression.
         """
-        scenario = self.get_proper_scenario(self.get_scenario())
+        scenario = self.rename_custom_module_set(self.get_scenario())
         init = os.path.join(self.conf.source_dir, scenario, 'init')
         if os.access(init, os.F_OK):
             init_vars = {
@@ -538,7 +540,8 @@ class Application(object):
             if p.returncode or err.strip():
                 raise exception.ModuleSetInitError(p.returncode, err)
 
-    def copy_preupgrade_scripts(self, assessment_dir):
+    @staticmethod
+    def copy_preupgrade_scripts(assessment_dir):
         # Copy preupgrade-scripts directory from scenarvirtuio
         preupg_scripts = os.path.join(assessment_dir,
                                       settings.preupgrade_scripts_dir)
@@ -558,7 +561,7 @@ class Application(object):
         if ret_val != 0:
             return ret_val
         # Update source XML file in temporary directory
-        self.content = os.path.join(self.assessment_dir, settings.content_file)
+        self.content = os.path.join(self.assessment_dir, settings.all_xccdf_xml_filename)
         self.openscap_helper.update_variables(self.conf.assessment_results_dir,
                                               self.conf.result_prefix,
                                               self.conf.xml_result_name,
@@ -626,8 +629,7 @@ class Application(object):
             0: settings.risks_found_warning.format(path),
             1: settings.risks_found_warning.format(path),
             2: 'We have found some critical issues. In-place upgrade or migration is not advised.\n' +
-            "Read the file {0} for more details.".
-            format(path),
+               "Read the file {0} for more details.".format(path),
             3: 'We have found some error issues. In-place upgrade or migration is not advised.\n' +
                "Read the file {0} for more details.".format(path)
         }
@@ -664,8 +666,9 @@ class Application(object):
         else:
             self._devel_mode = 0
 
-    def _get_default_module_set(self):
-        available_module_set_dirs = list_contents(self.conf.source_dir)
+    def get_default_module_set_dirname(self):
+        available_module_set_dirs = get_installed_module_sets(
+            self.conf.source_dir)
         if not available_module_set_dirs:
             log_message("No modules found in the default directory (%s).\n"
                         " Either install a package with modules or use"
@@ -691,7 +694,7 @@ class Application(object):
 
         logger_debug.debug(version_msg)
         if self.conf.list_contents_set:
-            for dir_name, dummy_content in iter(list_contents(
+            for dir_name, dummy_content in iter(get_installed_module_sets(
                     self.conf.source_dir).items()):
                 log_message("%s" % dir_name)
             return 0
@@ -725,12 +728,13 @@ class Application(object):
                     found = True
                     break
             if not found:
-                log_message(settings.converter_message.format(' '.join(SystemIdentification.get_convertors())))
+                log_message(settings.converter_message.format(
+                    ' '.join(SystemIdentification.get_convertors())))
                 return ReturnValues.MISSING_TEXT_CONVERTOR
 
         if not self.conf.scan and not self.conf.contents and \
                 not self.conf.list_rules:
-            self.conf.scan = self._get_default_module_set()
+            self.conf.scan = self.get_default_module_set_dirname()
             if not self.conf.scan:
                 return ReturnValues.SCENARIO
 
@@ -780,7 +784,7 @@ class Application(object):
         if self.conf.scan:
             self.content = os.path.join(self.conf.source_dir,
                                         self.conf.scan,
-                                        settings.content_file)
+                                        settings.all_xccdf_xml_filename)
             if not os.path.isdir(os.path.join(self.conf.source_dir,
                                               self.conf.scan)):
                 log_message("The module set '%s' is not installed.\nFor a list"

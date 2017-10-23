@@ -14,7 +14,7 @@ from preupg.utils import FileHelper, ModuleSetUtils
 from preupg.creator import settings
 from preupg import settings as preupgSettings
 
-from preupg.settings import content_file as ALL_XCCDF_XML
+from preupg.settings import all_xccdf_xml_filename as ALL_XCCDF_XML
 
 
 def get_user_input(message, default_yes=True, any_input=False):
