@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+from optparse import OptionValueError
 import sys
 import traceback
 from preupg.cli import CLI
@@ -12,10 +13,10 @@ from preupg.logger import logger_debug
 
 
 def main():
-    cli = CLI()
-    conf = Conf(cli.opts, settings, cli)
-    app = Application(conf)
     try:
+        cli = CLI()
+        conf = Conf(cli.opts, settings, cli)
+        app = Application(conf)
         return_code = app.run()
         logger_debug.debug("preupg returned '%s'" % return_code)
         return return_code
@@ -23,10 +24,12 @@ def main():
         sys.stderr.write("\nAssessment interrupted.\n")
         return settings.ReturnValues.USER_ABORT
     except Exception as ex:
-        if cli.opts.debug:
+        if 'cli' in locals() and cli.opts.debug:
             traceback.print_exc(file=sys.stderr)
         else:
             sys.stderr.write(str(ex) + "\n")
+        if isinstance(ex, OptionValueError):
+            return settings.ReturnValues.INVALID_CLI_OPTION
         return settings.ReturnValues.INTERNAL_EXCEPTION
 
 
