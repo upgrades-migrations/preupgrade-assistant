@@ -332,23 +332,6 @@ class DirHelper(object):
                 if fnmatch.fnmatch(f, pattern):
                     os.unlink(os.path.join(root, f))
 
-    @staticmethod
-    def get_upgrade_dir_path(dirname):
-        """
-        The function returns upgrade path dir like RHEL6_7
-
-        If /root/preupgrade/ dir contaings RHEL6_7 dir then
-        it return just RHEL6_7 dir.
-        This is used for get_module_set_os_versions
-        """
-        is_dir = lambda x: os.path.isdir(os.path.join(dirname, x))
-        dirs = os.listdir(dirname)
-        for d in filter(is_dir, dirs):
-            upgrade_path = [x for x in settings.preupgrade_dirs if d in x]
-            if not upgrade_path:
-                return d
-        return None
-
 
 class ProcessHelper(object):
 
