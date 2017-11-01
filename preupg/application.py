@@ -274,7 +274,8 @@ class Application(object):
     def run_scan_process(self):
         """Function scans the source system"""
         self.xml_mgr = xml_manager.XmlManager(self.conf.assessment_results_dir,
-                                              self.module_set_dirname)
+                                              self.module_set_copy_path
+                                              )
 
         self.report_parser.add_global_tags(self.conf.assessment_results_dir,
                                            self.rename_custom_module_set(
