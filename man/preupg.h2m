@@ -1,26 +1,20 @@
 # This file contains information (complement to the help message of the Preupgrade Assistant) that is to be used by help2man tool to generate a man page.
 # The following is a command to generate the man page:
-# help2man preupg --no-info -o preupg.1 -i preupg.h2m
+# help2man bin/preupg --no-info -o man/preupg.1 -i man/preupg.h2m
 
 [NAME]
 Preupgrade Assistant - advises on the feasibility of system upgrade or migration
 
 [SYNOPSIS]
-preupg [-h, --help]
+preupg [[-h|--help] | [--version] | [--cleanup] | [-l|--list-contents-set]]
 
-preupg [--version]
+preupg [-s|--scan MODULE_SET] | [-c|--contents ALL_XCCDF_PATH] [-d|--debug] [-S|--skip-common] [-m|--mode MODE] [--force] [--text] [--dst-arch ARCH] [--old-report-style] [--select-rules RULES] [-v|--verbose]
 
-preupg [-l, --list-contents-set]
+preupg --list-rules [[-s|--scan MODULE_SET] | [-c|--contents ALL_XCCDF_PATH]]
 
-preupg [-d, --debug] [-S, --skip-common] [-s, --scan MODULE_SET] [-m, --mode MODE] [--force] [--text] [--dst-arch ARCH] [-c, --contents ALL_XCCDF_PATH] [--old-report-style] [--select-rules] [-v, --verbose]
+preupg --riskcheck [-v|--verbose]
 
-preupg [--list-rules] [-s, --scan MODULE_SET]
-
-preupg [--riskcheck] [-v, --verbose]
-
-preupg [-u, --upload URL] [-r, --results TARBALL]
-
-preupg [--cleanup]
+preupg -u|--upload URL [-r|--results TARBALL]
 
 [DESCRIPTION]
 Preupgrade Assistant analyses the system to assess the feasibility of upgrading the system to a new major version. Such analysis includes a check for removed packages, packages replaced by partially incompatible packages, changes in libraries, users and groups, and various other services. A report of this analysis can help admins with the system upgrade by identification of potential troubles and by mitigating some of the incompatibilities. The data gathered by Preupgrade Assistant can be used for the in-place upgrade or migration of the system, where the migration means a new system installation that retains as much of the old system setup as possible.
@@ -50,7 +44,7 @@ Possible return codes are:
 
 27 - The /usr/share/preupgrade/data/preassessment/scripts.txt file is missing. The Preupgrade Assistant is not installed properly and needs to be reinstalled.
 
-28 - We have detected some troubles with sending the report to WEB-UI. Check if it is installed.
+28 - We have detected some troubles with sending the report to WEB-UI.
 
 29 - Internal problem.
 

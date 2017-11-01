@@ -82,8 +82,8 @@ common_scripts = os.path.join(data_dir, "preassessment", "scripts.txt")
 # Addons dir for 3rdparty contents
 add_ons = "3rdparty"
 
-# Default content file
-content_file = "all-xccdf.xml"
+# Default module set descriptor file
+all_xccdf_xml_filename = "all-xccdf.xml"
 
 # prefix of tag in xccdf files
 xccdf_tag = "xccdf_preupg_rule_"
