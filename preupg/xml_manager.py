@@ -89,15 +89,15 @@ class XmlManager(object):
     """
     Class operates with XML oscap result
     """
-    def __init__(self, assessment_result_dir, copied_module_set_dir):
+    def __init__(self, assessment_result_path, copied_module_set_path):
         """
-        assessment_result_dir .. directory where all results of the
-                                 assessment are stored
-        copied_module_set_dir .. module set directory copied for the assessment
-                                 to the assessment_result_dir
+        assessment_result_path .. path to the directory where all results of
+                                  the assessment are stored
+        copied_module_set_path .. path to the module set directory copied for
+                                 the assessment to the assessment_result_path
         """
-        self.assessment_result_dir = assessment_result_dir
-        self.copied_module_set_dir = copied_module_set_dir
+        self.assessment_result_path = assessment_result_path
+        self.copied_module_set_path = copied_module_set_path
         self.paths_to_all_modules = self.get_module_dirs()
         self.solution_texts = {}
 
@@ -106,7 +106,7 @@ class XmlManager(object):
         if not self.solution_texts:
             self.load_solution_texts()
 
-        orig_file = os.path.join(self.assessment_result_dir, report_path)
+        orig_file = os.path.join(self.assessment_result_path, report_path)
         report_content = FileHelper.get_file_content(orig_file, "rb")
 
         for solution_placeholer, solution_text in self.solution_texts.items():
@@ -119,7 +119,7 @@ class XmlManager(object):
         """Load solution texts into a dictionary."""
         for dir_name in self.paths_to_all_modules:
             section = dir_name.replace(
-                self.copied_module_set_dir, "").replace("/", "_")
+                self.copied_module_set_path, "").replace("/", "_")
             solution_placeholder = section + "_SOLUTION_MSG"
 
             logger_report.debug("Processing solution placeholder '%s'",
@@ -143,7 +143,7 @@ class XmlManager(object):
     def get_module_dirs(self):
         """Find all directories that contain a module."""
         paths_to_all_modules = []
-        for path, _, dir_files in os.walk(self.assessment_result_dir):
+        for path, _, dir_files in os.walk(self.assessment_result_path):
             # Each module has its INI file
             if settings.check_script in dir_files:
                 paths_to_all_modules.append(path)
