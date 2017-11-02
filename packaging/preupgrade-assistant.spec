@@ -74,6 +74,7 @@ Group:      System Environment/Libraries
 Requires:   %{name}
 Requires:   sqlite
 Requires:   mod_wsgi
+Requires:   httpd
 Requires:   %{name} = %{version}-%{release}
 
 %description ui
