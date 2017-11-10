@@ -1,20 +1,6 @@
 Preupgrade Assistant Purpose
 ----------------------------
-The Preupgrade Assistant performs an assessment of the system from
-the "upgradeability" point of view. Such an analysis includes checking for removed
-packages, packages replaced by partially incompatible packages, changes in
-libraries, users and groups and various services. The report of this analysis
-can help the admin with the in-place upgrade - by identifying potential
-troubles and by mitigating some of the incompatibilities. The data gathered
-by the Preupgrade Assistant can be used for "cloning" the system - a new,
-clean installation of the system, as close as possible to the old Red Hat Enterprise Linux setup.
-In addition, it provides some postupgrade scripts which are supposed to finish the
-migration after the installation of Red Hat Enterprise Linux 7 system.
-
-As the Preupgrade Assistant does not modify the assessed system directly
-(except storing information/logs), it is safe to use on any configuration.
-As the modules are not complete yet, a successful Preupgrade Assistant analysis
-does not necessarily mean that the in-place upgrade via redhat-upgrade-tool will succeed.
+The Preupgrade Assistant is a framework designed to run the Preupgrade Assistant modules, which analyze the system for possible in-place upgrade limitations. It is based on a modular system, with each module performing a separate test, checking for package removals, incompatible obsolete packages, changes in libraries, users, groups, services, or incompatibilities of command-line options or configuration files. It is able to execute post-upgrade scripts to finalize complex tasks after the system upgrade. Apart from performing the in-place upgrades, the Preupgrade Assistant is also capable of migrating the system. It then produces a report, which assists you in performing the upgrade itself by outlining potential problem areas and by offering suggestions about mitigating any possible incompatibilities. The Preupgrade Assistant utility is a Red Hat Upgrade Tool prerequisite for completing a successful in-place upgrade to the next major version of Red Hat Enterprise Linux.
 
 Preupgrade Assistant Usage
 --------------------------
