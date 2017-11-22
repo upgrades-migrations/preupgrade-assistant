@@ -9,15 +9,11 @@ os.environ['XCCDF_VALUE_TMP_PREUPGRADE'] = dirname
 os.environ['CURRENT_DIRECTORY'] = dirname
 os.environ['XCCDF_VALUE_REPORT_DIR'] = dirname
 os.environ['XCCDF_VALUE_CURRENT_DIRECTORY'] = os.path.join(os.path.dirname(__file__), "..")
-os.environ['XCCDF_RESULT_ERROR'] = "3"
-os.environ['XCCDF_RESULT_FAILED'] = "2"
-os.environ['XCCDF_RESULT_FAIL'] = "2"
-os.environ['XCCDF_RESULT_FIXED'] = "1"
-os.environ['XCCDF_RESULT_NEEDS_INSPECTION'] = "1"
-os.environ['XCCDF_RESULT_NEEDS_ACTION'] = "1"
-os.environ['XCCDF_RESULT_NOT_APPLICABLE'] = "10"
+os.environ['XCCDF_RESULT_FAIL'] = "102"
+os.environ['XCCDF_RESULT_ERROR'] = "103"
+os.environ['XCCDF_RESULT_FIXED'] = "109"
+os.environ['XCCDF_RESULT_NOT_APPLICABLE'] = "105"
 os.environ['XCCDF_VALUE_MODULE_PATH'] = "test_script_api"
-
 
 def suite():
     settings.log_dir = os.getcwd()

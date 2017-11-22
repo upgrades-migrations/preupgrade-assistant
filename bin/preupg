@@ -22,15 +22,15 @@ def main():
         return return_code
     except KeyboardInterrupt:
         sys.stderr.write("\nAssessment interrupted.\n")
-        return settings.ReturnValues.USER_ABORT
+        return settings.PreupgReturnCodes.USER_ABORT
     except Exception as ex:
         if 'cli' in locals() and cli.opts.debug:
             traceback.print_exc(file=sys.stderr)
         else:
             sys.stderr.write(str(ex) + "\n")
         if isinstance(ex, OptionValueError):
-            return settings.ReturnValues.INVALID_CLI_OPTION
-        return settings.ReturnValues.INTERNAL_EXCEPTION
+            return settings.PreupgReturnCodes.INVALID_CLI_OPTION
+        return settings.PreupgReturnCodes.INTERNAL_EXCEPTION
 
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ class TestPreupgDiff(base.TestCase):
 
         preupg_diff.run()
 
-        self.assertEqual(preupg_diff.print_difference_status.num_new_rules, 2)
+        self.assertEqual(preupg_diff.print_difference_status.num_new_rules, 1)
         self.assertEqual(preupg_diff.print_difference_status.num_diff_rules, 1)
 
     class stringify_children_mock(base.MockFunction):
@@ -57,9 +57,9 @@ class TestPreupgDiff(base.TestCase):
                                            "generated_results",
                                            "inplace_risk_test.xml"))
         self.assertEqual(preupg_diff.stringify_children.children_as_str,
-                         'str1<br xmlns:xhtml="http://www.w3.org/1999/xhtml/"'
+                         'HTML<br xmlns:xhtml="http://www.w3.org/1999/xhtml/"'
                          ' xmlns:ns0="http://checklists.nist.gov/xccdf/1.2"/>'
-                         'str2')
+                         'solution')
 
 
 def suite():

@@ -12,7 +12,7 @@ from preupg.xmlgen.oscap_group_xml import OscapGroupXml
 from preupg import settings
 from preupg import xccdf
 from preupg.logger import logger_debug
-from preupg.settings import ReturnValues
+from preupg.settings import PreupgReturnCodes
 from preupg.logger import log_message, logging
 
 try:
@@ -63,7 +63,7 @@ class XCCDFCompose(object):
             ModuleSetUtils.get_module_set_os_versions(self.result_dir)
         except EnvironmentError as err:
             sys.stderr.write("{0}\n".format(str(err)))
-            return ReturnValues.SCENARIO
+            return PreupgReturnCodes.SCENARIO
 
         # e.g. /root/preupgrade/RHEL6_7 -> /root/preupgrade/RHEL6_7-results
         dir_util.copy_tree(self.result_dir, self.dir_name)
