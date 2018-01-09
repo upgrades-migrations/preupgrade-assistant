@@ -79,9 +79,6 @@ common_name = "common"
 # path to file with definitions of common scripts
 common_scripts = os.path.join(data_dir, "preassessment", "scripts.txt")
 
-# Addons dir for 3rdparty contents
-add_ons = "3rdparty"
-
 # Default module set descriptor file
 all_xccdf_xml_filename = "all-xccdf.xml"
 

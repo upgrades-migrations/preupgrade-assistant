@@ -390,35 +390,6 @@ class SystemIdentification(object):
         except IndexError:
             return None
 
-    @staticmethod
-    def get_addon_variant():
-        """
-        Function returns a addons variant if available
-
-        83 - HighAvailability
-        85 - LoadBalancer
-        90 - ResilientStorage
-        92 - ScalableFileSystem
-        """
-        mapping_dict = {
-            '83.pem': 'HighAvailability',
-            '85.pem': 'LoadBalancer',
-            '90.pem': 'ResilientStorage',
-            '92.pem': 'ScalableFileSystem',
-        }
-        variant = ['optional']
-        pki_dir = "/etc/pki/product"
-        if os.path.isdir(pki_dir):
-            pem_files = [x for x in os.listdir(pki_dir) if x.endswith(".pem")]
-            for pem in pem_files:
-                # Curently we don't use the openssl command for getting certificate
-                # PEM numbers are not changed between versions.
-                #cmd = settings.openssl_command.format(os.path.join(pki_dir, pem))
-                #lines = run_subprocess(cmd, print_output=True, shell=True)
-                if pem in mapping_dict.keys():
-                    variant.append(mapping_dict[pem])
-        return variant
-
 
 class TarballHelper(object):
 
@@ -717,18 +688,16 @@ class PostupgradeHelper(object):
 
 class OpenSCAPHelper(object):
 
-    def __init__(self, result_dir, result_name, xml_result_name, html_result_name, content, third_party=None):
+    def __init__(self, result_dir, result_name, xml_result_name, html_result_name, content):
         self.binary = [settings.openscap_binary]
         self.result_dir = result_dir
-        self.third_party = third_party
         self.xml_result_name = xml_result_name
         self.html_result_name = html_result_name
         self.result_name = result_name
         self.content = content
 
-    def update_variables(self, result_dir, result_name, xml_result_name, html_result_name, content, third_party=None):
+    def update_variables(self, result_dir, result_name, xml_result_name, html_result_name, content):
         self.result_dir = result_dir
-        self.third_party = third_party
         self.xml_result_name = xml_result_name
         self.html_result_name = html_result_name
         self.result_name = result_name
@@ -810,22 +779,13 @@ class OpenSCAPHelper(object):
         command.append(FileHelper.check_xml(self.content))
         return command
 
-    @staticmethod
-    def get_third_party_name(third_party):
-        """Function returns correct third party name"""
-        if third_party != "" and not third_party.endswith("_"):
-            third_party += "_"
-        return third_party
-
     def get_default_xml_result_path(self):
         """Returns full XML result path"""
-        return os.path.join(self.result_dir,
-                            OpenSCAPHelper.get_third_party_name("") + self.xml_result_name)
+        return os.path.join(self.result_dir, self.xml_result_name)
 
     def get_default_html_result_path(self):
         """Returns full HTML result path"""
-        return os.path.join(self.result_dir,
-                            OpenSCAPHelper.get_third_party_name("") + self.html_result_name)
+        return os.path.join(self.result_dir, self.html_result_name)
 
     def get_default_txt_result_path(self):
         """
@@ -833,8 +793,7 @@ class OpenSCAPHelper(object):
 
         :return: default txt result path
         """
-        return os.path.join(self.result_dir,
-                            OpenSCAPHelper.get_third_party_name("") + self.result_name + ".txt")
+        return os.path.join(self.result_dir, self.result_name + ".txt")
 
     def run_generate(self, xml_file, html_file, old_style=False):
         """
