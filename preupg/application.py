@@ -399,7 +399,16 @@ class Application(object):
         return module_set_dirname
 
     def prepare_scan_system(self):
-        """Function cleans previous scan and creates relevant directories"""
+        """
+        Prepare system for scan.
+
+        In case the result of previous assessment is detected, remove it
+        and prepare new directory structure that will be used for next scan.
+        Additionaly process scripts generating common data about the current
+        system, generate final XCCDF compose from the original set of modules
+        identified for run and in the end process initial script of modules to
+        complete expected environment for the scan.
+        """
         # First of all we need to delete the older one assessment
         self.clean_scan()
         self.prepare_scan_directories()
@@ -407,38 +416,13 @@ class Application(object):
         if not self.conf.skip_common:
             if not self.common.common_results():
                 return ReturnValues.SCRIPT_TXT_MISSING
-        return 0
 
-    def is_module_set_valid(self):
-        if self.module_set_dirname is None:
-            log_message('Invalid scenario: %s' % self.module_set_path)
-            return False
-        if not os.path.isdir(self.module_set_path):
-            log_message('Invalid scenario: %s' % self.module_set_path,
-                        level=logging.ERROR)
-            return False
-        # Validate properties.ini file in module set dir
-        try:
-            ModuleSetUtils.get_module_set_os_versions(self.module_set_path)
-        except EnvironmentError as err:
-            log_message(str(err), level=logging.ERROR)
-            return False
-        return True
-
-    def generate_report(self):
-        """Function generates report"""
-        dir_util.copy_tree(self.module_set_path,
-                           self.module_set_copy_path)
-        # Call xccdf_compose API for generating all-xccdf.xml
-        if not self.conf.contents:
-            xccdf_compose = XCCDFCompose(self.module_set_copy_path)
-            ret_val = xccdf_compose.generate_xml(generate_from_ini=False)
-            if ret_val != 0:
-                return ret_val
-            if os.path.isdir(self.module_set_copy_path):
-                shutil.rmtree(self.module_set_copy_path)
-            shutil.move(xccdf_compose.get_compose_dir_name(),
-                        self.module_set_copy_path)
+        # Generate final XCCDF compose under self.module_set_copy_path
+        xccdf_compose = XCCDFCompose(
+            self.module_set_path, self.module_set_copy_path)
+        ret_val = xccdf_compose.generate_xml()
+        if ret_val != 0:
+            return ret_val
         self.run_init()
         return 0
 
@@ -495,9 +479,6 @@ class Application(object):
         ret_val = self.prepare_scan_system()
         if ret_val != 0:
             return ret_val
-        ret_val = self.generate_report()
-        if ret_val != 0:
-            return ret_val
         # Update source XML file in temporary directory
         self.openscap_helper.update_variables(self.conf.assessment_results_dir,
                                               self.conf.result_prefix,
@@ -541,6 +522,22 @@ class Application(object):
         log_message("The latest assessment is stored in the '%s' directory." % self.conf.assessment_results_dir)
         # pack all configuration files to tarball
         return 0
+
+    def is_module_set_valid(self):
+        if self.module_set_dirname is None:
+            log_message('Invalid scenario: %s' % self.module_set_path)
+            return False
+        if not os.path.isdir(self.module_set_path):
+            log_message('Invalid scenario: %s' % self.module_set_path,
+                        level=logging.ERROR)
+            return False
+        # Validate properties.ini file in module set dir
+        try:
+            ModuleSetUtils.get_module_set_os_versions(self.module_set_path)
+        except EnvironmentError as err:
+            log_message(str(err), level=logging.ERROR)
+            return False
+        return True
 
     def summary_report(self, tarball_path):
         """Function prints a summary report"""
