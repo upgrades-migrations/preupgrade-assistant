@@ -42,6 +42,9 @@ class XCCDFCompose(object):
         be created on the dst_path. In case the dst_path is not specified, the
         result directory will be created, in the same place the source directory
         exists, with the "-results" suffix using the original dirname.
+
+        src_path and dst_path has to be different, otherwise ValueError
+        exception is raised.
         """
         self.src_path = src_path
         if not dst_path:
@@ -50,10 +53,10 @@ class XCCDFCompose(object):
                 self.dst_path = self.src_path[:-1] + settings.results_postfix
         else:
             self.dst_path = dst_path
+        if self.dst_path == self.src_path:
+            raise ValueError("src_path and dst_path has to be different.")
 
         # Delete previous contents if they exist.
-        # FIXME: raise exception or inhibit remove of self.dst_path when
-        #        self.dst_path == self.src_path
         if os.path.exists(self.dst_path):
             shutil.rmtree(self.dst_path)
 
