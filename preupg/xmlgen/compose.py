@@ -33,20 +33,32 @@ class XCCDFCompose(object):
     """
     Prepare result directory and take care of creating all-xccdf.xml file
     """
-    def __init__(self, argument):
+
+    def __init__(self, src_path, dst_path=None):
         """
-        Specify dirname with the on content
-        :param argument: dirname where content is
-        :return:
+        Create the XCCDFCompose object with specified src and dst path.
+
+        The src_path specify source modules from which the XCCDF compose should
+        be created on the dst_path. In case the dst_path is not specified, the
+        result directory will be created, in the same place the source directory
+        exists, with the "-results" suffix using the original dirname.
+
+        src_path and dst_path has to be different, otherwise ValueError
+        exception is raised.
         """
-        self.result_dir = argument
-        self.dir_name = self.result_dir + settings.results_postfix
-        if self.result_dir.endswith("/"):
-            self.dir_name = self.result_dir[:-1] + settings.results_postfix
+        self.src_path = src_path
+        if not dst_path:
+            self.dst_path = self.src_path + settings.results_postfix
+            if self.src_path.endswith("/"):
+                self.dst_path = self.src_path[:-1] + settings.results_postfix
+        else:
+            self.dst_path = dst_path
+        if self.dst_path == self.src_path:
+            raise ValueError("src_path and dst_path has to be different.")
 
         # Delete previous contents if they exist.
-        if os.path.exists(self.dir_name):
-            shutil.rmtree(self.dir_name)
+        if os.path.exists(self.dst_path):
+            shutil.rmtree(self.dst_path)
 
     def generate_xml(self, generate_from_ini=True):
         """
@@ -60,18 +72,18 @@ class XCCDFCompose(object):
                        !0 error
         """
         try:
-            ModuleSetUtils.get_module_set_os_versions(self.result_dir)
+            ModuleSetUtils.get_module_set_os_versions(self.src_path)
         except EnvironmentError as err:
             sys.stderr.write("{0}\n".format(str(err)))
             return ReturnValues.SCENARIO
 
         # e.g. /root/preupgrade/RHEL6_7 -> /root/preupgrade/RHEL6_7-results
-        dir_util.copy_tree(self.result_dir, self.dir_name)
+        dir_util.copy_tree(self.src_path, self.dst_path)
         # create content for all-xccdf.xml file as ElementTree object
         target_tree = ComposeXML.run_compose(
-            self.dir_name, generate_from_ini=generate_from_ini)
+            self.dst_path, generate_from_ini=generate_from_ini)
         # path where all-xccdf.xml is going to be generated
-        report_filename = os.path.join(self.dir_name,
+        report_filename = os.path.join(self.dst_path,
                                        settings.all_xccdf_xml_filename)
         if generate_from_ini:
             try:
@@ -79,15 +91,14 @@ class XCCDFCompose(object):
                     report_filename, "wb",
                     ElementTree.tostring(target_tree, "utf-8"), False
                 )
-                print('Generated report file for Preupgrade Assistant is: %s'
-                      % report_filename)
+                logger_debug.debug('Generated: %s' % report_filename)
             except IOError:
                 raise IOError("Error: Problem with writing file %s"
                               % report_filename)
         return 0
 
     def get_compose_dir_name(self):
-        return self.dir_name
+        return self.dst_path
 
 
 class ComposeXML(object):

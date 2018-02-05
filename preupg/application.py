@@ -92,7 +92,6 @@ class Application(object):
         self.xml_mgr = None
         self.scanning_progress = None
         self.report_parser = None
-        self.report_data = {}
         self.text_convertor = ""
         self.common = None
         self._devel_mode = 0
@@ -108,7 +107,6 @@ class Application(object):
         self._add_report_log_file()
         self._add_debug_log_file()
         self.tar_ball_name = None
-        self.third_party = ""
         self._set_old_report_style()
 
     def _add_report_log_file(self):
@@ -166,13 +164,6 @@ class Application(object):
             self.old_report_style = True
         else:
             self.old_report_style = False
-
-    def get_third_party_dir(self, assessment):
-        """
-        Function returns a 3rdparty dir for upgrade path
-        like /root/preupgrade/RHEL6_7/3rdparty
-        """
-        return os.path.join(assessment, settings.add_ons)
 
     def get_postupgrade_dir(self):
         """Function returns postupgrade dir"""
@@ -393,31 +384,6 @@ class Application(object):
         PostupgradeHelper.special_postupgrade_scripts(self.conf.assessment_results_dir)
         PostupgradeHelper.hash_postupgrade_file(self.conf.verbose, self.get_postupgrade_dir())
 
-    def set_third_party(self, third_party):
-        self.third_party = third_party
-
-    def run_third_party_modules(self, dir_name):
-        """
-        Functions executes a 3rd party contents
-
-        3rd party contents are stored in
-        /usr/share/preupgrade/RHEL6_7/3rdparty directory
-        """
-        for module_set, all_xccdf_xml_path in \
-                get_installed_module_sets(dir_name):
-            third_party_name = self.third_party = module_set
-            log_message("Execution {0} assessments:".format(module_set))
-            self.report_parser.reload_xml(all_xccdf_xml_path)
-            self.all_xccdf_xml_path = all_xccdf_xml_path
-            self.run_scan_process()
-            self.report_data[third_party_name] = \
-                self.scanning_progress.get_output_data()
-            self.prepare_xml_for_html()
-            self.generate_html_or_text()
-            self.update_xml_after_html_generated()
-            self.copy_postupgrade_files()
-        self.set_third_party("")
-
     def get_cmd_convertor(self):
         """Function returns cmd with text convertor string"""
         cmd = settings.text_converters[self.text_convertor].format(
@@ -433,7 +399,16 @@ class Application(object):
         return module_set_dirname
 
     def prepare_scan_system(self):
-        """Function cleans previous scan and creates relevant directories"""
+        """
+        Prepare system for scan.
+
+        In case the result of previous assessment is detected, remove it
+        and prepare new directory structure that will be used for next scan.
+        Additionaly process scripts generating common data about the current
+        system, generate final XCCDF compose from the original set of modules
+        identified for run and in the end process initial script of modules to
+        complete expected environment for the scan.
+        """
         # First of all we need to delete the older one assessment
         self.clean_scan()
         self.prepare_scan_directories()
@@ -441,38 +416,13 @@ class Application(object):
         if not self.conf.skip_common:
             if not self.common.common_results():
                 return ReturnValues.SCRIPT_TXT_MISSING
-        return 0
 
-    def is_module_set_valid(self):
-        if self.module_set_dirname is None:
-            log_message('Invalid scenario: %s' % self.module_set_path)
-            return False
-        if not os.path.isdir(self.module_set_path):
-            log_message('Invalid scenario: %s' % self.module_set_path,
-                        level=logging.ERROR)
-            return False
-        # Validate properties.ini file in module set dir
-        try:
-            ModuleSetUtils.get_module_set_os_versions(self.module_set_path)
-        except EnvironmentError as err:
-            log_message(str(err), level=logging.ERROR)
-            return False
-        return True
-
-    def generate_report(self):
-        """Function generates report"""
-        dir_util.copy_tree(self.module_set_path,
-                           self.module_set_copy_path)
-        # Call xccdf_compose API for generating all-xccdf.xml
-        if not self.conf.contents:
-            xccdf_compose = XCCDFCompose(self.module_set_copy_path)
-            ret_val = xccdf_compose.generate_xml(generate_from_ini=False)
-            if ret_val != 0:
-                return ret_val
-            if os.path.isdir(self.module_set_copy_path):
-                shutil.rmtree(self.module_set_copy_path)
-            shutil.move(xccdf_compose.get_compose_dir_name(),
-                        self.module_set_copy_path)
+        # Generate final XCCDF compose under self.module_set_copy_path
+        xccdf_compose = XCCDFCompose(
+            self.module_set_path, self.module_set_copy_path)
+        ret_val = xccdf_compose.generate_xml()
+        if ret_val != 0:
+            return ret_val
         self.run_init()
         return 0
 
@@ -529,9 +479,6 @@ class Application(object):
         ret_val = self.prepare_scan_system()
         if ret_val != 0:
             return ret_val
-        ret_val = self.generate_report()
-        if ret_val != 0:
-            return ret_val
         # Update source XML file in temporary directory
         self.openscap_helper.update_variables(self.conf.assessment_results_dir,
                                               self.conf.result_prefix,
@@ -563,26 +510,34 @@ class Application(object):
         self.generate_html_or_text()
         self.update_xml_after_html_generated()
         self.copy_postupgrade_files()
-
-        third_party_dir_name = self.get_third_party_dir(
-            self.module_set_copy_path)
-        if os.path.exists(third_party_dir_name):
-            self.run_third_party_modules(third_party_dir_name)
-
         self.copy_preupgrade_scripts(self.module_set_copy_path)
         ConfigFilesHelper.copy_modified_config_files(
             settings.assessment_results_dir)
 
         # It prints out result in table format
         ScanningHelper.format_rules_to_table(main_report, "main contents")
-        for target, report in iter(self.report_data.items()):
-            ScanningHelper.format_rules_to_table(report, "3rdparty content " + target)
 
         self.tar_ball_name = TarballHelper.tarball_result_dir(self.conf.tarball_name, self.conf.verbose)
         log_message("The tarball with results is stored in '%s' ." % self.tar_ball_name)
         log_message("The latest assessment is stored in the '%s' directory." % self.conf.assessment_results_dir)
         # pack all configuration files to tarball
         return 0
+
+    def is_module_set_valid(self):
+        if self.module_set_dirname is None:
+            log_message('Invalid scenario: %s' % self.module_set_path)
+            return False
+        if not os.path.isdir(self.module_set_path):
+            log_message('Invalid scenario: %s' % self.module_set_path,
+                        level=logging.ERROR)
+            return False
+        # Validate properties.ini file in module set dir
+        try:
+            ModuleSetUtils.get_module_set_os_versions(self.module_set_path)
+        except EnvironmentError as err:
+            log_message(str(err), level=logging.ERROR)
+            return False
+        return True
 
     def summary_report(self, tarball_path):
         """Function prints a summary report"""
@@ -615,12 +570,6 @@ class Application(object):
             # together by default) or has chosen upgrade only = print warning
             # to backup the system before doing the in-place upgrade
             log_message(settings.upgrade_backup_warning)
-        if self.report_data:
-            log_message('Summary of the third party providers:')
-            for target, dummy_report in iter(self.report_data.items()):
-                self.third_party = target
-                log_message("Read the third party content {0} {1} for more details.".
-                            format(target, path))
         log_message("Upload results to UI by the command:\ne.g. {0} .".format(command))
         return report_return_value
 
