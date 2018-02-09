@@ -26,10 +26,6 @@ Source1:        Django-%{django_version}.tar.gz
 Source2:        south-%{south_version}.tar.gz
 %endif # build_ui
 
-%if 0%{?rhel}
-Patch0:         preupgrade-assistant-scripts.patch
-%endif # RHEL
-
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  rpm-devel
@@ -93,10 +89,6 @@ OpenSCAP is generated automatically.
 %setup -q -n %{name}-%{version} -D -T -a 1
 %setup -q -n %{name}-%{version} -D -T -a 2
 %endif # build_ui
-
-%if 0%{?rhel}
-%patch0 -p1
-%endif # RHEL
 
 %build
 %{__python} setup.py build
