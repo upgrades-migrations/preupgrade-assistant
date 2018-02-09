@@ -21,8 +21,6 @@ The Preupgrade Assistant is a framework designed to run the Preupgrade Assistant
 
 ## Running unit tests
 
-- To install required python modules, enter:
-  `pip install test-requirements.txt`
 - Enter the `python setup.py test` command.
 
 ## Learning how to write modules
