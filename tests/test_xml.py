@@ -121,7 +121,7 @@ class TestScriptGenerator(base.TestCase):
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
-        self.filename = os.path.join(self.dirname, 'test.ini')
+        self.filename = os.path.join(self.dirname, settings.module_ini)
         self.rule = []
         self.loaded_ini = {}
         self.test_ini = {'content_title': 'Testing content title',
@@ -218,7 +218,7 @@ class TestXML(base.TestCase):
         if os.path.exists(self.dirname):
             shutil.rmtree(self.dirname)
         os.makedirs(self.dirname)
-        self.filename = os.path.join(self.dirname, 'test.ini')
+        self.filename = os.path.join(self.dirname, settings.module_ini)
         self.rule = []
         self.loaded_ini = {}
         test_ini = {'content_title': 'Testing content title',
@@ -476,7 +476,7 @@ class TestIncorrectINI(base.TestCase):
         self.root_dir_name = "tests/FOOBAR6_7"
         self.dir_name = os.path.join(self.root_dir_name, "incorrect_ini")
         os.makedirs(self.dir_name)
-        self.filename = os.path.join(self.dir_name, 'test.ini')
+        self.filename = os.path.join(self.dir_name, settings.module_ini)
         self.rule = []
         self.test_ini = {'content_title': 'Testing content title',
                          'content_description': 'Some content description',
@@ -528,7 +528,7 @@ class TestGroupXML(base.TestCase):
         self.root_dir_name = "tests/FOOBAR6_7"
         self.dir_name = os.path.join(self.root_dir_name, "test_group")
         os.makedirs(self.dir_name)
-        self.filename = os.path.join(self.dir_name, 'group.ini')
+        self.filename = os.path.join(self.dir_name, settings.group_ini)
         test_ini = {'group_title': 'Testing content title'}
         self.assertTrue(test_ini)
         self.loaded_ini[self.filename] = test_ini
