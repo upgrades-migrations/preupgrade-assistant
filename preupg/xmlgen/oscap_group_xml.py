@@ -14,12 +14,12 @@ except ImportError:
     import ConfigParser as configparser
 
 from preupg.xmlgen.xml_utils import XmlUtils
-from preupg.utils import FileHelper, ModuleSetUtils
+from preupg.utils import FileHelper
 try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
-from preupg import settings
+from preupg import settings, exception
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -56,9 +56,19 @@ class OscapGroupXml(object):
         self.loded dict:
         self.loaded[ini_file_path] = {option1: value, option2: value, ...}
         """
-        for dir_name in os.listdir(self.dirname):
-            if dir_name.endswith(".ini"):
-                self.lists.append(os.path.join(self.dirname, dir_name))
+        found = 0
+        for file_name in os.listdir(self.dirname):
+            if file_name not in [settings.module_ini, settings.group_ini]:
+                continue
+            if found == 0:
+                self.lists.append(os.path.join(self.dirname, file_name))
+                found = 1
+            else:
+                raise exception.ModuleSetFormatError(
+                        "Cannot prepare XCCDF for OpenSCAP",
+                        "group.ini and module.ini are in the same directory %s"
+                        % self.dirname
+                        )
         for file_name in self.lists:
             if FileHelper.check_file(file_name, "r") is False:
                 continue

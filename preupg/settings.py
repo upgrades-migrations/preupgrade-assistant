@@ -46,6 +46,7 @@ log_dir = "/var/log/preupgrade"
 # file with module set meta info
 properties_ini = "properties.ini"
 module_ini = "module.ini"
+group_ini = "group.ini"
 
 solution_txt = "solution.txt"
 check_script = "check"
