@@ -82,6 +82,27 @@ VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
 #
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
 
+#
+# Directory with configuration files that can be applied safely.
+#
+# Configuration files in this directory will be automatically applied on the
+# upgraded system. Files has to be stored in this directory using whole path
+# referring to the place where they should be copied. E.g.:
+#   $CLEANCONF_DIR/etc/group -> /etc/group
+#
+CLEANCONF_DIR=$VALUE_TMP_PREUPGRADE/cleanconf
+
+#
+# Directory with configuration files that need to be overviewed manually.
+#
+# Configuration files in this directory cannot be applied on the upgraded
+# system safely and need to be handled or overviewed manually. Usually are not
+# copied automatically on the upgraded system unless there is a post-upgrade
+# script that handle issue related with a configuration file at least
+# partially.
+#
+DIRTYCONF_DIR=$VALUE_TMP_PREUPGRADE/dirtyconf
+
 CURRENT_DIRECTORY=$XCCDF_VALUE_CURRENT_DIRECTORY
 
 #
