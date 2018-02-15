@@ -513,7 +513,6 @@ def check_rpm_to(check_rpm="", check_bin=""):
 
     if check_bin != "":
         binaries = check_bin.split(',')
-        lines = FileHelper.get_file_content(VALUE_EXECUTABLES, "rb", True)
         for binary in binaries:
             cmd = "which %s" % binary
             if ProcessHelper.run_subprocess(cmd, print_output=False, shell=True) != 0:
