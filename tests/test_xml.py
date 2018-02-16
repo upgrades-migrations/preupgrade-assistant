@@ -511,7 +511,8 @@ A solution text for test suite"
         text_ini += '\n[]\neliskk\n'
         FileHelper.write_to_file(self.filename, "wb", text_ini)
         oscap = OscapGroupXml(self.root_dir_name, self.dir_name)
-        self.assertRaises(configparser.ParsingError, oscap.find_all_ini)
+        self.assertRaises(configparser.ParsingError,
+                          oscap.get_ini_content, self.filename)
 
 
 class TestGroupXML(base.TestCase):
