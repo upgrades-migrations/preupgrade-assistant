@@ -183,7 +183,7 @@ class FileHelper(object):
         if decode_flag:
             f = codecs.open(full_path, perms, settings.defenc)
         else:
-            f = codecs.open(full_path, perms)
+            f = open(full_path, perms)
         try:
             data = f.read() if not method else f.readlines()
         finally:
