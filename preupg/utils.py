@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
-import six
 import datetime
 import re
 import subprocess
@@ -213,7 +212,7 @@ class FileHelper(object):
                 f.writelines(data)
             else:
                 # TODO: May we should print warn w
-                if encode_flag is True and isinstance(data, six.text_type):
+                if encode_flag is True and isinstance(data, unicode):
                     f.write(data.encode(settings.defenc))
                 else:
                     f.write(data)
@@ -343,7 +342,7 @@ class ProcessHelper(object):
                               stderr=subprocess.STDOUT,
                               shell=shell,
                               bufsize=1)
-        stdout = six.binary_type() # FIXME should't be this bytes()?
+        stdout = str() # FIXME should't be this bytes()?
         for stdout_data in iter(sp.stdout.readline, b''):
             # communicate() method buffers everything in memory, we will read stdout directly
             stdout += stdout_data
