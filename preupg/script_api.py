@@ -25,10 +25,20 @@ import sys
 import re
 import shutil
 import errno
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+
+__rhel_version = None
+with open("/etc/redhat-release", "rb") as frel:
+    release = frel.read().split()
+    if release[0:2] == ["Red", "Hat"]:
+        __rhel_version = tuple([int(x) for x in release[6].split(".")])
+
+if __rhel_version is not None and __rhel_version == (6, 6):
+    import preupg.compat.ConfigParser as configparser
+else:
+    try:
+        import configparser
+    except ImportError:
+        import ConfigParser as configparser
 
 from preupg import settings
 from preupg.utils import FileHelper, ProcessHelper
