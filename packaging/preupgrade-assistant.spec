@@ -14,7 +14,7 @@
 %endif # build_ui
 
 Name:           preupgrade-assistant
-Version:        2.5.1
+Version:        2.5.2
 Release:        1%{?dist}
 Summary:        Preupgrade Assistant advises on feasibility of system upgrade or migration
 Group:          System Environment/Libraries
