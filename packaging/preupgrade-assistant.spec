@@ -57,7 +57,20 @@ Conflicts:      %{name}-tools < 2.1.0-1
 Obsoletes:      %{name} < 2.1.3-1
 
 %description
-The Preupgrade Assistant is a framework designed to run the Preupgrade Assistant modules, which analyze the system for possible in-place upgrade limitations. It is based on a modular system, with each module performing a separate test, checking for package removals, incompatible obsolete packages, changes in libraries, users, groups, services, or incompatibilities of command-line options or configuration files. It is able to execute post-upgrade scripts to finalize complex tasks after the system upgrade. Apart from performing the in-place upgrades, the Preupgrade Assistant is also capable of migrating the system. It then produces a report, which assists you in performing the upgrade itself by outlining potential problem areas and by offering suggestions about mitigating any possible incompatibilities. The Preupgrade Assistant utility is a Red Hat Upgrade Tool prerequisite for completing a successful in-place upgrade to the next major version of Red Hat Enterprise Linux.
+The Preupgrade Assistant is a framework designed to run the Preupgrade
+Assistant modules, which analyze the system for possible in-place
+upgrade limitations. It is based on a modular system, with each module
+performing a separate test, checking for package removals, incompatible
+obsolete packages, changes in libraries, users, groups, services, or
+incompatibilities of command-line options or configuration files. It is
+able to execute post-upgrade scripts to finalize complex tasks after
+the system upgrade. Apart from performing the in-place upgrades, the
+Preupgrade Assistant is also capable of migrating the system. It then
+produces a report, which assists you in performing the upgrade itself
+by outlining potential problem areas and by offering suggestions about
+mitigating any possible incompatibilities. The Preupgrade Assistant
+utility is a Red Hat Upgrade Tool prerequisite for completing a successful
+in-place upgrade to the next major version of Red Hat Enterprise Linux.
 
 %if %{build_ui}
 %package ui
