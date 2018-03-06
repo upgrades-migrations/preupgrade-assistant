@@ -467,7 +467,7 @@ class ConfigHelper(object):
         if not os.path.exists(full_path):
             return None
 
-        config = configparser.RawConfigParser(allow_no_value=True)
+        config = configparser.RawConfigParser()
         config.read(full_path)
         if config.has_section(section):
             if config.has_option(section, key):
@@ -477,7 +477,7 @@ class ConfigHelper(object):
     def config_has_section(config_path, section):
         if not os.path.exists(config_path):
             return False
-        config = configparser.RawConfigParser(allow_no_value=True)
+        config = configparser.RawConfigParser()
         config.read(config_path)
         return True if config.has_section(section) else False
 

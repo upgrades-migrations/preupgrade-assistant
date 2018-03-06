@@ -668,7 +668,7 @@ def load_pa_configuration():
                   % PREUPGRADE_CONFIG)
         exit_error()
 
-    config = configparser.RawConfigParser(allow_no_value=True)
+    config = configparser.RawConfigParser()
     config.read(PREUPGRADE_CONFIG)
     section = 'preupgrade-assistant'
     home_option = 'home_directory_file'
@@ -694,7 +694,7 @@ def print_home_dirs(user_name=""):
                   % PREUPGRADE_CONFIG)
         exit_error()
 
-    config = configparser.RawConfigParser(allow_no_value=True)
+    config = configparser.RawConfigParser()
     home_option = 'home-dirs'
     try:
         if USER_CONFIG_FILE == 'enabled' and user_name == "":
