@@ -3,3 +3,8 @@ rpm -Va=rpm_Va.log=ALLCHANGED=All changed files=YES=All_changed_files
 grep -e "c /" rpm_Va.log=rpm_etc_Va.log=CONFIGCHANGED=Changed config files=NO
 getent passwd=passwd.log=PASSWD=All users=YES=Users
 getent group=group.log=GROUP=All groups=YES=Groups
+chkconfig --list=chkconfig.log=CHKCONFIG=Service statuses=NO
+rpm -qal | sort=rpmtrackedfiles.log=RPMTRACKEDFILES=All installed files=YES=All_installed_files
+for i in `df --local -P | rev | cut -f1 -d' ' | rev | tail -n +2`;do find $i -xdev -print; done | sort=allmyfiles.log=ALLMYFILES=All local files=NO
+for i in `df --local -P | rev | cut -f1 -d' ' | rev | tail -n +2`;do find $i -xdev -perm /111 -type f -print; done | sort=executable.log=EXECUTABLES=All executable files=NO
+grep -e "199e2f91fd431d51" -e "5326810137017186" -e "938a80caf21541eb" -e "fd372689897da07a" -e "45689c882fa658e0" rpm_qa.log=rpm_rhsigned.log=RPM_RHSIGNED_LOG=Red Hat signed packages=NO
