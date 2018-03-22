@@ -34,7 +34,6 @@ BuildRequires:  python-setuptools
 BuildRequires:  rpm-python
 BuildRequires:  diffstat
 %if 0%{?rhel}
-BuildRequires:  python-six
 BuildRequires:  pykickstart
 %endif # RHEL
 Requires(post):   /sbin/ldconfig
@@ -44,11 +43,10 @@ Requires:       sed findutils bash
 Requires:       rpm-python
 Requires:       redhat-release
 Requires:       yum-utils
-Requires:       openscap%{?_isa} >= 0:1.0.10
-Requires:       openscap-engine-sce%{?_isa} >= 0:1.0.10
-Requires:       openscap-utils%{?_isa} >= 0:1.0.10
+Requires:       openscap%{?_isa} >= 0:1.0.8
+Requires:       openscap-engine-sce%{?_isa} >= 0:1.0.8
+Requires:       openscap-utils%{?_isa} >= 0:1.0.8
 Requires:       pykickstart
-Requires:       python-six
 Conflicts:      %{name}-tools < 2.1.0-1
 Obsoletes:      %{name} < 2.1.3-1
 

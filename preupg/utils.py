@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
-import six
 import datetime
 import re
 import subprocess
@@ -213,7 +212,7 @@ class FileHelper(object):
                 f.writelines(data)
             else:
                 # TODO: May we should print warn w
-                if encode_flag is True and isinstance(data, six.text_type):
+                if encode_flag is True and isinstance(data, unicode):
                     f.write(data.encode(settings.defenc))
                 else:
                     f.write(data)
@@ -343,7 +342,7 @@ class ProcessHelper(object):
                               stderr=subprocess.STDOUT,
                               shell=shell,
                               bufsize=1)
-        stdout = six.binary_type() # FIXME should't be this bytes()?
+        stdout = str() # FIXME should't be this bytes()?
         for stdout_data in iter(sp.stdout.readline, b''):
             # communicate() method buffers everything in memory, we will read stdout directly
             stdout += stdout_data
@@ -468,7 +467,7 @@ class ConfigHelper(object):
         if not os.path.exists(full_path):
             return None
 
-        config = configparser.RawConfigParser(allow_no_value=True)
+        config = configparser.RawConfigParser()
         config.read(full_path)
         if config.has_section(section):
             if config.has_option(section, key):
@@ -478,7 +477,7 @@ class ConfigHelper(object):
     def config_has_section(config_path, section):
         if not os.path.exists(config_path):
             return False
-        config = configparser.RawConfigParser(allow_no_value=True)
+        config = configparser.RawConfigParser()
         config.read(config_path)
         return True if config.has_section(section) else False
 
