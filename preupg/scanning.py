@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import datetime
 import os
+import subprocess
 from preupg.logger import settings, logger_report, log_message, logging
 
 
@@ -79,7 +80,9 @@ class ScanProgress(object):
 
         :return:
         """
-        return os.popen('stty size', 'r').read().split()
+        cmd = ["stty", "size"]
+        sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return int(sp.communicate()[0].split()[1])
 
     def _return_correct_msg(self, msg):
         if len(msg) > self.width_size:
@@ -89,7 +92,7 @@ class ScanProgress(object):
     def show_progress(self, stdout_data):
         """Function shows a progress of assessment"""
         try:
-            self.width_size = int(ScanProgress.get_terminal_width()[1])
+            self.width_size = ScanProgress.get_terminal_width()
         except IndexError:
             self.width_size = 80
         logger_report.debug(stdout_data.strip())
