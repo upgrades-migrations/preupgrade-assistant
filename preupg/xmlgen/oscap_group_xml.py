@@ -19,6 +19,7 @@ try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
+from preupg.logger import log_message, logging
 from preupg import settings, exception
 
 try:
@@ -44,6 +45,7 @@ class OscapGroupXml(object):
         else:
             self.main_dir = dir_name.split('/')[-2]
         self.filename = "group.xml"
+        self.ini_path = self.get_ini_path()
         self.rule = []
         self.ret = {}
 
@@ -52,19 +54,25 @@ class OscapGroupXml(object):
         """
         dir_content = os.listdir(self.dirname)
         preupg_inis = [settings.module_ini, settings.group_ini]
-        found_inis = [ini for ini in preupg_inis if ini in dir_content]
-        if len(found_inis) > 1:
+        found_preupg_inis = [ini for ini in preupg_inis if ini in dir_content]
+        if len(found_preupg_inis) > 1:
             raise exception.ModuleSetFormatError(
                 "Cannot prepare XCCDF for OpenSCAP",
                 "group.ini and module.ini can't be both in one directory: %s"
                 % self.dirname)
-        elif not found_inis:
-            raise exception.ModuleSetFormatError(
-                "Cannot prepare XCCDF for OpenSCAP",
-                "The directory %s needs to contain either group.ini or"
-                " module.ini" % self.dirname)
-        return os.path.join(self.dirname, found_inis.pop())
-        
+        elif not found_preupg_inis:
+            # Check if directory contains subdirectories.
+            # Report to user that group.ini file could be missing
+            subdirs = [x for x in os.listdir(self.dirname)
+                       if os.path.isdir(os.path.join(self.dirname, x))]
+            if subdirs and 'postupgrade.d' not in self.dirname:
+                log_message(
+                    "group.ini file is missing in {0}".format(self.dirname),
+                    level=logging.WARNING)
+            return None
+        else:
+            return os.path.join(self.dirname, found_preupg_inis.pop())
+
     def get_ini_content(self, ini_path):
         """Return all key,value pairs from the 'preupgrade' section of the
         ini_path.
@@ -94,8 +102,7 @@ class OscapGroupXml(object):
 
     def write_xml(self):
         """The function is used for storing a group.xml file"""
-        ini_path = self.get_ini_path()
-        ini_content = self.get_ini_content(ini_path)
+        ini_content = self.get_ini_content(self.ini_path)
         self.write_list_rules()
         xml_utils = XmlUtils(self.module_set_dir, self.dirname, ini_content)
         self.rule = xml_utils.prepare_sections()
