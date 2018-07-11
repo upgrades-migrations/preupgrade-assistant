@@ -167,6 +167,27 @@ VALUE_RPM_RHSIGNED = os.path.join(PREUPGRADE_CACHE, "rpm_rhsigned.log")
 VALUE_TMP_PREUPGRADE = os.environ['XCCDF_VALUE_TMP_PREUPGRADE']
 
 #
+# Directory with configuration files that can be applied safely.
+#
+# Configuration files in this directory will be automatically applied on the
+# upgraded system. Files has to be stored in this directory using whole path
+# referring to the place where they should be copied. E.g.:
+#   $CLEANCONF_DIR/etc/group -> /etc/group
+#
+CLEANCONF_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "cleanconf")
+
+#
+# Directory with configuration files that need to be overviewed manually.
+#
+# Configuration files in this directory cannot be applied on the upgraded
+# system safely and need to be handled or overviewed manually. Usually are not
+# copied automatically on the upgraded system unless there is a post-upgrade
+# script that handle issue related with a configuration file at least
+# partially.
+#
+DIRTYCONF_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "dirtyconf")
+
+#
 # Variable which referes to current directory directory provided by module
 #
 VALUE_CURRENT_DIRECTORY = os.environ['XCCDF_VALUE_CURRENT_DIRECTORY']
@@ -226,11 +247,28 @@ except KeyError:
     DIST_NATIVE = 'sign'
 
 #
+# preupgrade-scripts directory used by redhat-upgrade-tool
+#
+# Executable scripts inside the directrory (ans subdirectories) are processed
+# by redhat-upgrade-tool during the pre-upgrade phase, after the upgrade RPM
+# transaction is calculated and before the reboot is processed.
+#
+PREUPGRADE_SCRIPT_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "preupgrade-scripts")
+
+#
 # postupgrade directory used by in-place upgrades.
 #
 # Scripts mentioned there are executed automatically by redhat-upgrade-tool
 #
 POSTUPGRADE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postupgrade.d")
+
+#
+# postmigrate directory used after migration
+#
+# Executable scripts in the directory are processed during the %post phase
+# when migration to the new system is done using the generated kickstart file.
+#
+POSTMIGRATE_DIR = os.path.join(VALUE_TMP_PREUPGRADE, "postmigrate.d")
 
 #
 # Directory which is used for kickstart generation
