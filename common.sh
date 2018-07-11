@@ -76,11 +76,28 @@ VALUE_EXECUTABLES=$PREUPGRADE_CACHE/executable.log
 VALUE_TMP_PREUPGRADE=$XCCDF_VALUE_TMP_PREUPGRADE
 
 #
+# preupgrade-scripts directory used by redhat-upgrade-tool
+#
+# Executable scripts inside the directrory (ans subdirectories) are processed
+# by redhat-upgrade-tool during the pre-upgrade phase, after the upgrade RPM
+# transaction is calculated and before the reboot is processed.
+#
+PREUPGRADE_SCRIPT_DIR=$VALUE_TMP_PREUPGRADE/preupgrade-scripts
+
+#
 # postupgrade directory used by in-place upgrades.
 #
 # Scripts mentioned there are executed automatically by redhat-upgrade-tool
 #
 POSTUPGRADE_DIR=$VALUE_TMP_PREUPGRADE/postupgrade.d
+
+#
+# postmigrate directory used after migration
+#
+# Executable scripts in the directory are processed during the %post phase
+# when migration to the new system is done using the generated kickstart file.
+#
+POSTMIGRATE_DIR=$VALUE_TMP_PREUPGRADE/postmigrate.d
 
 #
 # Directory with configuration files that can be applied safely.
