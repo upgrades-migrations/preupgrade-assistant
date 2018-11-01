@@ -215,6 +215,7 @@ su apache - -s /bin/bash -c "preupg-ui-manage collectstatic --noinput" >/dev/nul
 if [ "$1" == 1 ]; then
     # allow httpd to run preupgrade ui
     setsebool httpd_run_preupgrade on
+    setsebool -P httpd_run_preupgrade on
 fi
 # restart apache
 service httpd condrestart
@@ -226,6 +227,7 @@ service httpd condrestart
 if [ "$1" == 0 ]; then
     # disallow httpd to run preupgrade ui
     setsebool httpd_run_preupgrade off
+    setsebool -P httpd_run_preupgrade off
     # restart apache
     service httpd condrestart
 fi
