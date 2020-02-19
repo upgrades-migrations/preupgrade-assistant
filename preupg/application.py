@@ -646,6 +646,41 @@ class Application(object):
         self.all_xccdf_xml_copy_path = os.path.join(
             self.module_set_copy_path, settings.all_xccdf_xml_filename)
 
+    @staticmethod
+    def is_installed_oscap_ok():
+        """Check whether expected openscap rpms are installed."""
+        class GetCmdStdout():
+            def __init__(self):
+                self.stdout_lines = []
+
+            def __call__(self, line):
+                if line.strip():
+                    self.stdout_lines.append(line.strip())
+
+        if not os.path.exists(settings.openscap_binary):
+            log_message("Oscap with SCE enabled is not installed")
+            return False
+        if not os.access(settings.openscap_binary, os.X_OK):
+            log_message("Oscap with SCE %s is not executable"
+                        % settings.openscap_binary)
+            return False
+        # that's generic problem that could be on various rpm-based systems
+        url = "https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html-single/6.10_release_notes/index#BZ1804691"
+        for pkg in settings.openscap_rpms:
+            cmd = ["rpm", "-q", pkg, "--qf", "%{ARCH}\n"]
+            cmdout = GetCmdStdout()
+            ProcessHelper.run_subprocess(cmd, function=cmdout)
+            if SystemIdentification.get_arch() not in cmdout.stdout_lines:
+                log_message("The %s rpm is not installed for the"
+                            " %s architecture. This usually ends in a broken"
+                            " state in which all the Preupgrade Assistant modules"
+                            " are skipped (notchecked state). Please, install"
+                            " packages related for your architecture. See %s"
+                            " for more info."
+                            % (pkg, SystemIdentification.get_arch(), url))
+                return False
+        return True
+
     def run(self):
         """run analysis"""
         version_msg = "Preupgrade Assistant version: %s" % VERSION
@@ -739,12 +774,7 @@ class Application(object):
 
         if not self.executed_under_root():
             return ReturnValues.ROOT
-        if not os.path.exists(settings.openscap_binary):
-            log_message("Oscap with SCE enabled is not installed")
-            return ReturnValues.MISSING_OPENSCAP
-        if not os.access(settings.openscap_binary, os.X_OK):
-            log_message("Oscap with SCE %s is not executable"
-                        % settings.openscap_binary)
+        if not Application.is_installed_oscap_ok():
             return ReturnValues.MISSING_OPENSCAP
 
         self.execution_dir = os.getcwd()

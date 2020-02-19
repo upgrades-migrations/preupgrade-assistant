@@ -116,6 +116,11 @@ needs_inspection = "needs_inspection"
 needs_action = "needs_action"
 
 openscap_binary = "/usr/bin/oscap"
+openscap_rpms = [
+    "openscap",
+    "openscap-engine-sce",
+    "openscap-utils",
+]
 
 # The full license text
 license = u"""Preupgrade Assistant performs system upgradability assessment
