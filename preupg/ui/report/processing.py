@@ -221,14 +221,14 @@ class XMLReportParser(object):
     def get_test_result_logs(self, elem):
         """ retrieve test's logs from xml """
         # python-2.6: find doesnt know 'name[.*]'
-        # selector = 'check-import[@import-name="stdout"]'
+        # selector = 'check-import[@import-name="stderr"]'
         # text = self.get_nodes_text(elem, selector)
         if elem is None:
             return None, None
         nodes = self.filter_children(elem, 'check-import')
         found = False
         for n in nodes:
-            if n.attrib.get('import-name') == 'stdout':
+            if n.attrib.get('import-name') == 'stderr':
                 found = True
                 break
         if not found:

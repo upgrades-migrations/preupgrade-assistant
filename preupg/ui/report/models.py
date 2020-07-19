@@ -361,7 +361,7 @@ class HostRun(models.Model):
 
     def set_risk(self):
         risks = Risk.objects.for_hostrun(self)
-        risk = "slight"
+        risk = "Can't determine"
         if risks:
             risks_list = list(risks.values_list('level', flat=True).distinct())
             sorted_risks_list = sorted(risks_list, key=lambda x: Risk.RISK_LEVELS[x])
