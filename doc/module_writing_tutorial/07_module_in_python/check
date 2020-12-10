@@ -1,0 +1,17 @@
+#!/usr/bin/python
+# -*- Mode: Python; python-indent: 8; indent-tabs-mode: t -*-
+
+from preupg.script_api import *
+
+#END GENERATED SECTION
+
+# Any other imports put below this comment. We suggest to keep the section
+# above untouched.
+
+
+# The code below can be changed to anything else
+
+log_info("The informational PA module in Python executed")
+solution_file("I do not have anything meaningful to tell actually..")
+
+exit_informational()

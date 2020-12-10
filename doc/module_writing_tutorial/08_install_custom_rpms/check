@@ -1,0 +1,66 @@
+#!/bin/bash
+
+. /usr/share/preupgrade/common.sh
+
+#END GENERATED SECTION
+
+##
+# Long story short:
+#
+#    It's hard to plan that specific RPM will be installed during the main
+#    transaction. Currently there is not nice mechanism how to do it.
+#    Instead of that, it's possible to install rpms during the postupgrade
+#    phase. As usually it's needed to install more rpms, this script counts
+#    just with a directory and installs everything inside when possible
+#    during the post-upgrade phase.
+
+
+###########################################################
+# FUNCTIONS AND VARIABLES                                 #
+###########################################################
+
+
+RPMS_DIR="postupgrade_rpms_install"
+POSTUPGRADE_SCRIPT_NAME="install_rpms.sh"
+
+#
+# Update this path as needed regarding the name of the module
+#
+_POSTUPGRADE_MODULE_DIR="$POSTUPGRADE_DIR/3rdparty/mycustom/08_install_custom_rpms"
+_DST_POSTUPGRADE_SCRIPT_PATH="$_POSTUPGRADE_MODULE_DIR/$RPMS_DIR/$POSTUPGRADE_SCRIPT_NAME"
+
+install_postupgrade_dir() {
+    mkdir -p "$_POSTUPGRADE_MODULE_DIR"
+    cp -a "$RPMS_DIR" "$_POSTUPGRADE_MODULE_DIR/$RPMS_DIR"
+    chmod +x "$_DST_POSTUPGRADE_SCRIPT_PATH"
+    log_info "The rpms inside the $_POSTUPGRADE_MODULE_DIR will be installed during post-upgrade phase."
+}
+
+###########################################################
+# MAIN                                                    #
+###########################################################
+
+if [[ ! -e "$POST_UPGRADE_SCRIPT" ]]; then
+    # The file is required, so log "error" and exit with "error" when the file doesn't
+    # exist.
+    log_error "The $RPMS_DIR/$POSTUPGRADE_SCRIPT_NAME is required but do not exists."
+    exit_error
+fi
+
+# install the postupgrade directory with rpms
+install_postupgrade_dir
+
+count_rpms=$(ls "$RPMS_DIR"/*.rpm | wc -l)
+if [[ "$count_rpms" == "0" ]]; then
+    log_medium_risk "Currently cannot find any rpms located inside the $RPMS_DIR directory."
+    {
+        echo "Put RPMs you would like to install during the post-upgrade phase"
+        echo " into the $RPMS_DIR directory. Or you could copy them into the"
+        echo " $_POSTUPGRADE_MODULE_DIR/$RPMS_DIR directory. Currently no rpms"
+        echo " have been discovered."
+    } >> solution.txt
+    exit_fail
+fi
+
+log_info "Number of discovered rpms for post-upgrade installation: $count_rpms"
+exit_fixed
