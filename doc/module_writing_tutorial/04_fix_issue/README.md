@@ -5,8 +5,8 @@ itself - as during the run of PA module the original system cannot be changed)
 and ensure it is applied during the post-upgrade phase. Additionally shows how
 to prepare post-upgrade script that will install an rpm.
 
-The modul has various possible outputs, to show how various results could be
+The module has various possible outputs, to show how various results could be
 combined in one module. So you can find inside some useful simple constructions
-that are oftenly used in many other already existing modules. Some parts
+that are frequently used in many other already existing modules. Some parts
 of this module (e.g. post-upgrade script) are presented in more simple way
 in following templates.

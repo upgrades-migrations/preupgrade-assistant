@@ -17,10 +17,6 @@ create your custom modules in the already existing compose. If you want to
 create your own compose see the `00_create_own_compose/README.md` document
 for more info.
 
-[comment]: <> (Miriam: This paragraph duplicates info from the Table of Contents and isn't necessary.)
-[comment]: <> (TODO: add the rest of the story to create/add a module)
-[comment]: <> (TODO: do we want to keep the paragraph below?)
-
 The text in sections below describes how to create a simple
 module in the existing compose and the basic structure of the compose. If you
 are interested how to write specific PA modules, see the numbered subdirectories
@@ -55,77 +51,8 @@ is simplified graph of the IPU process from the technical POV. When writing modu
 As these are where a developer can affect the IPU process via code developed
 in a PA module.
 
-[comment]: <> (TODO: add better description once graphical version of the schema below is added)
+![alt text](https://raw.githubusercontent.com/pirat89/preupgrade-assistant/doc_tutorial_update/doc/module_writing_tutorial/ipu_6_7_graph.png)
 
-
-```
-   ---------------------------------------------------------------------
-  | ON ORIGINAL SYSTEM                                                  |
-  |       ______________________________________                        |
-  |      |run PA (the preupg utility)           |                       |
-  |      | → gather common data for PA modules  |                       |
-  |      | → execute PA modules                 |                       |
-  |      | → generate report                    |                       |
-  |       --------------------------------------                        |
-  |                       ↓                                             |
-  |       _____________________________________                         |
-  |      |user go through the generated report |                        |
-  |      | → apply any changes needed prior IPU|                        |
-  |      | → check suspicious stuff, ...       |                        |
-  |      | → if any changes done, run PA again |                        |
-  |       ------------------------------------                          |
-  |                       ↓                                             |
-  |---------------------------------------------------------------------|
-  | (orig system, but some changes could be made now)                   |
-  |       ______________________________________________                |
-  |      |run RUT (the redhat-upgrade-tool utility)     |               |
-  |      | → create LVM snapshots for possible rollback |               |
-  |      |   (if specified on cmd)                      |               |
-  |      | → calculate the upgrade (rpm) transaction    |               |
-  |      | → download rpms                              |               |
-  |      | → **execute pre-upgrade scripts**            |               |
-  |      | → create new bootloader entry for IPU        |               |
-  |       ----------------------------------------------                |
-  |                      ↓                                              |
-  |                   ______                                            |
-  |                  |reboot|                                           |
-  |                   ------                                            |
-   ---------------------------------------------------------------------
-                         ↓
-   ---------------------------------------------------------------------
-  | INSIDE THE UPGRADE ENVIRONMENT                                      |
-  |       ________________________________________                      |
-  |      | boot into the upgrade environment      |                     |
-  |      |  → includes some actions made by RUT   |                     |
-  |      |    that cannot be affected dynamically |                     |
-  |       ----------------------------------------                      |
-  |                      ↓                                              |
-  |               ______________                                        |
-  |              | upgrade rpms |                                       |
-  |               --------------                                        |
-  |                      ↓                                              |
-  |       ________________________________________                      |
-  |      | POST-UPGRADE PHASE                     |                     |
-  |      |  → **execute post-upgrade scripts**    |                     |
-  |      |  → cleaning...                         |                     |
-  |       ----------------------------------------                      |
-  |                      ↓                                              |
-  |                   ______                                            |
-  |                  |reboot|                                           |
-  |                   ------                                            |
-   ---------------------------------------------------------------------
-                        ↓
-               ___________________
-              |selinux relabelling|
-               -------------------
-                        ↓
-               _______________________
-              |Boot to upgraded system|
-               -----------------------
-                        ↓
-                     .......
-
-```
 
 ## Structure of the PA module
 
@@ -185,22 +112,19 @@ affects the result in the generated report and PA exit codes.
 
 ## Module templates and examples
 
-*NOTE* the perfix numbers in names of subdirectories here are for your
+*NOTE* the prefix numbers in names of subdirectories here are for your
 convenience and better orientation. They are not required in the real world.
 
 | The module template/example | Short module description |
 | -------------------------------- | --------------------------------- |
-| `01_simple_informational_module` | an initial module generating just the informationa report |
+| `01_simple_informational_module` | an initial module generating just the informational report |
 | `02_inspection_needed` | the module is executed only when the `foo` package (must be signed by Red Hat!) is installed; warn user the manual inspection (or action...) **AFTER** the upgrade is needed |
 | `03_action_required` | similar as the previous one, but this time, warn user the  action (including inspection) **BEFORE** the upgrade is needed |
-| `04_fix_issue` | example of a more complex module, introducing a post-upgrade script. and showing how to update (prepare) a configuration file to be compatible for RHEL 7 and automatically apply it |
+| `04_fix_issue` | example of a more complex module, introducing a post-upgrade script. And showing how to update (prepare) a configuration file to be compatible for RHEL 7 and automatically apply it |
 | `05_add_pre_upgrade_script` | Simple template showing how to add a pre-upgrade script executed by redhat-upgrade-tool (RUT) before the prompt for reboot |
 | `06_add_post_upgrade_script` | Simple template showing how to add a post-upgrade script to be executed automatically during post-upgrade phase (after the RPM upgrade transaction) |
 | `07_module_in_python` | Simple example of a module written in Python in case you prefer this instead of bash |
 | `08_install_custom_rpms` | Template of a module installing custom rpms located in a directory |
-
-[comment] <> (TODO: update the structure regarding suggestions from Miriam)
-
 
 ## Create a new PA module
 
@@ -244,7 +168,7 @@ the `3rdparty/mymodules` group. The specified script language is Bash.
 
 ### Create a module without using the preupg-content-creator utility
 
-You can also create all files of the PA module manually without the the `preupg-content-creator`
+You can also create all files of the PA module manually without the `preupg-content-creator`
 utility or copy an existing module into the compose. This is useful if you want to reorganize structure of your modules (e.g. put
 them into specific groups, ...). To ensure that PA discovers your module, follow rules of the compose structure as described below. Otherwise the PA
 will not process your module.
@@ -254,11 +178,10 @@ will not process your module.
 The PA compose (alias repository of modules for PA) has a simple structure.
 The top level directory of the compose
 (see the [RHEL6\_7](https://github.com/upgrades-migrations/preupgrade-assistant-modules/tree/el6toel7/RHEL6_7) directory])
-must contain the `properties.ini` and the `init` files. These files already exist in existing composes. If you create your own compose, make sure to add these files. 
+must contain the `properties.ini` and the `init` files. These files already exist in existing composes. If you create your own compose, make sure to add these files.
 
-[comment] <> (Miriam: Not sure what you're trying to say in the first sentence below)
 Every directory between the top-level directory (RHEL6\_7) and a PA module
-directory with, specify a group of modules. Every such group must contain the
+directory specifies a group of modules. Every such group must contain the
 `group.ini` file (or `group.xml`, see the following section for detail) with the `preupgrade` section and the `group_title` key and value,
 specifying the name of the group:
 
@@ -271,7 +194,12 @@ For example, refer to the group
 (Databases)[https://github.com/upgrades-migrations/preupgrade-assistant-modules/tree/el6toel7/RHEL6_7/databases].
 You can specify any number of groups and levels of groups (sub-groups). However,
 if you create the directory structure without the `group.ini` file, any modules
-under such groups will not be discovered by PA. 
+under such groups will not be discovered by PA.
+
+*__NOTE__: You could find in a directory the `group.xml` file instead of the `group.ini` file. It's OK and
+you can ignore it. The PA compiles the compose automatically during the execution and `group.ini` files are
+automatically replaced in PA workspace. The `group.xml` files are usually already part of the
+preupgrade-assistant-el6toel7 rpm.*
 
 Here is example of a compose with
 wrong and right structure inside the top-level directory:
@@ -298,46 +226,6 @@ In the case of the `packages-wrong` directory, the `removed-packages` module is 
 will not be discovered.
 
 
-#### Compiled compose
-
-[comment] <> (Miriam: If customers can skip this section, what's the value in including it?)
-
-*NOTE: You do not need to worry about mixing XML and INI files in the
-compose and no longer need to compile the compose. You can skip this section as it's here just to provide tech detail
-about that. But you do not need to compile the compose any more.*
-
-All above is described for the compose that is not compiled yet. In compiled
-version of the compose, the mentioned INI files are replaced by XML files. In
-your case, the most probably you see mixture of INI and XML files in the compose.
-
-Nowadays, the PA compiles the compose into the XCCDF for OpenSCAP each run inside
-own temporary directories, so it is not required to compile the compose via the
-`preupg-xccdf-compose` manually before the run of the `preupg` command. As well,
-it's possible to put "non-compiled" groups and modules into the already compiled
-compose. PA will handle the compilation even in such a case. In case of the
-compiled compose, the `group.ini` and `module.ini` files are transformed into
-their XML (XCCDF) variants (so it's possible you find e.g. `group.xml` file
-instead of `group.ini` file inside the compiled compose.
-
-Another difference is the `all-xccdf.xml` generated file in the top-level
-directory. This file is for PA the entry point into the compose and based on
-this file the execution of modules is performed. Do not touch this file, is-auto
-generated by PA every time. Example of compiled compose:
-```
-    .
-    ├── databases/
-      ├── mysql/
-        ├── check
-        ├── module.xml
-        └── solution.txt
-      ├── postgresql/
-        ├── check
-        ├── module.xml
-        └── solution.txt
-      └── group.xml
-    └── all-xccdf.xml
-```
-
 ## Tips, confusing issues, ...
 
 1. Execution of *pre-upgrade* and *post-upgrade* scripts (do not confuse these
@@ -346,7 +234,7 @@ So you should be able to specify your script Y will be executed after the X scri
 However, in real life, it's better to not rely on it and use such 'hacks' just
 in corner cases. It's always better to write your script without any dependencies
 on other script results. E.g. if script X fails and script Y relies on the result
-of the scripty X, the script Y could fail uncontrollably as well.
+of the script X, the script Y could fail uncontrollably as well.
 
 2. If your *pre-upgrade* or *post-upgrade* script was not executed, check whether
 you set correctly DAC for the file (r+x). To check that, inspect `postupgrade.d`
