@@ -133,7 +133,7 @@ utility as described in the next section. To duplicate a template or an existing
 
 ### Create a module using the preupg-content-creator utility
 
-The simplest way to create an actor is using the `preupg-content-creator`
+The simplest way to create a module is using the `preupg-content-creator`
 utility:
 - Go to the directory where is stored the `RHEL6_7` repository
   (if installed on RHEL 6 system, it's `/usr/share/preupgrade/`).
