@@ -40,7 +40,7 @@ install_postupgrade_dir() {
 # MAIN                                                    #
 ###########################################################
 
-if [[ ! -e "$POST_UPGRADE_SCRIPT" ]]; then
+if [[ ! -e "$RPMS_DIR/$POSTUPGRADE_SCRIPT_NAME" ]]; then
     # The file is required, so log "error" and exit with "error" when the file doesn't
     # exist.
     log_error "The $RPMS_DIR/$POSTUPGRADE_SCRIPT_NAME is required but do not exists."
