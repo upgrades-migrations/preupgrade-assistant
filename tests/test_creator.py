@@ -85,10 +85,10 @@ class TestCreator(base.TestCase):
         self.puh.prepare_content_env()
         self.puh.create_final_content()
         group_ini = os.path.join(self.puh.get_upgrade_path(),
-                                 self.puh.get_group_name(), 'group.ini')
+                                 self.puh.get_group_name(), settings.group_ini)
         self.assertEqual(group_ini, os.path.join(self.upgrade_dir,
                                                  self.group_name,
-                                                 'group.ini'))
+                                                 settings.group_ini))
         lines = load_file(group_ini)
         expected_group_ini = ['[preupgrade]',
                               'group_title = Title for foobar_group',

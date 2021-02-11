@@ -156,18 +156,9 @@ class ComposeXML(object):
             new_dir = os.path.join(source_dir, dirname)
             if not os.path.isdir(new_dir):
                 continue
-            ini_files = [x for x in os.listdir(new_dir) if x.endswith('.ini')]
-            if not ini_files and generate_from_ini:
-                # Check if directory contains only subdirectories.
-                # Report to user that group.ini file could be missing
-                directories = [x for x in os.listdir(new_dir)
-                               if not os.path.isdir(os.path.join(new_dir, x))]
-                if not directories and 'postupgrade.d' not in dirname:
-                    log_message(
-                        "group.ini file is missing in {0}".format(new_dir),
-                        level=logging.WARNING)
-            if ini_files and generate_from_ini:
-                oscap_group = OscapGroupXml(module_set_dir, new_dir)
+
+            oscap_group = OscapGroupXml(module_set_dir, new_dir)
+            if generate_from_ini and oscap_group.ini_path:
                 oscap_group.write_xml()
                 return_list = oscap_group.collect_group_xmls()
                 ComposeXML.perform_autoqa(new_dir, return_list)

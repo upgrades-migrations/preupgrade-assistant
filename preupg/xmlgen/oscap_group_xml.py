@@ -14,12 +14,13 @@ except ImportError:
     import ConfigParser as configparser
 
 from preupg.xmlgen.xml_utils import XmlUtils
-from preupg.utils import FileHelper, ModuleSetUtils
+from preupg.utils import FileHelper
 try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
-from preupg import settings
+from preupg.logger import log_message, logging
+from preupg import settings, exception
 
 try:
     from xml.etree.ElementTree import ParseError
@@ -43,33 +44,49 @@ class OscapGroupXml(object):
             self.main_dir = dir_name.split('/')[-3]
         else:
             self.main_dir = dir_name.split('/')[-2]
-        self.lists = []
-        self.loaded = {}
         self.filename = "group.xml"
+        self.ini_path = self.get_ini_path()
         self.rule = []
         self.ret = {}
 
-    def find_all_ini(self):
+    def get_ini_path(self):
+        """Find either group.ini or module.ini in the self.dirname path.
         """
-        Find all ini files in the self.dirname path. Then read each ini file
-        and save all options in 'preupgrade' section with their values to
-        self.loded dict:
-        self.loaded[ini_file_path] = {option1: value, option2: value, ...}
+        dir_content = os.listdir(self.dirname)
+        preupg_inis = [settings.module_ini, settings.group_ini]
+        found_preupg_inis = [ini for ini in preupg_inis if ini in dir_content]
+        if len(found_preupg_inis) > 1:
+            raise exception.ModuleSetFormatError(
+                "Cannot prepare XCCDF for OpenSCAP",
+                "group.ini and module.ini can't be both in one directory: %s"
+                % self.dirname)
+        elif not found_preupg_inis:
+            # Check if directory contains subdirectories.
+            # Report to user that group.ini file could be missing
+            subdirs = [x for x in os.listdir(self.dirname)
+                       if os.path.isdir(os.path.join(self.dirname, x))]
+            if subdirs and 'postupgrade.d' not in self.dirname:
+                log_message(
+                    "group.ini file is missing in {0}".format(self.dirname),
+                    level=logging.WARNING)
+            return None
+        else:
+            return os.path.join(self.dirname, found_preupg_inis.pop())
+
+    def get_ini_content(self, ini_path):
+        """Return all key,value pairs from the 'preupgrade' section of the
+        ini_path.
         """
-        for dir_name in os.listdir(self.dirname):
-            if dir_name.endswith(".ini"):
-                self.lists.append(os.path.join(self.dirname, dir_name))
-        for file_name in self.lists:
-            if FileHelper.check_file(file_name, "r") is False:
-                continue
-            filehander = codecs.open(file_name, 'r', encoding=settings.defenc)
-            config = configparser.ConfigParser()
-            config.readfp(filehander)
-            fields = {}
-            section = 'preupgrade'
-            for option in config.options(section):
-                fields[option] = config.get(section, option)
-            self.loaded[file_name] = fields
+        if FileHelper.check_file(ini_path, "r") is False:
+            return {}
+        filehander = codecs.open(ini_path, 'r', encoding=settings.defenc)
+        config = configparser.ConfigParser()
+        config.readfp(filehander)
+        ini_content = {}
+        section = 'preupgrade'
+        for key in config.options(section):
+            ini_content[key] = config.get(section, key)
+        return {ini_path: ini_content}
 
     def collect_group_xmls(self):
         """The functions is used for collecting all INI files into the one."""
@@ -85,9 +102,9 @@ class OscapGroupXml(object):
 
     def write_xml(self):
         """The function is used for storing a group.xml file"""
-        self.find_all_ini()
+        ini_content = self.get_ini_content(self.ini_path)
         self.write_list_rules()
-        xml_utils = XmlUtils(self.module_set_dir, self.dirname, self.loaded)
+        xml_utils = XmlUtils(self.module_set_dir, self.dirname, ini_content)
         self.rule = xml_utils.prepare_sections()
         file_name = os.path.join(self.dirname, "group.xml")
         try:
